@@ -250,6 +250,7 @@ static std::vector<float> generateDbCurve(CompCurves::LookupPtr table, float x0,
 
 static void plotCurve(CompCurves::Recipe r, const std::string& fileName)
 {
+
     auto table = CompCurves::makeCompGainLookup(r);
 
     FILE* fp = nullptr;
@@ -283,10 +284,13 @@ static void plot4_1_hard()
 
 static void plot4_1_soft()
 {
+    printf("\n------- soft curve -----\n");
     CompCurves::Recipe r;
     r.ratio = 4;
     r.kneeWidth = 10;
+    printf("ratio=%f knee width = %f\n", r.ratio, r.kneeWidth);
     plotCurve(r, "curves-4-1-soft.csv");
+    printf("----- end curve ----\n");
 }
 
 
@@ -337,6 +341,7 @@ static void testInflection()
 
 void testCompCurves()
 {
+    plot4_1_soft();
     testInflection();
    
    // testSpline();

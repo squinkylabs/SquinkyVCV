@@ -92,5 +92,6 @@ public:
 private:
     static xy addLeftSideCurve(LookupPtr, const Recipe& r);
     static void addRightSideCurve(LookupPtr, const Recipe& r, xy lastPt);
+    static void addMiddleCurve(LookupPtr, const Recipe& r, xy lastPt);
 
 };
