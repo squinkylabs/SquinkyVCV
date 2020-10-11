@@ -13,9 +13,15 @@ public:
     Cmprsr();
     enum class Ratios {
         HardLimit,
+        _4_1_soft,
         _4_1_hard,
+        _8_1_soft,
+        _8_1_hard,
+        _20_1_soft,
+        _20_1_hard,
         NUM_RATIOS
     };
+
     float_4 step(float_4);
     void setTimes(float attackMs, float releaseMs, float sampleTime);
     void setThreshold(float th);
@@ -43,22 +49,81 @@ inline void Cmprsr::setCurve(Ratios r)
 
 inline Cmprsr::Cmprsr()
 {
+    const float softKnee = 12;
+
     if (!wasInit()) {
+        for (int i=0; i< int(Ratios::NUM_RATIOS); ++ i) {
+            Ratios ratio = Ratios(i);
+            switch (ratio) {
+                case Ratios::HardLimit:
+                    ratioCurves[i] = ratioCurves[int(Ratios::_4_1_hard)];
+                    break;
+                case Ratios::_4_1_soft:
+                    {
+                        CompCurves::Recipe r;
+                        r.ratio = 4;
+                        r.kneeWidth = softKnee;
+                        ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                    }
+                    break;
+                case Ratios::_4_1_hard:
+                    {
+                        CompCurves::Recipe r;
+                        r.ratio = 4;
+                        ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                    }
+                    break;
+                 case Ratios::_8_1_soft:
+                    {
+                        CompCurves::Recipe r;
+                        r.ratio = 8;
+                        r.kneeWidth = softKnee;
+                        ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                    }
+                    break;
+                 case Ratios::_8_1_hard:
+                    {
+                        CompCurves::Recipe r;
+                        r.ratio = 8;
+                        ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                    }
+                    break;
+                 case Ratios::_20_1_soft:
+                    {
+                        CompCurves::Recipe r;
+                        r.ratio = 20;
+                        ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                    }
+                    break;
+                 case Ratios::_20_1_hard:
+                    {
+                        CompCurves::Recipe r;
+                        r.ratio = 20;
+                        r.kneeWidth = softKnee;
+                        ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                    }
+                    break;
+                default:
+                    assert(false);
+
+        }
+
+
         CompCurves::Recipe r;
         r.ratio = 4;
-      //  r.threshold = 1;
         ratioCurves[int(Ratios::_4_1_hard)] = CompCurves::makeCompGainLookup(r);
 
 
         // LImiter is a special case. We don't use the table , but we just need some entry here.
         ratioCurves[int(Ratios::HardLimit)] = ratioCurves[int(Ratios::_4_1_hard)];
+        }
     }
 }
 
  inline std::vector<std::string> Cmprsr::ratios()
  {
-     assert(int(Ratios::NUM_RATIOS) == 2);
-     return {"Limit", "4:1 hard" };
+     assert(int(Ratios::NUM_RATIOS) == 7);
+     return {"Limit", "4:1 soft","4:1 hard", "8:1 soft", "8:1 hard", "20:1 soft", "20:1 hard"  };
  }
 
 

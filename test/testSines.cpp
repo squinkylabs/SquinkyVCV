@@ -34,4 +34,5 @@ void testSines()
 {
     testSines0();
     testSines1();
+    printf("leaving test sines\n");
 }

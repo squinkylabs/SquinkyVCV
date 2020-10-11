@@ -279,37 +279,23 @@ static void testLimiterTC()
    
 }
 
-#if 0
-template <class T>
-void testPolyChannels(int  inputPort, int outputPort, int numChannels)
-{
-    T comp;
-    initComposite(comp);
-    comp.inputs[inputPort].channels = numChannels;
-    comp.outputs[outputPort].channels = 1;          // this will set it as patched so comp can set it right
-
-    TestComposite::ProcessArgs args =  {44100, 1/44100}; 
-
-    comp.process(args);
-    // const int outputChannels = comp.outputs[outputPort].channels;
-
-    assertEQ(int(comp.outputs[outputPort].channels), numChannels);
-    for (int i = 0; i < numChannels; ++i) {
-       // printf("i = %d\n", i);
-        // should start out at zero
-        assertEQ(comp.outputs[outputPort].getVoltage(i), 0);
-        comp.inputs[inputPort].setVoltage(10, i);
-       // for (int j=0; j<100; ++j) {
-            comp.process(args);
-        assertGT(comp.outputs[outputPort].getVoltage(i), 0);
-    }
-}
-#endif
-
 static void testLimiterPoly()
 {
     using Comp = Compressor<TestComposite>;
     testPolyChannels<Comp>(Comp::AUDIO_INPUT, Comp::AUDIO_OUTPUT, 16);
+}
+
+static void testCompUI()
+{
+    using Comp = Compressor<TestComposite>;
+    auto r = Comp::ratios();
+    assert(r.size() == size_t(Cmprsr::Ratios::NUM_RATIOS));
+
+    Cmprsr c;
+    for (int i=0; i < int(Cmprsr::Ratios::NUM_RATIOS); ++i) {
+        c.setCurve( Cmprsr::Ratios(i));
+        c.step(0);
+    }
 }
 
 void testMultiLag2()
@@ -318,7 +304,6 @@ void testMultiLag2()
  //   testLowpassLookup2();
  //   testDirectLookup();
 //  testDirectLookup2();
-
     testMultiLag0();
     testMultiLag1();
     testMultiLag2int();
@@ -330,4 +315,7 @@ void testMultiLag2()
     testLimiterAttack();
     testLimiterTC();
     testLimiterPoly();
+
+    testCompUI();
+
 }

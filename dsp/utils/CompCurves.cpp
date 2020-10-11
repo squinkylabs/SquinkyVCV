@@ -62,7 +62,7 @@ CompCurves::xy CompCurves::addLeftSideCurve(LookupPtr ptr, const Recipe& r)
     NonUniformLookupTable<float>::addPoint(*ptr, 0, 1);
     NonUniformLookupTable<float>::addPoint(*ptr, bottomOfKneeVin, 1);
 
-    printf("left side at 0,1 and %f,1\n", bottomOfKneeVin);
+    //printf("left side at 0,1 and %f,1\n", bottomOfKneeVin);
 
     return xy(bottomOfKneeVin, bottomOfKneeVin);
 }
@@ -88,9 +88,9 @@ void CompCurves::addMiddleCurve(LookupPtr table, const Recipe& r, CompCurves::xy
         const float x = float(AudioMath::gainFromDb(xDb));
         const float yV = float(AudioMath::gainFromDb(yDb));
         const float gain = yV / x;
-        //const double yDb = xDb + (1 / (r.ratio - 1)) * (xDb + r.kneeWidth /2)
-        printf("in middel x=%f ydb=%f v-g=%f, %f\n", xDb, yDb, x, gain);
-         NonUniformLookupTable<float>::addPoint(*table, x, gain);
+
+        // printf("in middel x=%f ydb=%f v-g=%f, %f\n", xDb, yDb, x, gain);
+        NonUniformLookupTable<float>::addPoint(*table, x, gain);
      }
 
     //assert(false);
@@ -109,7 +109,7 @@ void CompCurves::addRightSideCurve(LookupPtr table, const Recipe& r, CompCurves:
 
         const float x = float(AudioMath::gainFromDb(xDb));
         const float gain = float(AudioMath::gainFromDb(yDb)) / x;
-        printf("new R: another right point db=%f,%f v-g=%f,%f\n", xDb, yDb, x, gain);
+        // printf("new R: another right point db=%f,%f v-g=%f,%f\n", xDb, yDb, x, gain);
         NonUniformLookupTable<float>::addPoint(*table, x, gain);
     }
 }

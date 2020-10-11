@@ -251,13 +251,13 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
             ret = {0, 10, 1, "Threshold"};
             break;
          case Compressor<TBase>::RATIO_PARAM:
-            ret = {0, 4, 0, "Compression ratio"};
+            ret = {0, 6, 0, "Compression ratio"};
             break;
          case Compressor<TBase>::MAKEUPGAIN_PARAM:
             ret = {0, 20, 0, "Makeup gain"};
             break;
         case Compressor<TBase>::SECRET_PARAM:
-            ret = {0, 1, 0, "IM Distortion supression"};
+            ret = {0, 1, 0, "IM Distortion suppression"};
             break;
         case Compressor<TBase>::WETDRY_PARAM:
             ret = {-1, 1, 1, "dry/wet mix"};

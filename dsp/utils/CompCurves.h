@@ -24,6 +24,7 @@ public:
     CompCurves() = delete;
 
     #define normalizedThreshold 1.f
+
     /**
      * All the parameters to define a gain curve
      * Note that ratio below knee is always 1:1
