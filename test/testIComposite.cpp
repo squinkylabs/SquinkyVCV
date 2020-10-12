@@ -3,6 +3,7 @@
 #include "ChaosKitty.h"
 #include "CHB.h"
 #include "ColoredNoise.h"
+#include "Compressor.h"
 #include "FrequencyShifter.h"
 #include "FunVCOComposite.h"
 #include "LFN.h"
@@ -92,6 +93,7 @@ void testIComposite()
     test<WVCO<TestComposite>>();
     test<Sub<TestComposite>>();
     test<Basic<TestComposite>>();
+    test<Compressor<TestComposite>>();
 #endif
 
 }

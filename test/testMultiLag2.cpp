@@ -84,21 +84,18 @@ static void doLowpassTest(std::function<float(float)> filter, T Fc, T expectedSl
 {
     auto stats = getLowpassStats<T>(filter, Fc);
     assertClose(stats.first, Fc, 3);    // 3db down at Fc
-
-    //double slope = Analyzer::getSlope(response, (float) Fc * 2, sampleRate);
     assertClose(stats.second, expectedSlope, 1);          // to get accurate we need to go to higher freq, etc... this is fine
 }
 
 template <class T>
 static void _testMultiLag2(T& dut, float f)
 {
-    for (int n = 0; n < 4; ++n) {
-       // float input[100] = {0};
-        float_4 input;
-        std::function<float(float)> filter = [&input, n, &dut](float x) {
-            input[n] = x;
+    for (int stage = 0; stage < 4; ++stage) {
+        float_4 input = float_4(0);
+        std::function<float(float)> filter = [&input, stage, &dut](float x) {
+            input[stage] = x;
             dut.step(input);
-            auto y = dut.get()[n];
+            auto y = dut.get()[stage];
             return float(y);
         };
         doLowpassTest<float>(filter, f, -6);
@@ -298,16 +295,43 @@ static void testCompUI()
     }
 }
 
+#if 1
+static void testCompLim()
+{
+    using Comp = Compressor<TestComposite>;
+    std::shared_ptr<Comp> comp = std::make_shared<Comp>();
+    initComposite(*comp);
+
+    comp->params[Comp::THRESHOLD_PARAM].value = .1;
+    const double threshV = Comp::getThresholdFunction()(.1);
+    printf("th .1 give %f volts\n", threshV);
+
+    comp->inputs[Comp::AUDIO_INPUT].channels = 1;
+    comp->outputs[Comp::AUDIO_OUTPUT].channels = 1;
+
+    comp->inputs[Comp::AUDIO_INPUT].setVoltage(threshV, 0);
+    TestComposite::ProcessArgs args;
+    for (int i=0; i<1000; ++i) {
+        comp->process(args);
+    }
+    const float output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
+    assertClose(output, threshV, .01);
+
+}
+#endif
+
 void testMultiLag2()
 {
  //   testLowpassLookup();
  //   testLowpassLookup2();
  //   testDirectLookup();
 //  testDirectLookup2();
+
     testMultiLag0();
     testMultiLag1();
     testMultiLag2int();
     testMultiLagDisable();
+
 
     testLimiter0();
     testLimiterDC();
@@ -317,5 +341,6 @@ void testMultiLag2()
     testLimiterPoly();
 
     testCompUI();
+    testCompLim();
 
 }

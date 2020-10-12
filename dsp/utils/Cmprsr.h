@@ -51,11 +51,21 @@ inline void Cmprsr::setCurve(Ratios r)
 inline float_4 Cmprsr::step(float_4 input)
 {
     assert(wasInit());
-    lag.step( rack::simd::abs(input));
+
+    float_4 envelope;
+    if (reduceDistortion) {
+        lag.step( rack::simd::abs(input));
+        attackFilter.step(lag.get());
+        envelope = attackFilter.get();
+       // printf("reduce\n"); fflush(stdout);
+    } else {
+        lag.step( rack::simd::abs(input));
+        envelope = lag.get();
+    }
 
     if (ratio == Ratios::HardLimit) {
-        float_4 reductionGain = threshold / lag.get();
-        float_4 gain = SimdBlocks::ifelse( lag.get() > threshold, reductionGain, 1);
+        float_4 reductionGain = threshold / envelope;
+        float_4 gain = SimdBlocks::ifelse( envelope > threshold, reductionGain, 1);
         return gain * input;
     } else {
         const float_4 invThresh = 1.f / threshold;
@@ -63,7 +73,7 @@ inline float_4 Cmprsr::step(float_4 input)
         CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
 
         float_4 gain;
-        const float_4 level = lag.get() * invThresh;
+        const float_4 level = envelope * invThresh;
         for (int i=0; i<4; ++i) {
             gain[i] = CompCurves::lookup(table, level[i]);
         }
@@ -84,12 +94,12 @@ inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, 
     float normRelease = releaseHz * sampleTime;
 
     if (enableDistortionReduction) {
-        lag.setAttack(normAttack / 4);
-        attackFilter.setCutoff(normAttack);
+        lag.setAttack(normAttack * 2);
+        attackFilter.setCutoff(normAttack * 2);
     } else {
-        lag.setAttack(normAttack);
-        lag.setRelease(normRelease);
+        lag.setAttack(normAttack); 
     }
+     lag.setRelease(normRelease);
 }
 
 inline Cmprsr::Cmprsr()
