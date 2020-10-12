@@ -295,13 +295,14 @@ static void testCompUI()
     }
 }
 
-#if 1
+
 static void testCompLim()
 {
     using Comp = Compressor<TestComposite>;
     std::shared_ptr<Comp> comp = std::make_shared<Comp>();
     initComposite(*comp);
 
+    comp->params[Comp::RATIO_PARAM].value = float(int(Cmprsr::Ratios::HardLimit));
     comp->params[Comp::THRESHOLD_PARAM].value = .1;
     const double threshV = Comp::getThresholdFunction()(.1);
     printf("th .1 give %f volts\n", threshV);
@@ -309,16 +310,49 @@ static void testCompLim()
     comp->inputs[Comp::AUDIO_INPUT].channels = 1;
     comp->outputs[Comp::AUDIO_OUTPUT].channels = 1;
 
+
+    // at threshold, should get thresh out.
     comp->inputs[Comp::AUDIO_INPUT].setVoltage(threshV, 0);
     TestComposite::ProcessArgs args;
     for (int i=0; i<1000; ++i) {
         comp->process(args);
     }
-    const float output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
+
+    float output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
     assertClose(output, threshV, .01);
 
+
+    comp->inputs[Comp::AUDIO_INPUT].setVoltage(threshV, 0);
+    for (int i=0; i<1000; ++i) {
+        comp->process(args);
+    }
+    output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
+    assertClose(output, threshV, .01);
+
+    assertGT(4, threshV);
+    comp->inputs[Comp::AUDIO_INPUT].setVoltage(4, 0);
+    for (int i=0; i<1000; ++i) {
+        comp->process(args);
+    }
+    output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
+    assertClose(output, threshV, .01);
+
+ 
+    comp->inputs[Comp::AUDIO_INPUT].setVoltage(10, 0);
+    for (int i=0; i<1000; ++i) {
+        comp->process(args);
+    }
+    output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
+    assertClose(output, threshV, .01);
+
+    comp->inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    for (int i=0; i<1000; ++i) {
+        comp->process(args);
+    }
+    output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
+    assertClose(output, 0, .001);
 }
-#endif
+
 
 void testMultiLag2()
 {
