@@ -35,6 +35,8 @@ private:
 
     bool reduceDistortion = false;
     float_4 threshold = 5;
+    float_4 invThreshold = 1.f / 5.f;
+    int ratioIndex = 0;
     Ratios ratio = Ratios::HardLimit;
 
     static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
@@ -46,6 +48,7 @@ private:
 inline void Cmprsr::setCurve(Ratios r)
 {
     ratio = r;
+    ratioIndex = int(ratio);
 }
 
 inline float_4 Cmprsr::step(float_4 input)
@@ -68,17 +71,13 @@ inline float_4 Cmprsr::step(float_4 input)
         float_4 gain = SimdBlocks::ifelse( envelope > threshold, reductionGain, 1);
         return gain * input;
     } else {
-        const float_4 invThresh = 1.f / threshold;
-        const int ratioIndex = int(ratio);
         CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
-
         float_4 gain;
-        const float_4 level = envelope * invThresh;
+        const float_4 level = envelope * invThreshold;
         for (int i=0; i<4; ++i) {
             gain[i] = CompCurves::lookup(table, level[i]);
         }
-       // printf("amp = %f gain = %f tableIndex=%f th= %f gainxth=%f\n", lag.get()[0],gain[0],  level[0], threshold[0], gain[0] * threshold[0]);
-         return gain * input;
+        return gain * input;
     }
 }
 
@@ -181,6 +180,7 @@ inline const MultiLag2& Cmprsr::_lag() const
 inline void Cmprsr::setThreshold(float th)
 {
     threshold = float_4(th);
+    invThreshold = 1.f / threshold;
 }
 
 

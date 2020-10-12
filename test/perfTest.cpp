@@ -10,6 +10,7 @@
 #include "BiquadFilter.h"
 #include "BiquadState.h"
 #include "ColoredNoise.h"
+#include "CompCurves.h"
 #include "FrequencyShifter.h"
 #include "HilbertFilterDesigner.h"
 #include "LookupTableFactory.h"
@@ -206,6 +207,20 @@ static void testSinLookupSimd()
        // float_4 d =  lookupSimd(*params, TestBuffers<float>::get(), true); //LookupTable<float>::lookup(*params, TestBuffers<float>::get());
         float_4 d = sine2(TestBuffers<float>::get());
         return d[2];
+        }, 1);
+}
+
+static void testCompressorLookup()
+{
+    CompCurves::Recipe r;
+    r.ratio = 4;
+    r.kneeWidth = 0;
+    auto table = CompCurves::makeCompGainLookup(r);
+    MeasureTime<float>::run(overheadInOut, "non-uniform comp lookup", [table]() {
+       // float_4 d =  lookupSimd(*params, TestBuffers<float>::get(), true); //LookupTable<float>::lookup(*params, TestBuffers<float>::get());
+       // float_4 d = sine2(TestBuffers<float>::get());
+        float d = CompCurves::lookup(table, TestBuffers<float>::get());
+        return d;
         }, 1);
 }
 #endif
@@ -1228,6 +1243,7 @@ void perfTest()
     testSinLookupf();
     testSinLookupSimd();
     simd_testSin();
+    testCompressorLookup();
 #endif  
 
     testBiquad();

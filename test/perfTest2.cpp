@@ -340,6 +340,29 @@ static void testCompLim16()
         }, 1);
 }
 
+static void testCompLim16Dist()
+{
+   using Comp = Compressor<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::AUDIO_INPUT].channels = 16;
+    comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 0;      // limiter
+    comp.params[Comp::REDUCEDISTORTION_PARAM].value = 1;  
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "Comp/Lim 16 ndist channel", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
 static void testCompKnee()
 {
     using Comp = Compressor<TestComposite>;
@@ -357,7 +380,55 @@ static void testCompKnee()
     args.sampleRate = 44199;
 
 
-    MeasureTime<float>::run(overheadInOut, "Comp / Lim 1 channel 4:1 hard", [&comp, args]() {
+    MeasureTime<float>::run(overheadInOut, "Comp / Lim 1 channel 4:1 soft", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testCompKnee16()
+{
+    using Comp = Compressor<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::AUDIO_INPUT].channels = 16;
+    comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 1;      // 4:1 sort knee
+
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+
+    MeasureTime<float>::run(overheadInOut, "Comp / Lim 16 channel 4:1 soft", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testCompKnee16Hard()
+{
+    using Comp = Compressor<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::AUDIO_INPUT].channels = 16;
+    comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 2;      // 4:1 hard knee
+
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+
+    MeasureTime<float>::run(overheadInOut, "Comp / Lim 16 channel 4:1 hard", [&comp, args]() {
         comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
         comp.process(args);
         return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
@@ -375,7 +446,10 @@ void perfTest2()
     testF2_4X();
     testCompLim1();
     testCompLim16();
+    testCompLim16Dist();
     testCompKnee();
+    testCompKnee16();
+    testCompKnee16Hard();
 #endif
 
 

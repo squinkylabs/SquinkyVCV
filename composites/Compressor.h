@@ -26,6 +26,13 @@ public:
     int getNumParams() override;
 };
 
+/**
+ * 1 ch lim: 21
+ * 1 ch curve: 42.9
+ * 16 ch lim: 27.1
+ * 16 ch curve: 123
+ * 16h ch lim no dist: 28.6
+ */
 template <class TBase>
 class Compressor : public TBase
 {
@@ -108,7 +115,7 @@ private:
 
     Cmprsr compressors[4];
     void setupLimiter();
-    void stepm();
+    //void stepm();
     void stepn();
     void pollAttackRelease();
 
@@ -137,29 +144,13 @@ template <class TBase>
 inline void Compressor<TBase>::init()
 {
     setupLimiter();
-    divm.setup(16, [this]() {
-        this->stepm();
-    });
-    divn.setup(4, [this]() {
+    divn.setup(16, [this]() {
         this->stepn();
     });
 }
 
 template <class TBase>
 inline void Compressor<TBase>::stepn()
-{
-    const float threshold = thresholdFunction(Compressor<TBase>::params[THRESHOLD_PARAM].value);
-    const float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
-  
-    Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
-    for (int i = 0; i<4; ++i) {
-        compressors[i].setThreshold(threshold);
-        compressors[i].setCurve(ratio);
-    }
-}
-
-template <class TBase>
-inline void Compressor<TBase>::stepm()
 {
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
@@ -176,6 +167,15 @@ inline void Compressor<TBase>::stepm()
 
     const float rawMakeupGain = Compressor<TBase>::params[MAKEUPGAIN_PARAM].value;
     makeupGain_m = AudioMath::gainFromDb(rawMakeupGain);
+
+     const float threshold = thresholdFunction(Compressor<TBase>::params[THRESHOLD_PARAM].value);
+    const float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
+  
+    Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
+    for (int i = 0; i<4; ++i) {
+        compressors[i].setThreshold(threshold);
+        compressors[i].setCurve(ratio);
+    }
 }
 
 template <class TBase>
@@ -188,9 +188,7 @@ inline void Compressor<TBase>::pollAttackRelease()
     const float release = releaseFunction(releaseRaw);
    // printf("in poll, raw=%f,%f a=%f r=%f\n", attackRaw, releaseRaw, attack, release); fflush(stdout);
 
-     const bool reduceDistortion = bool ( std::round(Compressor<TBase>::params[REDUCEDISTORTION_PARAM].value));
-
-
+    const bool reduceDistortion = bool ( std::round(Compressor<TBase>::params[REDUCEDISTORTION_PARAM].value));
     for (int i = 0; i<4; ++i) {
         compressors[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
     }
@@ -199,12 +197,11 @@ inline void Compressor<TBase>::pollAttackRelease()
 template <class TBase>
 inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
 {
-    divm.step();
     divn.step();
 
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-    SqOutput& debugPort = TBase::outputs[DEBUG_OUTPUT];
+    // SqOutput& debugPort = TBase::outputs[DEBUG_OUTPUT];
     
     for (int bank = 0; bank < numBanks_m; ++bank) {
         const int baseChannel = bank * 4;
@@ -214,8 +211,8 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
 
         outPort.setVoltageSimd(mixedOutput, baseChannel);
 
-        const float_4 env = compressors[bank]._lag().get();
-        debugPort.setVoltageSimd(env, baseChannel);
+        // const float_4 env = compressors[bank]._lag().get();
+        // debugPort.setVoltageSimd(env, baseChannel);
     }
 }
 
@@ -257,7 +254,7 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
             ret = {0, 6, 0, "Compression ratio"};
             break;
          case Compressor<TBase>::MAKEUPGAIN_PARAM:
-            ret = {0, 20, 0, "Makeup gain"};
+            ret = {0, 40, 0, "Makeup gain"};
             break;
         case Compressor<TBase>::REDUCEDISTORTION_PARAM:
             ret = {0, 1, 0, "IM Distortion suppression"};
