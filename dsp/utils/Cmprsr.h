@@ -26,6 +26,7 @@ public:
     void setTimes(float attackMs, float releaseMs, float sampleTime, bool enableDistortionReduction);
     void setThreshold(float th);
     void setCurve(Ratios);
+    void setNumChannels(int);
 
     const MultiLag2& _lag() const;
     static std::vector<std::string> ratios();
@@ -38,12 +39,18 @@ private:
     float_4 invThreshold = 1.f / 5.f;
     int ratioIndex = 0;
     Ratios ratio = Ratios::HardLimit;
+    int maxChannel = 3;
 
     static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
     static bool wasInit()  {
         return !!ratioCurves[0];
     }
 };
+
+inline void Cmprsr::setNumChannels(int ch)
+{
+    maxChannel = ch - 1;
+}
 
 inline void Cmprsr::setCurve(Ratios r)
 {
@@ -72,10 +79,12 @@ inline float_4 Cmprsr::step(float_4 input)
         return gain * input;
     } else {
         CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
-        float_4 gain;
+        float_4 gain = float_4(0);
         const float_4 level = envelope * invThreshold;
         for (int i=0; i<4; ++i) {
-            gain[i] = CompCurves::lookup(table, level[i]);
+            if (i <= maxChannel) {
+                gain[i] = CompCurves::lookup(table, level[i]);
+            }
         }
         return gain * input;
     }

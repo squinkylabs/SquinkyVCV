@@ -27,6 +27,14 @@ public:
 };
 
 /**
+ * after obvious perf:
+ * 
+ * 1 ch lim: 17.4
+ * 1 ch curve: 25.5
+ * 16 ch lim: 24.1
+ * 16 ch curve: 119
+ * 16h ch lim no dist: 25.6
+ *  
  * 1 ch lim: 21
  * 1 ch curve: 42.9
  * 16 ch lim: 27.1
@@ -175,6 +183,13 @@ inline void Compressor<TBase>::stepn()
     for (int i = 0; i<4; ++i) {
         compressors[i].setThreshold(threshold);
         compressors[i].setCurve(ratio);
+
+        if (i < numBanks_m) {
+            const int baseChannel = i * 4;
+            const int chanThisBank = std::min(4, numChannels_m - baseChannel);
+            // printf("bank %d num ch = %d\n", i, chanThisBank); fflush(stdout);
+            compressors[i].setNumChannels(chanThisBank);
+        }
     }
 }
 
