@@ -449,6 +449,7 @@ static void testNonUniform4()
 template <typename T>
 static void testGenericExp()
 {
+    printf("testGenericExp\n"); fflush(stdout);
     //   static void makeGenericExpTaper(LookupTableParams<T>& params, double xMin, double xMax, double yMin, double yMax);
     auto f = AudioMath::makeFunc_Exp(2, 10, 100, 150);
     LookupTableParams<T> params;
@@ -459,6 +460,7 @@ static void testGenericExp()
     for (T x = 2; x < 10; x += T(.1)) {
         assertClose(f(x), LookupTable<T>::lookup(params, x), .001);
     }
+    printf("lave testGenericExp\n"); fflush(stdout);
 } 
 
 

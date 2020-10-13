@@ -3,6 +3,7 @@
 
 #include "Divider.h"
 #include "Cmprsr.h"
+#include "LookupTableFactory.h"
 #include "ObjectCache.h"
 #include "SqPort.h"
 
@@ -27,6 +28,21 @@ public:
 };
 
 /**
+ *  * After poll 16 -> 32
+ * 1 ch lim: 9.2
+ * 1 ch curve: 17.7
+ * 16 ch lim: 16.1
+ * 16 ch curve: 111
+ * 16h ch lim no dist:  17.9
+ * 
+ * After lookups for knobs:
+ * 1 ch lim: 14.8
+ * 1 ch curve: 23.1
+ * 16 ch lim: 21.6
+ * 16 ch curve: 117.5
+ * 16h ch lim no dist:  23.9
+ * 
+ * 
  * after obvious perf:
  * 
  * 1 ch lim: 17.4
@@ -108,16 +124,22 @@ public:
 
     static std::vector<std::string> ratios();
 
-    static std::function<double(double)> getAttackFunction() {
+
+    static std::function<double(double)> getSlowAttackFunction() {
         return AudioMath::makeFunc_Exp(0, 1, .1, 30);
     }
 
-    static std::function<double(double)> getReleaseFunction() {
+    static std::function<double(double)> getSlowReleaseFunction() {
         return AudioMath::makeFunc_Exp(0, 1, 100, 1600);
     }
-    static std::function<double(double)> getThresholdFunction() {
+    static std::function<double(double)> getSlowThresholdFunction() {
         return AudioMath::makeFunc_Exp(0, 10, .1, 10);
     }
+
+
+   // float lookupAttack(float raw) const;
+   // float lookupRelease(float raw) const;
+   // float lookupthreshold(float raw) const;
 
 private:
 
@@ -132,12 +154,19 @@ private:
     float_4 wetLevel = 0;
     float_4 dryLevel = 0;
     float_4 makeupGain_m = 1;
-    Divider divm;
+ //   Divider divm;
     Divider divn;
 
+#if 0
     std::function<double(double)> attackFunction = getAttackFunction();
     std::function<double(double)> releaseFunction = getReleaseFunction();
     std::function<double(double)> thresholdFunction = getThresholdFunction();
+#endif
+    // we could unify this stuff with the ui stuff, above.
+    LookupTableParams<float> attackFunctionParams;
+    LookupTableParams<float> releaseFunctionParams;
+    LookupTableParams<float> thresholdFunctionParams;
+
     std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
     std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 };
@@ -152,9 +181,13 @@ template <class TBase>
 inline void Compressor<TBase>::init()
 {
     setupLimiter();
-    divn.setup(16, [this]() {
+    divn.setup(32, [this]() {
         this->stepn();
     });
+
+    LookupTableFactory<float>::makeGenericExpTaper(64, attackFunctionParams, 0, 1, .1, 30);
+    LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, 100, 1600);
+    LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
 }
 
 template <class TBase>
@@ -176,7 +209,8 @@ inline void Compressor<TBase>::stepn()
     const float rawMakeupGain = Compressor<TBase>::params[MAKEUPGAIN_PARAM].value;
     makeupGain_m = AudioMath::gainFromDb(rawMakeupGain);
 
-     const float threshold = thresholdFunction(Compressor<TBase>::params[THRESHOLD_PARAM].value);
+   // const float threshold = thresholdFunction(Compressor<TBase>::params[THRESHOLD_PARAM].value);
+    const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, Compressor<TBase>::params[THRESHOLD_PARAM].value);
     const float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
   
     Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
@@ -196,11 +230,16 @@ inline void Compressor<TBase>::stepn()
 template <class TBase>
 inline void Compressor<TBase>::pollAttackRelease()
 {
+    #if 0
     const float attackRaw = Compressor<TBase>::params[ATTACK_PARAM].value;
     const float releaseRaw = Compressor<TBase>::params[RELEASE_PARAM].value;
 
-    const float attack = attackFunction(attackRaw);
-    const float release = releaseFunction(releaseRaw);
+    const float attack = lookupAttack(attackRaw);
+    const float release = lookupRelease(releaseRaw);
+
+#endif
+    const float attack = LookupTable<float>::lookup(attackFunctionParams, Compressor<TBase>::params[ATTACK_PARAM].value);
+    const float release = LookupTable<float>::lookup(releaseFunctionParams, Compressor<TBase>::params[RELEASE_PARAM].value);
    // printf("in poll, raw=%f,%f a=%f r=%f\n", attackRaw, releaseRaw, attack, release); fflush(stdout);
 
     const bool reduceDistortion = bool ( std::round(Compressor<TBase>::params[REDUCEDISTORTION_PARAM].value));

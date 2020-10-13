@@ -66,12 +66,21 @@ private:
 
 };
 
+#include <cstdio>
+
 template<typename T>
 inline T LookupTable<T>::lookup(const LookupTableParams<T>& params, T input, bool allowOutsideDomain)
 {
+    #if 0
+     if (input < params.xMin || input > params.xMax) {
+         printf("input = %f, min=%f max = %f\n", input, params.xMin, params.xMax);
+         fflush(stdout);
+     }
+     #endif
     assert(allowOutsideDomain || (input >= params.xMin && input <= params.xMax));
                                                             // won't happen in the field,
                                                             // as assertions are disabled for release.
+                                                          
     input = std::min(input, params.xMax);
     input = std::max(input, params.xMin);
     assert(params.isValid());

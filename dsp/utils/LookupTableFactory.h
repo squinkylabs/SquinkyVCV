@@ -150,7 +150,7 @@ template<typename T>
 inline void  LookupTableFactory<T>::makeGenericExpTaper(int numSteps, LookupTableParams<T>& params, double xMin, double xMax, double yMin, double yMax)
 {
     auto f = AudioMath::makeFunc_Exp(xMin, xMax, yMin, yMax);
-    LookupTable<T>::init(params, numSteps, 2, 10, f); 
+    LookupTable<T>::init(params, numSteps, xMin, xMax, f); 
 }
 
 template<typename T>

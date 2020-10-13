@@ -41,7 +41,7 @@ class AttackQuantity : public LambdaQuantity {
 public:
     AttackQuantity(const ParamQuantity& other) : LambdaQuantity(other)
     {
-        expFunction = Comp::getAttackFunction();
+        expFunction = Comp::getSlowAttackFunction();
         suffix = " mS";
     }
 };
@@ -50,7 +50,7 @@ class ReleaseQuantity : public LambdaQuantity {
 public:
     ReleaseQuantity(const ParamQuantity& other) : LambdaQuantity(other)
     {
-        expFunction = Comp::getReleaseFunction();
+        expFunction = Comp::getSlowReleaseFunction();
         suffix = " mS";
     }
 };
@@ -59,7 +59,7 @@ class ThresholdQuantity : public LambdaQuantity {
 public:
     ThresholdQuantity(const ParamQuantity& other) : LambdaQuantity(other)
     {
-        expFunction = Comp::getThresholdFunction();
+        expFunction = Comp::getSlowThresholdFunction();
         suffix = " V";
     }
 };
@@ -126,7 +126,7 @@ void CompressorModule::onSampleRateChange()
 struct CompressorWidget : ModuleWidget
 {
     CompressorWidget(CompressorModule *);
-    DECLARE_MANUAL("Lim Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md");
+    DECLARE_MANUAL("Compressor Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/f2/docs/compressor.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {

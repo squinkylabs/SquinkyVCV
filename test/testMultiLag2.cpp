@@ -304,7 +304,7 @@ static void testCompLim()
 
     comp->params[Comp::RATIO_PARAM].value = float(int(Cmprsr::Ratios::HardLimit));
     comp->params[Comp::THRESHOLD_PARAM].value = .1;
-    const double threshV = Comp::getThresholdFunction()(.1);
+    const double threshV = Comp::getSlowThresholdFunction()(.1);
     printf("th .1 give %f volts\n", threshV);
 
     comp->inputs[Comp::AUDIO_INPUT].channels = 1;
