@@ -29,6 +29,9 @@ static std::pair<double, double> getExpFuncConstants(double xMin, double xMax, d
 
 std::function<double(double)> AudioMath::makeFunc_Exp(double xMin, double xMax, double yMin, double yMax)
 {
+    assert(xMin < xMax);
+    assert(yMin < yMax);
+    assert(yMin > 0);
     auto ab = getExpFuncConstants(xMin, xMax, yMin, yMax);
     const double a = ab.first;
     const double b = ab.second;

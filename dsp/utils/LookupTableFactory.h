@@ -29,6 +29,8 @@ public:
     static void makeMixerPanL(LookupTableParams<T>& params);
     static void makeMixerPanR(LookupTableParams<T>& params);
 
+    static void makeGenericExpTaper(int numSteps, LookupTableParams<T>& params, double xMin, double xMax, double yMin, double yMax);
+
     /**
      * domain (x) = 0..1
      * at .25, output will be "knee" attenuation.
@@ -101,6 +103,7 @@ public:
     {
         return  std::log2(exp2ExHighYMax());
     }
+
 };
 
 static inline float _PanL(float balance, float cv)
@@ -141,6 +144,13 @@ inline void LookupTableFactory<T>::makeMixerPanR(LookupTableParams<T>& params)
     LookupTable<T>::init(params, bins, xMin, xMax, [](double x) {
         return _PanR(float(x), 0);
         });
+}
+
+template<typename T>
+inline void  LookupTableFactory<T>::makeGenericExpTaper(int numSteps, LookupTableParams<T>& params, double xMin, double xMax, double yMin, double yMax)
+{
+    auto f = AudioMath::makeFunc_Exp(xMin, xMax, yMin, yMax);
+    LookupTable<T>::init(params, numSteps, 2, 10, f); 
 }
 
 template<typename T>

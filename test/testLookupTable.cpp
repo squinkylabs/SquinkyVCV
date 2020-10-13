@@ -446,6 +446,21 @@ static void testNonUniform4()
     assertClose(result, 11.f, .000001);
 }
 
+template <typename T>
+static void testGenericExp()
+{
+    //   static void makeGenericExpTaper(LookupTableParams<T>& params, double xMin, double xMax, double yMin, double yMax);
+    auto f = AudioMath::makeFunc_Exp(2, 10, 100, 150);
+    LookupTableParams<T> params;
+    LookupTableFactory<T>::makeGenericExpTaper(64, params, 2, 10, 100, 150);
+
+    double d = f(2);
+    double d2 = LookupTable<T>::lookup(params, 2);
+    for (T x = 2; x < 10; x += T(.1)) {
+        assertClose(f(x), LookupTable<T>::lookup(params, x), .001);
+    }
+} 
+
 
 static void testDetune()
 {
@@ -494,7 +509,9 @@ static void test()
     testNonUniform1<T>();
     testNonUniform2<T>();
     testNonUniform3<T>();
-    testNonUniform4<T>();   
+    testNonUniform4<T>(); 
+
+    testGenericExp<T>();  
 }
 
 void testLookupTable()

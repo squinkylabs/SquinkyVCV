@@ -1,5 +1,6 @@
 #pragma once
 
+#ifndef _MSC_VER
 #include "simd.h"
 #include "SimdBlocks.h"
 
@@ -118,3 +119,4 @@ inline void MultiLag2::setRelease(float fs)
     float ls = LowpassFilter<float>::computeLfromFs(fs);
     lRelease = float_4(ls);
 }
+#endif
