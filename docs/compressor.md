@@ -11,6 +11,8 @@ Some outstanding issues:
 * The wet/dry knob feels strange, since the "wet" is always quieter than dry. See previous item.
 * Could probably use some more compression ratios.
 * The soft knee is 12 db wide. I could adjust that or make multiple settings (soft, medium, hard?).
+* Should there be a second input/output for "stereo" operation?
+* Should the module be bigger (esp. if we add more features)?
 
 ## About compressor
 

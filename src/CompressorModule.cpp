@@ -198,7 +198,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
         Comp::RATIO_PARAM);
     p->box.size.x = 70;  // width
     p->box.size.y = 22;   
-    p->text = labels[0];
+    p->text = labels[3];
     p->setLabels(labels);
     addParam(p);
 

@@ -13,6 +13,8 @@ public:
     Cmprsr();
     enum class Ratios {
         HardLimit,
+        _2_1_soft,
+        _2_1_hard,
         _4_1_soft,
         _4_1_hard,
         _8_1_soft,
@@ -124,6 +126,21 @@ inline Cmprsr::Cmprsr()
             case Ratios::HardLimit:
                 ratioCurves[i] = ratioCurves[int(Ratios::_4_1_hard)];
                 break;
+            case Ratios::_2_1_soft:
+                {
+                    CompCurves::Recipe r;
+                    r.ratio = 2;
+                    r.kneeWidth = softKnee;
+                    ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                }
+                break;
+            case Ratios::_2_1_hard:
+                {
+                    CompCurves::Recipe r;
+                    r.ratio = 2;
+                    ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                }
+                break;
             case Ratios::_4_1_soft:
                 {
                     CompCurves::Recipe r;
@@ -158,14 +175,14 @@ inline Cmprsr::Cmprsr()
                 {
                     CompCurves::Recipe r;
                     r.ratio = 20;
+                    r.kneeWidth = softKnee;
                     ratioCurves[i] = CompCurves::makeCompGainLookup(r);
                 }
                 break;
                 case Ratios::_20_1_hard:
                 {
                     CompCurves::Recipe r;
-                    r.ratio = 20;
-                    r.kneeWidth = softKnee;
+                    r.ratio = 20;  
                     ratioCurves[i] = CompCurves::makeCompGainLookup(r);
                 }
                 break;
@@ -177,8 +194,8 @@ inline Cmprsr::Cmprsr()
 
  inline std::vector<std::string> Cmprsr::ratios()
  {
-     assert(int(Ratios::NUM_RATIOS) == 7);
-     return {"Limit", "4:1 soft","4:1 hard", "8:1 soft", "8:1 hard", "20:1 soft", "20:1 hard"  };
+     assert(int(Ratios::NUM_RATIOS) == 9);
+     return {"Limit", "2:1 soft","2:1 hard", "4:1 soft","4:1 hard", "8:1 soft", "8:1 hard", "20:1 soft", "20:1 hard"  };
  }
 
 inline const MultiLag2& Cmprsr::_lag() const

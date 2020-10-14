@@ -305,7 +305,7 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
             ret = {0, 10, 1, "Threshold"};
             break;
          case Compressor<TBase>::RATIO_PARAM:
-            ret = {0, 6, 0, "Compression ratio"};
+            ret = {0, 8, 3, "Compression ratio"};
             break;
          case Compressor<TBase>::MAKEUPGAIN_PARAM:
             ret = {0, 40, 0, "Makeup gain"};
