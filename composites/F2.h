@@ -102,7 +102,8 @@ public:
     {
         SINGLE,
         SERIES,
-        PARALLEL
+        PARALLEL,
+        PARALLEL_INV
     };
 
     /** Implement IComposite
@@ -312,6 +313,20 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
                 output += StateVariableFilter2<T>::run(input, state2, params2);
             }
             break;
+          case Topology::PARALLEL_INV:
+            {
+                // parallel add
+                StateVariableFilter2<T>::run(input, state1, params1);
+                StateVariableFilter2<T>::run(input, state1, params1);
+                StateVariableFilter2<T>::run(input, state1, params1);
+                output = StateVariableFilter2<T>::run(input, state1, params1);
+
+                StateVariableFilter2<T>::run(input, state2, params2);
+                StateVariableFilter2<T>::run(input, state2, params2);
+                StateVariableFilter2<T>::run(input, state2, params2);
+                output -= StateVariableFilter2<T>::run(input, state2, params2);
+            }
+            break;
         case Topology::SINGLE:
             {
                 // one filter 4X
@@ -349,7 +364,7 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case F2<TBase>::TOPOLOGY_PARAM:
-            ret = {0, 2, 0, "Topology"};
+            ret = {0, 3, 0, "Topology"};
             break;
         case F2<TBase>::MODE_PARAM:
             ret = {0, 3, 0, "Mode"};

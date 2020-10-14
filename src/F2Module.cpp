@@ -132,7 +132,7 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
     p->box.size.x = 54;  // width
     p->box.size.y = 22;   
     p->text = "12dB";
-    p->setLabels( {"12dB", "24dB", "Par"});
+    p->setLabels( {"12dB", "24dB", "Par", "Par -"});
     addParam(p);
 }
 
