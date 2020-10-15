@@ -205,6 +205,8 @@ inline void Compressor<TBase>::stepn()
     const float rawWetDry = Compressor<TBase>::params[WETDRY_PARAM].value;
     wetLevel = LookupTable<float>::lookup(*panR, rawWetDry, true);
     dryLevel = LookupTable<float>::lookup(*panL, rawWetDry, true);
+    wetLevel *= wetLevel;
+    dryLevel *= dryLevel;
 
     const float rawMakeupGain = Compressor<TBase>::params[MAKEUPGAIN_PARAM].value;
     makeupGain_m = AudioMath::gainFromDb(rawMakeupGain);
