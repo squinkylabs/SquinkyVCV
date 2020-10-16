@@ -147,11 +147,10 @@ struct CompressorWidget : ModuleWidget
 void CompressorWidget::addVu(CompressorModule *module)
 {
     auto vu = new SqVuMeter();
-    vu->box.size = Vec(15, 70);
-    vu->box.pos = Vec(40, 200);
+    vu->box.size = Vec(70, 10);
+    vu->box.pos = Vec(10, 250);
     addChild(vu);
 }
-
 
 void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<IComposite> icomp)
 {
@@ -193,13 +192,19 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
         Vec(knobX2, knobY + 1 * dy),
         module,  Comp::WETDRY_PARAM));
 
-     addLabel(
+    addLabel(
         Vec(knobX - 10, labelY + 2 * dy),
         "Makeup");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX, knobY + 2 * dy),
-        module,  Comp::MAKEUPGAIN_PARAM));    
+        module,  Comp::MAKEUPGAIN_PARAM)); 
+
+    //    addLabel(Vec(knobX + 18, labelY + 4 * dy- 6),"< IM");
+    addParam(SqHelper::createParam<CKSS>(
+        icomp,
+        Vec(knobX2 + 10, 5 + knobY + 2 * dy),
+        module,  Comp::REDUCEDISTORTION_PARAM));   
 
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
@@ -212,14 +217,6 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     p->text = labels[3];
     p->setLabels(labels);
     addParam(p);
-
-    addLabel(
-        Vec(knobX + 18, labelY + 4 * dy- 6),
-        "< IM");
-    addParam(SqHelper::createParam<CKSS>(
-        icomp,
-        Vec(knobX + 28, 5 + knobY + 4 * dy - 6),
-        module,  Comp::REDUCEDISTORTION_PARAM));
 }
 
 void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<IComposite> icomp)
@@ -234,20 +231,34 @@ void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<ICompo
     const float dy = 40;
 
     addLabel(
-        Vec(labelX+6, labelY + 0 * dy),
-        "In");
+        Vec(labelX+4, labelY + 0 * dy),
+        "InL");
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY),
         module,
-        Comp::AUDIO_INPUT));
+        Comp::LAUDIO_INPUT));
+    addLabel(
+        Vec(labelX+6, labelY + 1 * dy),
+        "X");
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 1 * dy),
+        module,
+        Comp::RAUDIO_INPUT));
 
     addLabel(
-        Vec(label2X, labelY + 0 * dy),
-        "Out");
+        Vec(label2X - 2, labelY + 0 * dy),
+        "OutL");
     addOutput(createOutput<PJ301MPort>(
         Vec(jackX2, jackY + 0 * dy),
         module,
-        Comp::AUDIO_OUTPUT));
+        Comp::LAUDIO_OUTPUT));
+    addLabel(
+        Vec(label2X+6, labelY + 1 * dy),
+        "X");
+    addOutput(createOutput<PJ301MPort>(
+        Vec(jackX2, jackY + 1 * dy),
+        module,
+        Comp::RAUDIO_OUTPUT));
 #if 0
     addLabel(
         Vec(labelX, labelY + 2 * dy),
@@ -276,7 +287,6 @@ CompressorWidget::CompressorWidget(CompressorModule *module)
     addJacks(module, icomp);
     addVu(module);
     
-
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
    // addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));

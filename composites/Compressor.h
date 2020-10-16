@@ -91,13 +91,15 @@ public:
 
     enum InputIds
     {
-        AUDIO_INPUT,
+        LAUDIO_INPUT,
+        RAUDIO_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
-        AUDIO_OUTPUT,
+        LAUDIO_OUTPUT,
+        RAUDIO_OUTPUT,
         DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
@@ -193,8 +195,8 @@ inline void Compressor<TBase>::init()
 template <class TBase>
 inline void Compressor<TBase>::stepn()
 {
-    SqInput& inPort = TBase::inputs[AUDIO_INPUT];
-    SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
+    SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
+    SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
     numChannels_m = inPort.channels;
     outPort.setChannels(numChannels_m);
     numBanks_m = (numChannels_m / 4) + ((numChannels_m % 4) ? 1 : 0);   
@@ -255,8 +257,8 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
 {
     divn.step();
 
-    SqInput& inPort = TBase::inputs[AUDIO_INPUT];
-    SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
+    SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
+    SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
     // SqOutput& debugPort = TBase::outputs[DEBUG_OUTPUT];
     
     for (int bank = 0; bank < numBanks_m; ++bank) {
