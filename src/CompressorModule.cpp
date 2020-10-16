@@ -10,6 +10,7 @@
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqTooltips.h"
 #include "ctrl/SqWidgets.h"
+#include "ctrl/SqVuMeter.h"
 
 using Comp = Compressor<WidgetComposite>;
 
@@ -140,7 +141,17 @@ struct CompressorWidget : ModuleWidget
 
     void addJacks(CompressorModule *module, std::shared_ptr<IComposite> icomp);
     void addControls(CompressorModule *module, std::shared_ptr<IComposite> icomp);
+    void addVu(CompressorModule *module);
 };
+
+void CompressorWidget::addVu(CompressorModule *module)
+{
+    auto vu = new SqVuMeter();
+    vu->box.size = Vec(15, 70);
+    vu->box.pos = Vec(40, 200);
+    addChild(vu);
+}
+
 
 void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<IComposite> icomp)
 {
@@ -263,6 +274,7 @@ CompressorWidget::CompressorWidget(CompressorModule *module)
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addControls(module, icomp);
     addJacks(module, icomp);
+    addVu(module);
     
 
     // screws

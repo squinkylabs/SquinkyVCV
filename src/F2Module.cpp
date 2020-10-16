@@ -10,6 +10,7 @@
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
 
+
 using Comp = F2<WidgetComposite>;
 
 /**
@@ -71,6 +72,7 @@ struct F2Widget : ModuleWidget
 
     void addJacks(F2Module *module, std::shared_ptr<IComposite> icomp);
     void addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp);
+    
 };
 
 void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
@@ -185,6 +187,7 @@ void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::AUDIO_OUTPUT));
 };
+
 
 /**
  * Widget constructor will describe my implementation structure and
