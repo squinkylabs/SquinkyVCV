@@ -45,13 +45,7 @@ inline T StateVariableFilter2<T>::run(T input, StateVariableFilterState2<T>& sta
 
     // TODO: figure out why we get these crazy values
 #if 1
-    if (dBand >= 1000) {
-        dBand = 999;               // clip it
-    }
-    if (dBand < -1000) {
-        dBand = -999;               // clip it
-    }
-
+    dBand =  rack::simd::clamp(dBand, -1000.f, 1000.f);
 #endif
 
     T d;
@@ -126,14 +120,21 @@ private:
     T fcGain = T(.001);
 };
 
-template <typename T>
-inline void StateVariableFilterParams2<T>::setQ(T q)
+template<>
+inline void StateVariableFilterParams2<float>::setQ(float q)
 {
     const float qLimit = .49;
     q = std::max(q, qLimit);
-  
     qGain = 1 / q;
-    // printf("q = %f, qg = %f\n", q, qGain);
+    //printf("q = %f, qg = %f\n", q, qGain);
+}
+
+template<>
+inline void StateVariableFilterParams2<float_4>::setQ(float_4 q)
+{
+    const float_4 qLimit = .49;
+    q = SimdBlocks::max(q, qLimit);
+    qGain = 1 / q;
 }
 
 template <typename T>
@@ -142,21 +143,31 @@ inline void StateVariableFilterParams2<T>::setNormalizedBandwidth(T bw)
     qGain = bw;
 }
 
-
-template <typename T>
-inline void StateVariableFilterParams2<T>::setFreq(T fc)
+template <>
+inline void StateVariableFilterParams2<float>::setFreq(float fc)
 {
     // Note that we are skipping the high freq warping.
     // Going for speed over accuracy
-    fcGain = T(AudioMath::Pi) * T(2) * fc;
-    fcGain = std::min(fcGain, T(.79));
+    fcGain = float(AudioMath::Pi) * 2.f * fc;
+    fcGain = std::min(fcGain, .79f);
+
     //printf("two pole fc = %f, fcG = %f\n", fc, fcGain);
+}
+
+template <>
+inline void StateVariableFilterParams2<float_4>::setFreq(float_4 fc)
+{
+    // Note that we are skipping the high freq warping.
+    // Going for speed over accuracy
+    fcGain = float_4(AudioMath::Pi) * float_4(2) * fc;
+    fcGain = SimdBlocks::min(fcGain, float_4(.79));
 }
 
 template <typename T>
 inline void StateVariableFilterParams2<T>::setFreqAccurate(T fc)
 {
-    fcGain = T(2) * std::sin( T(AudioMath::Pi) * fc);
+    assert(false);
+   // fcGain = T(2) * std::sin( T(AudioMath::Pi) * fc);
 }
 
 /*******************************************************************************************/

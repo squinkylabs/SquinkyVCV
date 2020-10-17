@@ -123,6 +123,19 @@ using int32_4 = rack::simd::int32_4;
     assertClose(a[2], b[2], c); \
     assertClose(a[3], b[3], c);
 
+#define simd_assertClosePct(a, b, c) assertClosePct(a[0], b[0], c); \
+    assertClosePct(a[1], b[1], c); \
+    assertClosePct(a[2], b[2], c); \
+    assertClosePct(a[3], b[3], c);
+
+#if 0
+    #define assertClosePct(actual, expected, pct) { float diff = expected * pct / 100; \
+    if (!AudioMath::closeTo(actual, expected, diff)) { \
+    std::cout << "assertClosePct failed actual value =" << \
+    actual << " expected=" << expected << " computed diff = " << diff << std::endl << std::flush; \
+    assert(false); }}
+#endif
+
 // mask must be 0 or all ones
 #if 0   // is this used? it looks wrong
 #define assertMask(m) \

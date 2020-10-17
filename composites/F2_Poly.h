@@ -7,6 +7,7 @@
 #include "IComposite.h"
 #include "Limiter.h"
 #include "SqMath.h"
+#include "SqPort.h"
 #include "StateVariableFilter2.h"
 
 #include "dsp/common.hpp"
@@ -53,7 +54,7 @@ template <class TBase>
 class F2_Poly : public TBase
 {
 public:
-    using T = float;
+    using T = float_4;
 
     F2_Poly(Module * module) : TBase(module)
     {
@@ -125,7 +126,6 @@ public:
     const StateVariableFilterParams2<T>& _params2() const;
 private:
 
-  
     StateVariableFilterParams2<T> params1;
     StateVariableFilterParams2<T> params2;
     StateVariableFilterState2<T> state1;
@@ -168,13 +168,13 @@ inline void F2_Poly<TBase>::onSampleRateChange()
 }
 
 template <class TBase>
-inline const StateVariableFilterParams2<float>&  F2_Poly<TBase>::_params1() const 
+inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params1() const 
 {
     return params1;
 }
 
 template <class TBase>
-inline const StateVariableFilterParams2<float>& F2_Poly<TBase>::_params2() const 
+inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params2() const 
 {
     return params2;
 }
@@ -183,12 +183,12 @@ template <class TBase>
 inline void F2_Poly<TBase>::setupFreq()
 {
     const float sampleTime = TBase::engineGetSampleTime();
-    const int topologyInt = int( std::round(F2<TBase>::params[TOPOLOGY_PARAM].value));
+    const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     const int numStages = (topologyInt == 0) ? 1 : 2; 
 
     {
-        float qVolts = F2<TBase>::params[Q_PARAM].value;
-        qVolts += F2<TBase>::inputs[Q_INPUT].getVoltage(0);
+        float qVolts = F2_Poly<TBase>::params[Q_PARAM].value;
+        qVolts += F2_Poly<TBase>::inputs[Q_INPUT].getVoltage(0);
         qVolts = std::clamp(qVolts, 0, 10);
 
         // const float q =  std::exp2(qVolts/1.5f + 20 - 4) / 10000;
@@ -213,16 +213,16 @@ inline void F2_Poly<TBase>::setupFreq()
     }
 
     {
-        float rVolts = F2<TBase>::params[R_PARAM].value;
-        rVolts += F2<TBase>::inputs[R_INPUT].getVoltage(0);
+        float rVolts = F2_Poly<TBase>::params[R_PARAM].value;
+        rVolts += F2_Poly<TBase>::inputs[R_INPUT].getVoltage(0);
         rVolts = std::clamp(rVolts, 0, 10);
 
         const float rx = std::exp2(rVolts/3.f);
         const float r = rx; 
     //   printf("rv=%f, r=%f\n", rVolts, r);
 
-        float freqVolts = F2<TBase>::params[FC_PARAM].value;
-        freqVolts += F2<TBase>::inputs[FC_INPUT].getVoltage(0);
+        float freqVolts = F2_Poly<TBase>::params[FC_PARAM].value;
+        freqVolts += F2_Poly<TBase>::inputs[FC_INPUT].getVoltage(0);
         freqVolts = std::clamp(freqVolts, 0, 10);
         
         float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
@@ -237,7 +237,7 @@ inline void F2_Poly<TBase>::setupFreq()
 template <class TBase>
 inline void F2_Poly<TBase>::setupModes()
 {
-    const int modeParam = int( std::round(F2<TBase>::params[MODE_PARAM].value));
+    const int modeParam = int( std::round(F2_Poly<TBase>::params[MODE_PARAM].value));
     StateVariableFilterParams2<T>::Mode mode;
     switch(modeParam) {
         case 0:
@@ -265,7 +265,7 @@ inline void F2_Poly<TBase>::stepn()
 {
     setupModes();
     setupFreq();
-    limiterEnabled_n =  bool( std::round(F2<TBase>::params[LIMITER_PARAM].value));
+    limiterEnabled_n =  bool( std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
 }
 
 template <class TBase>
@@ -274,11 +274,17 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
     divn.step();
     assert(oversample == 4);
 
-    const float input =  F2<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
+   // const float input =  F2<TBase>::inputs[AUDIO_INPUT].getVoltage(0);
+  //  const T input = F2<TBase>::inputs[AUDIO_INPUT].
 
-    const int topologyInt = int( std::round(F2<TBase>::params[TOPOLOGY_PARAM].value));
+// MAKE POLY
+    const int baseChannel = 0;
+    SqInput& inPort = TBase::inputs[AUDIO_INPUT];
+     const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
+
+    const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     Topology topology = Topology(topologyInt);
-    float output = 0;
+    T output = 0;
     switch(topology) {
         case Topology::SERIES:
             {
@@ -286,7 +292,7 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
                 StateVariableFilter2<T>::run(input, state1, params1);
                 StateVariableFilter2<T>::run(input, state1, params1);
                 StateVariableFilter2<T>::run(input, state1, params1);
-                const float temp = StateVariableFilter2<T>::run(input, state1, params1);
+                const T temp = StateVariableFilter2<T>::run(input, state1, params1);
 
                 StateVariableFilter2<T>::run(temp, state2, params2);
                 StateVariableFilter2<T>::run(temp, state2, params2);
@@ -341,16 +347,20 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
     } else {
         output *= outputGain_n;
     }
-    output = std::min(10.f, output);
-    output = std::max(-10.f, output);
+  //  output = std::min(10.f, output);
+  //  output = std::max(-10.f, output);
 
-    F2<TBase>::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
+    SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
+    output = rack::simd::clamp(output, -10.f, 10.f);
+
+    outPort.setVoltageSimd(output, baseChannel);
+    //F2<TBase>::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
 }
 
 template <class TBase>
 int F2_PolyDescription<TBase>::getNumParams()
 {
-    return F2<TBase>::NUM_PARAMS;
+    return F2_Poly<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
