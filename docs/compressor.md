@@ -4,15 +4,9 @@
 
 Afaik everything here works. In general the knob ranges and feel are intentional. The compression ratios included are the only ones I have planned for now. It seems reasonably CPU efficient.
 
-Some outstanding issues:
+The gain reduction meter shows the reduction for the channel that has the most reduction. It's 2db per meter segment.
 
-* It might be nice to have a gain reduction meter.
-* I think the dry signal gets makeup gain applied. But this seems wrong.
-* The wet/dry knob feels strange, since the "wet" is always quieter than dry. See previous item.
-* Could probably use some more compression ratios.
-* The soft knee is 12 db wide. I could adjust that or make multiple settings (soft, medium, hard?).
-* Should there be a second input/output for "stereo" operation?
-* Should the module be bigger (esp. if we add more features)?
+The left and right sides both work, but not tested too much. Both are fully polyphonic, so you can plug whatever you want in there.
 
 ## About compressor
 

@@ -154,8 +154,8 @@ struct CompressorWidget : ModuleWidget
 void CompressorWidget::addVu(CompressorModule *module)
 {
     auto vu = new SqVuMeter();
-    vu->box.size = Vec(70, 10);
-    vu->box.pos = Vec(10, 250);
+    vu->box.size = Vec(72, 10);
+    vu->box.pos = Vec(10, 254);
     vu->setGetter( [module]() {
         return module ? module->getGainReductionDb() : 4;
     });
@@ -166,7 +166,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
 {
     const float knobX = 10;
     const float knobX2 = 50;
-    const float knobY = 50;
+    const float knobY = 58;
     const float labelY = knobY - 20;
     const float dy = 56;
 
@@ -179,7 +179,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
         module,  Comp::ATTACK_PARAM));
 
     addLabel(
-        Vec(knobX2 - 2, labelY + 0 * dy),
+        Vec(knobX2 - 1, labelY + 0 * dy),
         "Rel");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -187,7 +187,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
         module,  Comp::RELEASE_PARAM));
 
     addLabel(
-        Vec(knobX - 12, labelY + 1 * dy),
+        Vec(knobX - 10, labelY + 1 * dy),
         "Thrsh");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -195,7 +195,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
         module,  Comp::THRESHOLD_PARAM));
     
     addLabel(
-        Vec(knobX2 - 13, labelY + 1 * dy),
+        Vec(knobX2 - 2, labelY + 1 * dy),
         "Mix");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -213,13 +213,13 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     //    addLabel(Vec(knobX + 18, labelY + 4 * dy- 6),"< IM");
     addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(knobX2 + 10, 5 + knobY + 2 * dy),
+        Vec(knobX2 + 8, 4 + knobY + 2 * dy),
         module,  Comp::REDUCEDISTORTION_PARAM));   
 
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(knobX,  knobY + 3 * dy),
+        Vec(knobX,  - 8 + knobY + 3 * dy),
         module,
         Comp::RATIO_PARAM);
     p->box.size.x = 70;  // width
@@ -293,7 +293,7 @@ CompressorWidget::CompressorWidget(CompressorModule *module)
     SqHelper::setPanel(this, "res/compressor_panel.svg");
 
     addLabel(
-        Vec(22, 15),
+        Vec(4, 17),
         "Compressor");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
