@@ -124,12 +124,8 @@ public:
 
     void onSampleRateChange() override;
 
-    float getGainReductionDb();
-
-
+    float getGainReductionDb() const;
     static std::vector<std::string> ratios();
-
-
     static std::function<double(double)> getSlowAttackFunction() {
         return AudioMath::makeFunc_Exp(0, 1, .1, 30);
     }
@@ -159,7 +155,6 @@ private:
     float_4 wetLevel = 0;
     float_4 dryLevel = 0;
     float_4 makeupGain_m = 1;
- //   Divider divm;
     Divider divn;
 
 #if 0
@@ -196,9 +191,23 @@ inline void Compressor<TBase>::init()
 }
 
 template <class TBase>
-inline float Compressor<TBase>::getGainReductionDb()
+inline float Compressor<TBase>::getGainReductionDb() const
 {
-    return 2;
+    float_4 minGain_4 = 1;
+   // printf("getGain num = %d\n", numBanks_m); fflush(stdout);
+    for (int bank = 0; bank < numBanks_m; ++bank) {
+        minGain_4 = SimdBlocks::min(minGain_4, compressors[bank].getGain());
+    }
+    float minGain = minGain_4[0];
+   // printf("getGain2 num = %d\n", numBanks_m); fflush(stdout);
+    minGain = std::min(minGain,  minGain_4[1]);
+    minGain = std::min(minGain,  minGain_4[2]);
+    minGain = std::min(minGain,  minGain_4[3]);
+  //  printf("getGain min = %f\n", minGain); fflush(stdout);
+    auto r =  AudioMath::db(minGain);
+ //   printf("getGain will ret = %f\n", r); fflush(stdout);
+    return -r;
+
 }
 
 template <class TBase>
@@ -243,14 +252,6 @@ inline void Compressor<TBase>::stepn()
 template <class TBase>
 inline void Compressor<TBase>::pollAttackRelease()
 {
-    #if 0
-    const float attackRaw = Compressor<TBase>::params[ATTACK_PARAM].value;
-    const float releaseRaw = Compressor<TBase>::params[RELEASE_PARAM].value;
-
-    const float attack = lookupAttack(attackRaw);
-    const float release = lookupRelease(releaseRaw);
-
-#endif
     const float attack = LookupTable<float>::lookup(attackFunctionParams, Compressor<TBase>::params[ATTACK_PARAM].value);
     const float release = LookupTable<float>::lookup(releaseFunctionParams, Compressor<TBase>::params[RELEASE_PARAM].value);
    // printf("in poll, raw=%f,%f a=%f r=%f\n", attackRaw, releaseRaw, attack, release); fflush(stdout);

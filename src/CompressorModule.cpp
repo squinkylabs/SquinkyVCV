@@ -157,7 +157,7 @@ void CompressorWidget::addVu(CompressorModule *module)
     vu->box.size = Vec(70, 10);
     vu->box.pos = Vec(10, 250);
     vu->setGetter( [module]() {
-        return module->getGainReductionDb();
+        return module ? module->getGainReductionDb() : 4;
     });
     addChild(vu);
 }

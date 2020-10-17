@@ -32,6 +32,7 @@ public:
 
     const MultiLag2& _lag() const;
     static std::vector<std::string> ratios();
+    float_4 getGain() const;
 private:
     MultiLag2 lag;
     MultiLPF2 attackFilter;
@@ -42,6 +43,7 @@ private:
     int ratioIndex = 0;
     Ratios ratio = Ratios::HardLimit;
     int maxChannel = 3;
+    float_4 gain;
 
     static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
     static bool wasInit()  {
@@ -49,6 +51,10 @@ private:
     }
 };
 
+inline float_4 Cmprsr::getGain() const
+{
+    return gain;
+}
 inline void Cmprsr::setNumChannels(int ch)
 {
     maxChannel = ch - 1;
@@ -77,11 +83,11 @@ inline float_4 Cmprsr::step(float_4 input)
 
     if (ratio == Ratios::HardLimit) {
         float_4 reductionGain = threshold / envelope;
-        float_4 gain = SimdBlocks::ifelse( envelope > threshold, reductionGain, 1);
+        gain = SimdBlocks::ifelse( envelope > threshold, reductionGain, 1);
         return gain * input;
     } else {
         CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
-        float_4 gain = float_4(0);
+        gain = float_4(1);
         const float_4 level = envelope * invThreshold;
         for (int i=0; i<4; ++i) {
             if (i <= maxChannel) {
