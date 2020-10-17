@@ -88,6 +88,7 @@ public:
      */
     void process(const ProcessArgs& args) override;
     void onSampleRateChange() override;
+    float getGainReductionDb();
 
     std::shared_ptr<Comp> compressor;
 private:
@@ -109,6 +110,12 @@ CompressorModule::CompressorModule()
     onSampleRateChange();
     compressor->init();
 }
+
+float CompressorModule::getGainReductionDb()
+{
+    return compressor->getGainReductionDb();
+}
+
 
 void CompressorModule::process(const ProcessArgs& args)
 {
@@ -149,8 +156,8 @@ void CompressorWidget::addVu(CompressorModule *module)
     auto vu = new SqVuMeter();
     vu->box.size = Vec(70, 10);
     vu->box.pos = Vec(10, 250);
-    vu->setGetter( []() {
-        return 5;
+    vu->setGetter( [module]() {
+        return module->getGainReductionDb();
     });
     addChild(vu);
 }

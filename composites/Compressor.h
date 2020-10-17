@@ -124,6 +124,9 @@ public:
 
     void onSampleRateChange() override;
 
+    float getGainReductionDb();
+
+
     static std::vector<std::string> ratios();
 
 
@@ -190,6 +193,12 @@ inline void Compressor<TBase>::init()
     LookupTableFactory<float>::makeGenericExpTaper(64, attackFunctionParams, 0, 1, .1, 30);
     LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, 100, 1600);
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
+}
+
+template <class TBase>
+inline float Compressor<TBase>::getGainReductionDb()
+{
+    return 2;
 }
 
 template <class TBase>
