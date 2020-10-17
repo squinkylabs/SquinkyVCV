@@ -5,6 +5,7 @@
 
 #ifdef _F2
 #include "F2.h"
+#include "F2_Poly.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
