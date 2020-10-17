@@ -149,6 +149,9 @@ void CompressorWidget::addVu(CompressorModule *module)
     auto vu = new SqVuMeter();
     vu->box.size = Vec(70, 10);
     vu->box.pos = Vec(10, 250);
+    vu->setGetter( []() {
+        return 5;
+    });
     addChild(vu);
 }
 
