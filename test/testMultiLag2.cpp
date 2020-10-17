@@ -276,10 +276,16 @@ static void testLimiterTC()
    
 }
 
-static void testLimiterPoly()
+static void testLimiterPolyL()
 {
     using Comp = Compressor<TestComposite>;
-    testPolyChannels<Comp>(Comp::AUDIO_INPUT, Comp::AUDIO_OUTPUT, 16);
+    testPolyChannels<Comp>(Comp::LAUDIO_INPUT, Comp::LAUDIO_OUTPUT, 16);
+}
+
+static void testLimiterPolyR()
+{
+    using Comp = Compressor<TestComposite>;
+    testPolyChannels<Comp>(Comp::RAUDIO_INPUT, Comp::RAUDIO_OUTPUT, 16);
 }
 
 static void testCompUI()
@@ -296,7 +302,7 @@ static void testCompUI()
 }
 
 
-static void testCompLim()
+static void testCompLim(int inputId, int outputId)
 {
     using Comp = Compressor<TestComposite>;
     std::shared_ptr<Comp> comp = std::make_shared<Comp>();
@@ -307,50 +313,57 @@ static void testCompLim()
     const double threshV = Comp::getSlowThresholdFunction()(.1);
     printf("th .1 give %f volts\n", threshV);
 
-    comp->inputs[Comp::AUDIO_INPUT].channels = 1;
-    comp->outputs[Comp::AUDIO_OUTPUT].channels = 1;
+    comp->inputs[inputId].channels = 1;
+    comp->outputs[outputId].channels = 1;
 
 
     // at threshold, should get thresh out.
-    comp->inputs[Comp::AUDIO_INPUT].setVoltage(threshV, 0);
+    comp->inputs[inputId].setVoltage(threshV, 0);
     TestComposite::ProcessArgs args;
     for (int i=0; i<1000; ++i) {
         comp->process(args);
     }
 
-    float output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
+    float output = comp->outputs[outputId].voltages[0];
     assertClose(output, threshV, .01);
 
 
-    comp->inputs[Comp::AUDIO_INPUT].setVoltage(threshV, 0);
+    comp->inputs[inputId].setVoltage(threshV, 0);
     for (int i=0; i<1000; ++i) {
         comp->process(args);
     }
-    output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
+    output = comp->outputs[outputId].voltages[0];
     assertClose(output, threshV, .01);
 
     assertGT(4, threshV);
-    comp->inputs[Comp::AUDIO_INPUT].setVoltage(4, 0);
+    comp->inputs[inputId].setVoltage(4, 0);
     for (int i=0; i<1000; ++i) {
         comp->process(args);
     }
-    output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
+    output = comp->outputs[outputId].voltages[0];
     assertClose(output, threshV, .01);
 
  
-    comp->inputs[Comp::AUDIO_INPUT].setVoltage(10, 0);
+    comp->inputs[inputId].setVoltage(10, 0);
     for (int i=0; i<1000; ++i) {
         comp->process(args);
     }
-    output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
+    output = comp->outputs[outputId].voltages[0];
     assertClose(output, threshV, .01);
 
-    comp->inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    comp->inputs[inputId].setVoltage(0, 0);
     for (int i=0; i<1000; ++i) {
         comp->process(args);
     }
-    output = comp->outputs[Comp::AUDIO_OUTPUT].voltages[0];
+    output = comp->outputs[outputId].voltages[0];
     assertClose(output, 0, .001);
+}
+
+static void testCompLim()
+{
+    using Comp = Compressor<TestComposite>;
+    testCompLim(Comp::LAUDIO_INPUT, Comp::LAUDIO_OUTPUT);
+    testCompLim(Comp::RAUDIO_INPUT, Comp::RAUDIO_OUTPUT);
 }
 
 
@@ -372,7 +385,8 @@ void testMultiLag2()
     testLimiterAC();
     testLimiterAttack();
     testLimiterTC();
-    testLimiterPoly();
+    testLimiterPolyL();
+    testLimiterPolyR();
 
     testCompUI();
     testCompLim();

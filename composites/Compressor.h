@@ -144,14 +144,18 @@ public:
 
 private:
 
-    Cmprsr compressors[4];
+    Cmprsr compressorsL[4];
+    Cmprsr compressorsR[4];
     void setupLimiter();
     //void stepm();
     void stepn();
     void pollAttackRelease();
 
-    int numChannels_m = 0;
-    int numBanks_m = 0;
+    int numChannelsL_m = 0;
+    int numBanksL_m = 0;
+    int numChannelsR_m = 0;
+    int numBanksR_m = 0;
+
     float_4 wetLevel = 0;
     float_4 dryLevel = 0;
     float_4 makeupGain_m = 1;
@@ -194,10 +198,14 @@ template <class TBase>
 inline float Compressor<TBase>::getGainReductionDb() const
 {
     float_4 minGain_4 = 1;
-   // printf("getGain num = %d\n", numBanks_m); fflush(stdout);
-    for (int bank = 0; bank < numBanks_m; ++bank) {
-        minGain_4 = SimdBlocks::min(minGain_4, compressors[bank].getGain());
+
+    for (int bank = 0; bank < numBanksL_m; ++bank) {
+        minGain_4 = SimdBlocks::min(minGain_4, compressorsL[bank].getGain());
     }
+     for (int bank = 0; bank < numBanksR_m; ++bank) {
+        minGain_4 = SimdBlocks::min(minGain_4, compressorsR[bank].getGain());
+    }
+
     float minGain = minGain_4[0];
    // printf("getGain2 num = %d\n", numBanks_m); fflush(stdout);
     minGain = std::min(minGain,  minGain_4[1]);
@@ -213,11 +221,18 @@ inline float Compressor<TBase>::getGainReductionDb() const
 template <class TBase>
 inline void Compressor<TBase>::stepn()
 {
-    SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
-    SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
-    numChannels_m = inPort.channels;
-    outPort.setChannels(numChannels_m);
-    numBanks_m = (numChannels_m / 4) + ((numChannels_m % 4) ? 1 : 0);   
+    SqInput& inPortL = TBase::inputs[LAUDIO_INPUT];
+    SqOutput& outPortL = TBase::outputs[LAUDIO_OUTPUT];
+    SqInput& inPortR = TBase::inputs[RAUDIO_INPUT];
+    SqOutput& outPortR = TBase::outputs[RAUDIO_OUTPUT];
+
+    numChannelsL_m = inPortL.channels;
+    numChannelsR_m = inPortR.channels;
+    outPortL.setChannels(numChannelsL_m);
+    outPortR.setChannels(numChannelsR_m);
+
+    numBanksL_m = (numChannelsL_m / 4) + ((numChannelsL_m % 4) ? 1 : 0);
+    numBanksR_m = (numChannelsR_m / 4) + ((numChannelsR_m % 4) ? 1 : 0);   
     // printf("\n****** after stepm banks = %d numch=%d\n", numBanks_m, numChannels_m);
 
     pollAttackRelease();
@@ -237,14 +252,20 @@ inline void Compressor<TBase>::stepn()
   
     Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
     for (int i = 0; i<4; ++i) {
-        compressors[i].setThreshold(threshold);
-        compressors[i].setCurve(ratio);
+        compressorsL[i].setThreshold(threshold);
+        compressorsR[i].setThreshold(threshold);
+        compressorsL[i].setCurve(ratio);
+        compressorsR[i].setCurve(ratio);
 
-        if (i < numBanks_m) {
+        if (i < numBanksL_m) {
             const int baseChannel = i * 4;
-            const int chanThisBank = std::min(4, numChannels_m - baseChannel);
-            // printf("bank %d num ch = %d\n", i, chanThisBank); fflush(stdout);
-            compressors[i].setNumChannels(chanThisBank);
+            const int chanThisBankL = std::min(4, numChannelsL_m - baseChannel);
+            compressorsL[i].setNumChannels(chanThisBankL);
+        }
+        if (i < numBanksR_m) {
+            const int baseChannel = i * 4;
+            const int chanThisBankR = std::min(4, numChannelsR_m - baseChannel);
+            compressorsR[i].setNumChannels(chanThisBankR);
         }
     }
 }
@@ -258,7 +279,8 @@ inline void Compressor<TBase>::pollAttackRelease()
 
     const bool reduceDistortion = bool ( std::round(Compressor<TBase>::params[REDUCEDISTORTION_PARAM].value));
     for (int i = 0; i<4; ++i) {
-        compressors[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
+        compressorsL[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
+        compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
     }
 }
 
@@ -267,28 +289,43 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
 {
     divn.step();
 
-    SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
-    SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
+    SqInput& inPortL = TBase::inputs[LAUDIO_INPUT];
+    SqOutput& outPortL = TBase::outputs[LAUDIO_OUTPUT];
+    SqInput& inPortR = TBase::inputs[RAUDIO_INPUT];
+    SqOutput& outPortR = TBase::outputs[RAUDIO_OUTPUT];
     // SqOutput& debugPort = TBase::outputs[DEBUG_OUTPUT];
     
-    for (int bank = 0; bank < numBanks_m; ++bank) {
+    for (int bank = 0; bank < numBanksL_m; ++bank) {
         const int baseChannel = bank * 4;
-        const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const float_4 wetOutput = compressors[bank].step(input) * makeupGain_m;
+        const float_4 input = inPortL.getPolyVoltageSimd<float_4>(baseChannel);
+        const float_4 wetOutput = compressorsL[bank].step(input) * makeupGain_m;
         const float_4 mixedOutput = wetOutput * wetLevel + input * dryLevel;
 
-        outPort.setVoltageSimd(mixedOutput, baseChannel);
+        outPortL.setVoltageSimd(mixedOutput, baseChannel);
+
+        // const float_4 env = compressors[bank]._lag().get();
+        // debugPort.setVoltageSimd(env, baseChannel);
+    }
+    for (int bank = 0; bank < numBanksR_m; ++bank) {
+        const int baseChannel = bank * 4;
+        const float_4 input = inPortR.getPolyVoltageSimd<float_4>(baseChannel);
+        const float_4 wetOutput = compressorsR[bank].step(input) * makeupGain_m;
+        const float_4 mixedOutput = wetOutput * wetLevel + input * dryLevel;
+
+        outPortR.setVoltageSimd(mixedOutput, baseChannel);
 
         // const float_4 env = compressors[bank]._lag().get();
         // debugPort.setVoltageSimd(env, baseChannel);
     }
 }
 
+// TODO: do we still need this old init function? combine with other?
 template <class TBase>
 inline void Compressor<TBase>::setupLimiter()
 {
     for (int i = 0; i<4; ++i) {
-        compressors[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
+        compressorsL[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
+        compressorsR[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
     }
 }
 

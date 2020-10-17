@@ -165,10 +165,10 @@ void CompressorWidget::addVu(CompressorModule *module)
 void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float knobX = 10;
-    const float knobX2 = 47;
-    const float knobY = 46;
+    const float knobX2 = 50;
+    const float knobY = 50;
     const float labelY = knobY - 20;
-    const float dy = 54;
+    const float dy = 56;
 
     addLabel(
         Vec(knobX - 4, labelY + 0 * dy),
@@ -196,7 +196,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     
     addLabel(
         Vec(knobX2 - 13, labelY + 1 * dy),
-        "Dry/wet");
+        "Mix");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(knobX2, knobY + 1 * dy),
@@ -236,9 +236,9 @@ void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<ICompo
     const float labelX = jackX - 6;
     const float label2X = jackX2 - 6;
 
-    const float jackY = 300;
-    const float labelY = jackY - 17;
-    const float dy = 40;
+    const float jackY = 288;
+    const float labelY = jackY - 18;
+    const float dy = 44;
 
     addLabel(
         Vec(labelX+4, labelY + 0 * dy),
@@ -248,8 +248,8 @@ void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<ICompo
         module,
         Comp::LAUDIO_INPUT));
     addLabel(
-        Vec(labelX+6, labelY + 1 * dy),
-        "X");
+        Vec(labelX+4, labelY + 1 * dy),
+        "InR");
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY + 1 * dy),
         module,
@@ -263,8 +263,8 @@ void CompressorWidget::addJacks(CompressorModule *module, std::shared_ptr<ICompo
         module,
         Comp::LAUDIO_OUTPUT));
     addLabel(
-        Vec(label2X+6, labelY + 1 * dy),
-        "X");
+        Vec(label2X - 2, labelY + 1 * dy),
+        "OutR");
     addOutput(createOutput<PJ301MPort>(
         Vec(jackX2, jackY + 1 * dy),
         module,
@@ -292,6 +292,10 @@ CompressorWidget::CompressorWidget(CompressorModule *module)
     setModule(module);
     SqHelper::setPanel(this, "res/compressor_panel.svg");
 
+    addLabel(
+        Vec(22, 15),
+        "Compressor");
+
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addControls(module, icomp);
     addJacks(module, icomp);
@@ -299,9 +303,9 @@ CompressorWidget::CompressorWidget(CompressorModule *module)
     
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-   // addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
+    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-   // addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+    addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
 Model *modelCompressorModule = createModel<CompressorModule, CompressorWidget>("squinkylabs-comp");
