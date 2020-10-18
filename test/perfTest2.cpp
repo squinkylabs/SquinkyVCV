@@ -13,6 +13,7 @@
 #ifndef _MSC_VER
 #include "MultiLag.h"
 #include "F2.h"
+#include "F2_Poly.h"
 #include "Compressor.h"
 #endif
 
@@ -294,6 +295,51 @@ static void testF2_4X()
         }, 1);
 }
 
+static void testF2_Poly1()
+{
+    using Comp = F2_Poly<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    comp.inputs[Comp::AUDIO_INPUT].channels = 1;
+ 
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "testF2 (new) mono", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testF2_Poly16()
+{
+    using Comp = F2_Poly<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    
+    comp.inputs[Comp::AUDIO_INPUT].channels = 16;
+    for (int i=0; i<16; ++i) {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, i);
+    }
+ 
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "testF2 (new) 16 ch", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
 static void testCompLim1()
 {
     using Comp = Compressor<TestComposite>;
@@ -444,6 +490,8 @@ void perfTest2()
     assert(overheadOutOnly > 0);
 #ifndef _MSC_VER
     testF2_4X();
+    testF2_Poly1();
+    testF2_Poly16();
     testCompLim1();
     testCompLim16();
     testCompLim16Dist();

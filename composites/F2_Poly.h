@@ -43,6 +43,14 @@ public:
 };
 
 /**
+ * First perf test of poly version
+ * 
+ * old mono version, 1 channel:24.4
+ * poly one, mono: 63.
+ * poly one, 16 ch: 231
+ * 
+ * 
+ * 
  * high freq limits with oversample
  * OS / max bandwidth lowQ / max peak freq / max atten for 10k cutoff
  *  1X      10k         12k     0db
@@ -209,7 +217,7 @@ inline void F2_Poly<TBase>::setupFreq()
     const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     const int numStages = (topologyInt == 0) ? 1 : 2; 
 
-    printf("setupFreq, numB = %d\n", numBanks_m); fflush(stdout);
+    // printf("setupFreq, numB = %d\n", numBanks_m); fflush(stdout);
 
     for (int bank = 0; bank < numBanks_m; bank++) {
         const int baseChannel = 4 * bank;
@@ -263,11 +271,11 @@ inline void F2_Poly<TBase>::setupFreq()
 
             SqInput& fcPort = TBase::inputs[FC_INPUT];
             float_4 freqVolts = F2_Poly<TBase>::params[FC_PARAM].value;
-             printf("in setupFreq[%d] fv= %s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
+           //  printf("in setupFreq[%d] fv= %s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
             freqVolts += fcPort.getPolyVoltageSimd<float_4>(baseChannel);
-             printf("2in setupFreq[%d] fv= %s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
+          //   printf("2in setupFreq[%d] fv= %s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
             freqVolts = rack::simd::clamp(freqVolts, 0, 10);
-             printf("3in setupFreq[%d] fv=%s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
+          //   printf("3in setupFreq[%d] fv=%s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
 
             
             
@@ -283,7 +291,7 @@ inline void F2_Poly<TBase>::setupFreq()
             freq /= oversample;
             freq *= sampleTime;
 
-             printf("i4n setupFreq[%d] freq=%s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
+           //  printf("i4n setupFreq[%d] freq=%s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
 
         //  printf("** freq 1=%f 2=%f freqXover = %f\n", freq / r, freq * r, freq * oversample); fflush(stdout);
             params1[bank].setFreq(freq / r);
@@ -365,7 +373,7 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
     for (int bank = 0; bank < numBanks_m; bank++) {
         const int baseChannel = 4 * bank;
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-        printf("got poly input: %s\n", toStr(input).c_str());
+        //printf("got poly input: %s\n", toStr(input).c_str());
         T output = 0;
         switch(topology) {
             case Topology::SERIES:
@@ -423,21 +431,15 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
             default: 
                 assert(false);
         }
-        printf(" poly output: %s\n", toStr(output).c_str());
 
          if (limiterEnabled_n) {
             output = limiter.step(output);
         } else {
             output *= outputGain_n;
         }
-         printf("2 poly output: %s\n", toStr(output).c_str());
-
 
         SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
         output = rack::simd::clamp(output, -10.f, 10.f);
-
-    printf("3 poly output[%d]: %s\n", baseChannel, toStr(output).c_str());
-    fflush(stdout);
 
         outPort.setVoltageSimd(output, baseChannel);
     }

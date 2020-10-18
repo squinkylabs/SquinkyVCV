@@ -36,6 +36,7 @@ extern int _mdb;        // MIDI reverence count
 #define simd_assertLE(_Experssion1, _Expression2) ((void)0)
 #define simd_assertMask(_Experssion1) ((void)0)
 #define simd_assertClose(_Experssion1, _Expression2, _Expression3) ((void)0)
+#define simd_assertClosePct(_Experssion1, _Expression2, _Expression3) ((void)0)
 #define simd_assertBetween(_Experssion1, _Expression2, _Expression3) ((void)0)
 
 #else
