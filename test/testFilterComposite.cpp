@@ -75,6 +75,23 @@ static void testF2Q(float qParam, float qcv, float expectedFcGain)
     testArbitrary<T>(setup, validate);
 }
 
+static void testF2R_Poly(float rParam, float rcv, float fcParam, float expectedFcGain1, float expectedFcGain2)
+{
+    auto setup = [rParam, rcv, fcParam](Comp2_Poly& comp) {
+        comp.params[Comp2_Poly::R_PARAM].value = rParam;
+        comp.params[Comp2_Poly::FC_PARAM].value = fcParam;
+        comp.inputs[Comp2_Poly::R_INPUT].setVoltage(rcv, 0);
+        comp.inputs[Comp2_Poly::FC_INPUT].setVoltage(rcv, 0);
+        comp.inputs[Comp2_Poly::AUDIO_INPUT].channels = 4;
+    };
+
+    auto validate = [expectedFcGain1,expectedFcGain2 ](Comp2_Poly& comp) {
+        simd_assertClosePct(comp._params1()._fcGain(), float_4(expectedFcGain1), 10);
+        simd_assertClosePct(comp._params2()._fcGain(), float_4(expectedFcGain2), 10);
+    };
+    testArbitrary<Comp2_Poly>(setup, validate);
+}
+
 static void testF2R(float rParam, float rcv, float fcParam, float expectedFcGain1, float expectedFcGain2)
 {
     auto setup = [rParam, rcv, fcParam](Comp2_Scalar& comp) {
@@ -86,12 +103,11 @@ static void testF2R(float rParam, float rcv, float fcParam, float expectedFcGain
     };
 
     auto validate = [expectedFcGain1,expectedFcGain2 ](Comp2_Scalar& comp) {
-        assertClosePct(comp._params1()._fcGain(), expectedFcGain1, 10);
-        assertClosePct(comp._params2()._fcGain(), expectedFcGain2, 10);
+        assertClosePct(comp._params1()._fcGain(), (expectedFcGain1), 10);
+        assertClosePct(comp._params2()._fcGain(), (expectedFcGain2), 10);
     };
     testArbitrary<Comp2_Scalar>(setup, validate);
 }
-
 
 // All of these "expected" values are just harvested known goods.
 // but this will let us test we break anything when we make it poly/simd
@@ -138,6 +154,14 @@ static void testF2R()
     testF2R(10, 0, 2.5, .00032, .0332);
 }
 
+static void testF2R_Poly()
+{
+   //  void testF2R(float rParam, float rcv, float fcParam, float expectedFcGain1, float expectedFcGain2)
+    testF2R_Poly(0, 0, 5, .0186377, .0186377);
+    testF2R_Poly(5, 0, 5, .0058705, .0591709);
+    testF2R_Poly(10, 0, 2.5, .00032, .0332);
+}
+
 static void testF4Fc()
 {
     testF2Fc<Comp4>(0, 0, .00058);
@@ -157,7 +181,7 @@ void testFilterComposites()
     testF2Q_Poly();
 
     testF2R();
-
+    testF2R_Poly();
     printf("please add back f4 compostite tests\n");
    // testF4Fc();
    //void testPolyChannels(int  inputPort, int outputPort, int numChannels)
