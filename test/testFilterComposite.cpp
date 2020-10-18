@@ -33,15 +33,15 @@ static void testF2Fc(float fcParam, float cv, float expectedFcGain)
 
 static void testF2Fc_Poly(float fcParam, float cv, float expectedFcGain)
 {
+    // printf("\n---- testF2Fc_Poly %f, %f, %f\n", fcParam, cv, expectedFcGain); fflush(stdout);
     auto setup = [fcParam, cv](Comp2_Poly& comp) {
         comp.params[Comp2_Poly::FC_PARAM].value = fcParam;
         comp.inputs[Comp2_Poly::FC_INPUT].setVoltage(cv, 0);
+        comp.inputs[Comp2_Poly::AUDIO_INPUT].channels = 4;
     };
 
     auto validate = [expectedFcGain](Comp2_Poly& comp) {
-     //   assertClosePct(comp._params1()._fcGain(), expectedFcGain, 10);
        simd_assertClosePct(comp._params1()._fcGain(), float_4(expectedFcGain), 10);
-     // asssert(false);
     };
     testArbitrary<Comp2_Poly>(setup, validate);
 }

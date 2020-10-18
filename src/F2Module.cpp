@@ -12,7 +12,7 @@
 #include "ctrl/SqWidgets.h"
 
 
-using Comp = F2<WidgetComposite>;
+using Comp = F2_Poly<WidgetComposite>;
 
 /**
  */

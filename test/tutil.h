@@ -55,8 +55,16 @@ void testPolyChannels(int  inputPort, int outputPort, int numChannels)
 
     assertEQ(int(comp.outputs[outputPort].channels), numChannels);
     for (int i = 0; i < numChannels; ++i) {
+
+    #if 0
        // printf("i = %d\n", i);
-        // should start out at zero
+        // should start out at zero output
+        if (i < 4) {
+            for (int j=0; j < 4; ++j) {
+                printf("channel %d, looking at %d output = %f\n", i, j, comp.outputs[outputPort].getVoltage(i));  fflush(stdout);
+            }
+        }
+    #endif
         assertEQ(comp.outputs[outputPort].getVoltage(i), 0);
         comp.inputs[inputPort].setVoltage(10, i);
        // for (int j=0; j<100; ++j) {
