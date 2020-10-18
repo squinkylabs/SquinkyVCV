@@ -49,6 +49,11 @@ public:
  * poly one, mono: 63.
  * poly one, 16 ch: 231
  * 
+ * when n ==16 instead of 4
+ * poly one, mono: 25.
+ * poly one, 16 ch: 83
+ * 
+ * 
  * 
  * 
  * high freq limits with oversample
@@ -148,7 +153,7 @@ private:
     int numBanks_m = 0;
 
     Divider divn;
-     Divider divm;
+    Divider divm;
     void stepn();
     void stepm();
     void setupFreq();

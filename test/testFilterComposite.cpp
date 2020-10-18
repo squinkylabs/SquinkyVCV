@@ -46,6 +46,21 @@ static void testF2Fc_Poly(float fcParam, float cv, float expectedFcGain)
     testArbitrary<Comp2_Poly>(setup, validate);
 }
 
+
+static void testF2Q_Poly(float qParam, float qcv, float expectedQGain)
+{
+    auto setup = [qParam, qcv](Comp2_Poly& comp) {
+        comp.params[Comp2_Poly::Q_PARAM].value = qParam;
+        comp.inputs[Comp2_Poly::Q_INPUT].setVoltage(qcv, 0);
+        comp.inputs[Comp2_Poly::AUDIO_INPUT].channels = 4;
+    };
+
+    auto validate = [expectedQGain](Comp2_Poly& comp) {
+        simd_assertClosePct(comp._params1()._qGain(), float_4(expectedQGain), 10);
+    };
+    testArbitrary<Comp2_Poly>(setup, validate);
+}
+
 template <class T>
 static void testF2Q(float qParam, float qcv, float expectedFcGain)
 {
@@ -59,6 +74,7 @@ static void testF2Q(float qParam, float qcv, float expectedFcGain)
     };
     testArbitrary<T>(setup, validate);
 }
+
 
 
 // All of these "expected" values are just harvested known goods.
@@ -78,6 +94,7 @@ static void testF2Fc_Poly()
     testF2Fc_Poly(10, 0, .6);           // hmm... we are losing the top of the range - should scale it down below .5
     testF2Fc_Poly(10, 10, .6);
 }
+
 static void testF2Q()
 {
     testF2Q<Comp2_Scalar>(0, 0, 2);
@@ -85,6 +102,15 @@ static void testF2Q()
     testF2Q<Comp2_Scalar>(1, 0, .92);
     testF2Q<Comp2_Scalar>(10, 0, .0099);
     testF2Q<Comp2_Scalar>(10, 10, .0099);
+}
+
+static void testF2Q_Poly()
+{
+    testF2Q_Poly(0, 0, 2);
+    testF2Q_Poly(0, -10, 2);
+    testF2Q_Poly(1, 0, .92);
+    testF2Q_Poly(10, 0, .0099);
+    testF2Q_Poly(10, 10, .0099);
 }
 
 static void testF4Fc()
@@ -99,13 +125,13 @@ static void testPolyChannelsF2()
 
 void testFilterComposites()
 {
-
-
     testF2Fc();
     testF2Fc_Poly();
     
     testF2Q();
-     printf("please add back f4 compostite tests\n");
+    testF2Q_Poly();
+
+    printf("please add back f4 compostite tests\n");
    // testF4Fc();
    //void testPolyChannels(int  inputPort, int outputPort, int numChannels)
     testPolyChannelsF2();
