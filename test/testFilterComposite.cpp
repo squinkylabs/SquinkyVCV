@@ -8,6 +8,7 @@
 #include "TestComposite.h"
 
 #include "tutil.h"
+#include "dsp/approx.hpp"
 #include "asserts.h"
 
 
@@ -172,6 +173,137 @@ static void testPolyChannelsF2()
     testPolyChannels<Comp2_Poly>(Comp2_Poly::AUDIO_INPUT, Comp2_Poly::AUDIO_OUTPUT, 16);
 }
 
+
+
+float qFunc(float qV, int numStages)
+{
+    assert(qV >= 0);
+    assert(qV <= 10);
+    assert(numStages >=1 && numStages <= 2);
+    
+
+    const float expMult = (numStages == 1) ? 1 / 1.5f : 1 / 2.5f;
+    float q = std::exp2(qV * expMult) - .5;
+    return q;
+}
+
+float_4 fastQFunc(float_4 qV, int numStages)
+{
+  //  assert(qV >= 0);
+ //   assert(qV <= 10);
+    assert(numStages >=1 && numStages <= 2);
+
+    const float expMult = (numStages == 1) ? 1 / 1.5f : 1 / 2.5f;
+    float_4 q = rack::dsp::approxExp2_taylor5(qV * expMult) - .5;
+    return q;
+}
+
+std::pair<float, float> fcFunc(float freqVolts, float rVolts) {
+    float r =  std::exp2(rVolts/3.f);
+    float freq =  rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
+
+    float f1 =freq / r;
+    float f2 = freq * r;
+    return std::make_pair(f1, f2);
+}
+
+std::pair<float_4, float_4> fastFcFunc(float_4 freqVolts, float_4 rVolts) {
+    float_4 r =  rack::dsp::approxExp2_taylor5(rVolts/3.f);
+    float_4 freq =  rack::dsp::FREQ_C4 *  rack::dsp::approxExp2_taylor5(freqVolts + 30 - 4) / 1073741824;
+
+    float_4 f1 =freq / r;
+    float_4 f2 = freq * r;
+    return std::make_pair(f1, f2);
+}
+
+static void testQFunc()
+{
+    const int numStages = 2;
+    for (float qv = 0; qv <= 10; qv += 1) {
+        const float x = qFunc(qv, numStages);
+        const float y = fastQFunc(qv, numStages)[0];
+        
+        float error = abs(x - y);
+        float error_pct = 100 * error / y;
+        //printf("at qv = %d, %.2f, %.2f errpct=%f\n", qv, x, y, error_pct);
+        assert(error_pct < 1);
+    }
+}
+
+static void testFcFunc()
+{
+
+    for (float fv = 0; fv <= 10; fv += 1) {
+        for (float rv = 0; rv <= 10; rv += 1) {
+            //const float x = qFunc(qv, numStages);
+            auto fr = fcFunc(fv, rv);
+            auto ffr = fastFcFunc(fv, rv);
+
+            float error1 = abs(fr.first - ffr.first[0]);
+            float error_pct1 = 100 * error1 / fr.first;
+            assert(error_pct1 < 1);
+
+            float error2 = abs(fr.second - ffr.second[0]);
+            float error_pct2 = 100 * error2 / fr.second;
+            assert(error_pct2 < 1);
+
+
+#if 0
+            const float y = fastQFunc(qv, numStages)[0];
+            
+            float error = abs(x - y);
+            float error_pct = 100 * error / y;
+            //printf("at qv = %d, %.2f, %.2f errpct=%f\n", qv, x, y, error_pct);
+            assert(error_pct < 1);
+#endif
+        }
+    }
+}
+
+
+
+#if 0
+static void testQFunc()
+{
+    float pitch = 0;
+    float a = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
+    float b =  rack::dsp::approxExp2_taylor5(pitch + 30);
+    printf("pitch %f, a=%f,b=%f\n", pitch, a, b);
+
+    pitch = 5;
+    a = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
+    b =  rack::dsp::approxExp2_taylor5(pitch + 30);
+    printf("pitch %f, a=%f,b=%f\n", pitch, a, b);
+
+    pitch = 10;
+    a = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
+    b =  rack::dsp::approxExp2_taylor5(pitch + 30);
+    printf("pitch %f, a=%f,b=%f\n", pitch, a, b);
+
+    for (float x = -20; x < 50; x += 5)
+    {
+        float_4 xx(x);
+        float_4 z =  rack::dsp::approxExp2_taylor5(xx);
+        float y = std::exp2(x);
+       // printf("x = %f, accurate =%f, approx = %f\n",x,  y, z[0] );
+
+        float error = abs(z[0] - y);
+        float error_pct = 100 * error / y;
+        printf("x = %.2f, accurate =%.2f, approx = %f.2 pct= %f\n",
+            x,  
+            y, 
+            z[0], 
+            error_pct );
+    }
+
+    fflush(stdout);
+
+assert(false);
+  //  assertEQ( fastQFunc(0, 1), qFunc(0, 1));
+}
+#endif
+
+
 void testFilterComposites()
 {
     testF2Fc();
@@ -182,6 +314,9 @@ void testFilterComposites()
 
     testF2R();
     testF2R_Poly();
+
+    testQFunc();
+    testFcFunc();
     printf("please add back f4 compostite tests\n");
    // testF4Fc();
    //void testPolyChannels(int  inputPort, int outputPort, int numChannels)

@@ -108,7 +108,7 @@ private:
 template <typename T>
 inline void StateVariableFilter4P<T>::run(T input, StateVariableFilterState4P<T>& state, const StateVariableFilterParams4P<T>& params)
 {
-#if 1
+#if 0
     static float rOutMax = 0;
     static float rOutMin = 0;
     static float total = 0;
