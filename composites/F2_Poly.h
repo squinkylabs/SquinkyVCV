@@ -11,6 +11,7 @@
 #include "StateVariableFilter2.h"
 
 #include "dsp/common.hpp"
+#include "dsp/approx.hpp"
 #include "simd.h"
 #include <algorithm>
 
@@ -160,6 +161,9 @@ private:
     void setupModes();
     void setupLimiter();
 
+    static float_4 fastQFunc(float_4 qV, int numStages);
+    static std::pair<float_4, float_4> fastFcFunc(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime);
+
     const int oversample = 4;
 };
 
@@ -214,10 +218,74 @@ inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params2() con
 }
 #endif
 
+
+template <class TBase>
+inline float_4 F2_Poly<TBase>::fastQFunc(float_4 qV, int numStages)
+{
+  //  assert(qV >= 0);
+ //   assert(qV <= 10);
+    assert(numStages >=1 && numStages <= 2);
+
+    const float expMult = (numStages == 1) ? 1 / 1.5f : 1 / 2.5f;
+    float_4 q = rack::dsp::approxExp2_taylor5(qV * expMult) - .5;
+    return q;
+}
+
+template <class TBase>
+inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime) {
+    assert(oversample == 4);
+    assert(sampleTime < .0001);
+    float_4 r =  rack::dsp::approxExp2_taylor5(rVolts/3.f);
+    float_4 freq =  rack::dsp::FREQ_C4 *  rack::dsp::approxExp2_taylor5(freqVolts + 30 - 4) / 1073741824;
+
+    freq /= oversample;
+    freq *= sampleTime;
+
+    float_4 f1 = freq / r;
+    float_4 f2 = freq * r;
+    return std::make_pair(f1, f2);
+}
+
 template <class TBase>
 inline void F2_Poly<TBase>::setupFreq()
 {
+    const float sampleTime = TBase::engineGetSampleTime();
+    const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
+    const int numStages = (topologyInt == 0) ? 1 : 2; 
+    for (int bank = 0; bank < numBanks_m; bank++) {
+        const int baseChannel = 4 * bank;
+        SqInput& qPort = TBase::inputs[Q_INPUT];
 
+        float_4 qVolts = F2_Poly<TBase>::params[Q_PARAM].value;
+        qVolts += qPort.getPolyVoltageSimd<float_4>(baseChannel);
+        qVolts = rack::simd::clamp(qVolts, 0, 10);
+        float_4 q = fastQFunc(qVolts, numStages);
+        params1[bank].setQ(q);
+        params2[bank].setQ(q);
+
+        SqInput& rPort = TBase::inputs[R_INPUT];
+        float_4 rVolts = F2_Poly<TBase>::params[R_PARAM].value;
+        rVolts += rPort.getPolyVoltageSimd<float_4>(baseChannel);
+        rVolts = rack::simd::clamp(rVolts, 0, 10);
+
+        SqInput& fcPort = TBase::inputs[FC_INPUT];
+        float_4 fVolts = F2_Poly<TBase>::params[FC_PARAM].value;
+        fVolts += fcPort.getPolyVoltageSimd<float_4>(baseChannel);
+        fVolts = rack::simd::clamp(fVolts, 0, 10);
+
+        auto fr = fastFcFunc(fVolts, rVolts, oversample, sampleTime);
+
+       // freq /= oversample;
+      //  freq *= sampleTime;
+        params1[bank].setFreq(fr.first);
+        params2[bank].setFreq(fr.second);
+    }
+}
+
+#if 0
+template <class TBase>
+inline void F2_Poly<TBase>::setupFreq()
+{
     const float sampleTime = TBase::engineGetSampleTime();
     const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     const int numStages = (topologyInt == 0) ? 1 : 2; 
@@ -304,7 +372,7 @@ inline void F2_Poly<TBase>::setupFreq()
         }
     }
 }
-
+#endif
 template <class TBase>
 inline void F2_Poly<TBase>::setupModes()
 {

@@ -8,7 +8,6 @@
 #include "TestComposite.h"
 
 #include "tutil.h"
-#include "dsp/approx.hpp"
 #include "asserts.h"
 
 
@@ -45,7 +44,7 @@ static void testF2Fc_Poly(float fcParam, float cv, float expectedFcGain)
        simd_assertClosePct(comp._params1()._fcGain(), float_4(expectedFcGain), 10);
     };
     testArbitrary<Comp2_Poly>(setup, validate);
-}
+} 
 
 
 static void testF2Q_Poly(float qParam, float qcv, float expectedQGain)
@@ -123,9 +122,13 @@ static void testF2Fc()
 
 static void testF2Fc_Poly()
 {
+    printf("at 125\n"); fflush(stdout);
     testF2Fc_Poly(0, 0, .00058);
+    printf("at 127\n"); fflush(stdout);
     testF2Fc_Poly(0, -10, .00058);
+    printf("at 129\n"); fflush(stdout);
     testF2Fc_Poly(10, 0, .6);           // hmm... we are losing the top of the range - should scale it down below .5
+    printf("at 131\n"); fflush(stdout);
     testF2Fc_Poly(10, 10, .6);
 }
 
