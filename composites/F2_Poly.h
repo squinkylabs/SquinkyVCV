@@ -44,7 +44,15 @@ public:
 };
 
 /**
- * First perf test of poly version
+ * After optimizing:
+ *
+ * old mono version, 1 channel:24.4
+ * poly one, mono: 15.8.
+ * poly one, 16 ch: 40.7 
+ * 
+ * with n=16 goes to 13.3, 34.6. So it's mostly audio processing.
+ * 
+ * First perf test of poly version:
  * 
  * old mono version, 1 channel:24.4
  * poly one, mono: 63.
@@ -262,6 +270,12 @@ inline void F2_Poly<TBase>::setupFreq()
         float_4 q = fastQFunc(qVolts, numStages);
         params1[bank].setQ(q);
         params2[bank].setQ(q);
+
+        outputGain_n = 1 / q;
+        if (numStages == 2) {
+            outputGain_n *= 1 / q;
+        }
+        outputGain_n = SimdBlocks::min(outputGain_n, float_4(1.f));
 
         SqInput& rPort = TBase::inputs[R_INPUT];
         float_4 rVolts = F2_Poly<TBase>::params[R_PARAM].value;
