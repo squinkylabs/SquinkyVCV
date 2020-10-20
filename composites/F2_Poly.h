@@ -47,9 +47,9 @@ public:
  * 
  * inlined inner:
  * 
- *  12+lim:    12.9
- *  12, no lim: 12.8
- *  24+lim  :   20.5
+ *  12+lim:    12.5
+ *  12, no lim: 12.45
+ *  24+lim  :   20.0
  * 16:          34.0
  * 
  * New bench  reg    / gutted  / norm/no clamp  / start of new pointer strategy
@@ -183,10 +183,18 @@ private:
     void stepm();
     void setupFreq();
     void setupModes();
+    void setupProcFunc();
     void setupLimiter();
 
     static float_4 fastQFunc(float_4 qV, int numStages);
     static std::pair<float_4, float_4> fastFcFunc(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime);
+
+    using  processFunction = void (F2_Poly<TBase>::*)(const typename TBase::ProcessArgs& args);
+    processFunction procFun;
+
+    void processOneBankSeries(const typename TBase::ProcessArgs& args);
+    void processOneBank12(const typename TBase::ProcessArgs& args);
+    void processGeneric(const typename TBase::ProcessArgs& args);
 
     
    // StateVariableFilter2<T>::Mode mode;
@@ -217,6 +225,7 @@ inline void F2_Poly<TBase>::stepm()
     numBanks_m = (numChannels_m / 4) + ((numChannels_m % 4) ? 1 : 0);
 
     setupModes();
+    setupProcFunc();
 }
 
 template <class TBase>
@@ -232,7 +241,6 @@ inline void F2_Poly<TBase>::onSampleRateChange()
     setupLimiter();
 }
 
-#if 1
 template <class TBase>
 inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params1() const 
 {
@@ -244,8 +252,6 @@ inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params2() con
 {
     return params2[0];
 }
-#endif
-
 
 template <class TBase>
 inline float_4 F2_Poly<TBase>::fastQFunc(float_4 qV, int numStages)
@@ -325,6 +331,21 @@ inline void F2_Poly<TBase>::setupModes()
 
     const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     topology_m = Topology(topologyInt);
+
+   // procFun = processGeneric;
+}
+
+template <class TBase>
+inline void F2_Poly<TBase>::setupProcFunc()
+{
+    procFun = processGeneric;
+    if (numBanks_m == 1) {
+        if (topology_m == Topology::SERIES) {
+            procFun = processOneBankSeries;
+        } else if (topology_m == Topology::SINGLE) {
+            procFun = processOneBank12;
+        }
+    }
 }
 
 
@@ -343,11 +364,63 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
     divm.step();
     divn.step();
     assert(oversample == 4);
+    assert(procFun);
+    (this->*procFun)(args);
+}
 
+template <class TBase>
+inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessArgs& args) 
+{
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
- //   const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
- //   const Topology topology = Topology(topologyInt);
+    const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
 
+    (*filterFunc)(input, state1[0], params1[0]);
+    (*filterFunc)(input, state1[0], params1[0]);
+    (*filterFunc)(input, state1[0], params1[0]);
+    const T temp = (*filterFunc)(input, state1[0], params1[0]);
+
+    (*filterFunc)(temp, state2[0], params2[0]);
+    (*filterFunc)(temp, state2[0], params2[0]);
+    (*filterFunc)(temp, state2[0], params2[0]);
+    T output = (*filterFunc)(temp, state2[0], params2[0]);
+
+    if (limiterEnabled_n) {
+        output = limiter.step(output);
+    } else {
+        output *= outputGain_n;
+    }
+
+    SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
+    output = rack::simd::clamp(output, -10.f, 10.f);
+    outPort.setVoltageSimd(output, 0);
+}
+
+template <class TBase>
+inline void F2_Poly<TBase>::processOneBank12(const typename TBase::ProcessArgs& args) 
+{
+    SqInput& inPort = TBase::inputs[AUDIO_INPUT];
+    const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
+
+    (*filterFunc)(input, state1[0], params1[0]);
+    (*filterFunc)(input, state1[0], params1[0]);
+    (*filterFunc)(input, state1[0], params1[0]);
+    T output = (*filterFunc)(input, state1[0], params1[0]);
+
+    if (limiterEnabled_n) {
+        output = limiter.step(output);
+    } else {
+        output *= outputGain_n;
+    }
+
+    SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
+    output = rack::simd::clamp(output, -10.f, 10.f);
+    outPort.setVoltageSimd(output, 0);
+}
+
+template <class TBase>
+inline void F2_Poly<TBase>::processGeneric(const typename TBase::ProcessArgs& args) 
+{
+    SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     for (int bank = 0; bank < numBanks_m; bank++) {
         const int baseChannel = 4 * bank;
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
