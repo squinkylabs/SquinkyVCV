@@ -12,7 +12,6 @@
 
 #ifndef _MSC_VER
 #include "MultiLag.h"
-#include "F2.h"
 #include "F2_Poly.h"
 #include "Compressor.h"
 #endif
@@ -274,26 +273,6 @@ static void testMixM()
 
 
 #ifndef _MSC_VER
-static void testF2_4X()
-{
-    using Comp = F2<TestComposite>;
-    Comp comp;
-
-    comp.init();
-
-    comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
- 
-    Comp::ProcessArgs args;
-    args.sampleTime = 1.f / 44100.f;
-    args.sampleRate = 44199;
-
-
-    MeasureTime<float>::run(overheadInOut, "testF2_4X", [&comp, args]() {
-        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
-        comp.process(args);
-        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
-        }, 1);
-}
 
 static void testF2_Poly1()
 {
@@ -309,7 +288,7 @@ static void testF2_Poly1()
     args.sampleTime = 1.f / 44100.f;
     args.sampleRate = 44199;
 
-    MeasureTime<float>::run(overheadInOut, "testF2 (new) mono", [&comp, args]() {
+    MeasureTime<float>::run(overheadInOut, "testF2 (new) mono 12/Lim", [&comp, args]() {
         comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
         comp.process(args);
         return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
@@ -340,6 +319,55 @@ static void testF2_Poly16()
         }, 1);
 }
 
+static void testF2_12nl()
+{
+    using Comp = F2_Poly<TestComposite>;
+    Comp comp;
+
+    comp.init();
+    
+    comp.inputs[Comp::AUDIO_INPUT].channels = 1;
+    comp.params[Comp::TOPOLOGY_PARAM].value = float(Comp::Topology::SINGLE);
+    comp.params[Comp::LIMITER_PARAM].value = 0;
+    for (int i=0; i<16; ++i) {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, i);
+    }
+ 
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "testF2 (12/nl)", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testF2_24l()
+{
+    using Comp = F2_Poly<TestComposite>;
+    Comp comp;
+
+    comp.init();
+    
+    comp.inputs[Comp::AUDIO_INPUT].channels = 1;
+    comp.params[Comp::TOPOLOGY_PARAM].value = float(Comp::Topology::SERIES);
+    comp.params[Comp::LIMITER_PARAM].value = 1;
+    for (int i=0; i<16; ++i) {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, i);
+    }
+ 
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "testF2 (24/lim)", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
 static void testCompLim1()
 {
     using Comp = Compressor<TestComposite>;
@@ -489,9 +517,10 @@ void perfTest2()
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
 #ifndef _MSC_VER
-    testF2_4X();
     testF2_Poly1();
     testF2_Poly16();
+     testF2_12nl();
+     testF2_24l();
     testCompLim1();
     testCompLim16();
     testCompLim16Dist();

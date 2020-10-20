@@ -44,6 +44,20 @@ public:
 };
 
 /**
+ * 
+ * inlined inner:
+ * 
+ *  12+lim:     13.4
+ *  12, no lim: 13.3
+ *  24+lim  :   23.8
+ * 16:          35.5
+ * 
+ * New bench  reg    / gutted  / norm/no clamp  / start of new pointer strategy
+ *  12+lim: 16.5     / 11.4     / 12.96     /   12.19
+ *  12, no lim: 16.5 / 11.4     / 12.7      /   12.8
+ *  24+lim  : 25.0   /16.7      / 20.1      /   18.2
+ * 16: 39.6          / 26.3     / 35.2      /   28.3
+ * 
  * After optimizing:
  *
  * old mono version, 1 channel:24.4
@@ -173,6 +187,8 @@ private:
     static std::pair<float_4, float_4> fastFcFunc(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime);
 
     const int oversample = 4;
+    StateVariableFilter2<T>::Mode mode;
+    
 };
 
 template <class TBase>
@@ -296,102 +312,12 @@ inline void F2_Poly<TBase>::setupFreq()
     }
 }
 
-#if 0
-template <class TBase>
-inline void F2_Poly<TBase>::setupFreq()
-{
-    const float sampleTime = TBase::engineGetSampleTime();
-    const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
-    const int numStages = (topologyInt == 0) ? 1 : 2; 
-
-    // printf("setupFreq, numB = %d\n", numBanks_m); fflush(stdout);
-
-    for (int bank = 0; bank < numBanks_m; bank++) {
-        const int baseChannel = 4 * bank;
-        {
-            SqInput& qPort = TBase::inputs[Q_INPUT];
-            float_4 qVolts = F2_Poly<TBase>::params[Q_PARAM].value;
-            qVolts += qPort.getPolyVoltageSimd<float_4>(baseChannel);
-            qVolts = rack::simd::clamp(qVolts, 0, 10);
-
-            // const float q =  std::exp2(qVolts/1.5f + 20 - 4) / 10000;
-            // probably will have to change when we use the SIMD approx.
-            // I doubt this function works with numbers this small.
-
-            // 
-            // 1/ 3 reduced q too much at 24
-    
-            const float expMult = (numStages == 1) ? 1 / 1.5f : 1 / 2.5f;
-
-            // TODO: make this fast
-            float_4 q;
-            for (int i=0; i<4; ++i) {
-                q[i] = std::exp2(qVolts[i] * expMult) - .5;
-            }
-           // const float q =  std::exp2(qVolts * expMult) - .5;
-            params1[bank].setQ(q);
-            params2[bank].setQ(q);
-
-            outputGain_n = 1 / q;
-            if (numStages == 2) {
-                outputGain_n *= 1 / q;
-            }
-            outputGain_n = SimdBlocks::min(outputGain_n, float_4(1.f));
-        // printf("Q = %f outGain = %f\n", q, outputGain_n); fflush(stdout);
-        }
-
-        {
-            SqInput& rPort = TBase::inputs[R_INPUT];
-            float_4 rVolts = F2_Poly<TBase>::params[R_PARAM].value;
-            rVolts += rPort.getPolyVoltageSimd<float_4>(baseChannel);
-            rVolts = rack::simd::clamp(rVolts, 0, 10);
-
-            // TODO: make this fast
-            //const float rx = std::exp2(rVolts/3.f);
-            //const float r = rx; 
-            float_4 r;
-            for (int i=0; i<4; ++i) {
-                r[i] = std::exp2(rVolts[i]/3.f);
-            }
-
-        //   printf("rv=%f, r=%f\n", rVolts, r); 
-
-            SqInput& fcPort = TBase::inputs[FC_INPUT];
-            float_4 freqVolts = F2_Poly<TBase>::params[FC_PARAM].value;
-           //  printf("in setupFreq[%d] fv= %s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
-            freqVolts += fcPort.getPolyVoltageSimd<float_4>(baseChannel);
-          //   printf("2in setupFreq[%d] fv= %s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
-            freqVolts = rack::simd::clamp(freqVolts, 0, 10);
-          //   printf("3in setupFreq[%d] fv=%s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
-
-            
-            
-            #if 0
-            float freq = rack::dsp::FREQ_C4 * std::exp2(freqVolts + 30 - 4) / 1073741824;
-            freq /= oversample;
-            freq *= sampleTime;
-            #endif
-            float_4 freq;
-            for (int i=0; i<4; ++i) {
-                freq[i] = rack::dsp::FREQ_C4 * std::exp2(freqVolts[i] + 30 - 4) / 1073741824;
-            }
-            freq /= oversample;
-            freq *= sampleTime;
-
-           //  printf("i4n setupFreq[%d] freq=%s\n", bank, toStr(freqVolts).c_str()); fflush(stdout);
-
-        //  printf("** freq 1=%f 2=%f freqXover = %f\n", freq / r, freq * r, freq * oversample); fflush(stdout);
-            params1[bank].setFreq(freq / r);
-            params2[bank].setFreq(freq * r);
-        }
-    }
-}
-#endif
 template <class TBase>
 inline void F2_Poly<TBase>::setupModes()
 {
     const int modeParam = int( std::round(F2_Poly<TBase>::params[MODE_PARAM].value));
-    StateVariableFilterParams2<T>::Mode mode;
+    mode =  StateVariableFilter2<T>::Mode(modeParam);
+#if 0
     switch(modeParam) {
         case 0:
             mode = StateVariableFilterParams2<T>::Mode::LowPass;
@@ -413,6 +339,7 @@ inline void F2_Poly<TBase>::setupModes()
         params1[bank].setMode(mode);
         params2[bank].setMode(mode);
     }
+#endif
 }
 
 
@@ -424,27 +351,6 @@ inline void F2_Poly<TBase>::stepn()
     limiterEnabled_n =  bool( std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
 }
 
-#if 0
-
-template <class TBase>
-inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
-{
-    divm.step();
-    divn.step();
-
-    SqInput& inPort = TBase::inputs[AUDIO_INPUT];
-    SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-    for (int bank = 0; bank < numBanks_m; bank++) {
-        const int baseChannel = 4 * bank;
-        const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-
-        float_4 output = input;
-        output = rack::simd::clamp(output, -10.f, 10.f);
-
-        outPort.setVoltageSimd(output, baseChannel);
-    }
-}
-#else
 
 template <class TBase>
 inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
@@ -457,6 +363,7 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
     const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     Topology topology = Topology(topologyInt);
 
+    StateVariableFilter2<T>::processFunction pf = StateVariableFilter2<T>::getProcPointer(mode);
     for (int bank = 0; bank < numBanks_m; bank++) {
         const int baseChannel = 4 * bank;
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
@@ -466,52 +373,55 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
             case Topology::SERIES:
                 {
                     // series 4X
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    const T temp = StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
+                  //   float_4 output = ((&vcos[bank])->*pProcess)(args.sampleTime);
 
-                    StateVariableFilter2<T>::run(temp, state2[bank], params2[bank]);
-                    StateVariableFilter2<T>::run(temp, state2[bank], params2[bank]);
-                    StateVariableFilter2<T>::run(temp, state2[bank], params2[bank]);
-                    output = StateVariableFilter2<T>::run(temp, state2[bank], params2[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    const T temp = (*pf)(input, state1[bank], params1[bank]);
+    
+                    (*pf)(temp, state2[bank], params2[bank]);
+                    (*pf)(temp, state2[bank], params2[bank]);
+                    (*pf)(temp, state2[bank], params2[bank]);
+                    output = (*pf)(temp, state2[bank], params2[bank]);
+
                 }
                 break;
             case Topology::PARALLEL:
                 {
                     // parallel add
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    output = StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    output = (*pf)(input, state1[bank], params1[bank]);
 
-                    StateVariableFilter2<T>::run(input, state2[bank], params2[bank]);
-                    StateVariableFilter2<T>::run(input, state2[bank], params2[bank]);
-                    StateVariableFilter2<T>::run(input, state2[bank], params2[bank]);
-                    output += StateVariableFilter2<T>::run(input, state2[bank], params2[bank]);
+                    (*pf)(input, state2[bank], params2[bank]);
+                    (*pf)(input, state2[bank], params2[bank]);
+                    (*pf)(input, state2[bank], params2[bank]);
+                    output += (*pf)(input, state2[bank], params2[bank]);
                 }
                 break;
             case Topology::PARALLEL_INV:
                 {
                     // parallel add
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    output = StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    output = (*pf)(input, state1[bank], params1[bank]);
 
-                    StateVariableFilter2<T>::run(input, state2[bank], params2[bank]);
-                    StateVariableFilter2<T>::run(input, state2[bank], params2[bank]);
-                    StateVariableFilter2<T>::run(input, state2[bank], params2[bank]);
-                    output -= StateVariableFilter2<T>::run(input, state2[bank], params2[bank]);
+                    (*pf)(input, state2[bank], params2[bank]);
+                    (*pf)(input, state2[bank], params2[bank]);
+                    (*pf)(input, state2[bank], params2[bank]);
+                    output -= (*pf)(input, state2[bank], params2[bank]);
                 }
                 break;
             case Topology::SINGLE:
                 {
                     // one filter 4X
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
-                    output = StateVariableFilter2<T>::run(input, state1[bank], params1[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    (*pf)(input, state1[bank], params1[bank]);
+                    output = (*pf)(input, state1[bank], params1[bank]);
                 }
                 break;
 
@@ -531,7 +441,6 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
         outPort.setVoltageSimd(output, baseChannel);
     }
 }
-#endif
 
 template <class TBase>
 int F2_PolyDescription<TBase>::getNumParams()
@@ -544,22 +453,22 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case F2<TBase>::TOPOLOGY_PARAM:
+        case F2_Poly<TBase>::TOPOLOGY_PARAM:
             ret = {0, 3, 0, "Topology"};
             break;
-        case F2<TBase>::MODE_PARAM:
+        case F2_Poly<TBase>::MODE_PARAM:
             ret = {0, 3, 0, "Mode"};
             break;
-        case F2<TBase>::FC_PARAM:
+        case F2_Poly<TBase>::FC_PARAM:
             ret = {0, 10, 5, "Fc"};
             break;
-        case F2<TBase>::R_PARAM:
+        case F2_Poly<TBase>::R_PARAM:
             ret = {0, 10, 0, "R"};
             break;
-        case F2<TBase>::Q_PARAM:
+        case F2_Poly<TBase>::Q_PARAM:
             ret = {0, 10, 2, "Q"};
             break;
-        case F2<TBase>::LIMITER_PARAM:
+        case F2_Poly<TBase>::LIMITER_PARAM:
             ret = {0, 1, 1, "Limiter"};
             break;
         default:

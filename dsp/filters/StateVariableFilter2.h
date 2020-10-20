@@ -31,47 +31,85 @@ template <typename T>
 class StateVariableFilter2
 {
 public:
+    enum class Mode
+    {
+        LowPass, BandPass, HighPass, Notch
+    };
     StateVariableFilter2() = delete;       // we are only static
-    static T run(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
+    typedef float_4 (*processFunction)(float_4 input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
+    static processFunction getProcPointer(Mode);
 
+    static T runLP(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
+    static T runHP(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
+    static T runBP(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
+    static T runN(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
 };
 
 template <typename T>
-inline T StateVariableFilter2<T>::run(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params)
-{
-    const T dLow = state.z2 + params.fcGain * state.z1;
-    const T dHi = input - (state.z1 * params.qGain + dLow);
-    T dBand = dHi * params.fcGain + state.z1;
-
-    // TODO: figure out why we get these crazy values
-#if 1
-    dBand =  rack::simd::clamp(dBand, -1000.f, 1000.f);
-#endif
-
-    T d;
-    switch (params.mode) {
-        case StateVariableFilterParams2<T>::Mode::LowPass:
-            d = dLow;
+inline  typename StateVariableFilter2<T>::processFunction StateVariableFilter2<T>::getProcPointer(Mode mode) {
+    switch (mode) {
+        case Mode::LowPass:
+            return &runLP;
             break;
-        case StateVariableFilterParams2<T>::Mode::HighPass:
-            d = dHi;
+        case Mode::HighPass:
+                return &runHP;
             break;
-        case StateVariableFilterParams2<T>::Mode::BandPass:
-            d = dBand;
+        case Mode::BandPass:
+                return &runBP;
             break;
-        case StateVariableFilterParams2<T>::Mode::Notch:
-            d = dLow + dHi;
+        case Mode::Notch:
+                return &runN;
             break;
         default:
             assert(false);
-            d = 0.0;
     }
+    return nullptr;
+}
 
+template <typename T>
+inline T StateVariableFilter2<T>::runLP(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params)
+{
+    const T dLow = state.z2 + params.fcGain * state.z1;
+    const T dHi = input - (state.z1 * params.qGain + dLow);
+    T dBand = dHi * params.fcGain + state.z1;  
     state.z1 = dBand;
     state.z2 = dLow;
-
-    return d;
+    return dLow;
 }
+
+template <typename T>
+inline T StateVariableFilter2<T>::runHP(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params)
+{
+    const T dLow = state.z2 + params.fcGain * state.z1;
+    const T dHi = input - (state.z1 * params.qGain + dLow);
+    T dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+    return dHi;
+}
+
+template <typename T>
+inline T StateVariableFilter2<T>::runBP(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params)
+{
+    const T dLow = state.z2 + params.fcGain * state.z1;
+    const T dHi = input - (state.z1 * params.qGain + dLow);
+    T dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+    return dBand;
+}
+
+template <typename T>
+inline T StateVariableFilter2<T>::runN(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params)
+{
+    const T dLow = state.z2 + params.fcGain * state.z1;
+    const T dHi = input - (state.z1 * params.qGain + dLow);
+    T dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+    return dLow + dHi;
+}
+
 
 /****************************************************************/
 
@@ -80,10 +118,7 @@ class StateVariableFilterParams2
 {
 public:
     friend StateVariableFilter2<T>;
-    enum class Mode
-    {
-        LowPass, BandPass, HighPass, Notch
-    };
+
 
     /**
      * Set the filter Q.
@@ -107,15 +142,18 @@ public:
      */
     void setFreq(T f);
     void setFreqAccurate(T f);
+
+    #if 0
     void setMode(Mode m)
     {
         mode = m;
     }
+    #endif
 
     T _fcGain() const { return fcGain; }
     T _qGain() const { return qGain; }
 private:
-    Mode mode = Mode::BandPass;
+   // Mode mode = Mode::BandPass;
     T qGain = 1.;		// internal amp gains
     T fcGain = T(.001);
 };

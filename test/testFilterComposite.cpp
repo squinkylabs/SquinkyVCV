@@ -1,7 +1,6 @@
 
 #ifndef _MSC_VER 
 
-#include "F2.h"
 #include "F2_Poly.h"
 #include "F4.h"
 
@@ -10,9 +9,6 @@
 #include "tutil.h"
 #include "asserts.h"
 
-
-
-using Comp2_Scalar = F2<TestComposite>;
 using Comp2_Poly = F2_Poly<TestComposite>;
 using Comp4 = F4<TestComposite>;
 
@@ -92,34 +88,6 @@ static void testF2R_Poly(float rParam, float rcv, float fcParam, float expectedF
     testArbitrary<Comp2_Poly>(setup, validate);
 }
 
-static void testF2R(float rParam, float rcv, float fcParam, float expectedFcGain1, float expectedFcGain2)
-{
-    auto setup = [rParam, rcv, fcParam](Comp2_Scalar& comp) {
-        comp.params[Comp2_Scalar::R_PARAM].value = rParam;
-        comp.params[Comp2_Scalar::FC_PARAM].value = fcParam;
-        comp.inputs[Comp2_Scalar::R_INPUT].setVoltage(rcv, 0);
-        comp.inputs[Comp2_Scalar::FC_INPUT].setVoltage(rcv, 0);
-        comp.inputs[Comp2_Scalar::AUDIO_INPUT].channels = 4;
-    };
-
-    auto validate = [expectedFcGain1,expectedFcGain2 ](Comp2_Scalar& comp) {
-        assertClosePct(comp._params1()._fcGain(), (expectedFcGain1), 10);
-        assertClosePct(comp._params2()._fcGain(), (expectedFcGain2), 10);
-    };
-    testArbitrary<Comp2_Scalar>(setup, validate);
-}
-
-// All of these "expected" values are just harvested known goods.
-// but this will let us test we break anything when we make it poly/simd
-static void testF2Fc()
-{
-    testF2Fc<Comp2_Scalar>(0, 0, .00058);
-    testF2Fc<Comp2_Scalar>(0, -10, .00058);
-    testF2Fc<Comp2_Scalar>(10, 0, .6);           // hmm... we are losing the top of the range - should scale it down below .5
-    testF2Fc<Comp2_Scalar>(10, 10, .6);
-    testF2Fc<Comp2_Scalar>(5, 0, .0186377);
-}
-
 static void testF2Fc_Poly()
 {
     printf("at 125\n"); fflush(stdout);
@@ -132,15 +100,6 @@ static void testF2Fc_Poly()
     testF2Fc_Poly(10, 10, .6);
 }
 
-static void testF2Q()
-{
-    testF2Q<Comp2_Scalar>(0, 0, 2);
-    testF2Q<Comp2_Scalar>(0, -10, 2);
-    testF2Q<Comp2_Scalar>(1, 0, .92);
-    testF2Q<Comp2_Scalar>(10, 0, .0099);
-    testF2Q<Comp2_Scalar>(10, 10, .0099);
-}
-
 static void testF2Q_Poly()
 {
     testF2Q_Poly(0, 0, 2);
@@ -148,14 +107,6 @@ static void testF2Q_Poly()
     testF2Q_Poly(1, 0, .92);
     testF2Q_Poly(10, 0, .0099);
     testF2Q_Poly(10, 10, .0099);
-}
-
-static void testF2R()
-{
-   //  void testF2R(float rParam, float rcv, float fcParam, float expectedFcGain1, float expectedFcGain2)
-    testF2R(0, 0, 5, .0186377, .0186377);
-    testF2R(5, 0, 5, .0058705, .0591709);
-    testF2R(10, 0, 2.5, .00032, .0332);
 }
 
 static void testF2R_Poly()
@@ -264,58 +215,11 @@ static void testFcFunc()
 }
 
 
-
-#if 0
-static void testQFunc()
-{
-    float pitch = 0;
-    float a = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
-    float b =  rack::dsp::approxExp2_taylor5(pitch + 30);
-    printf("pitch %f, a=%f,b=%f\n", pitch, a, b);
-
-    pitch = 5;
-    a = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
-    b =  rack::dsp::approxExp2_taylor5(pitch + 30);
-    printf("pitch %f, a=%f,b=%f\n", pitch, a, b);
-
-    pitch = 10;
-    a = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
-    b =  rack::dsp::approxExp2_taylor5(pitch + 30);
-    printf("pitch %f, a=%f,b=%f\n", pitch, a, b);
-
-    for (float x = -20; x < 50; x += 5)
-    {
-        float_4 xx(x);
-        float_4 z =  rack::dsp::approxExp2_taylor5(xx);
-        float y = std::exp2(x);
-       // printf("x = %f, accurate =%f, approx = %f\n",x,  y, z[0] );
-
-        float error = abs(z[0] - y);
-        float error_pct = 100 * error / y;
-        printf("x = %.2f, accurate =%.2f, approx = %f.2 pct= %f\n",
-            x,  
-            y, 
-            z[0], 
-            error_pct );
-    }
-
-    fflush(stdout);
-
-assert(false);
-  //  assertEQ( fastQFunc(0, 1), qFunc(0, 1));
-}
-#endif
-
-
 void testFilterComposites()
 {
-    testF2Fc();
     testF2Fc_Poly();
-    
-    testF2Q();
-    testF2Q_Poly();
 
-    testF2R();
+    testF2Q_Poly();
     testF2R_Poly();
 
     testQFunc();

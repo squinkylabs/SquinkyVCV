@@ -11,7 +11,7 @@
 
 #include "dsp/common.hpp"
 #include <algorithm>
-
+#if 0
 
 #ifndef _CLAMP
 #define _CLAMP
@@ -276,6 +276,8 @@ inline void F2<TBase>::stepn()
 template <class TBase>
 inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
 {
+    assert(false);
+    #if 0
     divn.step();
     assert(oversample == 4);
 
@@ -350,6 +352,7 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
     output = std::max(-10.f, output);
 
     F2<TBase>::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
+    #endif
 }
 
 template <class TBase>
@@ -386,5 +389,5 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
     }
     return ret;
 }
-
+#endif
 
