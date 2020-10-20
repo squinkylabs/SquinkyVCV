@@ -178,7 +178,7 @@ private:
     const int oversample = 4;
 
     float_4 outputGain_n = 0;
-    bool limiterEnabled_n = 0;
+    bool limiterEnabled_m = 0;
     int numChannels_m = 0;
     int numBanks_m = 0;
     Topology topology_m = Topology::SINGLE;
@@ -199,7 +199,8 @@ private:
     processFunction procFun;
 
     void processOneBankSeries(const typename TBase::ProcessArgs& args);
-    void processOneBank12(const typename TBase::ProcessArgs& args);
+    void processOneBank12_lim(const typename TBase::ProcessArgs& args);
+    void processOneBank12_nolim(const typename TBase::ProcessArgs& args);
     void processGeneric(const typename TBase::ProcessArgs& args);
 
     
@@ -232,6 +233,7 @@ inline void F2_Poly<TBase>::stepm()
 
     setupModes();
     setupProcFunc();
+    limiterEnabled_m =  bool( std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
 }
 
 template <class TBase>
@@ -349,7 +351,11 @@ inline void F2_Poly<TBase>::setupProcFunc()
         if (topology_m == Topology::SERIES) {
             procFun = processOneBankSeries;
         } else if (topology_m == Topology::SINGLE) {
-            procFun = processOneBank12;
+            if (limiterEnabled_m) {
+                procFun = processOneBank12_lim; 
+            } else {
+                procFun = processOneBank12_nolim; 
+            }
         }
     }
 }
@@ -360,7 +366,6 @@ inline void F2_Poly<TBase>::stepn()
 {
   //  setupModes();
     setupFreq();
-    limiterEnabled_n =  bool( std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
 }
 
 
@@ -384,7 +389,7 @@ inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessAr
     const T temp = (*filterFunc)(input, state1[0], params1[0]);
     T output = (*filterFunc)(temp, state2[0], params2[0]);
 
-    if (limiterEnabled_n) {
+    if (limiterEnabled_m) {
         output = limiter.step(output);
     } else {
         output *= outputGain_n;
@@ -396,18 +401,27 @@ inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessAr
 }
 
 template <class TBase>
-inline void F2_Poly<TBase>::processOneBank12(const typename TBase::ProcessArgs& args) 
+inline void F2_Poly<TBase>::processOneBank12_lim(const typename TBase::ProcessArgs& args) 
 {
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
 
     T output = (*filterFunc)(input, state1[0], params1[0]);
+    output = limiter.step(output);
 
-    if (limiterEnabled_n) {
-        output = limiter.step(output);
-    } else {
-        output *= outputGain_n;
-    }
+    SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
+    output = rack::simd::clamp(output, -10.f, 10.f);
+    outPort.setVoltageSimd(output, 0);
+}
+
+template <class TBase>
+inline void F2_Poly<TBase>::processOneBank12_nolim(const typename TBase::ProcessArgs& args) 
+{
+    SqInput& inPort = TBase::inputs[AUDIO_INPUT];
+    const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
+
+    T output = (*filterFunc)(input, state1[0], params1[0]);
+    output *= outputGain_n;
 
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
     output = rack::simd::clamp(output, -10.f, 10.f);
@@ -455,7 +469,7 @@ inline void F2_Poly<TBase>::processGeneric(const typename TBase::ProcessArgs& ar
                 assert(false);
         }
 
-         if (limiterEnabled_n) {
+         if (limiterEnabled_m) {
             output = limiter.step(output);
         } else {
             output *= outputGain_n;
