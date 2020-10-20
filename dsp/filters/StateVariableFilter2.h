@@ -37,33 +37,177 @@ public:
     };
     StateVariableFilter2() = delete;       // we are only static
     typedef float_4 (*processFunction)(float_4 input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
-    static processFunction getProcPointer(Mode);
+    static processFunction getProcPointer(Mode mode, int oversample);
 
     static T runLP(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
     static T runHP(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
     static T runBP(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
     static T runN(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
+    static T runLP4(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
+    static T runHP4(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
+    static T runBP4(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
+    static T runN4(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params);
 };
 
 template <typename T>
-inline  typename StateVariableFilter2<T>::processFunction StateVariableFilter2<T>::getProcPointer(Mode mode) {
-    switch (mode) {
-        case Mode::LowPass:
-            return &runLP;
-            break;
-        case Mode::HighPass:
-                return &runHP;
-            break;
-        case Mode::BandPass:
-                return &runBP;
-            break;
-        case Mode::Notch:
-                return &runN;
-            break;
-        default:
-            assert(false);
+inline  typename StateVariableFilter2<T>::processFunction StateVariableFilter2<T>::getProcPointer(Mode mode, int oversample) {
+    if (oversample == 1) {
+        switch (mode) {
+            case Mode::LowPass:
+                return &runLP;
+                break;
+            case Mode::HighPass:
+                    return &runHP;
+                break;
+            case Mode::BandPass:
+                    return &runBP;
+                break;
+            case Mode::Notch:
+                    return &runN;
+                break;
+            default:
+                assert(false);
+        }
+    } else if (oversample == 4) {
+         switch (mode) {
+            case Mode::LowPass:
+                return &runLP4;
+                break;
+            case Mode::HighPass:
+                    return &runHP4;
+                break;
+            case Mode::BandPass:
+                    return &runBP4;
+                break;
+            case Mode::Notch:
+                    return &runN4;
+                break;
+            default:
+                assert(false);
+        }
     }
+    assert(false);
     return nullptr;
+}
+
+template <typename T>
+inline T StateVariableFilter2<T>::runHP4(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params)
+{
+    T dLow = state.z2 + params.fcGain * state.z1;
+    T dHi = input - (state.z1 * params.qGain + dLow);
+    T dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    return dHi;
+}
+
+template <typename T>
+inline T StateVariableFilter2<T>::runBP4(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params)
+{
+    T dLow = state.z2 + params.fcGain * state.z1;
+    T dHi = input - (state.z1 * params.qGain + dLow);
+    T dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    return dBand;
+}
+
+template <typename T>
+inline T StateVariableFilter2<T>::runN4(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params)
+{
+        T dLow = state.z2 + params.fcGain * state.z1;
+    T dHi = input - (state.z1 * params.qGain + dLow);
+    T dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    return dLow + dHi;
+}
+
+template <typename T>
+inline T StateVariableFilter2<T>::runLP4(T input, StateVariableFilterState2<T>& state, const StateVariableFilterParams2<T>& params)
+{
+    T dLow = state.z2 + params.fcGain * state.z1;
+    T dHi = input - (state.z1 * params.qGain + dLow);
+    T dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    dLow = state.z2 + params.fcGain * state.z1;
+    dHi = input - (state.z1 * params.qGain + dLow);
+    dBand = dHi * params.fcGain + state.z1;  
+    state.z1 = dBand;
+    state.z2 = dLow;
+
+    return dLow;
 }
 
 template <typename T>

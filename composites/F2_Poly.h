@@ -44,6 +44,12 @@ public:
 };
 
 /**
+ * refactor oversample:
+ *
+ *  *  12+lim:      10.7   
+ *  12, no lim:     10.7
+ *  24+lim  :       19.7
+ * 16:              28.1
  * 
  * inlined inner:
  * 
@@ -327,7 +333,7 @@ inline void F2_Poly<TBase>::setupModes()
 {
     const int modeParam = int( std::round(F2_Poly<TBase>::params[MODE_PARAM].value));
     auto mode =  StateVariableFilter2<T>::Mode(modeParam);
-    filterFunc = StateVariableFilter2<T>::getProcPointer(mode);
+    filterFunc = StateVariableFilter2<T>::getProcPointer(mode, oversample);
 
     const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     topology_m = Topology(topologyInt);
@@ -368,20 +374,14 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
     (this->*procFun)(args);
 }
 
+
 template <class TBase>
 inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessArgs& args) 
 {
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
 
-    (*filterFunc)(input, state1[0], params1[0]);
-    (*filterFunc)(input, state1[0], params1[0]);
-    (*filterFunc)(input, state1[0], params1[0]);
     const T temp = (*filterFunc)(input, state1[0], params1[0]);
-
-    (*filterFunc)(temp, state2[0], params2[0]);
-    (*filterFunc)(temp, state2[0], params2[0]);
-    (*filterFunc)(temp, state2[0], params2[0]);
     T output = (*filterFunc)(temp, state2[0], params2[0]);
 
     if (limiterEnabled_n) {
@@ -401,9 +401,6 @@ inline void F2_Poly<TBase>::processOneBank12(const typename TBase::ProcessArgs& 
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
 
-    (*filterFunc)(input, state1[0], params1[0]);
-    (*filterFunc)(input, state1[0], params1[0]);
-    (*filterFunc)(input, state1[0], params1[0]);
     T output = (*filterFunc)(input, state1[0], params1[0]);
 
     if (limiterEnabled_n) {
@@ -429,51 +426,27 @@ inline void F2_Poly<TBase>::processGeneric(const typename TBase::ProcessArgs& ar
         switch(topology_m) {
             case Topology::SERIES:
                 {
-                    (*filterFunc)(input, state1[bank], params1[bank]);
-                    (*filterFunc)(input, state1[bank], params1[bank]);
-                    (*filterFunc)(input, state1[bank], params1[bank]);
                     const T temp = (*filterFunc)(input, state1[bank], params1[bank]);
-    
-                    (*filterFunc)(temp, state2[bank], params2[bank]);
-                    (*filterFunc)(temp, state2[bank], params2[bank]);
-                    (*filterFunc)(temp, state2[bank], params2[bank]);
                     output = (*filterFunc)(temp, state2[bank], params2[bank]);
                 }
                 break;
             case Topology::PARALLEL:
                 {
                     // parallel add
-                    (*filterFunc)(input, state1[bank], params1[bank]);
-                    (*filterFunc)(input, state1[bank], params1[bank]);
-                    (*filterFunc)(input, state1[bank], params1[bank]);
                     output = (*filterFunc)(input, state1[bank], params1[bank]);
-
-                    (*filterFunc)(input, state2[bank], params2[bank]);
-                    (*filterFunc)(input, state2[bank], params2[bank]);
-                    (*filterFunc)(input, state2[bank], params2[bank]);
                     output += (*filterFunc)(input, state2[bank], params2[bank]);
                 }
                 break;
             case Topology::PARALLEL_INV:
                 {
-                    // parallel add
-                    (*filterFunc)(input, state1[bank], params1[bank]);
-                    (*filterFunc)(input, state1[bank], params1[bank]);
-                    (*filterFunc)(input, state1[bank], params1[bank]);
+                    // parallel sub
                     output = (*filterFunc)(input, state1[bank], params1[bank]);
-
-                    (*filterFunc)(input, state2[bank], params2[bank]);
-                    (*filterFunc)(input, state2[bank], params2[bank]);
-                    (*filterFunc)(input, state2[bank], params2[bank]);
                     output -= (*filterFunc)(input, state2[bank], params2[bank]);
                 }
                 break;
             case Topology::SINGLE:
                 {
                     // one filter 4X
-                    (*filterFunc)(input, state1[bank], params1[bank]);
-                    (*filterFunc)(input, state1[bank], params1[bank]);
-                    (*filterFunc)(input, state1[bank], params1[bank]);
                     output = (*filterFunc)(input, state1[bank], params1[bank]);
                 }
                 break;
