@@ -71,7 +71,7 @@ inline T StateVariableFilter2<T>::runLP(T input, StateVariableFilterState2<T>& s
 {
     const T dLow = state.z2 + params.fcGain * state.z1;
     const T dHi = input - (state.z1 * params.qGain + dLow);
-    T dBand = dHi * params.fcGain + state.z1;  
+    const T dBand = dHi * params.fcGain + state.z1;  
     state.z1 = dBand;
     state.z2 = dLow;
     return dLow;
@@ -82,7 +82,7 @@ inline T StateVariableFilter2<T>::runHP(T input, StateVariableFilterState2<T>& s
 {
     const T dLow = state.z2 + params.fcGain * state.z1;
     const T dHi = input - (state.z1 * params.qGain + dLow);
-    T dBand = dHi * params.fcGain + state.z1;  
+    const T dBand = dHi * params.fcGain + state.z1;  
     state.z1 = dBand;
     state.z2 = dLow;
     return dHi;
@@ -93,7 +93,7 @@ inline T StateVariableFilter2<T>::runBP(T input, StateVariableFilterState2<T>& s
 {
     const T dLow = state.z2 + params.fcGain * state.z1;
     const T dHi = input - (state.z1 * params.qGain + dLow);
-    T dBand = dHi * params.fcGain + state.z1;  
+    const T dBand = dHi * params.fcGain + state.z1;  
     state.z1 = dBand;
     state.z2 = dLow;
     return dBand;
@@ -104,7 +104,7 @@ inline T StateVariableFilter2<T>::runN(T input, StateVariableFilterState2<T>& st
 {
     const T dLow = state.z2 + params.fcGain * state.z1;
     const T dHi = input - (state.z1 * params.qGain + dLow);
-    T dBand = dHi * params.fcGain + state.z1;  
+    const T dBand = dHi * params.fcGain + state.z1;  
     state.z1 = dBand;
     state.z2 = dLow;
     return dLow + dHi;
@@ -118,7 +118,6 @@ class StateVariableFilterParams2
 {
 public:
     friend StateVariableFilter2<T>;
-
 
     /**
      * Set the filter Q.
@@ -153,7 +152,6 @@ public:
     T _fcGain() const { return fcGain; }
     T _qGain() const { return qGain; }
 private:
-   // Mode mode = Mode::BandPass;
     T qGain = 1.;		// internal amp gains
     T fcGain = T(.001);
 };
