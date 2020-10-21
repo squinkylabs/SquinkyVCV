@@ -44,8 +44,13 @@ public:
 };
 
 /**
+ * reduce unnecessary fc calcs:
+ *  *  12+lim:      8.7   
+ *  12, no lim:     8.7
+ *  24+lim  :       17.7
+ * 16:              21.7 
+ * 
  * refactor oversample:
- *
  *  *  12+lim:      10.7   
  *  12, no lim:     10.7
  *  24+lim  :       19.7
@@ -182,6 +187,10 @@ private:
     int numChannels_m = 0;
     int numBanks_m = 0;
     Topology topology_m = Topology::SINGLE;
+    float_4 lastQv[4] = {-1};
+    float_4 lastRv[4] = {-1};
+    float_4 lastFv[4] = {-1};
+    float_4 processedRValue = -1;
 
     Divider divn;
     Divider divm;
@@ -193,7 +202,7 @@ private:
     void setupLimiter();
 
     static float_4 fastQFunc(float_4 qV, int numStages);
-    static std::pair<float_4, float_4> fastFcFunc(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime);
+    static std::pair<float_4, float_4> fastFcFunc2(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime);
 
     using  processFunction = void (F2_Poly<TBase>::*)(const typename TBase::ProcessArgs& args);
     processFunction procFun;
@@ -264,8 +273,6 @@ inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params2() con
 template <class TBase>
 inline float_4 F2_Poly<TBase>::fastQFunc(float_4 qV, int numStages)
 {
-  //  assert(qV >= 0);
- //   assert(qV <= 10);
     assert(numStages >=1 && numStages <= 2);
 
     const float expMult = (numStages == 1) ? 1 / 1.5f : 1 / 2.5f;
@@ -274,15 +281,16 @@ inline float_4 F2_Poly<TBase>::fastQFunc(float_4 qV, int numStages)
 }
 
 template <class TBase>
-inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime) {
+inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc2(float_4 freqVolts, float_4 r, float oversample, float sampleTime) {
     assert(oversample == 4);
     assert(sampleTime < .0001);
-    float_4 r =  rack::dsp::approxExp2_taylor5(rVolts/3.f);
+   // float_4 r =  rack::dsp::approxExp2_taylor5(rVolts/3.f);
     float_4 freq =  rack::dsp::FREQ_C4 *  rack::dsp::approxExp2_taylor5(freqVolts + 30 - 4) / 1073741824;
 
     freq /= oversample;
     freq *= sampleTime;
 
+// we could pass in 1/r, too
     float_4 f1 = freq / r;
     float_4 f2 = freq * r;
     return std::make_pair(f1, f2);
@@ -301,32 +309,42 @@ inline void F2_Poly<TBase>::setupFreq()
         float_4 qVolts = F2_Poly<TBase>::params[Q_PARAM].value;
         qVolts += qPort.getPolyVoltageSimd<float_4>(baseChannel);
         qVolts = rack::simd::clamp(qVolts, 0, 10);
-        float_4 q = fastQFunc(qVolts, numStages);
-        params1[bank].setQ(q);
-        params2[bank].setQ(q);
 
-        outputGain_n = 1 / q;
-        if (numStages == 2) {
-            outputGain_n *= 1 / q;
+        int changeMask = rack::simd::movemask(qVolts != lastQv[bank]);
+        if (changeMask) {
+            lastQv[bank] = qVolts;
+            float_4 q = fastQFunc(qVolts, numStages);
+            params1[bank].setQ(q);
+            params2[bank].setQ(q);
+
+            outputGain_n = 1 / q;
+            if (numStages == 2) {
+                outputGain_n *= 1 / q;
+            }
+            outputGain_n = SimdBlocks::min(outputGain_n, float_4(1.f));
         }
-        outputGain_n = SimdBlocks::min(outputGain_n, float_4(1.f));
 
         SqInput& rPort = TBase::inputs[R_INPUT];
         float_4 rVolts = F2_Poly<TBase>::params[R_PARAM].value;
         rVolts += rPort.getPolyVoltageSimd<float_4>(baseChannel);
         rVolts = rack::simd::clamp(rVolts, 0, 10);
+        const bool rChanged = rack::simd::movemask(rVolts != lastRv[bank]);
+        if (rChanged) {
+            lastRv[bank] = rVolts;
+            processedRValue =  rack::dsp::approxExp2_taylor5(rVolts/3.f);
+        }
 
         SqInput& fcPort = TBase::inputs[FC_INPUT];
         float_4 fVolts = F2_Poly<TBase>::params[FC_PARAM].value;
         fVolts += fcPort.getPolyVoltageSimd<float_4>(baseChannel);
         fVolts = rack::simd::clamp(fVolts, 0, 10);
-
-        auto fr = fastFcFunc(fVolts, rVolts, oversample, sampleTime);
-
-       // freq /= oversample;
-      //  freq *= sampleTime;
-        params1[bank].setFreq(fr.first);
-        params2[bank].setFreq(fr.second);
+        const bool fChanged = rack::simd::movemask(fVolts != lastFv[bank]);
+        if (rChanged || fChanged) {
+            lastFv[bank] = fVolts;
+            auto fr = fastFcFunc2(fVolts, processedRValue, oversample, sampleTime);
+            params1[bank].setFreq(fr.first);
+            params2[bank].setFreq(fr.second);
+        }
     }
 }
 
