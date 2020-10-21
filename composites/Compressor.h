@@ -28,6 +28,13 @@ public:
 };
 
 /**
+ * only calc on change:
+ * 1 ch lim: 4.02
+ * 1 cha curve 11.9
+ * 16 ch lim 10.8
+ * 16 ch curve: 106
+ * 16 ch lim no dist 12.0
+ * 
  *  * After poll 16 -> 32
  * 1 ch lim: 9.2
  * 1 ch curve: 17.7
@@ -137,11 +144,6 @@ public:
         return AudioMath::makeFunc_Exp(0, 10, .1, 10);
     }
 
-
-   // float lookupAttack(float raw) const;
-   // float lookupRelease(float raw) const;
-   // float lookupthreshold(float raw) const;
-
 private:
 
     Cmprsr compressorsL[4];
@@ -161,11 +163,6 @@ private:
     float_4 makeupGain_m = 1;
     Divider divn;
 
-#if 0
-    std::function<double(double)> attackFunction = getAttackFunction();
-    std::function<double(double)> releaseFunction = getReleaseFunction();
-    std::function<double(double)> thresholdFunction = getThresholdFunction();
-#endif
     // we could unify this stuff with the ui stuff, above.
     LookupTableParams<float> attackFunctionParams;
     LookupTableParams<float> releaseFunctionParams;
@@ -173,6 +170,14 @@ private:
 
     std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
     std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
+
+    float lastRawMakeupGain = -1;
+    float lastRawMix = -1;
+    float lastRawA = -1;
+    float lastRawR = -1;
+    int lastReduceDistortion = -1;
+    float lastThreshold = -1;
+    int lastRatio = -1;
 };
 
 template <class TBase>
@@ -238,34 +243,43 @@ inline void Compressor<TBase>::stepn()
     pollAttackRelease();
 
     const float rawWetDry = Compressor<TBase>::params[WETDRY_PARAM].value;
-    wetLevel = LookupTable<float>::lookup(*panR, rawWetDry, true);
-    dryLevel = LookupTable<float>::lookup(*panL, rawWetDry, true);
-    wetLevel *= wetLevel;
-    dryLevel *= dryLevel;
+    if (rawWetDry != lastRawMix) {
+        lastRawMix = rawWetDry;
+        wetLevel = LookupTable<float>::lookup(*panR, rawWetDry, true);
+        dryLevel = LookupTable<float>::lookup(*panL, rawWetDry, true);
+        wetLevel *= wetLevel;
+        dryLevel *= dryLevel;
+    }
 
     const float rawMakeupGain = Compressor<TBase>::params[MAKEUPGAIN_PARAM].value;
-    makeupGain_m = AudioMath::gainFromDb(rawMakeupGain);
+    if (lastRawMakeupGain != rawMakeupGain) {
+        lastRawMakeupGain = rawMakeupGain;
+        makeupGain_m = AudioMath::gainFromDb(rawMakeupGain);
+    }
 
    // const float threshold = thresholdFunction(Compressor<TBase>::params[THRESHOLD_PARAM].value);
     const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, Compressor<TBase>::params[THRESHOLD_PARAM].value);
     const float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
-  
-    Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
-    for (int i = 0; i<4; ++i) {
-        compressorsL[i].setThreshold(threshold);
-        compressorsR[i].setThreshold(threshold);
-        compressorsL[i].setCurve(ratio);
-        compressorsR[i].setCurve(ratio);
+    if (lastThreshold != threshold || lastRatio != rawRatio) {
+        lastThreshold = threshold;
+        lastRatio = rawRatio;
+        Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
+        for (int i = 0; i<4; ++i) {
+            compressorsL[i].setThreshold(threshold);
+            compressorsR[i].setThreshold(threshold);
+            compressorsL[i].setCurve(ratio);
+            compressorsR[i].setCurve(ratio);
 
-        if (i < numBanksL_m) {
-            const int baseChannel = i * 4;
-            const int chanThisBankL = std::min(4, numChannelsL_m - baseChannel);
-            compressorsL[i].setNumChannels(chanThisBankL);
-        }
-        if (i < numBanksR_m) {
-            const int baseChannel = i * 4;
-            const int chanThisBankR = std::min(4, numChannelsR_m - baseChannel);
-            compressorsR[i].setNumChannels(chanThisBankR);
+            if (i < numBanksL_m) {
+                const int baseChannel = i * 4;
+                const int chanThisBankL = std::min(4, numChannelsL_m - baseChannel);
+                compressorsL[i].setNumChannels(chanThisBankL);
+            }
+            if (i < numBanksR_m) {
+                const int baseChannel = i * 4;
+                const int chanThisBankR = std::min(4, numChannelsR_m - baseChannel);
+                compressorsR[i].setNumChannels(chanThisBankR);
+            }
         }
     }
 }
@@ -273,14 +287,24 @@ inline void Compressor<TBase>::stepn()
 template <class TBase>
 inline void Compressor<TBase>::pollAttackRelease()
 {
-    const float attack = LookupTable<float>::lookup(attackFunctionParams, Compressor<TBase>::params[ATTACK_PARAM].value);
-    const float release = LookupTable<float>::lookup(releaseFunctionParams, Compressor<TBase>::params[RELEASE_PARAM].value);
-   // printf("in poll, raw=%f,%f a=%f r=%f\n", attackRaw, releaseRaw, attack, release); fflush(stdout);
-
+    const float rawAttack = Compressor<TBase>::params[ATTACK_PARAM].value;
+    const float rawRelease = Compressor<TBase>::params[RELEASE_PARAM].value;
     const bool reduceDistortion = bool ( std::round(Compressor<TBase>::params[REDUCEDISTORTION_PARAM].value));
-    for (int i = 0; i<4; ++i) {
-        compressorsL[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
-        compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
+
+    if (rawAttack != lastRawA || rawRelease != lastRawR || reduceDistortion != lastReduceDistortion) {
+        lastRawA = rawAttack;
+        lastRawR = rawRelease;
+        lastReduceDistortion = reduceDistortion;
+
+        const float attack = LookupTable<float>::lookup(attackFunctionParams, rawAttack);
+        const float release = LookupTable<float>::lookup(releaseFunctionParams, rawRelease);
+    // printf("in poll, raw=%f,%f a=%f r=%f\n", attackRaw, releaseRaw, attack, release); fflush(stdout);
+
+        
+        for (int i = 0; i<4; ++i) {
+            compressorsL[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
+            compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
+        }
     }
 }
 

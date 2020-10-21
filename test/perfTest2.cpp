@@ -134,12 +134,15 @@ static void testUniformLookup()
 static void testNonUniform()
 {
     std::shared_ptr<NonUniformLookupTableParams<float>> lookup = makeLPFilterL_Lookup<float>();
+    printf("non uniform lookup size = %d\n", lookup->size()); 
 
     MeasureTime<float>::run(overheadInOut, "non-uniform", [lookup]() {
         float x = TestBuffers<float>::get();
         return  NonUniformLookupTable<float>::lookup(*lookup, x);
      
     }, 1);
+    printf("Now abort");
+    abort();
 }
 
 using Slewer = Slew4<TestComposite>;
@@ -517,16 +520,17 @@ void perfTest2()
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
 #ifndef _MSC_VER
-    testF2_Poly1();
-    testF2_Poly16();
-     testF2_12nl();
-     testF2_24l();
+   
     testCompLim1();
     testCompLim16();
     testCompLim16Dist();
     testCompKnee();
     testCompKnee16();
     testCompKnee16Hard();
+    testF2_Poly1();
+    testF2_Poly16();
+    testF2_12nl();
+    testF2_24l();
 #endif
 
 

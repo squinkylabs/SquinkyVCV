@@ -322,6 +322,7 @@ inline void F2_Poly<TBase>::setupFreq()
                 outputGain_n *= 1 / q;
             }
             outputGain_n = SimdBlocks::min(outputGain_n, float_4(1.f));
+            // printf("set output gain to %s\n", toStr(outputGain_n).c_str());
         }
 
         SqInput& rPort = TBase::inputs[R_INPUT];
