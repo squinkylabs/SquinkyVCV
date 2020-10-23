@@ -156,6 +156,12 @@ void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::FC_INPUT));
 
+    addParam(SqHelper::createParam<SqTrimpot24>(
+        icomp,
+        Vec(jackX2, jackY + 1 * dy),
+        module,
+        Comp::FC_TRIM_PARAM));
+
     addLabel(
         Vec(jackX , labelY + 2 * dy),
         "Q");

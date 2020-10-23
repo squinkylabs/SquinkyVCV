@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "AudioMath_4.h"
 #include <assert.h>
 #include <memory>
 #include "Divider.h"
@@ -124,6 +125,7 @@ public:
         Q_PARAM,
         MODE_PARAM,
         LIMITER_PARAM,
+        FC_TRIM_PARAM,
         NUM_PARAMS
     };
 
@@ -165,7 +167,6 @@ public:
     /**
      * Main processing entry point. Called every sample
      */
-    //void step() override;
     void process(const typename TBase::ProcessArgs& args) override;
 
     void onSampleRateChange() override;
@@ -189,7 +190,11 @@ private:
     Topology topology_m = Topology::SINGLE;
     float_4 lastQv[4] = {-1};
     float_4 lastRv[4] = {-1};
-    float_4 lastFv[4] = {-1};
+
+    float_4 lastFcVC[4] = {-1};
+    float lastFcKnob = -1;
+    float lastFcTrim = -1;
+
     float_4 processedRValue = -1;
 
     Divider divn;
@@ -212,9 +217,7 @@ private:
     void processOneBank12_nolim(const typename TBase::ProcessArgs& args);
     void processGeneric(const typename TBase::ProcessArgs& args);
 
-    
-   // StateVariableFilter2<T>::Mode mode;
-    
+     AudioMath_4::ScaleFun scaleFc = AudioMath_4::makeScalerWithBipolarAudioTrim(0, 10, 0, 10);    
 };
 
 template <class TBase>
@@ -284,7 +287,6 @@ template <class TBase>
 inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc2(float_4 freqVolts, float_4 r, float oversample, float sampleTime) {
     assert(oversample == 4);
     assert(sampleTime < .0001);
-   // float_4 r =  rack::dsp::approxExp2_taylor5(rVolts/3.f);
     float_4 freq =  rack::dsp::FREQ_C4 *  rack::dsp::approxExp2_taylor5(freqVolts + 30 - 4) / 1073741824;
 
     freq /= oversample;
@@ -302,6 +304,13 @@ inline void F2_Poly<TBase>::setupFreq()
     const float sampleTime = TBase::engineGetSampleTime();
     const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     const int numStages = (topologyInt == 0) ? 1 : 2; 
+
+    const bool fcKnobChanged = lastFcKnob != F2_Poly<TBase>::params[FC_PARAM].value;
+    const bool fcTrimChanged = lastFcTrim != F2_Poly<TBase>::params[FC_TRIM_PARAM].value;
+
+    lastFcKnob = F2_Poly<TBase>::params[FC_PARAM].value;
+    lastFcTrim = F2_Poly<TBase>::params[FC_TRIM_PARAM].value;
+
     for (int bank = 0; bank < numBanks_m; bank++) {
         const int baseChannel = 4 * bank;
         SqInput& qPort = TBase::inputs[Q_INPUT];
@@ -335,6 +344,7 @@ inline void F2_Poly<TBase>::setupFreq()
             processedRValue =  rack::dsp::approxExp2_taylor5(rVolts/3.f);
         }
 
+#if 0 // orig way
         SqInput& fcPort = TBase::inputs[FC_INPUT];
         float_4 fVolts = F2_Poly<TBase>::params[FC_PARAM].value;
         fVolts += fcPort.getPolyVoltageSimd<float_4>(baseChannel);
@@ -346,6 +356,31 @@ inline void F2_Poly<TBase>::setupFreq()
             params1[bank].setFreq(fr.first);
             params2[bank].setFreq(fr.second);
         }
+#endif
+
+        SqInput& fcPort = TBase::inputs[FC_INPUT];
+        float_4 fcCV = fcPort.getPolyVoltageSimd<float_4>(baseChannel);
+        const bool fcCVChanged =  rack::simd::movemask(fcCV != lastFcVC[bank]);
+        if (fcCVChanged || rChanged || fcKnobChanged || fcTrimChanged) {
+            lastFcVC[bank] = fcCVChanged;
+
+            float_4 combinedFcVoltage = scaleFc(
+                fcCV,
+                lastFcKnob,
+                lastFcTrim);
+
+            auto fr = fastFcFunc2(combinedFcVoltage, processedRValue, oversample, sampleTime);
+            /*
+            printf("fccv=%f knob =%f comb=%f final=%f,%f\n",
+                fcCV[0],
+                lastFcKnob,
+                combinedFcVoltage[0],
+                fr.first[0], fr.second[0]); fflush(stdout);
+                */
+
+            params1[bank].setFreq(fr.first);
+            params2[bank].setFreq(fr.second);
+        }     
     }
 }
 
@@ -529,6 +564,9 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i)
             break;
         case F2_Poly<TBase>::LIMITER_PARAM:
             ret = {0, 1, 1, "Limiter"};
+            break;
+        case F2_Poly<TBase>::FC_TRIM_PARAM:
+         ret = {-1, 1, 0, "Fc modulation"};
             break;
         default:
             assert(false);
