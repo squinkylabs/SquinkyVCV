@@ -371,13 +371,14 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
     Config ret(0, 1, 0, "");
     switch (i) {
         case Compressor<TBase>::ATTACK_PARAM:
-            ret = {0, 1, .1, "Attack time"};
+            // .8073 too low .8075 too much
+            ret = {0, 1, .8074, "Attack time"};
             break;
          case Compressor<TBase>::RELEASE_PARAM:
-            ret = {0, 1, .1, "Release time"};
+            ret = {0, 1, .25, "Release time"};
             break;
          case Compressor<TBase>::THRESHOLD_PARAM:
-            ret = {0, 10, 1, "Threshold"};
+            ret = {0, 10, 10, "Threshold"};
             break;
          case Compressor<TBase>::RATIO_PARAM:
             ret = {0, 8, 3, "Compression ratio"};
@@ -386,7 +387,7 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
             ret = {0, 40, 0, "Makeup gain"};
             break;
         case Compressor<TBase>::REDUCEDISTORTION_PARAM:
-            ret = {0, 1, 0, "IM Distortion suppression"};
+            ret = {0, 1, 1, "IM Distortion suppression"};
             break;
         case Compressor<TBase>::WETDRY_PARAM:
             ret = {-1, 1, 1, "dry/wet mix"};

@@ -35,7 +35,8 @@ inline void SqVuMeter::draw(const DrawArgs &args)
 
     for (int seg = 0; seg < numSegments; ++seg) {
         const float segX = x + seg * xPerSegment;
-        float attenThisSegment = dbPerSegment/2  + seg * dbPerSegment;
+        const int segRtoL = numSegments - (seg + 1);
+        float attenThisSegment = dbPerSegment/2  + segRtoL * dbPerSegment;
         const auto color = (atten >= attenThisSegment) ? UIPrefs::VU_ACTIVE_COLOR : UIPrefs::VU_INACTIVE_COLOR;
         SqGfx::filledRect(
             args.vg,

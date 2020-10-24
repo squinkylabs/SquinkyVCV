@@ -27,7 +27,8 @@ public:
         auto value = getValue();
         auto expValue = expFunction(value);
         std::stringstream str;
-        str << expValue;
+        str.precision(2);
+        str << std::fixed << expValue;
         if (!suffix.empty()) {
             str << suffix;
         }
@@ -76,6 +77,27 @@ public:
     }
 };
 
+class RatiosQuantity : public SqTooltips::SQParamQuantity {
+public:
+    RatiosQuantity(const ParamQuantity& other) : 
+        SqTooltips::SQParamQuantity(other) 
+    {
+    }
+    
+    std::string getDisplayValueString() override {
+        auto value = getValue();
+        int index = value;
+        std::string ratio = Comp::ratios()[index];
+        std::stringstream str;
+        str << "Compression ratio: " << ratio;
+
+        return str.str();
+    }
+protected:
+    std::function<double(double)> expFunction;
+    std::string suffix;
+};
+
 /**
  */
 struct CompressorModule : Module
@@ -106,6 +128,7 @@ CompressorModule::CompressorModule()
     SqTooltips::changeParamQuantity<ReleaseQuantity>(this, Comp::RELEASE_PARAM);
     SqTooltips::changeParamQuantity<ThresholdQuantity>(this, Comp::THRESHOLD_PARAM);
     SqTooltips::changeParamQuantity<MakeupGainQuantity>(this, Comp::MAKEUPGAIN_PARAM);
+    SqTooltips::changeParamQuantity<RatiosQuantity>(this, Comp::RATIO_PARAM);
 
     onSampleRateChange();
     compressor->init();
