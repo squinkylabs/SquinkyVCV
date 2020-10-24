@@ -88,10 +88,10 @@ public:
         auto value = getValue();
         int index = value;
         std::string ratio = Comp::ratios()[index];
-        std::stringstream str;
-        str << "Compression ratio: " << ratio;
+      //  std::stringstream str;
+      //  str << "Compression ratio: " << ratio;
 
-        return str.str();
+        return ratio;
     }
 protected:
     std::function<double(double)> expFunction;
