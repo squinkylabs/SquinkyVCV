@@ -61,16 +61,28 @@ public:
     void setRelease(float);
 
     void setEnable(bool);
+    void setInstantAttack(bool);
 
     float_4 _memory() const;
 private:
     float_4 memory = 0;
     float_4 lAttack = 0;
     float_4 lRelease = 0;
+    float_4 instant = 0;
 
     std::shared_ptr<NonUniformLookupTableParams<float>> lookup = makeLPFilterL_Lookup<float>();
     bool enabled = true;
 };
+
+inline void MultiLag2::setInstantAttack(bool b) {
+    // tortured way to may a simd boolean mask - make this a function!
+    if (!b) {
+        instant = 0;
+    } else {
+        instant = (float_4(1) > float_4(0));
+    }
+    simd_assertMask(instant);
+}
 
 inline void MultiLag2::setEnable(bool b) {
     enabled = b;
@@ -84,16 +96,25 @@ inline float_4 MultiLag2::_memory() const {
  */
 inline void MultiLag2::step(float_4 input)
 {
+  //  printf("--step, input = %s\n", toStr(input).c_str());
     if (!enabled) {
         memory = input;
         return;
     }
 
-    float_4 l = SimdBlocks::ifelse(input >= memory, lAttack, lRelease);
+    const float_4 isAttack = input >= memory;
+    float_4 l = SimdBlocks::ifelse(isAttack, lAttack, lRelease);
     float_4 k = float_4(1) - l;
+  //  printf("l=%s k=%s\n", toStr(l).c_str(), toStr(k).c_str());
     float_4 temp = input * k;
-    memory *= l;
-    memory += temp;
+    float_4 laggedMemory = temp + memory * l;
+   // memory *= l;
+  //  memory += temp;
+    const float_4 isInstantAttack = isAttack & instant;
+ //   printf("in step. isInsta = %s isAtt = %s\n", toStr(isInstantAttack).c_str(), toStr(isAttack).c_str());
+    memory = SimdBlocks::ifelse(isInstantAttack, input, laggedMemory);
+ //   printf("lagged mem = %s, final mem = %s\n", toStr(laggedMemory).c_str(), toStr(memory).c_str());
+
 }
 
 inline float_4 MultiLag2::get() const
@@ -103,6 +124,7 @@ inline float_4 MultiLag2::get() const
 
 inline void MultiLag2::setAttack(float fs)
 {
+  //  printf("ML set attack %f\n", fs); fflush(stdout);
     assert(fs > 00 && fs < .5);
   //  float ls = NonUniformLookupTable<float>::lookup(*lookup, fs);
     float ls = LowpassFilter<float>::computeLfromFs(fs);

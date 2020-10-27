@@ -162,8 +162,8 @@ std::string toStrLiteral(const float_4& x);
 std::string toStr(const float_4& x);
 std::string toStr(const int32_4& x);
 inline void printBadMask(float_4 m) {
-    printf("asserts.h: not a valid float_4 mask: %s\n", toStr(m).c_str());
-    printf("asserts.h: not a valid float_4 mask: literal %s\n", toStrLiteral(m).c_str());
+    printf("asserts.h (a): not a valid float_4 mask: %s\n", toStr(m).c_str());
+    printf("asserts.h (b): not a valid float_4 mask: literal %s\n", toStrLiteral(m).c_str());
     fflush(stdout);
 }
 

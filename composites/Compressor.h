@@ -28,6 +28,13 @@ public:
 };
 
 /**
+ * after zero attack:
+ * 1 ch lim: 4.9
+ * 1 cha curve 13.3
+ * 16 ch lim 16.3
+ * 16 ch curve: 122
+ * 16 ch lim no dist  18
+ * 
  * only calc on change:
  * 1 ch lim: 4.02
  * 1 cha curve 11.9

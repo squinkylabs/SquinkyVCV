@@ -367,6 +367,84 @@ static void testCompLim()
 }
 
 
+static void testCompZeroAttack(bool reduceDist)
+{
+    printf("\n---- testCompZeroAttack\n"); fflush(stdout);
+    float sampleRate = 44100;
+    float sampleTime = 1.f / sampleRate;
+    Cmprsr comp;
+    assert(comp.wasInit());
+    comp.setNumChannels(1);
+    comp.setCurve(Cmprsr::Ratios::_2_1_hard);
+    comp.setTimes(0, 100, sampleTime, reduceDist);
+
+    printf("\n---- testCompZeroAttack2 %d\n", comp.wasInit()); fflush(stdout);
+
+    // when input is increasing, should follow input
+    float_4 in(1.34);
+       printf("\n---- testCompZeroAttack3 %d\n", comp.wasInit()); fflush(stdout);
+    auto out = comp.step(in);
+       printf("\n---- testCompZeroAttack4 \n"); fflush(stdout);
+    simd_assertEQ(out, in);
+
+    printf("now falling\n");
+    fflush(stdout);
+   
+    in = float_4(1);
+    out = comp.step(in);
+     fflush(stdout);
+    simd_assertGT(out, in);
+}
+
+static void testCompZeroAttack()
+{
+    testCompZeroAttack(false);
+    testCompZeroAttack(true);
+}
+
+static void testLagZeroAttack(bool isZero)
+{
+    float sampleRate = 44100;
+    float sampleTime = 1.f / sampleRate;
+    MultiLag2 lag;
+
+    lag.setAttack(.01);
+    lag.setRelease(.01);
+    lag.setInstantAttack(isZero);
+
+
+    // when input is increasing, should follow input
+    float_4 in(1.34);
+    
+    lag.step(in);
+    auto out = lag.get();
+    auto peak = out;
+    
+    if (isZero) {
+        simd_assertEQ(out, in);
+    } else {
+        simd_assertLT(out, in);
+    }
+
+    fflush(stdout);
+   
+    in = float_4(1);
+    lag.step(in);
+    out = lag.get();
+    fflush(stdout);
+
+    if (isZero) {
+        simd_assertGT(out, in);
+    }
+}
+
+static void testLagZeroAttack()
+{
+    testLagZeroAttack(true);
+    testLagZeroAttack(false);
+}
+
+
 void testMultiLag2()
 {
  //   testLowpassLookup();
@@ -374,6 +452,7 @@ void testMultiLag2()
  //   testDirectLookup();
 //  testDirectLookup2();
 
+#if 1
     testMultiLag0();
     testMultiLag1();
     testMultiLag2int();
@@ -390,5 +469,10 @@ void testMultiLag2()
 
     testCompUI();
     testCompLim();
+ #endif
+
+    // finish this??
+   // testCompZeroAttack();
+   testLagZeroAttack();
 
 }

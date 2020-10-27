@@ -33,6 +33,11 @@ public:
     const MultiLag2& _lag() const;
     static std::vector<std::string> ratios();
     float_4 getGain() const;
+
+    static bool wasInit() {
+        return !!ratioCurves[0];
+    }
+
 private:
     MultiLag2 lag;
     MultiLPF2 attackFilter;
@@ -46,10 +51,7 @@ private:
     float_4 gain;
 
     static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
-    static bool wasInit()  {
-        return !!ratioCurves[0];
-    }
-
+  
     using  processFunction = float_4 (Cmprsr::*)(float_4 input);
     processFunction procFun = stepGeneric;
     void updateProcFun();
@@ -63,6 +65,7 @@ inline float_4 Cmprsr::getGain() const
 {
     return gain;
 }
+
 inline void Cmprsr::setNumChannels(int ch)
 {
     maxChannel = ch - 1;
@@ -96,27 +99,31 @@ inline float_4 Cmprsr::step(float_4 input)
 inline float_4 Cmprsr::step1Soft(float_4 input)
 {
     assert(wasInit());
+    //printf("comp::step1Soft\n");
 
     lag.step( rack::simd::abs(input));
     float_4 envelope = lag.get();
+    // printf("step no dist reduct 102\n"); fflush(stdout);
 
     CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
     gain = float_4(1);
     const float_4 level = envelope * invThreshold;
 
     gain[0] = CompCurves::lookup(table, level[0]);
+    // printf("step1soft, input = %s, gain = %s\n", toStr(input).c_str(), toStr(gain).c_str());
 
     return gain * input;
 }
 
 inline float_4 Cmprsr::step1NoDistSoft(float_4 input)
 {
+    //printf("comp::step1NoD\n");
     assert(wasInit());
 
     lag.step( rack::simd::abs(input));
     attackFilter.step(lag.get());
     float_4 envelope = attackFilter.get();
-       // printf("reduce\n"); fflush(stdout);
+    // printf("reduce 119\n"); fflush(stdout);
 
 
     CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
@@ -130,6 +137,7 @@ inline float_4 Cmprsr::step1NoDistSoft(float_4 input)
 
 inline float_4 Cmprsr::stepGeneric(float_4 input)
 {
+    // printf("comp::stepGen\n");
     assert(wasInit());
 
     float_4 envelope;
@@ -137,10 +145,11 @@ inline float_4 Cmprsr::stepGeneric(float_4 input)
         lag.step( rack::simd::abs(input));
         attackFilter.step(lag.get());
         envelope = attackFilter.get();
-       // printf("reduce\n"); fflush(stdout);
+        // printf("reduce 140\n"); fflush(stdout);
     } else {
         lag.step( rack::simd::abs(input));
         envelope = lag.get();
+        // printf("no reduce 144\n"); fflush(stdout);
     }
 
     if (ratio == Ratios::HardLimit) {
@@ -162,22 +171,33 @@ inline float_4 Cmprsr::stepGeneric(float_4 input)
 
 inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, bool enableDistortionReduction)
 {
-    reduceDistortion = enableDistortionReduction;
-    //printf("set times a=%f r=%f\n", attackMs, releaseMs);
     const float correction = 2 * M_PI;
-    float attackHz = 1000.f / (attackMs * correction);
-    float releaseHz = 1000.f / (releaseMs * correction);
+    // float attackHz = 1000.f / (attackMs * correction);
+    const float releaseHz = 1000.f / (releaseMs * correction);
+    const float normRelease = releaseHz * sampleTime;
 
-    float normAttack = attackHz * sampleTime;
-    float normRelease = releaseHz * sampleTime;
-
-    if (enableDistortionReduction) {
-        lag.setAttack(normAttack * 2);
-        attackFilter.setCutoff(normAttack * 2);
+    if (attackMs < .1) {
+        // printf("attack zero!\n");
+        reduceDistortion = false;       // no way to do this at zero attack
+        lag.setInstantAttack(true);
+        lag.setRelease(normRelease);
     } else {
-        lag.setAttack(normAttack); 
+        reduceDistortion = enableDistortionReduction;
+        const float correction = 2 * M_PI;
+        float attackHz = 1000.f / (attackMs * correction);
+        lag.setInstantAttack(false);
+
+        const float normAttack = attackHz * sampleTime;
+        if (enableDistortionReduction) {
+            lag.setAttack(normAttack * 2);
+            attackFilter.setCutoff(normAttack * 2);
+        } else {
+            lag.setAttack(normAttack); 
+        }
     }
-     lag.setRelease(normRelease);
+
+    lag.setRelease(normRelease);
+    updateProcFun();
 }
 
 inline Cmprsr::Cmprsr()
@@ -187,12 +207,13 @@ inline Cmprsr::Cmprsr()
         return;
     }
 
-
-    for (int i=0; i< int(Ratios::NUM_RATIOS); ++ i) {
+    for (int i = int(Ratios::NUM_RATIOS) - 1; i >= 0; --i) {
         Ratios ratio = Ratios(i);
         switch (ratio) {
             case Ratios::HardLimit:
+                // just need to have something here
                 ratioCurves[i] = ratioCurves[int(Ratios::_4_1_hard)];
+                assert(wasInit());
                 break;
             case Ratios::_2_1_soft:
                 {
@@ -258,6 +279,7 @@ inline Cmprsr::Cmprsr()
                 assert(false);
         }
     }
+    assert(wasInit());
 }
 
  inline std::vector<std::string> Cmprsr::ratios()
