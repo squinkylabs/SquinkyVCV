@@ -92,52 +92,42 @@ inline void Cmprsr::setCurve(Ratios r)
 
 inline float_4 Cmprsr::step(float_4 input)
 {
-   // return (*procFun)(input);
     return (this->*procFun)(input);
 }
 
 inline float_4 Cmprsr::step1Comp(float_4 input)
 {
     assert(wasInit());
-    //printf("comp::step1Soft\n");
 
     lag.step( rack::simd::abs(input));
     float_4 envelope = lag.get();
-    // printf("step no dist reduct 102\n"); fflush(stdout);
 
     CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
     gain = float_4(1);
     const float_4 level = envelope * invThreshold;
 
     gain[0] = CompCurves::lookup(table, level[0]);
-    // printf("step1soft, input = %s, gain = %s\n", toStr(input).c_str(), toStr(gain).c_str());
-
     return gain * input;
 }
 
 inline float_4 Cmprsr::step1NoDistComp(float_4 input)
 {
-    //printf("comp::step1NoD\n");
     assert(wasInit());
 
     lag.step( rack::simd::abs(input));
     attackFilter.step(lag.get());
     float_4 envelope = attackFilter.get();
-    // printf("reduce 119\n"); fflush(stdout);
-
 
     CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
     gain = float_4(1);
     const float_4 level = envelope * invThreshold;
 
     gain[0] = CompCurves::lookup(table, level[0]);
-
     return gain * input;
 }
 
 inline float_4 Cmprsr::stepGeneric(float_4 input)
 {
-    // printf("comp::stepGen\n");
     assert(wasInit());
 
     float_4 envelope;
@@ -145,11 +135,9 @@ inline float_4 Cmprsr::stepGeneric(float_4 input)
         lag.step( rack::simd::abs(input));
         attackFilter.step(lag.get());
         envelope = attackFilter.get();
-        // printf("reduce 140\n"); fflush(stdout);
     } else {
         lag.step( rack::simd::abs(input));
         envelope = lag.get();
-        // printf("no reduce 144\n"); fflush(stdout);
     }
 
     if (ratio == Ratios::HardLimit) {
@@ -172,7 +160,6 @@ inline float_4 Cmprsr::stepGeneric(float_4 input)
 inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, bool enableDistortionReduction)
 {
     const float correction = 2 * M_PI;
-    // float attackHz = 1000.f / (attackMs * correction);
     const float releaseHz = 1000.f / (releaseMs * correction);
     const float normRelease = releaseHz * sampleTime;
 
@@ -191,7 +178,6 @@ inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, 
         if (enableDistortionReduction) {
             lag.setAttack(normAttack * 4);
             attackFilter.setCutoff(normAttack * 1);
-            
         } else {
             lag.setAttack(normAttack); 
         }
