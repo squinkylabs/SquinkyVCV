@@ -55,10 +55,12 @@ extern int _mdb;        // MIDI reverence count
 
 #define assertNE(actual, expected) assertNEEx(actual, expected, "")
 
-#define assertClose(actual, expected, diff) if (!AudioMath::closeTo(actual, expected, diff)) { \
-    std::cout << "assertClose failed actual value =" << \
+#define assertCloseEx(actual, expected, diff, msg) if (!AudioMath::closeTo(actual, expected, diff)) { \
+    std::cout << "assertClose failed " << msg << " actual value =" << \
     actual << " expected=" << expected << std::endl << std::flush; \
     assert(false); }
+
+#define assertClose(actual, expected, diff) assertCloseEx(actual, expected, diff, "")
 
 #define assertClosePct(actual, expected, pct) { float diff = expected * pct / 100; \
     if (!AudioMath::closeTo(actual, expected, diff)) { \
@@ -119,10 +121,10 @@ using int32_4 = rack::simd::int32_4;
     assertNEEx(a[2], b[2], "simd2"); \
     assertNEEx(a[3], b[3], "simd3");
 
-#define simd_assertClose(a, b, c) assertClose(a[0], b[0], c); \
-    assertClose(a[1], b[1], c); \
-    assertClose(a[2], b[2], c); \
-    assertClose(a[3], b[3], c);
+#define simd_assertClose(a, b, c) assertCloseEx(a[0], b[0], c, "simd0"); \
+    assertCloseEx(a[1], b[1], c, "simd1"); \
+    assertCloseEx(a[2], b[2], c, "simd2"); \
+    assertCloseEx(a[3], b[3], c, "simde3");
 
 #define simd_assertClosePct(a, b, c) assertClosePct(a[0], b[0], c); \
     assertClosePct(a[1], b[1], c); \
