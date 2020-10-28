@@ -337,7 +337,7 @@ static void testCompLim(int inputId, int outputId)
 
     assertGT(4, threshV);
     comp->inputs[inputId].setVoltage(4, 0);
-    for (int i=0; i<1000; ++i) {
+    for (int i=0; i<2000; ++i) {
         comp->process(args);
     }
     output = comp->outputs[outputId].voltages[0];
@@ -367,16 +367,19 @@ static void testCompLim()
 }
 
 
-static void testCompZeroAttack(bool reduceDist)
+static void testLimiterZeroAttack(bool reduceDist)
 {
     printf("\n---- testCompZeroAttack\n"); fflush(stdout);
-    float sampleRate = 44100;
-    float sampleTime = 1.f / sampleRate;
+    const float sampleRate = 44100;
+    const float threshold = 5;
+    const float sampleTime = 1.f / sampleRate;
+
     Cmprsr comp;
     assert(comp.wasInit());
     comp.setNumChannels(1);
-    comp.setCurve(Cmprsr::Ratios::_2_1_hard);
+    comp.setCurve(Cmprsr::Ratios::HardLimit);
     comp.setTimes(0, 100, sampleTime, reduceDist);
+    comp.setThreshold(threshold);
 
     printf("\n---- testCompZeroAttack2 %d\n", comp.wasInit()); fflush(stdout);
 
@@ -387,19 +390,35 @@ static void testCompZeroAttack(bool reduceDist)
        printf("\n---- testCompZeroAttack4 \n"); fflush(stdout);
     simd_assertEQ(out, in);
 
+    // slam above limit - should limit immediately
+    // by setting gain to one half
+    in = float_4(10);
+    out = comp.step(in);
+    simd_assertEQ(out, float_4(threshold));
+
+
     printf("now falling\n");
     fflush(stdout);
    
+    // way below threshold. gain will still be reduced, but then go up
+    // but at first is still one half
     in = float_4(1);
     out = comp.step(in);
-     fflush(stdout);
-    simd_assertGT(out, in);
+    fflush(stdout);
+    simd_assertClose(out, float_4(.5),  .001);
+
+    // This used to work at 1000
+    // TODO: test release time constant for real
+    for (int i=0; i<100000; ++i) {
+        out = comp.step(in);
+    }
+      simd_assertClose(out, in,  .001);
 }
 
-static void testCompZeroAttack()
+static void testLimiterZeroAttack()
 {
-    testCompZeroAttack(false);
-    testCompZeroAttack(true);
+    testLimiterZeroAttack(false);
+    testLimiterZeroAttack(true);
 }
 
 static void testLagZeroAttack(bool isZero)
@@ -452,7 +471,7 @@ void testMultiLag2()
  //   testDirectLookup();
 //  testDirectLookup2();
 
-#if 1
+#if 0
     testMultiLag0();
     testMultiLag1();
     testMultiLag2int();
@@ -472,7 +491,7 @@ void testMultiLag2()
  #endif
 
     // finish this??
-   // testCompZeroAttack();
+   testLimiterZeroAttack();
    testLagZeroAttack();
 
 }

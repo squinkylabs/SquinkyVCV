@@ -43,7 +43,15 @@ class AttackQuantity : public LambdaQuantity {
 public:
     AttackQuantity(const ParamQuantity& other) : LambdaQuantity(other)
     {
-        expFunction = Comp::getSlowAttackFunction();
+       // expFunction = Comp::getSlowAttackFunction();
+        auto func = Comp::getSlowAttackFunction();
+        expFunction = [func](double x) {
+            auto y = func(x);
+            if (y < .1) {
+                y = 0;
+            }
+            return y;
+        };
         suffix = " mS";
     }
 };

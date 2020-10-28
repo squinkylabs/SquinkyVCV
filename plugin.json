@@ -231,7 +231,7 @@
 		{
 			"slug": "squinkylabs-f2",
 			"name": "F2",
-			"description": "F2",
+			"description": "Multimode state-variable filter",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md",
 			"tags": ["VCF", "Polyphonic"]
 		},
@@ -245,11 +245,15 @@
 		},
 		{
 			"slug": "squinkylabs-comp",
-			"name": "comp",
+			"name": "Comp",
 			"disabled": false,
-			"description": "comp",
+			"description": "Compressor",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md",
-			"tags": ["VCF", "Polyphonic"]
+			"tags": [
+				"Compressor",
+				"Dynamics",
+				"Polyphonic"
+			  ]
 		},
 		{
 			"slug": "squinkylabs-dividerx",

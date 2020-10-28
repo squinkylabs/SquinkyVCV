@@ -141,7 +141,7 @@ public:
     float getGainReductionDb() const;
     static std::vector<std::string> ratios();
     static std::function<double(double)> getSlowAttackFunction() {
-        return AudioMath::makeFunc_Exp(0, 1, .1, 30);
+        return AudioMath::makeFunc_Exp(0, 1, .05, 30);
     }
 
     static std::function<double(double)> getSlowReleaseFunction() {
@@ -201,7 +201,7 @@ inline void Compressor<TBase>::init()
         this->stepn();
     });
 
-    LookupTableFactory<float>::makeGenericExpTaper(64, attackFunctionParams, 0, 1, .1, 30);
+    LookupTableFactory<float>::makeGenericExpTaper(64, attackFunctionParams, 0, 1, .05, 30);
     LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, 100, 1600);
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
 }
@@ -309,6 +309,7 @@ inline void Compressor<TBase>::pollAttackRelease()
 
         
         for (int i = 0; i<4; ++i) {
+           // printf("set time attack = %f\n", attack); fflush(stdout);
             compressorsL[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
             compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
         }

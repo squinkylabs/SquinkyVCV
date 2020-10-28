@@ -57,8 +57,8 @@ private:
     void updateProcFun();
 
     float_4 stepGeneric(float_4);
-    float_4 step1NoDistSoft(float_4);
-    float_4 step1Soft(float_4);
+    float_4 step1NoDistComp(float_4);
+    float_4 step1Comp(float_4);
 };
 
 inline float_4 Cmprsr::getGain() const
@@ -77,9 +77,9 @@ inline void Cmprsr::updateProcFun()
     procFun = stepGeneric;
     if (maxChannel == 0 && (ratio != Ratios::HardLimit)) {
         if (reduceDistortion) {
-            procFun = step1NoDistSoft;
+            procFun = step1NoDistComp;
         } else {
-            procFun = step1Soft;
+            procFun = step1Comp;
         }
     }
 }
@@ -96,7 +96,7 @@ inline float_4 Cmprsr::step(float_4 input)
     return (this->*procFun)(input);
 }
 
-inline float_4 Cmprsr::step1Soft(float_4 input)
+inline float_4 Cmprsr::step1Comp(float_4 input)
 {
     assert(wasInit());
     //printf("comp::step1Soft\n");
@@ -115,7 +115,7 @@ inline float_4 Cmprsr::step1Soft(float_4 input)
     return gain * input;
 }
 
-inline float_4 Cmprsr::step1NoDistSoft(float_4 input)
+inline float_4 Cmprsr::step1NoDistComp(float_4 input)
 {
     //printf("comp::step1NoD\n");
     assert(wasInit());
@@ -177,7 +177,7 @@ inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, 
     const float normRelease = releaseHz * sampleTime;
 
     if (attackMs < .1) {
-        // printf("attack zero!\n");
+         printf("attack zero!\n");
         reduceDistortion = false;       // no way to do this at zero attack
         lag.setInstantAttack(true);
         lag.setRelease(normRelease);
@@ -189,8 +189,9 @@ inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, 
 
         const float normAttack = attackHz * sampleTime;
         if (enableDistortionReduction) {
-            lag.setAttack(normAttack * 2);
-            attackFilter.setCutoff(normAttack * 2);
+            lag.setAttack(normAttack * 4);
+            attackFilter.setCutoff(normAttack * 1);
+            
         } else {
             lag.setAttack(normAttack); 
         }
