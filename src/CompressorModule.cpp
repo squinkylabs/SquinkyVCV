@@ -11,6 +11,7 @@
 #include "ctrl/SqTooltips.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SqVuMeter.h"
+#include "ctrl/ToggleButton.h"
 
 using Comp = Compressor<WidgetComposite>;
 
@@ -241,11 +242,21 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
         Vec(knobX, knobY + 2 * dy),
         module,  Comp::MAKEUPGAIN_PARAM)); 
 
-    //    addLabel(Vec(knobX + 18, labelY + 4 * dy- 6),"< IM");
+   addLabel(Vec(knobX2, labelY + 2 * dy),"1/0");
+#if 0
     addParam(SqHelper::createParam<CKSS>(
         icomp,
         Vec(knobX2 + 8, 4 + knobY + 2 * dy),
-        module,  Comp::BYPASS_PARAM));   
+        module,  Comp::BYPASS_PARAM));  
+#else
+    ToggleButton* tog = SqHelper::createParam<ToggleButton>(
+        icomp,
+        Vec(knobX2 + 2, 4 + knobY + 2 * dy),
+        module,  Comp::NOTBYPASS_PARAM);  
+    tog->addSvg("res/square-button-01.svg");
+    tog->addSvg("res/square-button-02.svg");
+    addParam(tog);
+#endif 
 
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(

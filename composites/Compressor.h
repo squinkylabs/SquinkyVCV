@@ -99,7 +99,7 @@ public:
         RATIO_PARAM,
         MAKEUPGAIN_PARAM,
       //  REDUCEDISTORTION_PARAM,
-        BYPASS_PARAM,
+        NOTBYPASS_PARAM,
         WETDRY_PARAM,
         NUM_PARAMS
     };
@@ -229,7 +229,6 @@ inline float Compressor<TBase>::getGainReductionDb() const
     minGain = std::min(minGain,  minGain_4[3]);
     auto r =  AudioMath::db(minGain);
     return -r;
-
 }
 
 template <class TBase>
@@ -291,7 +290,8 @@ inline void Compressor<TBase>::stepn()
         }
     }
 
-    bypassed =  bool(std::round(Compressor<TBase>::params[BYPASS_PARAM].value));
+    bypassed =  !bool(std::round(Compressor<TBase>::params[NOTBYPASS_PARAM].value));
+    // printf("notbypass value = %f, bypassed = %d\n", Compressor<TBase>::params[NOTBYPASS_PARAM].value, bypassed); fflush(stdout);
 }
 
 template <class TBase>
@@ -299,7 +299,6 @@ inline void Compressor<TBase>::pollAttackRelease()
 {
     const float rawAttack = Compressor<TBase>::params[ATTACK_PARAM].value;
     const float rawRelease = Compressor<TBase>::params[RELEASE_PARAM].value;
- //   const bool reduceDistortion = bool ( std::round(Compressor<TBase>::params[REDUCEDISTORTION_PARAM].value));
     const bool reduceDistortion = true;
 
     if (rawAttack != lastRawA || rawRelease != lastRawR || reduceDistortion != lastReduceDistortion) {
@@ -357,9 +356,6 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
         const float_4 mixedOutput = wetOutput * wetLevel + input * dryLevel;
 
         outPortR.setVoltageSimd(mixedOutput, baseChannel);
-
-        // const float_4 env = compressors[bank]._lag().get();
-        // debugPort.setVoltageSimd(env, baseChannel);
     }
 }
 
@@ -406,7 +402,7 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
          case Compressor<TBase>::MAKEUPGAIN_PARAM:
             ret = {0, 40, 0, "Makeup gain"};
             break;
-        case Compressor<TBase>::BYPASS_PARAM:
+        case Compressor<TBase>::NOTBYPASS_PARAM:
             ret = {0, 1, 1, "Effect bypass"};
             break;
         case Compressor<TBase>::WETDRY_PARAM:
