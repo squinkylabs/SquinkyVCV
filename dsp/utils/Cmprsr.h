@@ -53,7 +53,7 @@ private:
     static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
   
     using  processFunction = float_4 (Cmprsr::*)(float_4 input);
-    processFunction procFun = stepGeneric;
+    processFunction procFun = &Cmprsr::stepGeneric;
     void updateProcFun();
 
     float_4 stepGeneric(float_4);
@@ -74,12 +74,12 @@ inline void Cmprsr::setNumChannels(int ch)
 
 inline void Cmprsr::updateProcFun()
 {
-    procFun = stepGeneric;
+    procFun = &Cmprsr::stepGeneric;
     if (maxChannel == 0 && (ratio != Ratios::HardLimit)) {
         if (reduceDistortion) {
-            procFun = step1NoDistComp;
+            procFun = &Cmprsr::step1NoDistComp;
         } else {
-            procFun = step1Comp;
+            procFun = &Cmprsr::step1Comp;
         }
     }
 }
