@@ -400,7 +400,7 @@ inline void F2_Poly<TBase>::setupModes()
 template <class TBase>
 inline void F2_Poly<TBase>::setupProcFunc()
 {
-    procFun = processGeneric;
+    procFun = &processGeneric;
     if (numBanks_m == 1) {
         if (topology_m == Topology::SERIES) {
             procFun = processOneBankSeries;
