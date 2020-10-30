@@ -403,12 +403,12 @@ inline void F2_Poly<TBase>::setupProcFunc()
     procFun = &F2_Poly<TBase>::processGeneric;
     if (numBanks_m == 1) {
         if (topology_m == Topology::SERIES) {
-            procFun = processOneBankSeries;
+            procFun = &F2_Poly<TBase>::processOneBankSeries;
         } else if (topology_m == Topology::SINGLE) {
             if (limiterEnabled_m) {
-                procFun = processOneBank12_lim; 
+                procFun = &F2_Poly<TBase>::processOneBank12_lim; 
             } else {
-                procFun = processOneBank12_nolim; 
+                procFun = &F2_Poly<TBase>::processOneBank12_nolim; 
             }
         }
     }
