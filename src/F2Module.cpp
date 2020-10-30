@@ -121,7 +121,7 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
         Vec(knobX,  knobY + 2 * dy),
         module,
         Comp::MODE_PARAM);
-    p->box.size.x = 54;  // width
+    p->box.size.x = 66;  // width
     p->box.size.y = 22;   
     p->text = "LP";
     p->setLabels( {"LP", "BP", "HP", "N"});
@@ -132,7 +132,7 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
         Vec(knobX,  knobY + 3 * dy),
         module,
         Comp::TOPOLOGY_PARAM);
-    p->box.size.x = 54;  // width
+    p->box.size.x = 66;  // width was 54
     p->box.size.y = 22;   
     p->text = "12dB";
     p->setLabels( {"12dB", "24dB", "Par", "Par -"});

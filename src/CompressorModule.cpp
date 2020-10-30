@@ -245,7 +245,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     addParam(SqHelper::createParam<CKSS>(
         icomp,
         Vec(knobX2 + 8, 4 + knobY + 2 * dy),
-        module,  Comp::REDUCEDISTORTION_PARAM));   
+        module,  Comp::BYPASS_PARAM));   
 
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(

@@ -98,7 +98,8 @@ public:
         THRESHOLD_PARAM,
         RATIO_PARAM,
         MAKEUPGAIN_PARAM,
-        REDUCEDISTORTION_PARAM,
+      //  REDUCEDISTORTION_PARAM,
+        BYPASS_PARAM,
         WETDRY_PARAM,
         NUM_PARAMS
     };
@@ -185,6 +186,7 @@ private:
     int lastReduceDistortion = -1;
     float lastThreshold = -1;
     int lastRatio = -1;
+    bool bypassed = false;
 };
 
 template <class TBase>
@@ -210,6 +212,9 @@ template <class TBase>
 inline float Compressor<TBase>::getGainReductionDb() const
 {
     float_4 minGain_4 = 1;
+    if (bypassed) {
+        return 0;
+    }
 
     for (int bank = 0; bank < numBanksL_m; ++bank) {
         minGain_4 = SimdBlocks::min(minGain_4, compressorsL[bank].getGain());
@@ -219,13 +224,10 @@ inline float Compressor<TBase>::getGainReductionDb() const
     }
 
     float minGain = minGain_4[0];
-   // printf("getGain2 num = %d\n", numBanks_m); fflush(stdout);
     minGain = std::min(minGain,  minGain_4[1]);
     minGain = std::min(minGain,  minGain_4[2]);
     minGain = std::min(minGain,  minGain_4[3]);
-  //  printf("getGain min = %f\n", minGain); fflush(stdout);
     auto r =  AudioMath::db(minGain);
- //   printf("getGain will ret = %f\n", r); fflush(stdout);
     return -r;
 
 }
@@ -264,7 +266,6 @@ inline void Compressor<TBase>::stepn()
         makeupGain_m = AudioMath::gainFromDb(rawMakeupGain);
     }
 
-   // const float threshold = thresholdFunction(Compressor<TBase>::params[THRESHOLD_PARAM].value);
     const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, Compressor<TBase>::params[THRESHOLD_PARAM].value);
     const float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
     if (lastThreshold != threshold || lastRatio != rawRatio) {
@@ -289,6 +290,8 @@ inline void Compressor<TBase>::stepn()
             }
         }
     }
+
+    bypassed =  bool(std::round(Compressor<TBase>::params[BYPASS_PARAM].value));
 }
 
 template <class TBase>
@@ -296,7 +299,8 @@ inline void Compressor<TBase>::pollAttackRelease()
 {
     const float rawAttack = Compressor<TBase>::params[ATTACK_PARAM].value;
     const float rawRelease = Compressor<TBase>::params[RELEASE_PARAM].value;
-    const bool reduceDistortion = bool ( std::round(Compressor<TBase>::params[REDUCEDISTORTION_PARAM].value));
+ //   const bool reduceDistortion = bool ( std::round(Compressor<TBase>::params[REDUCEDISTORTION_PARAM].value));
+    const bool reduceDistortion = true;
 
     if (rawAttack != lastRawA || rawRelease != lastRawR || reduceDistortion != lastReduceDistortion) {
         lastRawA = rawAttack;
@@ -305,11 +309,8 @@ inline void Compressor<TBase>::pollAttackRelease()
 
         const float attack = LookupTable<float>::lookup(attackFunctionParams, rawAttack);
         const float release = LookupTable<float>::lookup(releaseFunctionParams, rawRelease);
-    // printf("in poll, raw=%f,%f a=%f r=%f\n", attackRaw, releaseRaw, attack, release); fflush(stdout);
-
         
         for (int i = 0; i<4; ++i) {
-           // printf("set time attack = %f\n", attack); fflush(stdout);
             compressorsL[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
             compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
         }
@@ -325,8 +326,21 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
     SqOutput& outPortL = TBase::outputs[LAUDIO_OUTPUT];
     SqInput& inPortR = TBase::inputs[RAUDIO_INPUT];
     SqOutput& outPortR = TBase::outputs[RAUDIO_OUTPUT];
-    // SqOutput& debugPort = TBase::outputs[DEBUG_OUTPUT];
-    
+
+    if (bypassed) {
+        for (int bank = 0; bank < numBanksL_m; ++bank) {
+            const int baseChannel = bank * 4;
+            const float_4 input = inPortL.getPolyVoltageSimd<float_4>(baseChannel);
+            outPortL.setVoltageSimd(input, baseChannel);
+        }
+        for (int bank = 0; bank < numBanksR_m; ++bank) {
+            const int baseChannel = bank * 4;
+            const float_4 input = inPortR.getPolyVoltageSimd<float_4>(baseChannel);
+            outPortR.setVoltageSimd(input, baseChannel);
+        }
+        return;
+    }
+
     for (int bank = 0; bank < numBanksL_m; ++bank) {
         const int baseChannel = bank * 4;
         const float_4 input = inPortL.getPolyVoltageSimd<float_4>(baseChannel);
@@ -335,8 +349,6 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
 
         outPortL.setVoltageSimd(mixedOutput, baseChannel);
 
-        // const float_4 env = compressors[bank]._lag().get();
-        // debugPort.setVoltageSimd(env, baseChannel);
     }
     for (int bank = 0; bank < numBanksR_m; ++bank) {
         const int baseChannel = bank * 4;
@@ -394,8 +406,8 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
          case Compressor<TBase>::MAKEUPGAIN_PARAM:
             ret = {0, 40, 0, "Makeup gain"};
             break;
-        case Compressor<TBase>::REDUCEDISTORTION_PARAM:
-            ret = {0, 1, 1, "IM Distortion suppression"};
+        case Compressor<TBase>::BYPASS_PARAM:
+            ret = {0, 1, 1, "Effect bypass"};
             break;
         case Compressor<TBase>::WETDRY_PARAM:
             ret = {-1, 1, 1, "dry/wet mix"};
