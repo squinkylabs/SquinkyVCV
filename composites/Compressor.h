@@ -140,7 +140,8 @@ public:
     void onSampleRateChange() override;
 
     float getGainReductionDb() const;
-    static std::vector<std::string> ratios();
+    static const std::vector<std::string>& ratios();
+    static const std::vector<std::string>& ratiosLong();
     static std::function<double(double)> getSlowAttackFunction() {
         return AudioMath::makeFunc_Exp(0, 1, .05, 30);
     }
@@ -157,7 +158,6 @@ private:
     Cmprsr compressorsL[4];
     Cmprsr compressorsR[4];
     void setupLimiter();
-    //void stepm();
     void stepn();
     void pollAttackRelease();
 
@@ -190,9 +190,15 @@ private:
 };
 
 template <class TBase>
-inline std::vector<std::string> Compressor<TBase>::ratios()
+inline const std::vector<std::string>& Compressor<TBase>::ratios()
 {
     return Cmprsr::ratios();
+}
+
+template <class TBase>
+inline const std::vector<std::string>& Compressor<TBase>::ratiosLong()
+{
+    return Cmprsr::ratiosLong();
 }
 
 template <class TBase>

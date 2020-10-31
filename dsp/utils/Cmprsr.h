@@ -31,7 +31,8 @@ public:
     void setNumChannels(int);
 
     const MultiLag2& _lag() const;
-    static std::vector<std::string> ratios();
+    static const std::vector<std::string>& ratios();
+    static const std::vector<std::string>& ratiosLong();
     float_4 getGain() const;
 
     static bool wasInit() {
@@ -268,11 +269,21 @@ inline Cmprsr::Cmprsr()
     assert(wasInit());
 }
 
- inline std::vector<std::string> Cmprsr::ratios()
- {
-     assert(int(Ratios::NUM_RATIOS) == 9);
-     return {"Limit", "2:1 soft","2:1 hard", "4:1 soft","4:1 hard", "8:1 soft", "8:1 hard", "20:1 soft", "20:1 hard"  };
- }
+inline const std::vector<std::string>& Cmprsr::ratios()
+{
+    assert(int(Ratios::NUM_RATIOS) == 9);
+    static const std::vector<std::string> theRatios = {"Limit", "2:1 soft","2:1 hard", "4:1 soft","4:1 hard", "8:1 soft", "8:1 hard", "20:1 soft", "20:1 hard"};
+    return theRatios;
+}
+
+inline const std::vector<std::string>& Cmprsr::ratiosLong()
+{
+    assert(int(Ratios::NUM_RATIOS) == 9);
+    static const std::vector<std::string> theRatios = {"Infinite (limiter)", "2:1 soft-knee","2:1 hard-knee", "4:1 soft-knee","4:1 har-kneed", "8:1 soft-knee", "8:1 hard-knee", "20:1 soft-knee", "20:1 hard-knee"};
+    return theRatios;
+}
+
+
 
 inline const MultiLag2& Cmprsr::_lag() const
 {

@@ -107,7 +107,7 @@ public:
     std::string getDisplayValueString() override {
         auto value = getValue();
         int index = value;
-        std::string ratio = Comp::ratios()[index];
+        std::string ratio = Comp::ratiosLong()[index];
         return ratio;
     }
 protected:
@@ -210,7 +210,7 @@ struct CompressorWidget : ModuleWidget
 void CompressorWidget::addVu(CompressorModule *module)
 {
     auto vu = new SqVuMeter();
-    vu->box.size = Vec(72, 10);
+    vu->box.size = Vec(72, 12);
     //vu->box.pos = Vec(10, 254);
     vu->box.pos = Vec(9, 81),
     vu->setGetter( [module]() {
@@ -309,7 +309,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
         //Vec(knobX,  - 11 + knobY + 3 * dy),
-        Vec(8, 48),
+        Vec(8, 50),
         module,
         Comp::RATIO_PARAM);
     p->box.size.x = 73;  // width
