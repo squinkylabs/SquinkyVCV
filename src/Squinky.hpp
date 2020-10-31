@@ -26,7 +26,7 @@
 #define _USERKB
 //#define _CHAOS
 //#define _DG
-#define _F2
+//#define _F2
 #define _F4
 
 //#define _BLANKMODULE
@@ -52,7 +52,10 @@ extern Model *modelLFNModule;
 extern Model *modelLFNBModule;
 extern Model *modelCHBModule;
 extern Model *modelCHBgModule;
+
+#ifdef _F2
 extern Model *modelF2Module;
+#endif
 
 extern Model *modelCompressorModule;
 
