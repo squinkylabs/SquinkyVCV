@@ -283,10 +283,10 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(knobX,  - 8 + knobY + 3 * dy),
+        Vec(knobX,  - 11 + knobY + 3 * dy),
         module,
         Comp::RATIO_PARAM);
-    p->box.size.x = 70;  // width
+    p->box.size.x = 73;  // width
     p->box.size.y = 22;   
     p->text = labels[3];
     p->setLabels(labels);

@@ -10,9 +10,98 @@
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
+#include "ctrl/SqTooltips.h"
 
 
 using Comp = F2_Poly<WidgetComposite>;
+
+
+class OnOffQuantity :  public SqTooltips::SQParamQuantity {
+public:
+    OnOffQuantity(const ParamQuantity& other) : 
+        SqTooltips::SQParamQuantity(other) 
+    {
+    }
+    std::string getDisplayValueString() override {
+        auto value = getValue();
+        return value < .5 ? "Off" : "On";
+    }
+};
+
+
+
+class TopologyQuantity :  public SqTooltips::SQParamQuantity {
+public:
+    TopologyQuantity(const ParamQuantity& other) : 
+        SqTooltips::SQParamQuantity(other) 
+    {
+    }
+    std::string getDisplayValueString() override {
+        int value = int( std::round(getValue()));
+        std::string tip;
+        switch (value) {
+            case 0:
+                tip = "12 dB/octave multi-mode";
+                break;
+            case 1:
+                tip = "24 dB/octave multi-mode";
+                break;
+            case 2:
+                tip = "two 12 dB/octave in parallel";
+                break;
+            case 3:
+                tip = "two 12 dB/octave subtracted";
+                break;
+            default:
+                assert(false);
+        }
+        return tip;
+    }
+};
+
+class ModeQuantity :  public SqTooltips::SQParamQuantity {
+public:
+    ModeQuantity(const ParamQuantity& other) : 
+        SqTooltips::SQParamQuantity(other) 
+    {
+    }
+    std::string getDisplayValueString() override {
+        int value = int( std::round(getValue()));
+        std::string tip;
+        switch (value) {
+            case 0:
+                tip = "lowpass";
+                break;
+            case 2:
+                tip = "highpass";
+                break;
+            case 1:
+                tip = "bandpass";
+                break;
+            case 3:
+                tip = "notch";
+                break;
+            default:
+                assert(false);
+        }
+        return tip;
+    }
+};
+
+class AttenQuantity :  public SqTooltips::SQParamQuantity {
+public:
+    AttenQuantity(const ParamQuantity& other) : 
+        SqTooltips::SQParamQuantity(other) 
+    {
+    }
+    std::string getDisplayValueString() override {
+        float value =getValue();
+        std::stringstream str;
+        str.precision(0);
+        str << std::fixed << value * 100 << "%";
+        return str.str();
+    }
+};
 
 /**
  */
@@ -45,6 +134,11 @@ F2Module::F2Module()
 
     onSampleRateChange();
     blank->init();
+
+    SqTooltips::changeParamQuantity<OnOffQuantity>(this, Comp::LIMITER_PARAM);
+    SqTooltips::changeParamQuantity<TopologyQuantity>(this, Comp::TOPOLOGY_PARAM);
+    SqTooltips::changeParamQuantity<ModeQuantity>(this, Comp::MODE_PARAM);
+    SqTooltips::changeParamQuantity<AttenQuantity>(this, Comp::FC_TRIM_PARAM);
 }
 
 void F2Module::process(const ProcessArgs& args)

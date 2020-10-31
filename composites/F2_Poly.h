@@ -566,7 +566,7 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i)
             ret = {0, 1, 1, "Limiter"};
             break;
         case F2_Poly<TBase>::FC_TRIM_PARAM:
-         ret = {-1, 1, 0, "Fc modulation"};
+         ret = {-1, 1, 0, "Fc modulation trim"};
             break;
         default:
             assert(false);
