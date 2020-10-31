@@ -164,7 +164,6 @@ inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, 
     const float normRelease = releaseHz * sampleTime;
 
     if (attackMs < .1) {
-         printf("attack zero!\n");
         reduceDistortion = false;       // no way to do this at zero attack
         lag.setInstantAttack(true);
         lag.setRelease(normRelease);

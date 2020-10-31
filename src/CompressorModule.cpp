@@ -86,6 +86,17 @@ public:
     }
 };
 
+class WetdryQuantity : public LambdaQuantity {
+public:
+    WetdryQuantity(const ParamQuantity& other) : LambdaQuantity(other)
+    {
+        expFunction = [](double x) {
+            return (x + 1) * 50;
+        };
+        suffix = " % wet";
+    }
+};
+
 class RatiosQuantity : public SqTooltips::SQParamQuantity {
 public:
     RatiosQuantity(const ParamQuantity& other) : 
@@ -97,14 +108,23 @@ public:
         auto value = getValue();
         int index = value;
         std::string ratio = Comp::ratios()[index];
-      //  std::stringstream str;
-      //  str << "Compression ratio: " << ratio;
-
         return ratio;
     }
 protected:
     std::function<double(double)> expFunction;
     std::string suffix;
+};
+
+class BypassQuantity :  public SqTooltips::SQParamQuantity {
+public:
+    BypassQuantity(const ParamQuantity& other) : 
+        SqTooltips::SQParamQuantity(other) 
+    {
+    }
+    std::string getDisplayValueString() override {
+        auto value = getValue();
+        return value < .5 ? "Bypassed" : "Normal";
+    }
 };
 
 /**
@@ -138,6 +158,8 @@ CompressorModule::CompressorModule()
     SqTooltips::changeParamQuantity<ThresholdQuantity>(this, Comp::THRESHOLD_PARAM);
     SqTooltips::changeParamQuantity<MakeupGainQuantity>(this, Comp::MAKEUPGAIN_PARAM);
     SqTooltips::changeParamQuantity<RatiosQuantity>(this, Comp::RATIO_PARAM);
+    SqTooltips::changeParamQuantity<BypassQuantity>(this, Comp::NOTBYPASS_PARAM);
+    SqTooltips::changeParamQuantity<WetdryQuantity>(this, Comp::WETDRY_PARAM);
 
     onSampleRateChange();
     compressor->init();
