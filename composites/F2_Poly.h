@@ -254,7 +254,6 @@ inline void F2_Poly<TBase>::setupLimiter()
     limiter.setTimes(1, 100, TBase::engineGetSampleTime());
 }
 
-
 template <class TBase>
 inline void F2_Poly<TBase>::onSampleRateChange()
 {
@@ -331,7 +330,6 @@ inline void F2_Poly<TBase>::setupFreq()
                 outputGain_n *= 1 / q;
             }
             outputGain_n = SimdBlocks::min(outputGain_n, float_4(1.f));
-            // printf("set output gain to %s\n", toStr(outputGain_n).c_str());
         }
 
         SqInput& rPort = TBase::inputs[R_INPUT];
@@ -343,20 +341,6 @@ inline void F2_Poly<TBase>::setupFreq()
             lastRv[bank] = rVolts;
             processedRValue =  rack::dsp::approxExp2_taylor5(rVolts/3.f);
         }
-
-#if 0 // orig way
-        SqInput& fcPort = TBase::inputs[FC_INPUT];
-        float_4 fVolts = F2_Poly<TBase>::params[FC_PARAM].value;
-        fVolts += fcPort.getPolyVoltageSimd<float_4>(baseChannel);
-        fVolts = rack::simd::clamp(fVolts, 0, 10);
-        const bool fChanged = rack::simd::movemask(fVolts != lastFv[bank]);
-        if (rChanged || fChanged) {
-            lastFv[bank] = fVolts;
-            auto fr = fastFcFunc2(fVolts, processedRValue, oversample, sampleTime);
-            params1[bank].setFreq(fr.first);
-            params2[bank].setFreq(fr.second);
-        }
-#endif
 
         SqInput& fcPort = TBase::inputs[FC_INPUT];
         float_4 fcCV = fcPort.getPolyVoltageSimd<float_4>(baseChannel);
@@ -370,13 +354,6 @@ inline void F2_Poly<TBase>::setupFreq()
                 lastFcTrim);
 
             auto fr = fastFcFunc2(combinedFcVoltage, processedRValue, oversample, sampleTime);
-            /*
-            printf("fccv=%f knob =%f comb=%f final=%f,%f\n",
-                fcCV[0],
-                lastFcKnob,
-                combinedFcVoltage[0],
-                fr.first[0], fr.second[0]); fflush(stdout);
-                */
 
             params1[bank].setFreq(fr.first);
             params2[bank].setFreq(fr.second);
@@ -393,8 +370,6 @@ inline void F2_Poly<TBase>::setupModes()
 
     const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     topology_m = Topology(topologyInt);
-
-   // procFun = processGeneric;
 }
 
 template <class TBase>
@@ -418,7 +393,6 @@ inline void F2_Poly<TBase>::setupProcFunc()
 template <class TBase>
 inline void F2_Poly<TBase>::stepn()
 {
-  //  setupModes();
     setupFreq();
 }
 
@@ -489,7 +463,6 @@ inline void F2_Poly<TBase>::processGeneric(const typename TBase::ProcessArgs& ar
     for (int bank = 0; bank < numBanks_m; bank++) {
         const int baseChannel = 4 * bank;
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-        //printf("got poly input: %s\n", toStr(input).c_str());
         T output;
         switch(topology_m) {
             case Topology::SERIES:
@@ -518,7 +491,6 @@ inline void F2_Poly<TBase>::processGeneric(const typename TBase::ProcessArgs& ar
                     output = (*filterFunc)(input, state1[bank], params1[bank]);
                 }
                 break;
-
             default: 
                 assert(false);
         }
