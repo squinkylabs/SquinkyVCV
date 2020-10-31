@@ -210,9 +210,9 @@ struct CompressorWidget : ModuleWidget
 void CompressorWidget::addVu(CompressorModule *module)
 {
     auto vu = new SqVuMeter();
-    vu->box.size = Vec(72, 12);
+    vu->box.size = Vec(72, 14);
     //vu->box.pos = Vec(10, 254);
-    vu->box.pos = Vec(9, 81),
+    vu->box.pos = Vec(9, 82),
     vu->setGetter( [module]() {
         return module ? module->getGainReductionDb() : 4;
     });
@@ -298,7 +298,7 @@ void CompressorWidget::addControls(CompressorModule *module, std::shared_ptr<ICo
 #else
     ToggleButton* tog = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(56, 229),
+        Vec(55, 229),
         module,  Comp::NOTBYPASS_PARAM);  
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
