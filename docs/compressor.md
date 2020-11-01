@@ -1,8 +1,10 @@
-# Comp
+# Comp Compressor
+
+![Comp Panel](./comp.png)
 
 ## About Comp
 
-It is a very normal compressor / limiter. Most of the controls should be very familiar. It is a feed-forward compressor, designed for minimum coloration and distortion.
+Comp is a very normal compressor / limiter. Most of the controls should be very familiar. It is a feed-forward compressor, designed for minimum coloration and distortion.
 
 It is fully polyphonic, although all channels will have the same settings.
 
@@ -11,6 +13,8 @@ The "Limiter" is an infinite ratio hard-knee compressor. It is also implemented 
 It has fixed (preset) compression ratios and knee width. Using presets like this allows Comp to have very high audio quality without using much CPU.
 
 It also has a wet/dry mix to allow "parallel compression", which is very stylish right now.
+
+It can be a little tricky at first to learn how to use a compressor. But there are lots and lots of articles and videos on the Internet that will be very helpful.
 
 ## Some uses for Comp
 

@@ -188,7 +188,7 @@ void CompressorModule::onSampleRateChange()
 struct CompressorWidget : ModuleWidget
 {
     CompressorWidget(CompressorModule *);
-    DECLARE_MANUAL("Compressor Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/f2/docs/compressor.md");
+    DECLARE_MANUAL("Compressor Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md");
 
 #ifdef _LAB
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
