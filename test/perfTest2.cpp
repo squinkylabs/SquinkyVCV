@@ -427,7 +427,7 @@ static void testCompLim16Dist()
     comp.inputs[Comp::LAUDIO_INPUT].channels = 16;
     comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
     comp.params[Comp::RATIO_PARAM].value = 0;      // limiter
-    comp.params[Comp::REDUCEDISTORTION_PARAM].value = 1;  
+   // comp.params[Comp::REDUCEDISTORTION_PARAM].value = 1;  
 
     Comp::ProcessArgs args;
     args.sampleTime = 1.f / 44100.f;

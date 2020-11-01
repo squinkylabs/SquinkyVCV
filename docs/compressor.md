@@ -2,7 +2,7 @@
 
 ## About Comp
 
-It is a very normal compressor / limiter. Most of the controls should be very familiar.
+It is a very normal compressor / limiter. Most of the controls should be very familiar. It is a feed-forward compressor, designed for minimum coloration and distortion.
 
 It is fully polyphonic, although all channels will have the same settings.
 
@@ -58,4 +58,4 @@ Top to bottom.
 
 * **In L**: Input to the left hand compressor. Left channel many be anything from mono to 16 channels. Polyphony is determined by the upstream device. The left output is right beside the left input.
 
-* **In R**: Right channel may also be monophonic up to 16 channels.
+* **In R**: Right channel may also be monophonic, or polyphonic up to 16 channels.
