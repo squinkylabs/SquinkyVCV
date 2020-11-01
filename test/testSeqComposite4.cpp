@@ -226,7 +226,6 @@ static void testPauseSwitchSectionStart()
 
  static void testSelectSectionWithCV(int cOctave, int sectionToSelect)
  {
-    // printf("\n--- testSelectSectionWithCV oct=%d, selection=%d\n", cOctave, sectionToSelect);
     const auto rate = SeqClock::ClockRate::Div64;
     Sq4Ptr comp = make(rate, 4, true, -1);
 
@@ -251,7 +250,6 @@ static void testPauseSwitchSectionStart()
     float cv = PitchUtils::pitchToCV(cOctave, sectionToSelect);
     const int row = sectionToSelect / MidiSong4::numTracks;
     const int col = sectionToSelect % MidiSong4::numTracks;
-    //printf("in test row=%d col=%d\n", row, col);
 
     assert(comp->getSong()->getTrack(row, col));
 
@@ -285,7 +283,6 @@ static void testSelectSectionWithCV()
 
 static void testSelectSectionWithCVPoly()
 {
-    printf("\n--- testSelectSectionWithCVPoly\n");
     const auto rate = SeqClock::ClockRate::Div64;
     Sq4Ptr comp = make(rate, 4, true, -1);
 
@@ -320,14 +317,7 @@ static void testSelectSectionWithCVPoly()
     cvArray[1]= PitchUtils::pitchToCV(cOctave, target + 4);
     cvArray[2] = PitchUtils::pitchToCV(cOctave, target + 2 * 4);
     cvArray[3] = PitchUtils::pitchToCV(cOctave, target + 3 * 4);
-   // const int row = sectionToSelect / MidiSong4::numTracks;
-   // const int col = sectionToSelect % MidiSong4::numTracks;
-    //printf("in test row=%d col=%d\n", row, col);
-
-   // assert(comp->getSong()->getTrack(row, col));
-
-
-
+  
     /// now play all 4 triggers
     for (int i = 0; i < 4; ++i) {
         comp->inputs[comp->SELECT_CV_INPUT].setVoltage(cvArray[i], i);

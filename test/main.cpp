@@ -56,6 +56,7 @@ extern void testFilteredIterator();
 extern void testMidiEvents();
 extern void testMidiControllers();
 extern void testMultiLag();
+extern void testMultiLag2();
 extern void testUtils();
 extern void testIComposite();
 extern void testMidiEditor();
@@ -98,6 +99,9 @@ extern void testSimpleQuantizer();
 extern void testDC();
 extern void testSines();
 extern void testBasic();
+extern void testFilterComposites();
+extern void testClockRecovery();
+extern void testCompCurves();
 
 #if 0
 #include <sstream>
@@ -167,13 +171,16 @@ if (runShaperGen) {
 
     if (runPerf) {
         initPerf();
-
-        perfTest();
         perfTest2();
+        perfTest();
+       
         return 0;
     }
     
     testIComposite();
+    testClockRecovery();
+    testCompCurves();
+
 
 #ifndef _MSC_VER
     testBasic();
@@ -195,7 +202,8 @@ if (runShaperGen) {
     testSub();
     simd_testBiquad();
     testWVCO();
-   
+    testMultiLag2();
+    testFilterComposites();
 #endif
     testSimpleQuantizer();
 
@@ -247,27 +255,22 @@ if (runShaperGen) {
 //#ifndef _MSC_VER
 #if !defined(_MSC_VER) || !defined(_MIDIONLY)
     testTestSignal();
+
    
     testSaw();
     testClockMult();
     testDelay();
     testPoly();
-
     testSinOscillator();
     testHilbert();
-    testButterLookup();
-   
+    testButterLookup();  
     testVCO();
-   
    // testSin();
-
-   
-
     testFFT();
     testAnalyzer();
     testRateConversion();
     testUtils();
-    //testLowpassFilter();
+    testLowpassFilter();
     testLadder();
     testHighpassFilter();
     testSuper();

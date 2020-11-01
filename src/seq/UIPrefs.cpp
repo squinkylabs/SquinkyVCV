@@ -1,5 +1,8 @@
 #include "UIPrefs.h"
 
+const NVGcolor UIPrefs::VU_ACTIVE_COLOR = nvgRGB(48, 125, 238);
+const NVGcolor UIPrefs::VU_INACTIVE_COLOR = nvgRGBA(48, 125, 238, 45);
+
 const NVGcolor UIPrefs::NOTE_COLOR =
 nvgRGB(0, 0xc0, 0);
 const NVGcolor UIPrefs::SELECTED_NOTE_COLOR =

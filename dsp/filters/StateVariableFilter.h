@@ -144,7 +144,7 @@ template <typename T>
 inline void StateVariableFilterParams<T>::setFreq(T fc)
 {
     // .3 is stable, .32 not
-    const float mx = .3;
+    const T mx = T(.3);
     if (fc > mx) {
         fc = mx;
     }

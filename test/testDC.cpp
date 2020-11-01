@@ -8,7 +8,7 @@ using oscillator = std::function<float()>;
 
 using subvco = VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4>;
 
-// This version mesures full periods
+// This version measures full periods
 float vcoProfiler(bool highToLow, int minimumSamples, oscillator osc)
 {
     float last = osc();
@@ -24,11 +24,6 @@ float vcoProfiler(bool highToLow, int minimumSamples, oscillator osc)
 
     while(!done) {
         float x = osc();
-        #if 0
-        if (++pct < 20) {
-            printf("osc[%d] = %f\n", ct, x);
-        }
-        #endif
 
         // 1 worked ok, but failed at 01
         const float delta = .5;
@@ -37,25 +32,17 @@ float vcoProfiler(bool highToLow, int minimumSamples, oscillator osc)
             (x > (last + delta));
 
         if (crossed) {
-        #if 0
-            if (samples < 100 || firstCross || secondCross) {
-                printf("\n**crossed at samples = %d, x=%f, last=%f\n", samples, x, last);
-                printf("first = %d, second=%d\n", firstCross, secondCross);
-            }
-        #endif
+
             if (firstCross) {
-              //  printf("first cross at %d\n", samples);
                 firstCross = false;
                 sum = 0;
                 samples = 0;
             } else {
                 if (secondCross && (samples > 3)) {
                     secondCross = false;
-                    printf("at second cross, period = %d\n", samples);
                     fflush(stdout);
                     assert(samples > 3);
                 }
-
                 done = samples > minimumSamples;
             }
         }
@@ -66,7 +53,6 @@ float vcoProfiler(bool highToLow, int minimumSamples, oscillator osc)
         }
         ++ct;
         last = x;
-
         sum += x;
         ++samples;
     }
@@ -101,10 +87,9 @@ oscillator makeFake(float freq) {
 
 std::pair<oscillator, float>
  makeSubSaw(float freq) {
-//oscillator makeSubSaw(float freq) {
-    printf("make sub saw called with freq = %f\n", freq);
+
     std::shared_ptr<subvco> osc = std::make_shared<subvco>();
-    //float_4 mainIsSawMask = bitfieldToMask(0xf);
+
     osc->index = 0;
     float_4 mask = float_4::mask();
     osc->setWaveform(mask,mask);
@@ -119,7 +104,7 @@ std::pair<oscillator, float>
         osc->process(deltaTime, float_4(0));
         return osc->main()[0];
     };
-    //return ret;
+
     const float f = osc->_getFreq()[0];
     return std::make_pair(ret, f);
 }
@@ -174,12 +159,9 @@ static void saws() {
 
 
 static void doSqTest(float pitch, float pw) {
-  //  printf("\n\n*************************** start sq test(%f, %f)\n", pitch, pw);
-  //  fflush(stdout);    
+   
     auto temp = makeSubSq (pitch, pw);
     float x = vcoProfiler(true, 41000 * 100, temp.first);
-
- //   const float normFreq = temp.second / 44100.f;
     assertLT(x, .001);
 }
 

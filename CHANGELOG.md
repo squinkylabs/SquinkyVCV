@@ -1,5 +1,9 @@
 # Change log for Squinky Labs modules
 
+## 1.0.14
+
+New Module: Comp (audio compressor).
+
 ## 1.0.13
 
 Bug fix: sometimes the tooltip for Basic VCO waveform disagrees with the actual waveform.

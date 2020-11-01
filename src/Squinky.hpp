@@ -26,6 +26,8 @@
 #define _USERKB
 //#define _CHAOS
 //#define _DG
+//#define _F2
+#define _F4
 
 //#define _BLANKMODULE
 
@@ -37,6 +39,7 @@
 #define _WVCO
 #define _SUB
 #define _SINES
+// #define _F4
 
 using namespace ::rack;
 
@@ -50,6 +53,15 @@ extern Model *modelLFNBModule;
 extern Model *modelCHBModule;
 extern Model *modelCHBgModule;
 
+#ifdef _F2
+extern Model *modelF2Module;
+#endif
+
+extern Model *modelCompressorModule;
+
+#ifdef _F4
+    extern Model *modelF4Module;
+#endif
 #ifdef _FORMANTS
     extern Model *modelVocalFilterModule;
 #endif

@@ -60,7 +60,7 @@ public:
         init();
     }
 
-    void onSampleRateChange();
+    void onSampleRateChange() override;
 
     enum class Shapes
     {

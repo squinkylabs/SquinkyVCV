@@ -204,7 +204,7 @@ public:
      * Main processing entry point. Called every sample
      */
     void step() override;
-    void onSampleRateChange();
+    void onSampleRateChange() override;
     void setupFilters();
 
     void stepn(int steps);

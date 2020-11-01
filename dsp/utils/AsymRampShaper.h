@@ -32,7 +32,7 @@ public:
 class AsymRampShaper
 {
 public:
-
+    AsymRampShaper() = delete;
     /* skew = -1..1, zero is triangle
     * phase = -1..1, zero is no shift
     */

@@ -1,13 +1,21 @@
 #include "TestComposite.h"
 
 #include "DrumTrigger.h"
+
 #include "Filt.h"
+
 #include "LookupTable.h"
 #include "Mix8.h"
 #include "Mix4.h"
 #include "MixM.h"
 #include "MixStereo.h"
+
+#ifndef _MSC_VER
 #include "MultiLag.h"
+#include "F2_Poly.h"
+#include "Compressor.h"
+#endif
+
 #include "ObjectCache.h"
 #include "Slew4.h"
 #include "TestComposite.h"
@@ -126,12 +134,15 @@ static void testUniformLookup()
 static void testNonUniform()
 {
     std::shared_ptr<NonUniformLookupTableParams<float>> lookup = makeLPFilterL_Lookup<float>();
+    printf("non uniform lookup size = %d\n", lookup->size()); 
 
     MeasureTime<float>::run(overheadInOut, "non-uniform", [lookup]() {
         float x = TestBuffers<float>::get();
         return  NonUniformLookupTable<float>::lookup(*lookup, x);
      
     }, 1);
+    printf("Now abort");
+    abort();
 }
 
 using Slewer = Slew4<TestComposite>;
@@ -263,10 +274,265 @@ static void testMixM()
         }, 1);
 }
 
+
+#ifndef _MSC_VER
+
+static void testF2_Poly1()
+{
+    using Comp = F2_Poly<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
+    comp.inputs[Comp::AUDIO_INPUT].channels = 1;
+ 
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "testF2 (new) mono 12/Lim", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testF2_Poly16()
+{
+    using Comp = F2_Poly<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    
+    comp.inputs[Comp::AUDIO_INPUT].channels = 16;
+    for (int i=0; i<16; ++i) {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, i);
+    }
+ 
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "testF2 (new) 16 ch", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testF2_12nl()
+{
+    using Comp = F2_Poly<TestComposite>;
+    Comp comp;
+
+    comp.init();
+    
+    comp.inputs[Comp::AUDIO_INPUT].channels = 1;
+    comp.params[Comp::TOPOLOGY_PARAM].value = float(Comp::Topology::SINGLE);
+    comp.params[Comp::LIMITER_PARAM].value = 0;
+    for (int i=0; i<16; ++i) {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, i);
+    }
+ 
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "testF2 (12/nl)", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testF2_24l()
+{
+    using Comp = F2_Poly<TestComposite>;
+    Comp comp;
+
+    comp.init();
+    
+    comp.inputs[Comp::AUDIO_INPUT].channels = 1;
+    comp.params[Comp::TOPOLOGY_PARAM].value = float(Comp::Topology::SERIES);
+    comp.params[Comp::LIMITER_PARAM].value = 1;
+    for (int i=0; i<16; ++i) {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, i);
+    }
+ 
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "testF2 (24/lim)", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+static void testCompLim1()
+{
+    using Comp = Compressor<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::LAUDIO_INPUT].channels = 1;
+    comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 0;      // limiter
+
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+
+    MeasureTime<float>::run(overheadInOut, "Comp/Lim 1 channel", [&comp, args]() {
+        comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testCompLim16()
+{
+   using Comp = Compressor<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::LAUDIO_INPUT].channels = 16;
+    comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 0;      // limiter
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "Comp/Lim 16 channel", [&comp, args]() {
+        comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testCompLim16Dist()
+{
+   using Comp = Compressor<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::LAUDIO_INPUT].channels = 16;
+    comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 0;      // limiter
+   // comp.params[Comp::REDUCEDISTORTION_PARAM].value = 1;  
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "Comp/Lim 16 ndist channel", [&comp, args]() {
+        comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testCompKnee()
+{
+    using Comp = Compressor<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::LAUDIO_INPUT].channels = 1;
+    comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 1;      // 4:1 hard knee
+
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+
+    MeasureTime<float>::run(overheadInOut, "Comp / Lim 1 channel 4:1 soft", [&comp, args]() {
+        comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testCompKnee16()
+{
+    using Comp = Compressor<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::LAUDIO_INPUT].channels = 16;
+    comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 1;      // 4:1 sort knee
+
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+
+    MeasureTime<float>::run(overheadInOut, "Comp / Lim 16 channel 4:1 soft", [&comp, args]() {
+        comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testCompKnee16Hard()
+{
+    using Comp = Compressor<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.inputs[Comp::LAUDIO_INPUT].channels = 16;
+    comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 2;      // 4:1 hard knee
+
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+
+    MeasureTime<float>::run(overheadInOut, "Comp / Lim 16 channel 4:1 hard", [&comp, args]() {
+        comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+#endif
+
+
 void perfTest2()
 {
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
+#ifndef _MSC_VER
+   
+    testCompLim1();
+    testCompLim16();
+    testCompLim16Dist();
+    testCompKnee();
+    testCompKnee16();
+    testCompKnee16Hard();
+    testF2_Poly1();
+    testF2_Poly16();
+    testF2_12nl();
+    testF2_24l();
+#endif
+
 
     testDrumTrigger();
     testFilt();

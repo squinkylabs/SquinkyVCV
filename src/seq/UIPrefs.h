@@ -4,6 +4,8 @@
 class UIPrefs
 {
 public:
+    static const NVGcolor VU_ACTIVE_COLOR;
+    static const NVGcolor VU_INACTIVE_COLOR;
     static const NVGcolor NOTE_COLOR;
     static const NVGcolor SELECTED_NOTE_COLOR;
     static const NVGcolor DRAG_TEXT_COLOR;

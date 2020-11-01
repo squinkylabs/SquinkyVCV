@@ -162,7 +162,7 @@ public:
          runStopRequested = true;
     }
 
-    void onSampleRateChange();
+    void onSampleRateChange() override;
     static std::vector<std::string> getClockRates();
     static std::vector<std::string> getPolyLabels();
     static std::vector<std::string> getCVFunctionLabels();

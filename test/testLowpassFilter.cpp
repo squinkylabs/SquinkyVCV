@@ -16,7 +16,9 @@ static void test0()
     LowpassFilterState<T> state;
     LowpassFilterParams<T> params;
     LowpassFilter<T>::setCutoff(params, T(.1));
+    LowpassFilter<T>::setCutoffHP(params, T(.1));
     LowpassFilter<T>::run(0, state, params);
+    
 }
 
 const float sampleRate = 44100;
@@ -29,7 +31,20 @@ static std::pair<T, T> getLowpassStats(std::function<float(float)> filter, T FcE
     FFTDataCpx response(numSamples);
     Analyzer::getFreqResponse(response, filter);
 
+   /**
+    * 0 = low freq bin #
+    * 1 = peak bin #
+    * 2 = high bin#
+    * dbAtten (typically -3
+    */
     auto x = Analyzer::getMaxAndShoulders(response, -3);
+
+   
+    auto lowBin = std::get<0>(x);
+    auto peakBin = std::get<1>(x);
+    auto highBin = std::get<2>(x);
+    const int maxx = numSamples / 2;
+   
 
     const T cutoff = (T) FFT::bin2Freq(std::get<2>(x), sampleRate, numSamples);
 
@@ -75,6 +90,47 @@ static void testBasicLowpass100()
     };
     doLowpassTest<T>(filter, Fc, -6);
 }
+
+template<typename T>
+static void testSuperBasicHP()
+{
+    const float Fc = 1;
+    LowpassFilterState<T> state;
+    LowpassFilterParams<T> params;
+    LowpassFilter<T>::setCutoff(params, Fc / sampleRate);
+
+    std::function<float(float)> filter = [&state, &params](float x) {
+        auto y = LowpassFilter<T>::run(x, state, params);
+        float ret = float(x - y);
+       // printf("filter (%f) ret %f\n", x, ret);
+        return ret;
+    };
+    printf("l = %f k=%f\n", params.l, params.k);
+
+    float y0 = filter(0);
+    assertEQ(y0, 0);
+    float y = filter(1);
+    assertClose(y, 1, .01);
+
+    filter(1);
+    filter(1);
+    filter(1);
+    filter(1);
+
+
+#if 1
+    for (int i = 0; i < 100000; ++i) {
+        float y2 = filter(1);
+      //  printf("in loop, y2=%f, y=%f i =%d\n", y2, y, i); fflush(stdout);
+        assert(y2 < y);
+      //  assert(i < 20);
+        y = y2;
+    }
+#endif
+
+    assertClose(y, 0, .0001);
+}
+
 
 
 template<typename T>
@@ -366,13 +422,14 @@ void _testLowpassFilter()
 {
     test0<T>();
     testBasicLowpass100<T>();
+   
+    // testBasicLowpassHP100<T>();
     testTrap100<T>();
     testTwoPoleButterworth100<T>();
     testThreePoleButterworth100<T>();
     testFourPoleButterworth100<T>();
     testFivePoleButterworth100<T>();
     testSixPoleButterworth100<T>();
-   
 }
 
 
@@ -417,14 +474,16 @@ static void testCVFeedthrough()
 
 void testLowpassFilter()
 {
-    _testLowpassFilter<float>();
-    _testLowpassFilter<double>();
-    testCVFeedthrough();
-    //calibrateTrap();
-    testTrapDCf();
-    testTrapDCd();
-    decimate0();
-    decimate1();
+  //  _testLowpassFilter<float>();
+  //  _testLowpassFilter<double>();
+
+    testSuperBasicHP<double>();
+  //  testCVFeedthrough();
+  
+  //  testTrapDCf();
+  //  testTrapDCd();
+  //  decimate0();
+   // decimate1();
 }
 
 /*********************************************************************************

@@ -14,8 +14,7 @@ static float pi =  3.141592653589793238;
 inline double taylor2(double x)
 {
     const double xa = ( x - (pi/2.0));
- //  printf("\n**** in taylor2(%f) xa = %f xa**4=%f\n", x, xa, xa*xa*xa*xa);
-//   printf("  xa*xa double=%f\n", xa * xa);
+
     double ret = 1;
     ret -= xa * xa / 2.0;
 
@@ -100,7 +99,7 @@ static void compare()
             xErr = x;
         }
     }
-    printf("-pi .. pi. max err=%f at x=%f\n", maxErr, xErr);
+    // printf("-pi .. pi. max err=%f at x=%f\n", maxErr, xErr);
     assertClose(maxErr, 0, .03);
 }
 
@@ -119,7 +118,7 @@ static void compare3()
             xErr = x;
         }
     }
-    printf("0..twopi. max err=%f at x=%f\n", maxErr, xErr);
+    // printf("0..twopi. max err=%f at x=%f\n", maxErr, xErr);
     assertClose(maxErr, 0, .03);
 }
 
@@ -140,7 +139,7 @@ static void compareSecond()
         double s = std::sin(x);
       //  float_4 d = SimdBlocks::sinTwoPi(x);
         float d = secondOrder(x);
-        printf("y = %f, approx = %f\n", s, d);
+        // printf("y = %f, approx = %f\n", s, d);
 
        // float_4 d2 = simdSinTwoPi(x);
 
@@ -150,67 +149,9 @@ static void compareSecond()
             xErr = x;
         }
     }
-    printf("0..twopi. max err=%f at x=%f\n", maxErr, xErr);
+    // printf("0..twopi. max err=%f at x=%f\n", maxErr, xErr);
     assertClose(maxErr, 0, .03);
 }
-
-
-#if 0
-static void both(float x)
-{
-    printf("\n\n------ both(%f)\n", x);
-    float y = std::sin(x);
-
-#if 0
-   double y2 = taylor2(x);
-   printf("back in both, taylor 2 ret %f\n", y2);
-   double y3 = -taylor2n(x);
-#endif
-
-    printf("sin(%f)=%f\n", x, y); 
-    printf("  taylor combined = %f\n", t2(x));
-    printf("  ret from simdSinPiToPi() = %s\n", toStr(simdSinPiToPi(x)).c_str());
-    printf("  ret from simdSinTwoPi() = %s\n", toStr(SimdBlocks::sinTwoPi(x)).c_str());
-    printf ("\n"); 
-}
-
-
-static void test0()
-{
- //   both (0);
-    both( pi / 2.0);
-    both (0);
-  //  both( pi / 4.0);
- //   both (pi);
- //   printf("\n");
-    both( -pi / 2.0);
-    both( 2 * pi);
-//    both( -pi / 4.0);
- //   both (-pi);
-
-  //  both(3.138407);
-    #if 0
-    both(0);
-    both(.1);
-    both(-.1);
-    both(.5);
-    both (.25);
-    both (-.25);
-    both (-.5);
-    printf("\n");
-    both( pi / 2.0);
-     both( -pi / 2.0);
-
-    both(pi);
-    both(-pi);
-    both(twoPi);
-    both(3);
-    both(1);
-    both(2);
-#endif
-
-}
-#endif
 
 void testSimdLookup()
 {

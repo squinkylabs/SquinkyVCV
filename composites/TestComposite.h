@@ -219,8 +219,12 @@ public:
         params(60),
         lights(20)
     {
-
     }
+
+	// If we prevent copying here, will prevent for derived classes
+	TestComposite(const TestComposite&) = delete;
+	TestComposite& operator= (const TestComposite&) = delete;
+
     virtual ~TestComposite()
     {
     }
@@ -250,7 +254,9 @@ public:
     }
 
 	virtual void process(const ProcessArgs& args)
-	{
-		
+	{	
 	}
+	virtual void onSampleRateChange()
+    {
+    }
 };

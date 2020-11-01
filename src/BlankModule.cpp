@@ -55,7 +55,7 @@ void BlankModule::process(const ProcessArgs& args)
 struct BlankWidget : ModuleWidget
 {
     BlankWidget(BlankModule *);
-    DECLARE_MANUAL("Blank Manul", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/booty-shifter.md");
+    DECLARE_MANUAL("Blank Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/booty-shifter.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {

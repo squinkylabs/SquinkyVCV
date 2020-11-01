@@ -27,6 +27,10 @@ public:
     {
     }
     virtual ~WidgetComposite() {}
+    WidgetComposite(const WidgetComposite&) = delete;
+    WidgetComposite& operator=(const WidgetComposite&) = delete;
+
+
     virtual void step()
     {
     };
@@ -35,6 +39,7 @@ public:
 		
 	}
     float engineGetSampleRate()
+    
     {
         return ::rack::appGet()->engine->getSampleRate();
     }
@@ -42,6 +47,10 @@ public:
     float engineGetSampleTime()
     {
         return ::rack::appGet()->engine->getSampleTime();
+    }
+
+    virtual void onSampleRateChange()
+    {
     }
 protected:
     // These are references that point to the parent (real ones).

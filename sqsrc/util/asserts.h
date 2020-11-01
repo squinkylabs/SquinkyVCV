@@ -23,6 +23,7 @@ extern int _mdb;        // MIDI reverence count
 #define assertGT(_Experssion1, _Expression2) ((void)0)
 #define assertGE(_Experssion1, _Expression2) ((void)0)
 #define assertClose(_Experssion1, _Expression2, _Expression3) ((void)0)
+#define assertClosePct(_Experssion1, _Expression2, _Expression3) ((void)0)
 #define assertEvCount(x)  ((void)0)
 #define assertNoMidi()  ((void)0)
 
@@ -35,6 +36,7 @@ extern int _mdb;        // MIDI reverence count
 #define simd_assertLE(_Experssion1, _Expression2) ((void)0)
 #define simd_assertMask(_Experssion1) ((void)0)
 #define simd_assertClose(_Experssion1, _Expression2, _Expression3) ((void)0)
+#define simd_assertClosePct(_Experssion1, _Expression2, _Expression3) ((void)0)
 #define simd_assertBetween(_Experssion1, _Expression2, _Expression3) ((void)0)
 
 #else
@@ -53,10 +55,18 @@ extern int _mdb;        // MIDI reverence count
 
 #define assertNE(actual, expected) assertNEEx(actual, expected, "")
 
-#define assertClose(actual, expected, diff) if (!AudioMath::closeTo(actual, expected, diff)) { \
-    std::cout << "assertClose failed actual value =" << \
+#define assertCloseEx(actual, expected, diff, msg) if (!AudioMath::closeTo(actual, expected, diff)) { \
+    std::cout << "assertClose failed " << msg << " actual value =" << \
     actual << " expected=" << expected << std::endl << std::flush; \
     assert(false); }
+
+#define assertClose(actual, expected, diff) assertCloseEx(actual, expected, diff, "")
+
+#define assertClosePct(actual, expected, pct) { float diff = expected * pct / 100; \
+    if (!AudioMath::closeTo(actual, expected, diff)) { \
+    std::cout << "assertClosePct failed actual value =" << \
+    actual << " expected=" << expected << " computed diff = " << diff << std::endl << std::flush; \
+    assert(false); }}
 
 
 // assert less than
@@ -111,10 +121,23 @@ using int32_4 = rack::simd::int32_4;
     assertNEEx(a[2], b[2], "simd2"); \
     assertNEEx(a[3], b[3], "simd3");
 
-#define simd_assertClose(a, b, c) assertClose(a[0], b[0], c); \
-    assertClose(a[1], b[1], c); \
-    assertClose(a[2], b[2], c); \
-    assertClose(a[3], b[3], c);
+#define simd_assertClose(a, b, c) assertCloseEx(a[0], b[0], c, "simd0"); \
+    assertCloseEx(a[1], b[1], c, "simd1"); \
+    assertCloseEx(a[2], b[2], c, "simd2"); \
+    assertCloseEx(a[3], b[3], c, "simde3");
+
+#define simd_assertClosePct(a, b, c) assertClosePct(a[0], b[0], c); \
+    assertClosePct(a[1], b[1], c); \
+    assertClosePct(a[2], b[2], c); \
+    assertClosePct(a[3], b[3], c);
+
+#if 0
+    #define assertClosePct(actual, expected, pct) { float diff = expected * pct / 100; \
+    if (!AudioMath::closeTo(actual, expected, diff)) { \
+    std::cout << "assertClosePct failed actual value =" << \
+    actual << " expected=" << expected << " computed diff = " << diff << std::endl << std::flush; \
+    assert(false); }}
+#endif
 
 // mask must be 0 or all ones
 #if 0   // is this used? it looks wrong
@@ -141,8 +164,8 @@ std::string toStrLiteral(const float_4& x);
 std::string toStr(const float_4& x);
 std::string toStr(const int32_4& x);
 inline void printBadMask(float_4 m) {
-    printf("asserts.h: not a valid float_4 mask: %s\n", toStr(m).c_str());
-    printf("asserts.h: not a valid float_4 mask: literal %s\n", toStrLiteral(m).c_str());
+    printf("asserts.h (a): not a valid float_4 mask: %s\n", toStr(m).c_str());
+    printf("asserts.h (b): not a valid float_4 mask: literal %s\n", toStrLiteral(m).c_str());
     fflush(stdout);
 }
 
