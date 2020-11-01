@@ -10,17 +10,17 @@ The "Limiter" is an infinite ratio hard-knee compressor. It is also implemented 
 
 It has fixed (preset) compression ratios and knee width. Using presets like this allows Comp to have very high audio quality without using much CPU.
 
-It also has a web/dry mix to allow "parallel compression", which is very stylish right now.
+It also has a wet/dry mix to allow "parallel compression", which is very stylish right now.
 
 ## Some uses for Comp
 
 Taming the mix - use on the mixer output. Typically you would use a fairly subtle amount of compression.
 
-Take the drums sit together better. Make a sub-mix of the drums and run the sub-mix through Comp. Anything from a subtle compression to extreme squishing can sound good.
+Make the drums sit together better. Make a sub-mix of the drums and run the sub-mix through Comp. Anything from a subtle compression to extreme squishing can sound good.
 
 If different synth voices are varying too much in volume, compress each of them a bit.
 
-Completely squish the output of all your filter or synth voices before they go into a VCA. If you use a lot of filtering or other processing on you synth voices, then can end up with more dynamic range than you want. A class is example is sweeping a very resonant filter - as the filter passes through the fundamental, the sound will get very loud. Often that's a good effect, but for a different effect aggressively compress the output of the filter. Since Comp is polyphinic and doesn't use a lot of CPU, it's easy to patch it between the VCO output and a VCA input.
+Completely squish the output of all your filter or synth voices before they go into a VCA. If you use a lot of filtering or other processing on you synth voices, then can end up with more dynamic range than you want. A classic example is sweeping a very resonant filter - as the filter passes through the fundamental, the sound will get very loud. Often that's a good effect, but for a different effect aggressively compress the output of the filter. Since Comp is polyphinic and doesn't use a lot of CPU, it's easy to patch it between the VCO output and a VCA input.
 
 Parallel compression. Parallel compression is easiest to explain when you are talking about acoustic drums, but it's just mixing the compressed and uncompressed signals together. Recording drums is not a super common use case in VCV, but use your imagination. Often people like to compress a drum mix quite a bit. This compression will bring up the room sound as well as the resonant body of the drums themselves. But when high compression with a fast attack is used on drums all the transients get shaved of and you lose the impact of the drums. But if you mix the two together you get the rooms sound and body sound from the compressor, but retain most of the transients of the drums from the uncompressed signal.
 
@@ -42,7 +42,7 @@ Top to bottom.
 
 * **Compression Ratio**: how much compression, for inputs that are over the threshold. The higher the ratio, the more compression. Soft-knee gives a more gradual range between compressed and not compressed.
 
-* **Gain reduction meter**: Show how much the compressor is compressing. Each section of the meter represents two decibels, so if they are all lit there weill be at least 16 dB of compression.
+* **Gain reduction meter**: Show how much the compressor is compressing. Each section of the meter represents two decibels, so if they are all lit there will be at least 16 dB of compression.
 
 * **Threshold**: Signals above the threshold will be compressed, below threshold they will not. So the lower the threshold, the more compression you will get.
 
