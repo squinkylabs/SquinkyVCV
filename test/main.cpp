@@ -182,7 +182,8 @@ if (runShaperGen) {
     testCompCurves();
 
 
-#ifndef _MSC_VER
+// #ifndef _MSC_VER
+#if 1
     testBasic();
     testSines();
     testDC();
@@ -198,7 +199,8 @@ if (runShaperGen) {
     testOnset2();
 
     testBiquad();
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
+#if 1
     testSub();
     simd_testBiquad();
     testWVCO();
@@ -253,7 +255,8 @@ if (runShaperGen) {
     testMix8();
 
 //#ifndef _MSC_VER
-#if !defined(_MSC_VER) || !defined(_MIDIONLY)
+//#if !defined(_MSC_VER) || !defined(_MIDIONLY)
+#if !define(_MIDIONLY)
     testTestSignal();
 
    

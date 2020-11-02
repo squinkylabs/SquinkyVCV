@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "simd/functions.hpp"
 #include "MultiLag2.h"
+#include "SqMath.h"
 
 class Limiter {
 public:

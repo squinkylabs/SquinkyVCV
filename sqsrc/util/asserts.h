@@ -1,9 +1,11 @@
 #pragma once
 
+#include "simd.h"
 #include "AudioMath.h"
 
 #include <assert.h>
 #include <iostream>
+
 extern int _mdb;        // MIDI reverence count
 
 /**
@@ -99,10 +101,13 @@ extern int _mdb;        // MIDI reverence count
 // leave space after macro
 
 
-#ifndef _MSC_VER
+// #ifndef _MSC_VER
+#if 1
 
-#include <simd/vector.hpp>
-#include <simd/functions.hpp>
+//#include <simd/vector.hpp>
+//#include <simd/functions.hpp>
+//#include "SimdBlocks.h"
+
 
 using float_4 = rack::simd::float_4;
 using int32_4 = rack::simd::int32_4;

@@ -74,7 +74,8 @@ float -> float_4 isn't free.
 #include <memory>
 #include <vector>
 
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
+#if 1
 #include "ADSR16.h"
 #include "WVCODsp.h"
 #include "LookupTable.h"
@@ -210,7 +211,9 @@ public:
     /**
      * Main processing entry point. Called every sample
      */
+#ifndef _MSC_VER
      __attribute__((flatten))
+#endif
     void step() override;
 
     static std::vector<std::string> getWaveformNames()
@@ -513,8 +516,13 @@ inline void WVCO<TBase>::stepn_lowerRate()
     updateShapes_n();
 }
 
+#ifndef _MSC_VER
 template <class TBase>
 inline void  __attribute__((flatten)) WVCO<TBase>::stepn_fullRate()
+#else
+template <class TBase>
+inline void WVCO<TBase>::stepn_fullRate()
+#endif
 {
     assert(numBanks_m > 0);
 
@@ -558,8 +566,14 @@ inline void  __attribute__((flatten)) WVCO<TBase>::stepn_fullRate()
     }
 }
 
+
+
 template <class TBase>
+#ifndef _MSC_VER
 inline void  __attribute__((flatten)) WVCO<TBase>::step()
+#else
+inline void WVCO<TBase>::step()
+#endif
 {
     // clock the sub-sample rate tasks
     divn.step();

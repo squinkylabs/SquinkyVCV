@@ -1,6 +1,6 @@
 
 /**
- * include the "foreign" SIMD library
+ * include the "foreign" SIMD libraries (from VCV)
  */
 
 // Need to make this compile in MS tools for unit tests
@@ -9,6 +9,7 @@
 
 #pragma warning (push)
 #pragma warning ( disable: 4244 4305 )
+#define NOMINMAX
 #endif
 
 #include <algorithm>

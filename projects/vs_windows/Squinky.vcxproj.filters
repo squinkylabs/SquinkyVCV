@@ -573,6 +573,36 @@
     <ClCompile Include="..\..\dsp\utils\SplineRenderer.cpp">
       <Filter>Source Files\dsp\utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\simd_testBiquad.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testMultiLag2.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testWVCO.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testSub.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testFilterComposite.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testBasic.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testSines.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testDC.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testSimdLookup.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testSimd.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -1006,6 +1036,12 @@
     </ClInclude>
     <ClInclude Include="..\..\dsp\utils\CompCurves.h">
       <Filter>Header Files\dsp\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\simd.h">
+      <Filter>Header Files\dsp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\SimdBlocks.h">
+      <Filter>Header Files\dsp</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

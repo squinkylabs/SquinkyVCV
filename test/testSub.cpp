@@ -1,9 +1,12 @@
 
+// TODO: why does this need to come first? who is fogetting him?
+#include "SqMath.h"
 #include "tutil.h"
 #include "asserts.h"
 
 #include "Sub.h"
 #include "TestComposite.h"
+
 
 
 using Comp = Sub<TestComposite>;
