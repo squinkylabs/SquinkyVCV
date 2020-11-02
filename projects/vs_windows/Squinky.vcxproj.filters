@@ -117,9 +117,6 @@
     <Filter Include="Header Files\midi\controller">
       <UniqueIdentifier>{1cdfb7ce-218c-40bb-a3e0-588b110427dc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\NewFilter1">
-      <UniqueIdentifier>{dcbbda8f-f87e-4c9b-8692-a77e06855850}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\midi\model">
       <UniqueIdentifier>{14b5b8a1-05b8-4b58-8897-62fe9f5a8619}</UniqueIdentifier>
     </Filter>
@@ -602,6 +599,15 @@
     </ClCompile>
     <ClCompile Include="..\..\test\testSimd.cpp">
       <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\utils\AutioMath_4.cpp">
+      <Filter>Source Files\dsp\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\utils\Cmprsr.cpp">
+      <Filter>Source Files\dsp\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\src\minblep.cpp">
+      <Filter>Source Files\dsp\third-party\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

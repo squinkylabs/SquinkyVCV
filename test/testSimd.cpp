@@ -1,5 +1,6 @@
 
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
+#if 1
 
 #include "asserts.h"
 #include "SimdBlocks.h"

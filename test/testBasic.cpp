@@ -66,8 +66,12 @@ static void testBasic3()
 // this test might be superfluous...
 void testBasic()
 {
+#ifndef _MSC_VER 
     testBasic0();
     testBasic1();
     testBasic2();
     testBasic3();
+#else
+    printf("testBasic skipped for MS compiler: no minBlep\n");
+#endif
 }

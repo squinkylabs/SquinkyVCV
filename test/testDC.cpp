@@ -179,6 +179,12 @@ static void pulses() {
 
 void testDC()
 {
+#ifndef _MSC_VER 
+    // this requires real minblep, which we don't have yet
     saws();
     pulses();
+#else
+    printf("skipping test DC, don't have minBlep\n");
+#endif
+   
 }

@@ -434,6 +434,7 @@ static void testNormalize1()
 
 void testSub()
 {
+#ifndef _MSC_VER
     testChannels();
     testSub1();
     testSub2();
@@ -454,4 +455,7 @@ void testSub()
 
     testSubLevel(false, 0, 1);
     testSubLevel(false, 1, 1);
+#else
+    printf("skipping testSub - need minBlep\n");
+#endif
 }
