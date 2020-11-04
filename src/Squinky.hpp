@@ -11,13 +11,13 @@ dd
 #define _FUN        // works with 1.0
 #define _LFN
 #define _FORMANTS
-#define _SHAPER
+//#define _SHAPER
 #define _CHB
 #define _GRAY
 #define _TREM
 #define _COLORS
 #define _EV3
-#define _SUPER
+//#define _SUPER
 #define _BOOTY
 #define _GROWLER
 //#define _SLEW

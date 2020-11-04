@@ -49,6 +49,7 @@
 		{
 			"slug": "squinkylabs-shp",
 			"name": "Shaper",
+			"disabled": true,
 			"description": "Precision Wave Shaper",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/shaper.md",
 			"tags": ["Effect", "Waveshaper", "Distortion"]
@@ -100,6 +101,7 @@
 		{
 			"slug": "squinkylabs-super",
 			"name": "Saws",
+			"disabled": true,
 			"description": "Super saw VCO emulation",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/saws.md",
 			"tags": ["VCO", "Polyphonic"]
