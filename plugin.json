@@ -87,7 +87,7 @@
 			"slug": "squinkylabs-freqshifter",
 			"name": "Booty Shifter",
 			"description": "Frequency Shifter",
-			"disabled": true,
+			"disabled": false,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/shifter.md",
 			"tags": ["Ring Modulator", "effect"]
 		},
@@ -267,7 +267,7 @@
 		{
 			"slug": "squinkylabs-comp",
 			"name": "Comp",
-			"disabled": true,
+			"disabled": false,
 			"description": "Compressor",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md",
 			"tags": [

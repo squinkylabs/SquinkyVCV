@@ -2,27 +2,25 @@
 #include "rack.hpp"
 // #define _TIME_DRAWING
 
-#ifdef _SEQQ
-dd 
-#endif
 
- #define _XFORM
+#define _SEQQ
+#define _XFORM
 
-//#define _FUN        // works with 1.0
-//#define _LFN
-//#define _FORMANTS
-//#define _SHAPER
-//#define _CHB
-//#define _GRAY
-//#define _TREM
+#define _FUN        // works with 1.0
+#define _LFN
+#define _FORMANTS
+#define _SHAPER
+#define _CHB
+#define _GRAY
+#define _TREM
 #define _COLORS
 #define _EV3
-//#define _SUPER
+#define _SUPER
 #define _BOOTY
 #define _GROWLER
-//#define _SLEW
+#define _SLEW
 #define _MIX8
-//#define _FILT
+#define _FILT
 //#define _CH10
 //#define _LFNB
 #define _MIX_STEREO
@@ -38,7 +36,7 @@ dd
 #define _MIXM
 #define _DTMODULE
 
-// #define _SEQ4
+#define _SEQ4
 #define _WVCO
 #define _SUB
 #define _SINES

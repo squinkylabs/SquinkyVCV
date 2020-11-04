@@ -74,7 +74,6 @@ void init (::rack::Plugin *p)
 #endif
 
 #ifdef _SEQQ
-a b
     assert(modelSequencerModule);
     p->addModel(modelSequencerModule);
 #endif

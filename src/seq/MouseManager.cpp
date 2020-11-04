@@ -1,4 +1,5 @@
 #include "ISeqSettings.h"
+#include "../Squinky.hpp"
 
 //#include "MidiKeyboardHandler.h"    // TODO: get rid of this
 #include "MidiSequencer.h"
