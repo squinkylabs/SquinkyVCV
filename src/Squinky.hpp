@@ -2,6 +2,10 @@
 #include "rack.hpp"
 // #define _TIME_DRAWING
 
+#ifdef _SEQQ
+dd 
+#endif
+
  #define _XFORM
 
 #define _FUN        // works with 1.0
@@ -104,7 +108,7 @@ extern Model *modelCH10Module;
 #ifdef _SINK
 extern Model *modelKSModule;
 #endif
-#ifdef _SEQ
+#ifdef _SEQQ
 extern Model *modelSequencerModule;
 #endif
 #ifdef _SEQ4

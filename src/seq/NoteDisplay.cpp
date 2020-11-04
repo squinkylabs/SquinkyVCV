@@ -1,6 +1,6 @@
 #include "../Squinky.hpp"
 
-//#ifdef _SEQ
+#ifdef _SEQQ
 #include "WidgetComposite.h"
 #include "Seq.h"
 
@@ -507,4 +507,5 @@ void NoteDisplay::doXform(InputScreenManager::Screens screenCode)
     this->enabled = false;
     ism->show(this, screenCode, sequencer, cb);
 }
+#endif
 

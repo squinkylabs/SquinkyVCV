@@ -7,6 +7,8 @@ struct NVGcontext;
 class NoteDisplay;
 using MidiSequencerPtr = std::shared_ptr<MidiSequencer>;
 
+#ifdef _SEQQ
+
 /**
  * This class only exists to isolate the mouse
  * handler from NoteDisplay, so that we can do
@@ -51,3 +53,4 @@ private:
         bool shiftKey, bool ctrlKey);
 
 };
+#endif

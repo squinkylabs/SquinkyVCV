@@ -73,7 +73,8 @@ void init (::rack::Plugin *p)
     p->addModel(modelCHBgModule);
 #endif
 
-#ifdef _SEQ
+#ifdef _SEQQ
+a b
     assert(modelSequencerModule);
     p->addModel(modelSequencerModule);
 #endif

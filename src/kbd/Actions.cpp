@@ -158,7 +158,9 @@ void Actions::handleNoteEditorChange(MidiSequencerPtr sequencer, ChangeType type
 extern void sequencerHelp();
 
 void Actions::help(ActionContext& context) {
+#ifdef _SEQQ
     sequencerHelp();
+#endif
 }
 
 void Actions::insertDefault(ActionContext& context) {

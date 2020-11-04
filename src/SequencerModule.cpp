@@ -2,7 +2,7 @@
 #include <iostream>
 #include "Squinky.hpp"
 
-#ifdef _SEQ
+#ifdef _SEQQ
 #include "DrawTimer.h"
 #include "NewSongDataCommand.h"
 #include "WidgetComposite.h"

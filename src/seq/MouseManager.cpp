@@ -6,7 +6,7 @@
 #include "NoteDragger.h"
 #include "NoteScreenScale.h"
 
-#ifdef _SEQ
+#ifdef _SEQQ
 MouseManager::MouseManager(MidiSequencerPtr seq) 
     : sequencer(seq)
 {

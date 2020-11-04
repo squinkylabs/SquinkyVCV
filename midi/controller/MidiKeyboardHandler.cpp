@@ -229,7 +229,9 @@ bool MidiKeyboardHandler::handle(
    
     switch(key) {
         case GLFW_KEY_F1:
+    #ifdef _SEQQ
             sequencerHelp();
+    #endif
             handled = true;
             break;
         case GLFW_KEY_TAB: 
