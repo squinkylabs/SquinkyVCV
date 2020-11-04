@@ -16,7 +16,6 @@
 #define _SUPER
 #define _BOOTY
 #define _GROWLER
-//#define _SEQ
 #define _SLEW
 #define _MIX8
 #define _FILT
@@ -35,7 +34,7 @@
 #define _MIXM
 #define _DTMODULE
 
-#define _SEQ4
+// #define _SEQ4
 #define _WVCO
 #define _SUB
 #define _SINES

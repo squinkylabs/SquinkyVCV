@@ -85,7 +85,7 @@
 			"slug": "squinkylabs-sequencer",
 			"name": "Seq++",
 			"description": "DAW-like sequencer",
-			"disabled": false,
+			"disabled": true,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/sq2.md",
 			"tags": ["Sequencer", "Polyphonic"]
 		},
@@ -93,7 +93,7 @@
 			"slug": "squinkylabs-sequencer4",
 			"name": "Seq4x4",
 			"description": "Sequence player",
-			"disabled": false,
+			"disabled": true,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/sq2.md",
 			"tags": ["Sequencer", "Polyphonic"]
 		},
