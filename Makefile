@@ -34,7 +34,7 @@ endif
 
 # Careful about linking to shared libraries, since you can't assume much about the user's environment and library search path.
 # Static libraries are fine.
-LDFLAGS += -lpthread -llibstdc++
+LDFLAGS += -lpthread
 
 # Add .cpp and .c files to the build
 SOURCES += $(wildcard src/*.cpp)
