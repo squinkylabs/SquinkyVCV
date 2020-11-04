@@ -8,13 +8,13 @@ dd
 
  #define _XFORM
 
-#define _FUN        // works with 1.0
-#define _LFN
-#define _FORMANTS
+//#define _FUN        // works with 1.0
+//#define _LFN
+//#define _FORMANTS
 //#define _SHAPER
-#define _CHB
-#define _GRAY
-#define _TREM
+//#define _CHB
+//#define _GRAY
+//#define _TREM
 #define _COLORS
 #define _EV3
 //#define _SUPER
