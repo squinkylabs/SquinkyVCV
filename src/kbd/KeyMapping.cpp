@@ -21,7 +21,7 @@ KeyMappingPtr KeyMapping::make(const std::string& configPath)
         WARN(errorStr.c_str());
         assert(!ret);
     } catch( int x) {
-      //  INFO("user has no key mapping");
+      INFO("user has no key mapping");
     }
     return ret;
 }
