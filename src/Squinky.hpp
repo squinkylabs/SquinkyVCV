@@ -20,7 +20,7 @@ dd
 #define _SUPER
 #define _BOOTY
 #define _GROWLER
-#define _SLEW
+//#define _SLEW
 #define _MIX8
 //#define _FILT
 //#define _CH10

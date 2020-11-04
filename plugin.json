@@ -114,6 +114,7 @@
 		{
 			"slug": "squinkylabs-slew4",
 			"name": "Slade",
+			"disabled": true,
 			"description": "Octal slew/lag/VCA",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/slew4.md",
 			"tags": ["Slew limiter", "VCA"]
