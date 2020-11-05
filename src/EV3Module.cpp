@@ -333,15 +333,15 @@ a b
 static const NVGcolor COLOR_GREEN2 = nvgRGB(0x90, 0xff, 0x3e);
 void EV3Widget::step()
 {
-    INFO("step1");
+   // INFO("step1");
     ModuleWidget::step();
-      INFO("step2");
+  //    INFO("step2");
   //  pitchDisplay.step();
     bool norm = true;
     if (module) {
         norm = module->ev3->isLoweringVolume();
     }
-      INFO("step3");
+    //  INFO("step3");
     if (norm != wasNormalizing) {
         wasNormalizing = norm;
         auto color = norm ? COLOR_GREEN2 : SqHelper::COLOR_WHITE;
@@ -351,7 +351,7 @@ void EV3Widget::step()
             INFO("skipping null plus2");
         }
     }
-      INFO("step4");
+     // INFO("step4");
 }
 
 const int dy = -6;      // apply to everything
@@ -555,11 +555,11 @@ EV3Widget::EV3Widget(EV3Module *module) :
     box.size = Vec(18 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/ev3_panel.svg");
 
-#if 0
+
     makeSections(module, icomp);
-    makeInputs(module);
-    makeOutputs(module, icomp);
-#endif
+    //makeInputs(module);
+    //makeOutputs(module, icomp);
+
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
