@@ -52,6 +52,7 @@ void EV3Module::step()
 
 /************************************************************/
 
+#if 0
 class EV3PitchDisplay
 {
 public:
@@ -82,6 +83,10 @@ private:
 
 void EV3PitchDisplay::step()
 {
+    if (octLabels.size() < 1) {
+        INFO("no pitch labels 85");
+        return;
+    }
     bool atLeastOneChanged = false;
     const int delta = Comp::OCTAVE2_PARAM - Comp::OCTAVE1_PARAM;
     for (int i = 0; i < 3; ++i) {
@@ -216,6 +221,10 @@ bool EV3PitchDisplay::shouldUseInterval(int osc)
 
 void EV3PitchDisplay::updateInterval(int osc)
 {
+    if (octLabels.size() < 1) {
+        INFO("no pitch labels");
+        return;
+    }
 
     int refSemi = 0;
     int refOctave = 0;
@@ -262,6 +271,10 @@ void EV3PitchDisplay::updateInterval(int osc)
 
 void EV3PitchDisplay::updateAbsolute(int osc)
 {
+     if (octLabels.size() < 1) {
+        INFO("no pitch labels");
+        return;
+    }
     std::stringstream so;
     int oct = 5 + lastOctave[osc];
     int semi = lastSemi[osc];
@@ -276,6 +289,7 @@ void EV3PitchDisplay::updateAbsolute(int osc)
     semiLabels[osc]->text = pitchNames[semi];
     semiLabels[osc]->box.pos.x = semiX[osc] + pitchOffsets[semi];
 }
+#endif
 
 struct EV3Widget : ModuleWidget
 {
@@ -299,7 +313,7 @@ struct EV3Widget : ModuleWidget
     void step() override;
     DECLARE_MANUAL("EV3 manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/ev3.md");
 
-    EV3PitchDisplay pitchDisplay;
+  //  EV3PitchDisplay pitchDisplay;
     EV3Module* const module;
     Label* plusOne = nullptr;
     Label* plusTwo = nullptr;
@@ -319,17 +333,23 @@ a b
 static const NVGcolor COLOR_GREEN2 = nvgRGB(0x90, 0xff, 0x3e);
 void EV3Widget::step()
 {
+    INFO("step1");
     ModuleWidget::step();
-    pitchDisplay.step();
+      INFO("step2");
+  //  pitchDisplay.step();
     bool norm = true;
     if (module) {
         norm = module->ev3->isLoweringVolume();
     }
+      INFO("step3");
     if (norm != wasNormalizing) {
         wasNormalizing = norm;
         auto color = norm ? COLOR_GREEN2 : SqHelper::COLOR_WHITE;
-        plusTwo->color = color;
+        if (plusTwo) {
+            plusTwo->color = color;
+        }
     }
+      INFO("step4");
 }
 
 const int dy = -6;      // apply to everything
@@ -344,10 +364,12 @@ void EV3Widget::makeSection(EV3Module *module, int index, std::shared_ptr<ICompo
 
     const int delta = Comp::OCTAVE2_PARAM - Comp::OCTAVE1_PARAM;
 
+#if 0
     pitchDisplay.addOctLabel(
         addLabel(Vec(x - 10, y - 32), "Oct"));
     pitchDisplay.addSemiLabel(
         addLabel(Vec(x2 - 22, y - 32), "Semi"));
+#endif
 
     addParam(SqHelper::createParamCentered<Blue30SnapKnob>(
         icomp,
@@ -516,7 +538,7 @@ void EV3Widget::makeOutputs(EV3Module *, std::shared_ptr<IComposite> icomp)
  */
 #ifdef __V1x
 EV3Widget::EV3Widget(EV3Module* module) :
-    pitchDisplay(module),
+ //   pitchDisplay(module),
     module(module)
 {
     setModule(module);
