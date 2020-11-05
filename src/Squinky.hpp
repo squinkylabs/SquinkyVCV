@@ -27,7 +27,7 @@
 #define _USERKB
 //#define _CHAOS
 //#define _DG
-//#define _F2
+#define _F2
 #define _F4
 
 //#define _BLANKMODULE

@@ -306,6 +306,7 @@ struct EV3Widget : ModuleWidget
     bool wasNormalizing = false;
 
 #ifdef _TIME_DRAWING
+a b
     // EV3: avg = 464.417900, stddev = 145.768622 (us) Quota frac=2.786507
     void draw(const DrawArgs &args) override
     {
@@ -403,12 +404,13 @@ void EV3Widget::makeSection(EV3Module *module, int index, std::shared_ptr<ICompo
 
     const float y4 = y3 + 43;
     const float xx = x - 12;
-
+#if 0
     addParam(SqHelper::createParam<WaveformSwitch>(
         icomp,
         Vec(xx, y4),
         module,
         Comp::WAVE1_PARAM + delta * index));
+#endif
 }
 
 void EV3Widget::makeSections(EV3Module* module, std::shared_ptr<IComposite> icomp)
