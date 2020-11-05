@@ -336,7 +336,11 @@ void EV3Widget::step()
    // INFO("step1");
     ModuleWidget::step();
   //    INFO("step2");
-    pitchDisplay.step();
+    if (module) {
+        pitchDisplay.step();
+    } else {
+        WARN("not stepping pitch display. no module");
+    }
     bool norm = true;
     if (module) {
         norm = module->ev3->isLoweringVolume();
