@@ -52,7 +52,7 @@ void EV3Module::step()
 
 /************************************************************/
 
-#if 0
+#if 1
 class EV3PitchDisplay
 {
 public:
@@ -313,7 +313,7 @@ struct EV3Widget : ModuleWidget
     void step() override;
     DECLARE_MANUAL("EV3 manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/ev3.md");
 
-  //  EV3PitchDisplay pitchDisplay;
+    EV3PitchDisplay pitchDisplay;
     EV3Module* const module;
     Label* plusOne = nullptr;
     Label* plusTwo = nullptr;
@@ -336,7 +336,7 @@ void EV3Widget::step()
    // INFO("step1");
     ModuleWidget::step();
   //    INFO("step2");
-  //  pitchDisplay.step();
+    pitchDisplay.step();
     bool norm = true;
     if (module) {
         norm = module->ev3->isLoweringVolume();
@@ -366,7 +366,7 @@ void EV3Widget::makeSection(EV3Module *module, int index, std::shared_ptr<ICompo
 
     const int delta = Comp::OCTAVE2_PARAM - Comp::OCTAVE1_PARAM;
 
-#if 0
+#if 1
     pitchDisplay.addOctLabel(
         addLabel(Vec(x - 10, y - 32), "Oct"));
     pitchDisplay.addSemiLabel(
@@ -540,7 +540,7 @@ void EV3Widget::makeOutputs(EV3Module *, std::shared_ptr<IComposite> icomp)
  */
 #ifdef __V1x
 EV3Widget::EV3Widget(EV3Module* module) :
- //   pitchDisplay(module),
+    pitchDisplay(module),
     module(module)
 {
     setModule(module);
