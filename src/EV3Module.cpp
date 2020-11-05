@@ -557,8 +557,8 @@ EV3Widget::EV3Widget(EV3Module *module) :
 
 
     makeSections(module, icomp);
-    //makeInputs(module);
-    //makeOutputs(module, icomp);
+    makeInputs(module);
+    makeOutputs(module, icomp);
 
 
     // screws
