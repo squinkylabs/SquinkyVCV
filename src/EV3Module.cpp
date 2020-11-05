@@ -347,6 +347,8 @@ void EV3Widget::step()
         auto color = norm ? COLOR_GREEN2 : SqHelper::COLOR_WHITE;
         if (plusTwo) {
             plusTwo->color = color;
+        } else {
+            INFO("skipping null plus2");
         }
     }
       INFO("step4");
