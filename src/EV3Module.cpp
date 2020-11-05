@@ -531,9 +531,11 @@ EV3Widget::EV3Widget(EV3Module *module) :
     box.size = Vec(18 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
     SqHelper::setPanel(this, "res/ev3_panel.svg");
 
+#if 0
     makeSections(module, icomp);
     makeInputs(module);
     makeOutputs(module, icomp);
+#endif
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
