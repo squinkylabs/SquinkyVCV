@@ -327,7 +327,7 @@ a b
         DrawLocker l(drawTimer);
         ModuleWidget::draw(args);
     }
-#endif
+#endif 
 };
 
 static const NVGcolor COLOR_GREEN2 = nvgRGB(0x90, 0xff, 0x3e);

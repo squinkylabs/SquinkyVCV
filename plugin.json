@@ -15,7 +15,7 @@
 			"slug": "squinkylabs-ev3",
 			"name": "EV3",
 			"description": "Triple VCO with even waveform",
-			"disabled": true,
+			"disabled": false,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/ev3.md",
 			"tags": ["VCO", "Multiple"]
 		},
@@ -87,7 +87,7 @@
 			"slug": "squinkylabs-freqshifter",
 			"name": "Booty Shifter",
 			"description": "Frequency Shifter",
-			"disabled": false,
+			"disabled": true,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/shifter.md",
 			"tags": ["Ring Modulator", "effect"]
 		},
@@ -267,7 +267,7 @@
 		{
 			"slug": "squinkylabs-comp",
 			"name": "Comp",
-			"disabled": false,
+			"disabled": true,
 			"description": "Compressor",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md",
 			"tags": [
