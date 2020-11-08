@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <string>
+
 class SqStream
 {
 public:
@@ -12,13 +13,13 @@ public:
     void add(const char* s);
     std::string str();
 
-    void setPrecission(int digits);
+    void precision(int digits);
 private:
     static const int bufferSize = 256;
     char buffer[bufferSize];
     int length = 0;
 
-    const int precission = 2;
+    int _precision = 2;
 };
 
 inline SqStream::SqStream()
@@ -26,7 +27,10 @@ inline SqStream::SqStream()
     buffer[0] = 0;
 }
 
-
+inline void SqStream::precision(int p)
+{
+    _precision = p;
+}
 inline void SqStream::add(const std::string& s)
 {
     add(s.c_str());
@@ -46,8 +50,21 @@ inline void SqStream::add(float f)
     char* nextLoc = buffer + length;
     int sizeRemaining = bufferSize - length;
     assert(sizeRemaining > 0);
-    assert(precission == 2);
-    snprintf(nextLoc, sizeRemaining, "%.2f", f);
+
+    const char* format = "%.2f";
+    switch (_precision) {
+    case 1:
+        format = "%.1f";
+        break;
+    case 2:
+        format = "%.2f";
+        break;
+    default:
+        assert(false);
+    }
+
+    
+    snprintf(nextLoc, sizeRemaining, format, f);
     length = int(strlen(buffer));
 }
 inline std::string SqStream::str()

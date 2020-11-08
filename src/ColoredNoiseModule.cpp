@@ -187,9 +187,11 @@ struct ColorDisplay : TransparentWidget
        // std::stringstream s;
         SqStream s;
         s.precision(1);
-        s.setf(std::ios::fixed, std::ios::floatfield);
+        //s.setf(std::ios::fixed, std::ios::floatfield);
 
-        s << slopeAbs << " db/oct";
+       // s << slopeAbs << " db/oct";
+        s.add(slopeAbs);
+        s.add(" db/oct");
         _slopeLabel->text = s.str();
 
         const char * mini = "\u2005-";
