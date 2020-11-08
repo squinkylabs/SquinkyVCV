@@ -102,6 +102,7 @@ extern void testBasic();
 extern void testFilterComposites();
 extern void testClockRecovery();
 extern void testCompCurves();
+extern void testSqStream();
 
 #if 0
 #include <sstream>
@@ -198,6 +199,7 @@ if (runShaperGen) {
     testOnset2();
 
     testBiquad();
+    testSqStream();
 #ifndef _MSC_VER
     testSub();
     simd_testBiquad();
