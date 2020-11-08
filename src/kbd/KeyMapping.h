@@ -25,9 +25,13 @@ public:
     bool useDefaults() const;
     bool grabKeys() const;
 
+    bool isValid() const {
+        return _isValid;
+    }
+
 private:
     /**
-     * throws std::runtime_exception for parsing errors
+     * returns with !isValid if parsing errors
      */
     KeyMapping(const std::string& configPath);
     using container = std::map<SqKey, Actions::action>;
@@ -37,4 +41,5 @@ private:
 
     bool _useDefaults = true;
     bool _grabKeys = true;
+    bool _isValid = false;
 };

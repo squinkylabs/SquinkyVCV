@@ -2,26 +2,18 @@
 #include "KeyMapping.h"
 #include "SqKey.h"
 #include "rack.hpp"
-//#include "../ctrl/SqHelper.h"
 
-//#include "jansson.h"
-//#include "logger.hpp"
 
-#include <system_error>
+//#include <system_error>
 #include <stdio.h>
 #include <sstream>
 
 KeyMappingPtr KeyMapping::make(const std::string& configPath)
 {
     KeyMappingPtr ret;
-    try {
-        ret.reset( new KeyMapping(configPath));
-    } catch( std::exception& ex) {
-        std::string errorStr = std::string("Error detected parsing key mapping: ") + ex.what();
-        WARN(errorStr.c_str());
-        assert(!ret);
-    } catch( int x) {
-      //  INFO("user has no key mapping");
+    ret.reset( new KeyMapping(configPath));
+    if (!ret->isValid()) {
+        ret.reset();
     }
     return ret;
 }
@@ -62,10 +54,7 @@ KeyMapping::KeyMapping(const std::string& configPath)
     // INFO("parsing key mapping: %s\n", configPath.c_str());
     FILE *file = fopen(configPath.c_str(), "r");
     if (!file) {
-       // std::string errorStr("could not open file mapping: ");
-      //  errorStr += configPath;
-        // a bit of a hack,but just throw "some other thing" for expected error
-        throw int(12);
+        return;
     }
 
     json_error_t error;
@@ -76,7 +65,8 @@ KeyMapping::KeyMapping(const std::string& configPath)
         s <<  error.line << ":" << error.column;
         s << " " << error.text;
         fclose(file);
-        throw (std::runtime_error(s.str()));
+        INFO(s.str().c_str());
+        return;
     }
     JSONcloser cl(mappingJson, file);
 
@@ -94,20 +84,25 @@ KeyMapping::KeyMapping(const std::string& configPath)
                 if (!act || !key) {
                      std::stringstream s;
                      s << "Bad binding entry (" << json_dumps(value, 0) << ")";
-                     throw (std::runtime_error(s.str()));
+                     INFO(s.str().c_str());
+                     return;
                 }
                 if (theMap.find(*key) != theMap.end()) {
                     std::stringstream s;
                     s << "duplicate key mapping: " << json_dumps(value, 0);
-                    throw (std::runtime_error(s.str()));
+                    INFO(s.str().c_str());
+                    return;
                 }
                 theMap[*key] = act;
             }
         } else {
-            throw (std::runtime_error("bindings is not an array"));
+            //throw (std::runtime_error("bindings is not an array"));
+            INFO("bindings is not an array");
+            return;
         }
     } else {
-        throw (std::runtime_error("bindings not found at root"));
+        INFO("bindings not found at root");
+        return;
     }
 
     // DEBUG("Keyboard map has %d entries from JSON", theMap.size());
@@ -117,7 +112,8 @@ KeyMapping::KeyMapping(const std::string& configPath)
     json_t* ignoreCase = json_object_get(mappingJson, "ignore_case");
     if (ignoreCase) {
         if (!json_is_array(ignoreCase)) {
-             throw (std::runtime_error("ignoreCase is not an array"));
+            INFO("ignoreCase is not an array");
+            return;
         }
         size_t index;
         json_t* value;
@@ -125,7 +121,8 @@ KeyMapping::KeyMapping(const std::string& configPath)
             if (!json_is_string(value)) {
                 std::stringstream s;
                 s << "bad key in ignore_case: " <<  json_dumps(value, 0);
-                throw (std::runtime_error(s.str()));
+                INFO(s.str().c_str());
+                return;
             }
             std::string key = json_string_value(value);
             int code = SqKey::parseKey(key);
@@ -142,7 +139,8 @@ KeyMapping::KeyMapping(const std::string& configPath)
         if (!json_is_boolean(useDefaultsJ)) {
             std::stringstream s;
             s << "use_defaults is not true or false, is" << json_dumps(useDefaultsJ, 0);
-            throw (std::runtime_error(s.str()));
+            INFO(s.str().c_str());
+            return;
         }
         _useDefaults = json_is_true(useDefaultsJ);
     }
@@ -153,10 +151,12 @@ KeyMapping::KeyMapping(const std::string& configPath)
         if (!json_is_boolean(grabKeysJ)) {
             std::stringstream s;
             s << "grab_keys is not true or false, is" << json_dumps(grabKeysJ, 0);
-            throw (std::runtime_error(s.str()));
+            INFO(s.str().c_str());
+            return;
         }
         _grabKeys = json_is_true(grabKeysJ);
     }
+    _isValid = true;
 };
 
 void KeyMapping::processIgnoreCase(const std::set<int>& codes)
