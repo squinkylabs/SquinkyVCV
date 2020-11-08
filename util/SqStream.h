@@ -3,6 +3,12 @@
 #include <assert.h>
 #include <string>
 
+/**
+ * SqStream is a replacement for std::stringstream.
+ * The std one crashes some build of rack.
+ * SqStream is not drop in compatibly. Instead of << you must
+ * use add().
+ */
 class SqStream
 {
 public:
