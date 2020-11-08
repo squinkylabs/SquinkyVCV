@@ -7,6 +7,7 @@
 #include "ColoredNoise.h"
 #include "NoiseDrawer.h"
 #include "ctrl/SqMenuItem.h"
+#include "SqStream.h"
 
 #ifdef _TIME_DRAWING
 static DrawTimer drawTimer("Colors");
@@ -183,7 +184,8 @@ struct ColorDisplay : TransparentWidget
         // update the slope display in the UI
         const bool slopeSign = slope >= 0;
         const float slopeAbs = std::abs(slope);
-        std::stringstream s;
+       // std::stringstream s;
+        SqStream s;
         s.precision(1);
         s.setf(std::ios::fixed, std::ios::floatfield);
 
