@@ -45,6 +45,15 @@ inline void SqStream::add(const char *s)
     length = int(strlen(buffer));
 }
 
+inline void SqStream::add(int i)
+{
+    char* nextLoc = buffer + length;
+    int sizeRemaining = bufferSize - length;
+    assert(sizeRemaining > 0);
+    snprintf(nextLoc, sizeRemaining, "%d", i);
+    length = int(strlen(buffer));
+}
+
 inline void SqStream::add(float f)
 {
     char* nextLoc = buffer + length;
