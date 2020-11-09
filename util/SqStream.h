@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <string>
+#include <cstring>
 
 /**
  * SqStream is a replacement for std::stringstream.
@@ -48,7 +49,7 @@ inline void SqStream::add(const char *s)
     int sizeRemaining = bufferSize - length;
     assert(sizeRemaining > 0);
     snprintf(nextLoc, sizeRemaining, "%s", s);
-    length = int(strlen(buffer));
+    length = int(std::strlen(buffer));
 }
 
 inline void SqStream::add(int i)

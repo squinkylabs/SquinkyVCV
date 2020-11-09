@@ -1,9 +1,10 @@
 
 #pragma once
 
+#include "SqStream.h"
 #include "rack.hpp"
 
-#include <sstream>
+
 #include <string>
 #include <vector>
 
@@ -91,13 +92,16 @@ inline void SemitoneDisplay::step() {
         }
 
         if (semiLabel) {
-            std::stringstream so;
-            so << "Semi " << names[semi];
+            SqStream so;
+  
+            so.add("Semi ");
+            so.add(names[semi]);
             semiLabel->text = so.str();
         }
         if (octLabel) {
-            std::stringstream so;
-            so << "Oct " << (5 + oct);
+            SqStream so;
+            so.add("Oct ");
+            so.add(5 + oct);
             octLabel->text = so.str();
         }
     }

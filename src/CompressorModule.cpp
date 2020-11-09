@@ -1,5 +1,5 @@
 
-#include <sstream>
+#include "SqStream.h"
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
@@ -27,11 +27,11 @@ public:
     std::string getDisplayValueString() override {
         auto value = getValue();
         auto expValue = expFunction(value);
-        std::stringstream str;
+        SqStream str;
         str.precision(2);
-        str << std::fixed << expValue;
+       // str << std::fixed << expValue;
         if (!suffix.empty()) {
-            str << suffix;
+            str.add(suffix);
         }
         return str.str();
     }

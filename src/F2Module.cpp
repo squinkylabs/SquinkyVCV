@@ -96,7 +96,7 @@ public:
     }
     std::string getDisplayValueString() override {
         float value =getValue();
-        std::stringstream str;
+        SqStream str;
         str.precision(0);
         str << std::fixed << value * 100 << "%";
         return str.str();
