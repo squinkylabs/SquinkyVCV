@@ -34,7 +34,7 @@ endif
 
 # Careful about linking to shared libraries, since you can't assume much about the user's environment and library search path.
 # Static libraries are fine.
-LDFLAGS += -lpthread
+LDFLAGS := -static-libstdc++
 
 # Add .cpp and .c files to the build
 SOURCES += $(wildcard src/*.cpp)
@@ -53,7 +53,7 @@ SOURCES += $(wildcard src/kbd/*.cpp)
 DISTRIBUTABLES += $(wildcard LICENSE*) res presets
 
 # If RACK_DIR is not defined when calling the Makefile, default to two levels above
-RACK_DIR ?= ../..
+RACK_DIR ?= ../../Rack-SDK-1.1.6/Rack-SDK
 
 # Include the VCV Rack plugin Makefile framework
 include $(RACK_DIR)/plugin.mk
