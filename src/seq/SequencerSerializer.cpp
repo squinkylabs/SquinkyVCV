@@ -9,6 +9,7 @@
 #include "SequencerSerializer.h"
 #include "SeqSettings.h"
 #include "jansson.h"
+#include "SqStream.h"
 
 /*
 schema for seq++
@@ -108,15 +109,21 @@ json_t *SequencerSerializer::toJson(std::shared_ptr<MidiSong4> sng)
 
 std::string SequencerSerializer::trackTagForSong4(int row, int col)
 {
-    std::stringstream str;
-    str << "tk" << row << "_" << col;
+    SqStream str;
+    str.add("tk");
+    str.add(row);
+    str.add("_");
+    str.add(col);
     return str.str(); 
 }
 
 std::string SequencerSerializer::optionTagForSong4(int row, int col)
 {
-    std::stringstream str;
-    str << "opt" << row << "_" << col;
+    SqStream str;
+    str.add("opt");
+    str.add(row);
+    str.add("_");
+    str.add(col);
     return str.str(); 
 }
 
