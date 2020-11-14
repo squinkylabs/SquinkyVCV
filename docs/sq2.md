@@ -88,13 +88,37 @@ It might appear that you are stuck with a two bar sequence that cannot be length
 
 ### Editing with the PC keyboard
 
-There are a bunch of options for moving around in pitch and time, in units of quarter notes, grid units, bars, sixty fourth notes, semitones, octaves. Move to next note or previous note. 
+There are a bunch of options for moving around in pitch and time, in units of quarter notes, grid units, bars, sixty fourth notes, semitones, octaves. Move to next note or previous note.
 
 There are also lots of options for inserting notes. Insert half note, quarter note, eighth note, sixteenth note, grid unit. Automatically advance the cursor after inserting a note / or not.
 
 There are lots of options for shifting, stretching and transposing one or more notes by any of those units.
 
 Check out the [reference on keyboard commands](#Keyboard-reference)\ for more on that.
+
+### The two context menus
+
+There are two different context menus, and each has different things. One comes up when you right-click on the grey panel. The other one comes up when you right click on the note grid. We call the one available from the panel the **panel context menu**, and the one available from the note grid the **editor context menu**.
+
+The **panel context menu** is mostly the standard VCV Rack context menu. Seq++ adds:
+
+* A link to the manual
+* The "hookup clock" command
+* Enable remote editing (for use with 4X4)
+* Load MIDI file
+* Save MIDI file
+
+The **editor context menu** contains:
+
+* Grid settings sub-menu
+* Snap to grid on/off
+* Snap duration to grid
+* Audition on/off
+* Articulation sub-menu
+* Loop subrange on/off
+* Insert note command
+* Set end point (where the sequence ends)
+* Finally, all the various xforms (transforms)
 
 ### Simple examples
 
@@ -121,7 +145,7 @@ They all work more or less the same way:
 1. Select some notes as you normally would in the note grid.
 2. Pick one of the xforms from the context menu.
 3. A dialog will come up with settings for that xform. Set them as you like.
-4. If you press OK, the xform will by applied to the notes you had selected.
+4. If you press OK, the xform will by applied to the notes you have selected.
 
 Many of the xforms require you to select a scale. The scale is stored in the patch, so once you set it for your patch it should be remembered and you shouldn’t have to re-enter it every time.
 
@@ -143,7 +167,7 @@ Snap duration to grid will ensure that dragging note durations with the mouse wi
 
 ## Settings
 
-Right-clicking in the note area will bring up the settings menu. This menu consists of settings (like grid size), as well as some commands, like insert/delete note. All of the settings are at the top, and the commands follow after a blank space.
+Right-clicking in the note area will bring up the **editor menu**. This menu consists of settings (like grid size), as well as some commands, like insert/delete note and xforms. All of the settings are at the top, and the commands follow after a blank space.
 
 Settings:
 
@@ -159,6 +183,14 @@ Commands:
 
 * **Insert/Delete** note. This menu item changes depending on what is under the cursor. If nothing is there, it will insert a note. If a note is there, it will delete it. (note that double click does that same thing).
 * **Set end point**. Will set the end/loop point of the sequencer to the grid line nearest the cursor.
+* **xform: Transpose**. Brings up a popup with many transpose options.
+* **xform: Invert**. Brings up a popup with many melodic inversion options.
+* **xform: Reverse pith**. Like a retrograde. Reverses the order of all the pitches.
+* **xform: Chop note**. Easy way to create arpeggios and polyrhythms.
+* **xofrm: Quantize pitch**. Forces pitches to be in a particular scale, like a quantizer module.
+* **xform: Make triads**. Makes a variety of chords from a single note.
+
+(see section above for more on these powerful transforms)
 
 ## Adjusting length of sequence
 
