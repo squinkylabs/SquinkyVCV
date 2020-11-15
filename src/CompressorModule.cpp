@@ -29,7 +29,7 @@ public:
         auto expValue = expFunction(value);
         SqStream str;
         str.precision(2);
-       // str << std::fixed << expValue;
+        str.add(expValue);
         if (!suffix.empty()) {
             str.add(suffix);
         }

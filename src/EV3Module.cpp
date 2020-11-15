@@ -253,7 +253,6 @@ void EV3PitchDisplay::updateInterval(int osc)
     assert(adjustedSemi >= 0);
     assert(adjustedSemi < 12);
 
-    //std::stringstream so;
     SqStream so;
     so.add(adjustedOctave);
     octLabels[osc]->text = so.str();

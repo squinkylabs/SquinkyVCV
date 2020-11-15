@@ -1,5 +1,4 @@
 
-#include <sstream>
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
@@ -11,6 +10,7 @@
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SqTooltips.h"
+#include "SqStream.h"
 
 
 using Comp = F2_Poly<WidgetComposite>;
@@ -98,7 +98,8 @@ public:
         float value =getValue();
         SqStream str;
         str.precision(0);
-        str << std::fixed << value * 100 << "%";
+        str.add(value + 100);
+        str.add("%");
         return str.str();
     }
 };

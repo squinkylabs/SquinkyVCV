@@ -16,6 +16,7 @@ public:
     SqStream();
     void add(const std::string& s);
     void add(float f);
+    void add(double d);
     void add(int i);
     void add(const char* s);
     std::string str();
@@ -59,6 +60,11 @@ inline void SqStream::add(int i)
     assert(sizeRemaining > 0);
     snprintf(nextLoc, sizeRemaining, "%d", i);
     length = int(strlen(buffer));
+}
+
+inline void SqStream::add(double d)
+{
+    add( float(d));
 }
 
 inline void SqStream::add(float f)

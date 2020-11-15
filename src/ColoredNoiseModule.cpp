@@ -184,12 +184,8 @@ struct ColorDisplay : TransparentWidget
         // update the slope display in the UI
         const bool slopeSign = slope >= 0;
         const float slopeAbs = std::abs(slope);
-       // std::stringstream s;
         SqStream s;
         s.precision(1);
-        //s.setf(std::ios::fixed, std::ios::floatfield);
-
-       // s << slopeAbs << " db/oct";
         s.add(slopeAbs);
         s.add(" db/oct");
         _slopeLabel->text = s.str();
