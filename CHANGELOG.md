@@ -1,5 +1,9 @@
 # Change log for Squinky Labs modules
 
+## 10.0.15
+
+Re-coded some old modules to make the compatible with the new Library build system.
+
 ## 1.0.14
 
 New Module: Comp (audio compressor).
