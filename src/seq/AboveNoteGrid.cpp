@@ -1,10 +1,9 @@
 #include "AboveNoteGrid.h"
 #include "MidiSequencer.h"
 #include "NoteScreenScale.h"
+#include "SqStream.h"
 #include "TimeUtils.h"
 #include "UIPrefs.h"
-
-#include <sstream>
 
 const float row1 = 10;
 const float row2 = 40;
@@ -125,11 +124,11 @@ void AboveNoteGrid::updateCursorLabels()
         if (!curLoop->enabled) {
             loopLabel->text.erase();    
         } else {
-            std::stringstream str;
-            str << "L ";
-            str << 1 + TimeUtils::time2bar(curLoop->startTime);
-            str << '-';
-            str << 1 + TimeUtils::time2bar(curLoop->endTime);
+            SqStream str;
+            str.add( "L ");
+            str.add(1 + TimeUtils::time2bar(curLoop->startTime));
+            str.add('-');
+            str.add(1 + TimeUtils::time2bar(curLoop->endTime));
             loopLabel->text = str.str();
         }
     }

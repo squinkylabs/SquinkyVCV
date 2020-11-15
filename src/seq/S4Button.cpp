@@ -16,7 +16,7 @@
 #include "UndoRedoStack.h"
 #include "WidgetComposite.h"
 
-#include <sstream>
+#include "SqStream.h"
 
 #ifdef _SEQ4
 
@@ -58,8 +58,8 @@ public:
 
         for (int i = 1; i <= 16; ++i) {
             ::rack::ui::MenuItem* item = RepeatItem::make(button, i);
-            std::stringstream str;
-            str << i;
+            SqStream str;
+            str.add(i);
             item->text = str.str();
             menu->addChild(item);
         }
@@ -484,13 +484,13 @@ void S4ButtonDrawer::paintButtonText(NVGcontext* ctx) {
     nvgText(ctx,  S4ButtonGrid::buttonSize / 2, 15, button->contentLength.c_str(), nullptr);
 
     if (!button->contentLength.empty() && (button->repeatCount > 0)) {
-        std::stringstream s;
+        SqStream s;
         if ( button->isPlaying) {
-            s << button->repetitionNumber;
-            s << "/";
-            s << button->repeatCount; 
+            s.add(button->repetitionNumber);
+            s.add("/");
+            s.add(button->repeatCount); 
         } else {
-            s << button->repeatCount; 
+            s.add(button->repeatCount); 
         }
         nvgText(ctx, S4ButtonGrid::buttonSize / 2, 45, s.str().c_str(), nullptr);
     }

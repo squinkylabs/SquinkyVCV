@@ -2,7 +2,7 @@
 #include "Sequencer4Module.h"
 #include "Sequencer4Widget.h"
 
-#include <sstream>
+#include "SqStream.h"
 #include "MidiSong4.h"
 #include "Squinky.hpp"
 #include "UndoRedoStack.h"
@@ -69,10 +69,13 @@ public:
     }
     std::string getDisplayValueString() override { return ""; }
     std::string getLabel() override { 
-        std::stringstream s;
-        s << "click: all tk -> section " << section;
-        s << "; ctrl-click: track " << track;
-        s << " -> section " << section;
+        SqStream s;
+        s.add("click: all tk -> section ");
+        s.add(section);
+        s.add("; ctrl-click: track ");
+        s.add(track);
+        s.add(" -> section ");
+        s.add(section);
         return s.str();
     }
 private:
@@ -209,8 +212,8 @@ public:
 
         for (int i = 1; i <= 16; ++i) {
             ::rack::ui::MenuItem* item = BaseOctaveItem::make(module, i);
-            std::stringstream str;
-            str << i;
+            SqStream str;
+            str.add(i);
             item->text = str.str();
             menu->addChild(item);
         }

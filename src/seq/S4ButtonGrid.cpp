@@ -4,6 +4,7 @@
 #include "S4ButtonGrid.h"
 #include "S4Button.h"
 #include "Seq4.h"
+#include "SqStream.h"
 #include "UndoRedoStack.h"
 #include "../Sequencer4Widget.h"
 #include "../ctrl/SqWidgets.h"
@@ -88,8 +89,11 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
         const float cv_in_dy = 0;
 
         {
-            std::stringstream s;
-            s << "Track " << row + 1 << " CV out";
+            SqStream s;
+            s.add("Track ");
+            s.add(row+1);
+            s.add(" CV out");
+           //s << "Track " << row + 1 << " CV out";
             SqOutputJack* oj = rack::createOutput<SqOutputJack>(
                 rack::math::Vec(jacksX2, y + cv_out_dy),
                 module,
@@ -100,8 +104,11 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
 
        
         {
-            std::stringstream s;
-            s << "Track " << row + 1 << " Gate out";
+            SqStream s;
+            s.add("Track ");
+            s.add(row+1);
+            s.add(" Gate out");
+           // s << "Track " << row + 1 << " Gate out";
             SqOutputJack* oj = createOutput<SqOutputJack>(
                 rack::math::Vec(jacksX2, y + gate_out_dy),
                 module,
@@ -111,8 +118,11 @@ void S4ButtonGrid::init(Sequencer4Widget* parent, rack::engine::Module* module,
         }
 
         {
-            std::stringstream s;
-            s << "Track " << row + 1 << " section selector CV in";
+            SqStream s;
+            s.add("Track ");
+            s.add(row+1);
+            s.add(" section selector CV in");
+            //s << "Track " << row + 1 << " section selector CV in";
             SqInputJack* ij = rack::createInput<SqInputJack>(
                 rack::math::Vec(jacksX1, y + cv_in_dy ),
                 module,

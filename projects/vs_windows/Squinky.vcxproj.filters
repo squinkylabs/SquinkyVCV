@@ -573,6 +573,9 @@
     <ClCompile Include="..\..\dsp\utils\SplineRenderer.cpp">
       <Filter>Source Files\dsp\utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testSqStream.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
