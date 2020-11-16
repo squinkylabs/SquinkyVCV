@@ -498,13 +498,10 @@ static void testLagZeroAttack(bool isZero)
     } else {
         simd_assertLT(out, in);
     }
-
-    fflush(stdout);
    
     in = float_4(1);
     lag.step(in);
     out = lag.get();
-    fflush(stdout);
 
     if (isZero) {
         simd_assertGT(out, in);
@@ -515,6 +512,104 @@ static void testLagZeroAttack()
 {
     testLagZeroAttack(true);
     testLagZeroAttack(false);
+}
+
+
+static void testCompRatio(int inputId, int outputId, Cmprsr::Ratios ratio)
+{
+    using Comp = Compressor<TestComposite>;
+    std::shared_ptr<Comp> comp = std::make_shared<Comp>();
+    initComposite(*comp);
+
+    comp->params[Comp::RATIO_PARAM].value = float(int(ratio));
+    comp->params[Comp::THRESHOLD_PARAM].value = .1;
+    const double threshV = Comp::getSlowThresholdFunction()(.1);
+    printf("th .1 give %f volts\n", threshV);
+
+    comp->inputs[inputId].channels = 1;
+    comp->outputs[outputId].channels = 1;
+
+
+    // at threshold, should get thresh out.
+    comp->inputs[inputId].setVoltage(threshV, 0);
+    TestComposite::ProcessArgs args;
+    for (int i=0; i<1000; ++i) {
+        comp->process(args);
+    }
+
+    float output = comp->outputs[outputId].voltages[0];
+    assertClose(output, threshV, .01);
+
+    const float threshDb = AudioMath::db(threshV);
+    printf("thresh db = %f\n", threshDb);
+
+/* this is just a repeat, isn't it?
+    comp->inputs[inputId].setVoltage(threshV, 0);
+    for (int i=0; i<1000; ++i) {
+        comp->process(args);
+    }
+    output = comp->outputs[outputId].voltages[0];
+    assertClose(output, threshV, .01);
+*/
+
+    for (int mult = 2; (mult * threshV) < 10; mult *= 2) {
+        float input = threshV * mult;
+        const float inputDb= AudioMath::db(input);
+        printf("\ninput = %f\n", input);
+        printf("inputdb = %f\n", inputDb);
+        printf("db over thresh = %f\n", inputDb - threshDb);
+
+        comp->inputs[inputId].setVoltage(input, 0);
+        for (int i=0; i<2000; ++i) {
+            comp->process(args);
+        }
+        output = comp->outputs[outputId].voltages[0];
+        float outputDb = AudioMath::db(output);
+        printf("db out = %f\n", outputDb); fflush(stdout);
+        printf("db out over threah = %f\n", outputDb - threshDb);
+
+        const float observedRatio =  (inputDb - threshDb) / (outputDb - threshDb);
+        printf("ovserved ratio = %f\n", observedRatio);
+      // assertClose(output, threshV, .01);
+    }
+
+    // now go up to a big voltage
+    assertGT(4, threshV);
+    const float db4 = AudioMath::db(4);
+    printf("db4 = %f\n", db4);
+    printf("db4 over thresh = %f", db4 - threshDb);
+
+    comp->inputs[inputId].setVoltage(4, 0);
+    for (int i=0; i<2000; ++i) {
+        comp->process(args);
+    }
+    output = comp->outputs[outputId].voltages[0];
+    float outputDb = AudioMath::db(output);
+    printf("db out = %f\n", outputDb); fflush(stdout);
+    printf("db out over threah = %f\n", outputDb - threshDb);
+    assertClose(output, threshV, .01);
+    // fails above
+
+ 
+    comp->inputs[inputId].setVoltage(10, 0);
+    for (int i=0; i<1000; ++i) {
+        comp->process(args);
+    }
+    output = comp->outputs[outputId].voltages[0];
+    assertClose(output, threshV, .01);
+
+    comp->inputs[inputId].setVoltage(0, 0);
+    for (int i=0; i<1000; ++i) {
+        comp->process(args);
+    }
+    output = comp->outputs[outputId].voltages[0];
+    assertClose(output, 0, .001);
+}
+
+static void testCompRatio8()
+{
+    using Comp = Compressor<TestComposite>;
+    testCompRatio(Comp::LAUDIO_INPUT, Comp::LAUDIO_OUTPUT, Cmprsr::Ratios::_8_1_hard);
 }
 
 
@@ -548,5 +643,6 @@ void testMultiLag2()
     testCompZeroAttack();
     testLimiterZeroAttack();
     testLagZeroAttack();
+    testCompRatio8();
 
 }

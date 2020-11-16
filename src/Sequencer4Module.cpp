@@ -230,7 +230,7 @@ void Sequencer4Widget::appendContextMenu(Menu* theMenu) {
     theMenu->addChild(spacerLabel);
     ManualMenuItem* manual = new ManualMenuItem(
         "4X4 manual",
-        "https://github.com/squinkylabs/SquinkyVCV/blob/s53/docs/4x4.md");
+        "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/4x4.md");
     theMenu->addChild(manual);
 
 #if 0 // doesn't work yet
