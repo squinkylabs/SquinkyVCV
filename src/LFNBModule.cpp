@@ -329,7 +329,6 @@ void LFNBLabelUpdater::update(struct LFNBWidget& widget)
             }
             SqStream str;
             str.precision(digits);
-           //str.setf(std::ios::fixed, std::ios::floatfield);
             str.add(baseFreq);
             labels[i]->text = str.str();
             labels[i]->box.pos.x = labelX - moveLeft;
