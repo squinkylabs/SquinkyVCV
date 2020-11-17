@@ -28,6 +28,18 @@ public:
 };
 
 /**
+ * expand range to 40db
+ * 1 ch lim: 5
+ * 1 cha curve 12.8
+ * 16 ch lim 15.9
+ * 16 ch curve:120
+ *
+ * aver 14..15:
+ * 1 ch lim: 2.4
+ * 1 cha curve 12.7
+ * 16 ch lim 16.4
+ * 16 ch curve: 119 
+ * 
  * after zero attack:
  * 1 ch lim: 4.9
  * 1 cha curve 13.3
