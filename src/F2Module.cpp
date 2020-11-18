@@ -154,7 +154,7 @@ void F2Module::process(const ProcessArgs& args)
 struct F2Widget : ModuleWidget
 {
     F2Widget(F2Module *);
-    DECLARE_MANUAL("Basic VCF Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/f2/docs/f2.md");
+    DECLARE_MANUAL("Basic VCF Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
