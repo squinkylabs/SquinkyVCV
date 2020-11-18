@@ -102,6 +102,7 @@ extern void testBasic();
 extern void testFilterComposites();
 extern void testClockRecovery();
 extern void testCompCurves();
+extern void testSqStream();
 
 #if 0
 #include <sstream>
@@ -199,14 +200,14 @@ if (runShaperGen) {
     testOnset2();
 
     testBiquad();
-//#ifndef _MSC_VER
-#if 1
+
+
+    testSqStream();
     testSub();
     simd_testBiquad();
     testWVCO();
     testMultiLag2();
     testFilterComposites();
-#endif
     testSimpleQuantizer();
 
   
@@ -254,9 +255,7 @@ if (runShaperGen) {
     testMix4();
     testMix8();
 
-//#ifndef _MSC_VER
-//#if !defined(_MSC_VER) || !defined(_MIDIONLY)
-#if !define(_MIDIONLY)
+#if !defined(_MIDIONLY)
     testTestSignal();
 
    

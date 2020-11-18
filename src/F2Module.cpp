@@ -1,5 +1,4 @@
 
-#include <sstream>
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
@@ -11,6 +10,7 @@
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SqTooltips.h"
+#include "SqStream.h"
 
 
 using Comp = F2_Poly<WidgetComposite>;
@@ -96,9 +96,10 @@ public:
     }
     std::string getDisplayValueString() override {
         float value =getValue();
-        std::stringstream str;
+        SqStream str;
         str.precision(0);
-        str << std::fixed << value * 100 << "%";
+        str.add(value + 100);
+        str.add("%");
         return str.str();
     }
 };
@@ -153,7 +154,7 @@ void F2Module::process(const ProcessArgs& args)
 struct F2Widget : ModuleWidget
 {
     F2Widget(F2Module *);
-    DECLARE_MANUAL("Basic VCF Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/f2/docs/f2.md");
+    DECLARE_MANUAL("Basic VCF Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {

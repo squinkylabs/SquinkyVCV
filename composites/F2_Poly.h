@@ -330,7 +330,7 @@ inline void F2_Poly<TBase>::setupFreq()
                 outputGain_n *= 1 / q;
             }
             outputGain_n = SimdBlocks::min(outputGain_n, float_4(1.f));
-            printf("q = %f, oututGain-n = %f\n", q[0], outputGain_n[0]);
+            //printf("q = %f, oututGain-n = %f\n", q[0], outputGain_n[0]);
         }
 
         SqInput& rPort = TBase::inputs[R_INPUT];
@@ -341,7 +341,7 @@ inline void F2_Poly<TBase>::setupFreq()
         if (rChanged) {
             lastRv[bank] = rVolts;
             processedRValue =  rack::dsp::approxExp2_taylor5(rVolts/3.f);
-            printf("rv=%f procR = %f\n", rVolts[0], processedRValue[0]);
+            //printf("rv=%f procR = %f\n", rVolts[0], processedRValue[0]);
         }
 
         SqInput& fcPort = TBase::inputs[FC_INPUT];

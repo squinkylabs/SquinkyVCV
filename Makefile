@@ -1,8 +1,6 @@
 
 SLUG = squinkylabs-plug1
 
-VERSION = 1.0.14
-
 # FLAGS will be passed to both the C and C++ compiler
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
 FLAGS += -I./dsp/third-party/falco -I./dsp/third-party/kiss_fft130 

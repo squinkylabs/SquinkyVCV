@@ -85,15 +85,17 @@ static void validateCurve(CompCurves::LookupPtr table, CompCurves::Recipe r)
     }
 }
 
+
 static void testLookupAboveTheshNoKnee(float ratioToTest)
 {
     printf("\n***** enter test for ratio = %f\n", ratioToTest);
+
     // comp ratio of 1 is a straight line - two points
     CompCurves::Recipe r;
     r.ratio = ratioToTest;
 
     auto table = CompCurves::makeCompGainLookup(r);
-    
+
     assertGT(table->size(), 0);
     float y = CompCurves::lookup(table, normalizedThreshold);
     assertEQ(y, normalizedThreshold);
@@ -121,8 +123,9 @@ static void testLookupAboveTheshNoKnee(float ratioToTest)
     assertEQ(observedDbReduction, expectedDbReductionAtMax);
 
     validateCurve(table, r);
-   
+
 }
+
 
 static void testLookupAboveTheshNoKneeNoComp()
 {
@@ -293,8 +296,6 @@ static void plot4_1_soft()
     printf("----- end curve ----\n");
 }
 
-
-
 static void testCompCurvesKnee2()
 {
     CompCurves::Recipe r;
@@ -339,6 +340,49 @@ static void testInflection()
 
 }
 
+
+// This one is more or less that same as testLookupAboveTheshNoKnee2,
+// but it's a litte more clearly written, and has a larger range
+
+static void testLookupAboveTheshNoKnee2(float ratioToTest)
+{
+    printf("\n***** enter test for ratio = %f\n", ratioToTest);
+    // comp ratio of 1 is a straight line - two points
+    CompCurves::Recipe r;
+    r.ratio = ratioToTest;
+
+    auto table = CompCurves::makeCompGainLookup(r);
+
+    assertGT(table->size(), 0);
+    float y = CompCurves::lookup(table, normalizedThreshold);
+    assertEQ(y, normalizedThreshold);
+
+    const float threshDb = float(AudioMath::db(normalizedThreshold));
+
+    for (float input = 2; input < 100; input *= 2) {
+        const float inputDb = float(AudioMath::db(input));
+        const float inputDbAboveTh = inputDb - threshDb;
+
+        const float gain = CompCurves::lookup(table, input);
+        const float output = input * gain;
+        const float outputDb = float(AudioMath::db(output));
+
+        const float outputDbAboveTh = outputDb - threshDb;
+
+        const float observedRatio = inputDbAboveTh / outputDbAboveTh;
+        printf("input = %.2f, ratio=%.2f\n", input, observedRatio);
+        printf("put back this assert\n");
+        //assertClosePct(observedRatio, ratioToTest, 1);
+
+    }
+}
+
+
+static void testLookupAboveTheshNoKnee2()
+{
+    testLookupAboveTheshNoKnee2(8);
+}
+
 void testCompCurves()
 {
     plot4_1_soft();
@@ -350,6 +394,7 @@ void testCompCurves()
 
     testLookupAboveTheshNoKneeNoComp();
     testLookupAboveTheshNoKnee();
+    testLookupAboveTheshNoKnee2();
 
     // TODO: make these test work
   //  testLookupAboveTheshKnee();

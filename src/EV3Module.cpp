@@ -8,7 +8,8 @@
 #include "WidgetComposite.h"
 
 #include "EV3.h"
-#include <sstream>
+//#include <sstream>
+#include "SqStream.h"
  
 #ifdef _TIME_DRAWING
 static DrawTimer drawTimer("EV3");
@@ -252,8 +253,8 @@ void EV3PitchDisplay::updateInterval(int osc)
     assert(adjustedSemi >= 0);
     assert(adjustedSemi < 12);
 
-    std::stringstream so;
-    so << adjustedOctave;
+    SqStream so;
+    so.add(adjustedOctave);
     octLabels[osc]->text = so.str();
 
     semiLabels[osc]->text = intervalNames[adjustedSemi];
@@ -262,7 +263,7 @@ void EV3PitchDisplay::updateInterval(int osc)
 
 void EV3PitchDisplay::updateAbsolute(int osc)
 {
-    std::stringstream so;
+    SqStream so;
     int oct = 5 + lastOctave[osc];
     int semi = lastSemi[osc];
 
@@ -270,7 +271,7 @@ void EV3PitchDisplay::updateAbsolute(int osc)
         --oct;
         semi += 12;
     }
-    so << oct;
+    so.add(oct);
     octLabels[osc]->text = so.str();
 
     semiLabels[osc]->text = pitchNames[semi];

@@ -26,6 +26,10 @@ This is very much like controlling a MIDI synthesizer from a MIDI sequencer. All
 
 Bottom line - if you want to have two different note sequences that are played on different "instruments", use two instance of Seq++. Just like you would use two tracks in a DAW to do this.
 
+## I can't find all the entries in the context menu
+
+There are two different context menus, and each has different things. One comes up when you right-click on the grey panel. The other one comes up when you right click on the note grid.
+
 ## Many of the notes aren't playing
 
 Usually this is because the patch you are trying to drive with Seq++ does not respond correctly to polyphonic input. For example, the output is going to a mixer that is not polyphonic. Or the polyphonic VCO is driving a VCF that isn't polyphonic.

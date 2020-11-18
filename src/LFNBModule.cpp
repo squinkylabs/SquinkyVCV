@@ -8,7 +8,7 @@
 #include "WidgetComposite.h"
 #include "LFNB.h"
 
-#include <sstream>
+#include "SqStream.h"
 
 using Comp = LFNB<WidgetComposite>;
 
@@ -327,10 +327,9 @@ void LFNBLabelUpdater::update(struct LFNBWidget& widget)
             if (labels[i] == nullptr) {
                 return;
             }
-            std::stringstream str;
+            SqStream str;
             str.precision(digits);
-            str.setf(std::ios::fixed, std::ios::floatfield);
-            str << baseFreq;
+            str.add(baseFreq);
             labels[i]->text = str.str();
             labels[i]->box.pos.x = labelX - moveLeft;
             baseFreq *= 2.0f;

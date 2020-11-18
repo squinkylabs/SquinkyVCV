@@ -9,7 +9,7 @@
 #include "WidgetComposite.h"
 #include "LFN.h"
 
-#include <sstream>
+#include "SqStream.h"
 
 #ifdef _TIME_DRAWING
 static DrawTimer drawTimer("LFN");
@@ -215,10 +215,9 @@ void LFNLabelUpdater::update(struct LFNWidget& widget)
     if (baseFreq != baseFrequency) {
         baseFrequency = baseFreq;
         for (int i = 0; i < 5; ++i) {
-            std::stringstream str;
+            SqStream str;
             str.precision(digits);
-            str.setf(std::ios::fixed, std::ios::floatfield);
-            str << baseFreq;
+            str.add(baseFreq);
             labels[i]->text = str.str();
             labels[i]->box.pos.x = labelX - moveLeft;
             baseFreq *= 2.0f;

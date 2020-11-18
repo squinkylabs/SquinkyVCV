@@ -104,13 +104,20 @@ void CompCurves::addRightSideCurve(LookupPtr table, const Recipe& r, CompCurves:
     const double dbSlope = 1.0 / r.ratio;
 
     const double x1Db = AudioMath::db(10);      // let's plot out to +0 db
-    for (double xDb = x0Db; xDb <= x1Db; xDb += 1) {
+    const double x2Db = AudioMath::db(100);      // no, let's have a 40 db range!
+
+   // printf("x0 db = %f, x1Db = %f, x2 = %f\n", x0Db, x1Db, x2Db );
+    double incrementDb = 1;
+    for (double xDb = x0Db; xDb <= x2Db; xDb += incrementDb) {
         const double yDb = dbSlope * xDb;
 
         const float x = float(AudioMath::gainFromDb(xDb));
         const float gain = float(AudioMath::gainFromDb(yDb)) / x;
         // printf("new R: another right point db=%f,%f v-g=%f,%f\n", xDb, yDb, x, gain);
         NonUniformLookupTable<float>::addPoint(*table, x, gain);
+
+        // for tons of comp, we can be a little less precise.
+        incrementDb = xDb > x1Db ? 3 : 1;   
     }
 }
 

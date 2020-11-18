@@ -498,13 +498,10 @@ static void testLagZeroAttack(bool isZero)
     } else {
         simd_assertLT(out, in);
     }
-
-    fflush(stdout);
    
     in = float_4(1);
     lag.step(in);
     out = lag.get();
-    fflush(stdout);
 
     if (isZero) {
         simd_assertGT(out, in);
@@ -517,6 +514,75 @@ static void testLagZeroAttack()
     testLagZeroAttack(false);
 }
 
+
+static void testCompRatio(int inputId, int outputId, Cmprsr::Ratios ratio)
+{
+    using Comp = Compressor<TestComposite>;
+    std::shared_ptr<Comp> comp = std::make_shared<Comp>();
+    initComposite(*comp);
+
+    comp->params[Comp::RATIO_PARAM].value = float(int(ratio));
+    comp->params[Comp::THRESHOLD_PARAM].value = .1;
+    const double threshV = Comp::getSlowThresholdFunction()(.1);
+
+
+    comp->inputs[inputId].channels = 1;
+    comp->outputs[outputId].channels = 1;
+
+
+    // at threshold, should get thresh out.
+    comp->inputs[inputId].setVoltage(threshV, 0);
+    TestComposite::ProcessArgs args;
+    for (int i=0; i<1000; ++i) {
+        comp->process(args);
+    }
+
+    float output = comp->outputs[outputId].voltages[0];
+    assertClose(output, threshV, .01);
+
+    const float threshDb = AudioMath::db(threshV);
+
+    float expectedRatio = 0;
+    switch (ratio) {
+        case Cmprsr::Ratios::_2_1_hard:
+            expectedRatio = 2;
+        break;
+        case Cmprsr::Ratios::_4_1_hard:
+            expectedRatio = 4;
+        break;
+        case Cmprsr::Ratios::_8_1_hard:
+            expectedRatio = 8;
+        break;
+        case Cmprsr::Ratios::_20_1_hard:
+            expectedRatio = 20;
+        break;
+    default:
+        assert(false);
+    }
+
+    for (int mult = 2; (mult * threshV) < 10; mult *= 2) {
+        float input = threshV * mult;
+        const float inputDb= AudioMath::db(input);
+        comp->inputs[inputId].setVoltage(input, 0);
+        for (int i=0; i<2000; ++i) {
+            comp->process(args);
+        }
+        output = comp->outputs[outputId].voltages[0];
+        float outputDb = AudioMath::db(output);
+
+        const float observedRatio =  (inputDb - threshDb) / (outputDb - threshDb);
+        assertClosePct(observedRatio, expectedRatio, 15);
+    }
+}
+
+static void testCompRatio8()
+{
+    using Comp = Compressor<TestComposite>;
+    testCompRatio(Comp::LAUDIO_INPUT, Comp::LAUDIO_OUTPUT, Cmprsr::Ratios::_8_1_hard);
+    testCompRatio(Comp::LAUDIO_INPUT, Comp::LAUDIO_OUTPUT, Cmprsr::Ratios::_4_1_hard);
+    testCompRatio(Comp::LAUDIO_INPUT, Comp::LAUDIO_OUTPUT, Cmprsr::Ratios::_20_1_hard);
+    testCompRatio(Comp::LAUDIO_INPUT, Comp::LAUDIO_OUTPUT, Cmprsr::Ratios::_2_1_hard);
+}
 
 void testMultiLag2()
 {
@@ -548,5 +614,5 @@ void testMultiLag2()
     testCompZeroAttack();
     testLimiterZeroAttack();
     testLagZeroAttack();
-
+    testCompRatio8();
 }

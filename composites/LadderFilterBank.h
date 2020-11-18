@@ -2,7 +2,7 @@
 #include "LadderFilter.h"
 #include "PeakDetector.h"
 #include "SqPort.h"
-#include <string>
+#include "SqStream.h"
 
 
 
@@ -38,9 +38,11 @@ public:
         PeakDetector& peak);
 
     void _dump(int channel, const std::string& label) {
-        std::stringstream s;
-        s << label;
-        s << "[" << channel << "] ";
+        SqStream s;
+        s.add(label);
+        s.add("[");
+        s.add(channel);
+        s.add("] ");
         filters[channel]._dump(s.str());
     }
     const LadderFilter<T>& get(int channel) {

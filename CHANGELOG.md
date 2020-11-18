@@ -1,5 +1,15 @@
 # Change log for Squinky Labs modules
 
+## 10.0.15
+
+Re-coded some old modules to make them compatible with the new Library build system.
+
+Fixed bug in Comp - it could only apply 20 dB of compression.
+
+Fixed the broken link to the 4X4 manual.
+
+Small changes to Seq++ manual.
+
 ## 1.0.14
 
 New Module: Comp (audio compressor).
