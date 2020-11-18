@@ -74,7 +74,7 @@ public:
 
     enum ParamIds
     {
-        TEST_PARAM,
+        MINBLEP_PARAM,
         NUM_PARAMS
     };
 
@@ -136,12 +136,13 @@ inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
 {
     timeSinceLastCrossing += args.sampleTime;
   
+    const bool useBlep = TBase::params[MINBLEP_PARAM].value > .5;
 
     const T inputClock = TBase::inputs[MAIN_INPUT].getVoltage(0);
     //inputClock = std::max(inputClock, -1.f);
     //inputClock = std::min(inputClock, 1.f);
 
-    const T orig = lastClockValue;
+   // const T orig = lastClockValue;
 
     T deltaClock = inputClock - lastClockValue;
 	T clockCrossing = -lastClockValue / deltaClock;
@@ -164,8 +165,10 @@ inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
     }
 
     float v = waveForm;
-    float blep = minBlep.process(); 
-    v -= blep;
+    if (useBlep) {
+        float blep = minBlep.process(); 
+        v -= blep;
+    }
  
 
     TBase::outputs[FIRST_OUTPUT].setVoltage(v, 0);
@@ -186,8 +189,8 @@ inline IComposite::Config DividerXDescription<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case DividerX<TBase>::TEST_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Test"};
+        case DividerX<TBase>::MINBLEP_PARAM:
+            ret = {0, 1.0f, 1, "MinBLEP"};
             break;
         default:
             assert(false);

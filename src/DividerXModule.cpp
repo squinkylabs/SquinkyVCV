@@ -7,6 +7,7 @@
 #include "DividerX.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/ToggleButton.h"
 
 using Comp = DividerX<WidgetComposite>;
 
@@ -92,6 +93,17 @@ void DividerXWidget::addJacks(DividerXModule *module, std::shared_ptr<IComposite
         Comp::DEBUG_OUTPUT)); 
 }
 
+void DividerXWidget::addControls(DividerXModule *module, std::shared_ptr<IComposite> icomp)
+{
+   ToggleButton* tog = SqHelper::createParam<ToggleButton>(
+        icomp,
+        Vec(11, 150),
+        module,  Comp::MINBLEP_PARAM);  
+    tog->addSvg("res/square-button-01.svg");
+    tog->addSvg("res/square-button-02.svg");
+    addParam(tog);
+}
+
 
 /**
  * Widget constructor will describe my implementation structure and
@@ -106,6 +118,7 @@ DividerXWidget::DividerXWidget(DividerXModule *module)
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
+    addControls(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
