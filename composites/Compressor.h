@@ -195,7 +195,7 @@ private:
     float lastRawMix = -1;
     float lastRawA = -1;
     float lastRawR = -1;
-    int lastReduceDistortion = -1;
+   // int lastReduceDistortion = -1;
     float lastThreshold = -1;
     int lastRatio = -1;
     bool bypassed = false;
@@ -280,7 +280,7 @@ inline void Compressor<TBase>::stepn()
     const float rawMakeupGain = Compressor<TBase>::params[MAKEUPGAIN_PARAM].value;
     if (lastRawMakeupGain != rawMakeupGain) {
         lastRawMakeupGain = rawMakeupGain;
-        makeupGain_m = AudioMath::gainFromDb(rawMakeupGain);
+        makeupGain_m = float(AudioMath::gainFromDb(rawMakeupGain));
     }
 
     const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, Compressor<TBase>::params[THRESHOLD_PARAM].value);
@@ -319,10 +319,9 @@ inline void Compressor<TBase>::pollAttackRelease()
     const float rawRelease = Compressor<TBase>::params[RELEASE_PARAM].value;
     const bool reduceDistortion = true;
 
-    if (rawAttack != lastRawA || rawRelease != lastRawR || reduceDistortion != lastReduceDistortion) {
+    if (rawAttack != lastRawA || rawRelease != lastRawR) {
         lastRawA = rawAttack;
         lastRawR = rawRelease;
-        lastReduceDistortion = reduceDistortion;
 
         const float attack = LookupTable<float>::lookup(attackFunctionParams, rawAttack);
         const float release = LookupTable<float>::lookup(releaseFunctionParams, rawRelease);
@@ -406,10 +405,10 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
     switch (i) {
         case Compressor<TBase>::ATTACK_PARAM:
             // .8073 too low .8075 too much
-            ret = {0, 1, .8074, "Attack time"};
+            ret = {0, 1, .8074f, "Attack time"};
             break;
          case Compressor<TBase>::RELEASE_PARAM:
-            ret = {0, 1, .25, "Release time"};
+            ret = {0, 1, .25f, "Release time"};
             break;
          case Compressor<TBase>::THRESHOLD_PARAM:
             ret = {0, 10, 10, "Threshold"};

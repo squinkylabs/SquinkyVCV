@@ -2,8 +2,8 @@
 
 #include "asserts.h"
 
-#include <simd/vector.hpp>
-#include <simd/functions.hpp>
+//#include <simd/vector.hpp>
+//#include <simd/functions.hpp>
 #include "SqMath.h"
 
 using float_4 = rack::simd::float_4;
@@ -86,8 +86,8 @@ inline float_4 SimdBlocks::fold(float_4 x)
  * only accurate for 0 <= x <= two
  */
 inline float_4 SimdBlocks::sinTwoPi(float_4 _x) {
-    const static float twoPi = 2 * 3.141592653589793238;
-    const static float pi =  3.141592653589793238;
+    const static float twoPi = 2 * 3.141592653589793238f;
+    const static float pi =  3.141592653589793238f;
     _x -= SimdBlocks::ifelse((_x > float_4(pi)), float_4(twoPi), float_4::zero()); 
 
     float_4 xneg = _x < float_4::zero();
@@ -95,7 +95,7 @@ inline float_4 SimdBlocks::sinTwoPi(float_4 _x) {
     xOffset += _x;
     float_4 xSquared = xOffset * xOffset;
     float_4 ret = xSquared * float_4(1.f / 24.f);
-    float_4 correction = ret * xSquared *  float_4(.02 / .254);
+    float_4 correction = ret * xSquared *  float_4(.02f / .254f);
     ret += float_4(-.5);
     ret *= xSquared;
     ret += float_4(1.f);

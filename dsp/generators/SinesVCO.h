@@ -60,7 +60,7 @@ inline void SinesVCO<T>::setPitch(T pitch, float sampleRate)
     }
 }
 
-static float_4 twoPi = 2 * 3.141592653589793238;
+static float_4 twoPi = 2 * 3.141592653589793238f;
 
 template <typename T>
 inline T SinesVCO<T>::process(T deltaT)

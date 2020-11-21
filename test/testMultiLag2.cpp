@@ -177,7 +177,7 @@ static void testLimiterAC()
     for (int i=0; i<100; ++i) {
 
         bool b = i & 1;
-        float_4 input( b ? 10 : -10);
+        float_4 input( b ? 10.f : -10.f);
         output = l.step(input);
     }
     simd_assertClose(output, float_4(5), .001);
@@ -199,9 +199,9 @@ static void testLimiterAttackTC(float a)
     l.setTimes(a, 1000, 1.f / sampleRate);
 
    // const float aTarget = 10.f / AudioMath::E;
-    const float aTarget = 10.f * ( 1 - (1.f / AudioMath::E));
+    const float aTarget = 10.f * float( 1 - (1.f / AudioMath::E));
 
-    const float aSec = a / 1000.0;
+    const float aSec = float(a / 1000.0);
     const float aSamplesExpected = sampleRate * aSec;
 
     int samples = 0;
@@ -222,7 +222,7 @@ static void testLimiterReleaseTC(float r)
 {
     float sampleRate = 44100.f;
     Limiter l;
-    l.setTimes(.1, r, 1.f / sampleRate);
+    l.setTimes(.1f, r, 1.f / sampleRate);
 
     // first get to 10
     int x = 0;
@@ -239,9 +239,9 @@ static void testLimiterReleaseTC(float r)
      }
 
    // const float aTarget = 10.f / AudioMath::E;
-    const float rTarget = 10.f * (1.f / AudioMath::E);
+    const float rTarget = 10.f * float((1.f / AudioMath::E));
 
-    const float rSec = r / 1000.0;
+    const float rSec = float(r / 1000.0);
     const float rSamplesExpected = sampleRate * rSec;
 
     int samples = 0;
@@ -251,7 +251,7 @@ static void testLimiterReleaseTC(float r)
         if (mem[0] < rTarget) {
             done = true;
             // let's shoot for within 1%
-            const float limits = rSamplesExpected * .01;
+            const float limits = rSamplesExpected * .01f;
             assertClose(samples, rSamplesExpected, limits);
             fflush(stdout);
         }
@@ -272,7 +272,7 @@ static void testLimiterTC()
 {
     testLimiterTC(10, 1000);
     testLimiterTC(1, 100);
-    testLimiterTC(.1, 10000);
+    testLimiterTC(.1f, 10000);
    
 }
 
@@ -309,7 +309,7 @@ static void testCompLim(int inputId, int outputId)
     initComposite(*comp);
 
     comp->params[Comp::RATIO_PARAM].value = float(int(Cmprsr::Ratios::HardLimit));
-    comp->params[Comp::THRESHOLD_PARAM].value = .1;
+    comp->params[Comp::THRESHOLD_PARAM].value = .1f;
     const double threshV = Comp::getSlowThresholdFunction()(.1);
     //printf("th .1 give %f volts\n", threshV);
 
@@ -318,7 +318,7 @@ static void testCompLim(int inputId, int outputId)
 
 
     // at threshold, should get thresh out.
-    comp->inputs[inputId].setVoltage(threshV, 0);
+    comp->inputs[inputId].setVoltage(float(threshV), 0);
     TestComposite::ProcessArgs args;
     for (int i=0; i<1000; ++i) {
         comp->process(args);
@@ -328,7 +328,7 @@ static void testCompLim(int inputId, int outputId)
     assertClose(output, threshV, .01);
 
 
-    comp->inputs[inputId].setVoltage(threshV, 0);
+    comp->inputs[inputId].setVoltage(float(threshV), 0);
     for (int i=0; i<1000; ++i) {
         comp->process(args);
     }
@@ -382,7 +382,7 @@ static void testLimiterZeroAttack(bool reduceDist)
     comp.setThreshold(threshold);
 
     // below thresh, no reduction
-    float_4 in(1.34);
+    float_4 in(1.34f);
     auto out = comp.step(in);
     simd_assertEQ(out, in);
 
@@ -396,7 +396,7 @@ static void testLimiterZeroAttack(bool reduceDist)
     // but at first is still one half
     in = float_4(1);
     out = comp.step(in);
-    simd_assertClose(out, float_4(.5),  .001);
+    simd_assertClose(out, float_4(.5),  .001f);
 
     // This used to work at 1000
     // TODO: test release time constant for real
@@ -422,7 +422,7 @@ static void testCompZeroAttack(bool reduceDist, int numChan)
     comp.setThreshold(threshold);
 
     // try some voltages before thresh
-    float_4 in(1.34);
+    float_4 in(1.34f);
     auto out = comp.step(in);
     simd_assertEQ(out, in);
 
@@ -432,7 +432,7 @@ static void testCompZeroAttack(bool reduceDist, int numChan)
     out = comp.step(in);
     
     if (numChan == 4) {
-        simd_assertClose(out, float_4(5.9), 1);
+        simd_assertClose(out, float_4(5.9f), 1);
     } else { 
         assertClose(out[0], 5.9, 1 );
     }
@@ -448,7 +448,7 @@ static void testCompZeroAttack(bool reduceDist, int numChan)
     in = float_4(1);
     out = comp.step(in);
     if (numChan == 4) {
-        simd_assertClose(out, float_4(.59),  .1);
+        simd_assertClose(out, float_4(.59f),  .1f);
     } else {
         assertClose(out[0], .59, .1);
     }
@@ -481,13 +481,13 @@ static void testLagZeroAttack(bool isZero)
     float sampleTime = 1.f / sampleRate;
     MultiLag2 lag;
 
-    lag.setAttack(.01);
-    lag.setRelease(.01);
+    lag.setAttack(.01f);
+    lag.setRelease(.01f);
     lag.setInstantAttack(isZero);
 
 
     // when input is increasing, should follow input
-    float_4 in(1.34);
+    float_4 in(1.34f);
     
     lag.step(in);
     auto out = lag.get();
@@ -522,7 +522,7 @@ static void testCompRatio(int inputId, int outputId, Cmprsr::Ratios ratio)
     initComposite(*comp);
 
     comp->params[Comp::RATIO_PARAM].value = float(int(ratio));
-    comp->params[Comp::THRESHOLD_PARAM].value = .1;
+    comp->params[Comp::THRESHOLD_PARAM].value = .1f;
     const double threshV = Comp::getSlowThresholdFunction()(.1);
 
 
@@ -531,7 +531,7 @@ static void testCompRatio(int inputId, int outputId, Cmprsr::Ratios ratio)
 
 
     // at threshold, should get thresh out.
-    comp->inputs[inputId].setVoltage(threshV, 0);
+    comp->inputs[inputId].setVoltage(float(threshV), 0);
     TestComposite::ProcessArgs args;
     for (int i=0; i<1000; ++i) {
         comp->process(args);
@@ -540,7 +540,7 @@ static void testCompRatio(int inputId, int outputId, Cmprsr::Ratios ratio)
     float output = comp->outputs[outputId].voltages[0];
     assertClose(output, threshV, .01);
 
-    const float threshDb = AudioMath::db(threshV);
+    const float threshDb = float(AudioMath::db(threshV));
 
     float expectedRatio = 0;
     switch (ratio) {
@@ -561,14 +561,14 @@ static void testCompRatio(int inputId, int outputId, Cmprsr::Ratios ratio)
     }
 
     for (int mult = 2; (mult * threshV) < 10; mult *= 2) {
-        float input = threshV * mult;
-        const float inputDb= AudioMath::db(input);
+        float input = float(threshV * mult);
+        const float inputDb = float(AudioMath::db(input));
         comp->inputs[inputId].setVoltage(input, 0);
         for (int i=0; i<2000; ++i) {
             comp->process(args);
         }
         output = comp->outputs[outputId].voltages[0];
-        float outputDb = AudioMath::db(output);
+        float outputDb = float(AudioMath::db(output));
 
         const float observedRatio =  (inputDb - threshDb) / (outputDb - threshDb);
         assertClosePct(observedRatio, expectedRatio, 15);

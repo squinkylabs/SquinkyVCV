@@ -415,7 +415,7 @@ static void testNormalize1()
     assertEQ(b, 1.0);
     assertEQ(c, 0);
 
-    a = .1;
+    a = .1f;
     b = 0;
     c = 0;
     Comp::normalizeVolume(a, b, c, d, e, f);

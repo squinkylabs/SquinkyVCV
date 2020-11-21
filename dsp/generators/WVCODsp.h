@@ -118,7 +118,7 @@ public:
         phaseAcc = SimdBlocks::wrapPhase01(phaseAcc);
         phaseAcc = SimdBlocks::ifelse(syncNow, float_4::zero(), phaseAcc);
 
-        float_4 twoPi (2 * 3.141592653589793238);
+        float_4 twoPi (2 * 3.141592653589793238f);
 
         float_4 phase = SimdBlocks::wrapPhase01(phaseAcc + phaseModulation);
         if (waveform == WaveForm::Fold) {

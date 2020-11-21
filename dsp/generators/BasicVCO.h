@@ -75,13 +75,13 @@ inline void BasicVCO::setPw(float_4 pw)
 
 inline void BasicVCO::setPitch(float_4 pitch, float sampleTime, float sampleRate)
 {
-    float_4 fmax(sampleRate * .45);
+    float_4 fmax(sampleRate * .45f);
     float_4 fmin(.1f);
     
 	freq = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(pitch + 30) / 1073741824;
     freq = rack::simd::clamp(freq, fmin, fmax);
 
-    const float sawCorrect = -5.698;
+    const float sawCorrect = -5.698f;
     const float_4 normalizedFreq = float_4(sampleTime) * freq;
     sawOffsetDCComp = normalizedFreq * float_4(sawCorrect);
 }
@@ -241,7 +241,7 @@ inline float_4 BasicVCO::processEven(float deltaTime)
 
     doubleSaw += minBlep.process();
     doubleSaw += 2 * sawOffsetDCComp; 
-    float_4 even = float_4(4 * 0.55f * 1.4f) * (doubleSaw + 1.27 * fundamental);
+    float_4 even = float_4(4 * 0.55f * 1.4f) * (doubleSaw + 1.27f * fundamental);
     return even;
 }
 
@@ -261,7 +261,7 @@ inline float_4 BasicVCO::processTriClean(float deltaTime)
 
     // Integrate square for triangle
     triIntegrator += 4.0 * triSquare * deltaPhase;
-    triIntegrator *= (1.0 - 40.0 * deltaTime); 
+    triIntegrator *= (1.0f - 40.0f * deltaTime); 
 
     return 5.0f * 1.25f * triIntegrator;
 }
@@ -309,7 +309,7 @@ inline float_4 BasicVCO::processSin(float deltaTime)
     phase = SimdBlocks::ifelse( (phase > 1), (phase - 1), phase);
   //  return 5 * sin2pi_pade_05_5_4(phase);
 
-    const static float twoPi = 2 * 3.141592653589793238;
+    const static float twoPi = float(2 * 3.141592653589793238);
     return 5 * SimdBlocks::sinTwoPi(phase * twoPi);
 }
 

@@ -2,7 +2,7 @@
 
 
 #include "CompCurves.h"
-#include "simd/functions.hpp"
+// #include "simd/functions.hpp"
 #include "MultiLag2.h"
 #include "SqMath.h"
 

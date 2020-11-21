@@ -335,7 +335,7 @@ inline float Sub<TBase>::computeGain(float knobValue, SqInput& cv, int pairChann
 {
     float value = LookupTable<float>::lookup(audioTaper, knobValue * .01f);
     value *= cv.isConnected() ? cv.getPolyVoltage(pairChannel) : 10;
-    value *= .1;
+    value *= .1f;
 
     return value;
 }

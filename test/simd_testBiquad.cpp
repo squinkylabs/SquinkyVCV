@@ -124,8 +124,8 @@ static void testCompare(int index) {
     BiquadState<float_4, 3> vectorState; 
     BiquadState<float, 3> scalarState; 
    
-    float scalarFreq = .1;
-    float_4 vectorFreq = float_4(.00001);
+    float scalarFreq = .1f;
+    float_4 vectorFreq = float_4(.00001f);
 
     vectorFreq[index] = scalarFreq;
 

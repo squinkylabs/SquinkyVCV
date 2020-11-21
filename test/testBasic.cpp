@@ -46,7 +46,7 @@ static void testBasic2()
     double phase = -2.1;
     for (int i=0; phase <= 1.2; ++ i) {
         phase = -1 + i * delta;
-        testSub(s, .1);
+        testSub(s, .1f);
     }
 }
 

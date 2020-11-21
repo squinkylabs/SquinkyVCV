@@ -56,7 +56,7 @@ float vcoProfiler(bool highToLow, int minimumSamples, oscillator osc)
         sum += x;
         ++samples;
     }
-    return sum/samples;
+    return float(sum/samples);
 }
 
 // this simple version does not look at periods
@@ -69,14 +69,14 @@ float vcoProfiler2(int samples, oscillator osc)
         sum += x;
         ++count;
     }
-    return sum / count;
+    return float(sum / count);
 }
 
 
 oscillator makeFake(float freq) {
     std::shared_ptr<float> p_phase = std::make_shared<float>(0);
      oscillator osc = [p_phase]() {
-        *p_phase += .01;
+        *p_phase += .01f;
         if (*p_phase > 1) {
             *p_phase -= 1;
         }

@@ -24,8 +24,8 @@ static void testSines1()
     float_4 deltaT = 1.f / 44100.f;
     float_4 x = v.process(deltaT);
 
-    float_4 expected(.036);
-    expected[1] = .146;
+    float_4 expected(.036f);
+    expected[1] = .146f;
     simd_assertClose(x, expected, .001);
    
 }

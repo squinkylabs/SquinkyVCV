@@ -5,7 +5,7 @@
 #include "Divider.h"
 #include "IComposite.h"
 
-#include "engine/Port.hpp"
+//#include "engine/Port.hpp"
 
 #include <assert.h>
 #include <memory>
@@ -279,7 +279,7 @@ inline void Basic<TBase>::_updatePwm()
         const int baseIndex = bank * 4;
         Port& p = TBase::inputs[PWM_INPUT];
 
-        const float_4 pwmSignal = p.getPolyVoltageSimd<float_4>(baseIndex) * .1;
+        const float_4 pwmSignal = p.getPolyVoltageSimd<float_4>(baseIndex) * .1f;
         float_4 combinedPW = pwmSignal * basePwm_m + basePw_m;
 
         combinedPW = rack::simd::clamp(combinedPW, 0, 1);

@@ -9,6 +9,7 @@
 
 #include "tutil.h"
 #include "asserts.h"
+#include "simd.h"
 
 using Comp2_Poly = F2_Poly<TestComposite>;
 using Comp4 = F4<TestComposite>;
@@ -92,35 +93,35 @@ static void testF2R_Poly(float rParam, float rcv, float fcParam, float expectedF
 static void testF2Fc_Poly()
 {
     printf("at 125\n"); fflush(stdout);
-    testF2Fc_Poly(0, 0, .00058);
+    testF2Fc_Poly(0, 0, .00058f);
     printf("at 127\n"); fflush(stdout);
-    testF2Fc_Poly(0, -10, .00058);
+    testF2Fc_Poly(0, -10, .00058f);
     printf("at 129\n"); fflush(stdout);
-    testF2Fc_Poly(10, 0, .6);           // hmm... we are losing the top of the range - should scale it down below .5
+    testF2Fc_Poly(10, 0, .6f);           // hmm... we are losing the top of the range - should scale it down below .5
     printf("at 131\n"); fflush(stdout);
-    testF2Fc_Poly(10, 10, .6);
+    testF2Fc_Poly(10, 10, .6f);
 }
 
 static void testF2Q_Poly()
 {
     testF2Q_Poly(0, 0, 2);
     testF2Q_Poly(0, -10, 2);
-    testF2Q_Poly(1, 0, .92);
-    testF2Q_Poly(10, 0, .0099);
-    testF2Q_Poly(10, 10, .0099);
+    testF2Q_Poly(1, 0, .92f);
+    testF2Q_Poly(10, 0, .0099f);
+    testF2Q_Poly(10, 10, .0099f);
 }
 
 static void testF2R_Poly()
 {
    //  void testF2R(float rParam, float rcv, float fcParam, float expectedFcGain1, float expectedFcGain2)
-    testF2R_Poly(0, 0, 5, .0186377, .0186377);
-    testF2R_Poly(5, 0, 5, .0058705, .0591709);
-    testF2R_Poly(10, 0, 2.5, .00032, .0332);
+    testF2R_Poly(0, 0, 5, .0186377f, .0186377f);
+    testF2R_Poly(5, 0, 5, .0058705f, .0591709f);
+    testF2R_Poly(10, 0, 2.5, .00032f, .0332f);
 }
 
 static void testF4Fc()
 {
-    testF2Fc<Comp4>(0, 0, .00058);
+    testF2Fc<Comp4>(0, 0, .00058f);
 }
 
 static void testPolyChannelsF2()
@@ -138,7 +139,7 @@ float qFunc(float qV, int numStages)
     
 
     const float expMult = (numStages == 1) ? 1 / 1.5f : 1 / 2.5f;
-    float q = std::exp2(qV * expMult) - .5;
+    float q = std::exp2(qV * expMult) - .5f;
     return q;
 }
 

@@ -15,7 +15,7 @@ static void testTriFormula()
     TriFormula::getLeftA(a, float_4(.5));
     simd_assertEQ(a, float_4(2));
 
-    TriFormula::getLeftA(a, .1);
+    TriFormula::getLeftA(a, .1f);
     simd_assertEQ(a, float_4(10));
 
     TriFormula::getRightAandB(a, b, .5);
@@ -26,7 +26,7 @@ static void testTriFormula()
 
 static void testTriFormula2()
 {
-    for (float _k = .1; _k < 1; _k += .09f) {
+    for (float _k = .1f; _k < 1; _k += .09f) {
         float_4 k = _k;
       
         float_4 a, b;
@@ -139,7 +139,7 @@ static void testADSR1()
     }
    // should have attacked a bit 
     float_4 out = adsr.get(0); 
-    simd_assertGT(out, float_4(.1)); 
+    simd_assertGT(out, float_4(.1f)); 
 }
 
 static void testADSR2()
@@ -173,7 +173,7 @@ static void testADSR3(bool snap)
 {
     ADSR16 adsr;
     // adsr.setSnap(snap);
-    float k = snap ? .5 : 1;
+    float k = snap ? .5f : 1;
     adsr.setParams(0,0, .5, 0, k);
 
     for (int i=0; i<4; ++i) {
@@ -280,7 +280,7 @@ static void testOutputLevels(int waveForm, float levelValue, float expectedLevel
     wvco.inputs[WVCO<TestComposite>::MAIN_OUTPUT].channels = 1;
     wvco.inputs[WVCO<TestComposite>::VOCT_INPUT].channels = 1;
     wvco.params[WVCO<TestComposite>::OCTAVE_PARAM].value = 4;       // 7 was ok
-    wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = waveForm;
+    wvco.params[WVCO<TestComposite>::WAVE_SHAPE_PARAM].value  = float(waveForm);
     wvco.params[WVCO<TestComposite>::WAVESHAPE_GAIN_PARAM].value  = 50;
     wvco.params[WVCO<TestComposite>::OUTPUT_LEVEL_PARAM].value  = levelValue;
     if (initFunc) {

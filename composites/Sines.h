@@ -257,7 +257,7 @@ inline void Sines<TBase>::computeFinalDrawbars_n()
     for (int i=0; i<3; ++i) {
         float_4 x = finalDrawbarVolumes_n[i];
         x = SimdBlocks::ifelse(x < 0, 0, x); 
-        finalDrawbarVolumes_n[i] = x * float_4(.1);
+        finalDrawbarVolumes_n[i] = x * float_4(.1f);
 
         finalPercussionVolumes_n[i] = basePercussionVolumes_m[i];     
     }
@@ -336,7 +336,7 @@ inline void Sines<TBase>::stepn()
         lastReleaseCV = releaseCV;
         lastAttackCV = attackCV;
 
-        const float decay =  decayParamBool ? .5 : .7;
+        const float decay =  decayParamBool ? .5f : .7f;
 
         float attack = combineEnvelopeParamAndCV(attackParam, attackCV);
         float release = combineEnvelopeParamAndCV(releaseParam, releaseCV);
