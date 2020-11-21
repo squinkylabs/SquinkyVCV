@@ -151,7 +151,6 @@ static void testLimiterDC(float dc, float expectedDC)
 {
     Limiter l;
     const float a = .1f;
- //   printf("~~~ testLimiterDC dc = %f a = %f\n", dc, a);
     l.setTimes(a, 100, 1.f / 44100.f);
     float_4 input(dc);
     float_4 output(0);
@@ -159,7 +158,6 @@ static void testLimiterDC(float dc, float expectedDC)
         output = l.step(input);
     }
     simd_assertClose(output, float_4(expectedDC), .001);
-  //  printf("final VOLT = %f a=%f\n", output[0], a);
 }
 
 static void testLimiterDC()
@@ -213,7 +211,6 @@ static void testLimiterAttackTC(float a)
             // let's shoot for within 1%
             const float limits = std::max(2.f, float(aSamplesExpected * .01));
             assertClose(samples, aSamplesExpected, limits);
-            fflush(stdout);
         }
     }
 }
@@ -253,7 +250,6 @@ static void testLimiterReleaseTC(float r)
             // let's shoot for within 1%
             const float limits = rSamplesExpected * .01f;
             assertClose(samples, rSamplesExpected, limits);
-            fflush(stdout);
         }
          if (samples > 1000000) {
             printf("after 3 100k, mem = %f\n", mem[0]); fflush(stdout);
@@ -369,7 +365,6 @@ static void testCompLim()
 
 static void testLimiterZeroAttack(bool reduceDist)
 {
-    printf("\n---- testCompZeroAttack\n"); fflush(stdout);
     const float sampleRate = 44100;
     const float threshold = 5;
     const float sampleTime = 1.f / sampleRate;
@@ -408,7 +403,6 @@ static void testLimiterZeroAttack(bool reduceDist)
 
 static void testCompZeroAttack(bool reduceDist, int numChan)
 {
-    printf("\n---- testCompZeroAttack ch=%d\n", numChan); fflush(stdout);
     assert(numChan == 1 || numChan == 4);
     const float sampleRate = 44100;
     const float threshold = 5;

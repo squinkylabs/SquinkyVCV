@@ -92,13 +92,9 @@ static void testF2R_Poly(float rParam, float rcv, float fcParam, float expectedF
 
 static void testF2Fc_Poly()
 {
-    printf("at 125\n"); fflush(stdout);
     testF2Fc_Poly(0, 0, .00058f);
-    printf("at 127\n"); fflush(stdout);
     testF2Fc_Poly(0, -10, .00058f);
-    printf("at 129\n"); fflush(stdout);
     testF2Fc_Poly(10, 0, .6f);           // hmm... we are losing the top of the range - should scale it down below .5
-    printf("at 131\n"); fflush(stdout);
     testF2Fc_Poly(10, 10, .6f);
 }
 
@@ -181,7 +177,6 @@ static void testQFunc()
         
         float error = abs(x - y);
         float error_pct = 100 * error / y;
-        //printf("at qv = %d, %.2f, %.2f errpct=%f\n", qv, x, y, error_pct);
         assert(error_pct < 1);
     }
 }
@@ -226,7 +221,7 @@ void testFilterComposites()
 
     testQFunc();
     testFcFunc();
-    printf("please add back f4 compostite tests\n");
+
    // testF4Fc();
    //void testPolyChannels(int  inputPort, int outputPort, int numChannels)
     testPolyChannelsF2();

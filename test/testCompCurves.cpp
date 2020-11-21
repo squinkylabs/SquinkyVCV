@@ -88,8 +88,6 @@ static void validateCurve(CompCurves::LookupPtr table, CompCurves::Recipe r)
 
 static void testLookupAboveTheshNoKnee(float ratioToTest)
 {
-    printf("\n***** enter test for ratio = %f\n", ratioToTest);
-
     // comp ratio of 1 is a straight line - two points
     CompCurves::Recipe r;
     r.ratio = ratioToTest;
@@ -119,7 +117,6 @@ static void testLookupAboveTheshNoKnee(float ratioToTest)
     const double y1Db = AudioMath::db(gain_y1);
     const float observedDbReduction = float(y1Db);
 
-    printf("ex=%f, obs = %f\n", expectedDbReductionAtMax, observedDbReduction);
     assertEQ(observedDbReduction, expectedDbReductionAtMax);
 
     validateCurve(table, r);
@@ -173,7 +170,6 @@ static void testLookupAboveTheshKnee()
     const double y1Db = AudioMath::db(gain_y1);
     const float observedDbReduction = float(y1Db);
 
-    printf("ex=%f, obs = %f\n", expectedDbReductionAtMax, observedDbReduction);
     assertEQ(observedDbReduction, expectedDbReductionAtMax);
 
     validateCurve(table, r);
@@ -241,7 +237,6 @@ static std::vector<float> generateDbCurve(CompCurves::LookupPtr table, float x0,
         const double gain = CompCurves::lookup(table, inputLevel);
         const double vOut = inputLevel * gain;
         const float outputDb = float(AudioMath::db(vOut));
-        // printf("in db loop dbIn = %f, inputLevel = %f gain = %f output db = %f\n", dbIn, inputLevel, gain, outputDb);
         db.push_back(outputDb);
     }
     if (db.size() > numEntries) {
@@ -346,7 +341,6 @@ static void testInflection()
 
 static void testLookupAboveTheshNoKnee2(float ratioToTest)
 {
-    printf("\n***** enter test for ratio = %f\n", ratioToTest);
     // comp ratio of 1 is a straight line - two points
     CompCurves::Recipe r;
     r.ratio = ratioToTest;
@@ -372,7 +366,7 @@ static void testLookupAboveTheshNoKnee2(float ratioToTest)
         const float observedRatio = inputDbAboveTh / outputDbAboveTh;
         printf("input = %.2f, ratio=%.2f\n", input, observedRatio);
         printf("put back this assert\n");
-        //assertClosePct(observedRatio, ratioToTest, 1);
+        assertClosePct(observedRatio, ratioToTest, 1);
 
     }
 }
@@ -385,7 +379,6 @@ static void testLookupAboveTheshNoKnee2()
 
 void testCompCurves()
 {
-    plot4_1_soft();
     testInflection();
    
    // testSpline();
@@ -400,5 +393,5 @@ void testCompCurves()
   //  testLookupAboveTheshKnee();
   //  testCompCurvesKnee2();
     // plot4_1_hard();
-    plot4_1_soft();
+  //  plot4_1_soft();
 }

@@ -97,7 +97,7 @@ void DividerXWidget::addControls(DividerXModule *module, std::shared_ptr<ICompos
 {
    ToggleButton* tog = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(11, 150),
+        Vec(11, 50),
         module,  Comp::MINBLEP_PARAM);  
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");

@@ -25,12 +25,14 @@
 #include "VocalAnimator.h"
 #include "VocalFilter.h"
 #include "daveguide.h"
+#include "DividerX.h"
+#include "F2_Poly.h"
 
-#ifndef _MSC_VER
+
 #include "WVCO.h"
 #include "Basic.h"
 #include "Compressor.h"
-#endif
+
 
 #include "Sub.h"
 
@@ -92,11 +94,11 @@ void testIComposite()
     test<ChaosKitty<TestComposite>>();
     test<Daveguide<TestComposite>>();
 
-#ifndef _MSC_VER
     test<WVCO<TestComposite>>();
     test<Sub<TestComposite>>();
     test<Basic<TestComposite>>();
     test<Compressor<TestComposite>>();
-#endif
+    test<DividerX<TestComposite>>();
+    test<F2_Poly<TestComposite>>();
 
 }

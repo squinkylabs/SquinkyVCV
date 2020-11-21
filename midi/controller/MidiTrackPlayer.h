@@ -232,7 +232,7 @@ private:
      * things come in mostly from other plugins proc() calls,
      * but could come in from UI thread (if we are being sloppy)
      * 
-     * Will be service by playback code
+     * Will be serviced by playback code
      */
     class EventQ {
     public:

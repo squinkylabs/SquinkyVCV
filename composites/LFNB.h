@@ -141,7 +141,7 @@ public:
         return std::make_shared<LFNBDescription<TBase>>();
     }
 
-    void onSampleRateChange()
+    void onSampleRateChange() override
     {
         const float s = this->engineGetSampleTime();
         channels[0].setSampleTime(s);

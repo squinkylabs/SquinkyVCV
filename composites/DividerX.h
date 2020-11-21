@@ -6,6 +6,8 @@
 #include <memory>
 #include "IComposite.h"
 
+#include "simd.h"
+
 namespace rack {
     namespace engine {
         struct Module;
@@ -75,6 +77,7 @@ public:
     enum ParamIds
     {
         MINBLEP_PARAM,
+        STABILIZER_PARAM,
         NUM_PARAMS
     };
 
@@ -88,6 +91,7 @@ public:
     {
         FIRST_OUTPUT,
         DEBUG_OUTPUT,
+        STABILIZER_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -113,7 +117,7 @@ private:
     T lastClockValue = 0;
     int counter = 0;
     bool state = false;
-    dsp::MinBlepGenerator<16, 16, T> minBlep;
+    rack::dsp::MinBlepGenerator<16, 16, T> minBlep;
 
     // debugging
     float timeSinceLastCrossing=0;
@@ -191,6 +195,9 @@ inline IComposite::Config DividerXDescription<TBase>::getParam(int i)
     switch (i) {
         case DividerX<TBase>::MINBLEP_PARAM:
             ret = {0, 1.0f, 1, "MinBLEP"};
+            break;
+          case DividerX<TBase>::STABILIZER_PARAM:
+            ret = {0, 1.0f, 0, "Stabliize"};
             break;
         default:
             assert(false);
