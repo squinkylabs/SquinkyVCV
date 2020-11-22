@@ -1,5 +1,10 @@
 #pragma once
 
+#include "AudioMath.h"
+
+#include <algorithm>
+#include <cmath>
+#include <assert.h>
 
 // can this move to SqMath?
 #ifndef _CLAMP
@@ -42,4 +47,12 @@ private:
     int cycleInCurrentGroup = 0;
     bool locked = false;
     Svco2 vco;
+};
+
+inline bool OscSmoother::isLocked() const {
+    return locked;
+}
+
+inline float OscSmoother::step(float) {
+    return 0;
 }

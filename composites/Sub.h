@@ -658,8 +658,8 @@ inline void Sub<TBase>::step()
                 subs1[2] * params0.subBGain +
                 subs1[3] * params1.subBGain;
             
-            assert(mixed0 < limit);
-            assert(mixed0 > -limit);
+            assert(mixed0 < 15);
+            assert(mixed0 > -15);
             std::clamp(mixed0, -10, 10);
             Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed0, channelPairNumber++);
         }

@@ -355,7 +355,7 @@ inline void F2_Poly<TBase>::setupFreq()
                 lastFcKnob,
                 lastFcTrim);
 
-            auto fr = fastFcFunc2(combinedFcVoltage, processedRValue, oversample, sampleTime);
+            auto fr = fastFcFunc2(combinedFcVoltage, processedRValue, float(oversample), sampleTime);
 
             params1[bank].setFreq(fr.first);
             params2[bank].setFreq(fr.second);

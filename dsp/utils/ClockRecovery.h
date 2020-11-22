@@ -79,7 +79,7 @@ inline void PLL::onNewPeriodSameFreq()
     const float loopGain = .000001f;
 
     float newFreq = curFreq - loopGain * errorAcc;
-    printf("accumulated error = %f new freq = %f old freq = %f\n", errorAcc, newFreq, curFreq);
+    // printf("accumulated error = %f new freq = %f old freq = %f\n", errorAcc, newFreq, curFreq);
     errorAcc = 0;
     vco.setPitch(newFreq);
 
@@ -307,8 +307,8 @@ inline void ClockRecovery::onNewPeriodEstimate(int period)
         
         float loopGain = .1f;
         float newVCOFrequency = currentFrequency + error * loopGain;
-        printf("cur = %f new = %f, error = %f\n", currentFrequency, newFrequency, error);
-        printf("new VCO = %f\n", newVCOFrequency);
+        // printf("cur = %f new = %f, error = %f\n", currentFrequency, newFrequency, error);
+        // printf("new VCO = %f\n", newVCOFrequency);
         vco.setPitch(newVCOFrequency);
     }
 

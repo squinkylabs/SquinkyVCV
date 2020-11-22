@@ -297,7 +297,7 @@ public:
     T _qGain() const { return qGain; }
 private:
     T qGain = 1.;		// internal amp gains
-    T fcGain = T(.001);
+    T fcGain = T(.001f);
 };
 
 template<>
