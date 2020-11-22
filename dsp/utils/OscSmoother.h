@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AudioMath.h"
+#include "SchmidtTrigger.h"
 
 #include <algorithm>
 #include <cmath>
@@ -41,18 +42,41 @@ private:
 class OscSmoother
 {
 public:
+    OscSmoother();
     float step(float input);
     bool isLocked() const;
 private:
     int cycleInCurrentGroup = 0;
     bool locked = false;
     Svco2 vco;
+    SchmidtTrigger inputConditioner;
+    bool lastInput = false;
+    int samplesSinceReset = 0;
 };
+
+inline OscSmoother::OscSmoother() :
+    inputConditioner(-1, 1)
+{
+
+}
 
 inline bool OscSmoother::isLocked() const {
     return locked;
 }
 
-inline float OscSmoother::step(float) {
+inline float OscSmoother::step(float input) {
+    // run the edge detector, look for low to high edge
+    bool input2 = inputConditioner.go(input);
+    if (input2 != lastInput) {
+        lastInput = input2;
+        if (!input2) {
+            return 0;       // todo - return real waveform
+        }
+    }
+
+    ++samplesSinceReset;  
+    if (samplesSinceReset > 16) {
+        locked = true;
+    } 
     return 0;
 }
