@@ -103,6 +103,7 @@ extern void testFilterComposites();
 extern void testClockRecovery();
 extern void testCompCurves();
 extern void testSqStream();
+extern void testOscSmoother();
 
 #if 0
 #include <sstream>
@@ -182,16 +183,13 @@ if (runShaperGen) {
     testClockRecovery();
     testCompCurves();
 
-
-// #ifndef _MSC_VER
-#if 1
     testBasic();
     testSines();
     testDC();
     testSimd();
     testSimdLookup();
    
-#endif
+    testOscSmoother();
 
     testAudioMath();
     testRingBuffer();
