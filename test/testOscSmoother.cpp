@@ -31,9 +31,27 @@ static void testOscSmootherCanLock()
     assertEQ(o.isLocked(), true);
 }
 
+
+
+static void testOscSmootherPeriod(int div)
+{
+    const float expectedPhaseInc = 1.f / float(div);
+    OscSmoother o;
+    generateNPeriods(o, div, 20);
+    assertEQ(o.isLocked(), true);
+    assertClose(o._getPhaseInc(), expectedPhaseInc, .0001);
+}
+
+static void testOscSmootherPeriod()
+{
+    testOscSmootherPeriod(6);
+    testOscSmootherPeriod(10);
+}
+
 void testOscSmoother()
 {
     testOscSmootherInit();
     testOscSmootherCanLock();
+    testOscSmootherPeriod();
 
 }

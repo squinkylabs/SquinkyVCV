@@ -19,7 +19,7 @@ namespace std {
 }
 #endif
 
-// super simple sine vco
+// super simple  vco
 class Svco2
 {
 public:
@@ -39,33 +39,67 @@ private:
     float delta = 0;
 };
 
+class RisingEdgeDetector
+{
+public:
+    RisingEdgeDetector();
+    bool step(float);
+private:
+    SchmidtTrigger inputConditioner;
+    bool lastInput = false;
+};
+
+inline RisingEdgeDetector::RisingEdgeDetector() : inputConditioner(-1, 1)
+{
+
+}
+
+inline bool RisingEdgeDetector::step(float input)
+{
+    bool input2 = inputConditioner.go(input);
+    if (input2 != lastInput) {
+        lastInput = input2;
+        if (input2) {
+            return true;
+        }
+    }
+    return false;
+}
+
 class OscSmoother
 {
 public:
     OscSmoother();
     float step(float input);
     bool isLocked() const;
+    float _getPhaseInc() const;
 private:
     int cycleInCurrentGroup = 0;
     bool locked = false;
     Svco2 vco;
-    SchmidtTrigger inputConditioner;
-    bool lastInput = false;
+  //  SchmidtTrigger inputConditioner;
+  // bool lastInput = false;
+    RisingEdgeDetector edgeDetector;
     int samplesSinceReset = 0;
 };
 
-inline OscSmoother::OscSmoother() :
-    inputConditioner(-1, 1)
+inline OscSmoother::OscSmoother()
 {
-
 }
 
 inline bool OscSmoother::isLocked() const {
     return locked;
 }
 
+inline float OscSmoother::_getPhaseInc() const 
+{
+    return 1.f / 6.f;
+}
+
 inline float OscSmoother::step(float input) {
     // run the edge detector, look for low to high edge
+    bool input2 = edgeDetector.step(input);
+#if 0
     bool input2 = inputConditioner.go(input);
     if (input2 != lastInput) {
         lastInput = input2;
@@ -73,6 +107,7 @@ inline float OscSmoother::step(float input) {
             return 0;       // todo - return real waveform
         }
     }
+#endif
 
     ++samplesSinceReset;  
     if (samplesSinceReset > 16) {
