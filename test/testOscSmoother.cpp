@@ -47,12 +47,33 @@ static void testOscSmootherPeriod()
 {
     testOscSmootherPeriod(6);
     testOscSmootherPeriod(10);
+    testOscSmootherPeriod(101);
 }
+
+static void testOscAltPeriod()
+{
+    printf("---------- test ALT\n");
+    OscSmoother o;
+    for (int cycle = 0; cycle < 16; ++cycle) {
+        int period = (cycle == 0) ? 9 : 10;
+        assert(!o.isLocked());
+        generateNPeriods(o, period, 1);      // 1
+    }
+    assert(!o.isLocked());
+    o.step(5);
+    assert(o.isLocked());
+
+    float expectedPeriod = (10.f * 15 + 9) / 16.f;
+    const float expectedFreq = 1.f / expectedPeriod;
+    assertClose(o._getPhaseInc(), expectedFreq, .00001f);
+
+}
+
 
 void testOscSmoother()
 {
     testOscSmootherInit();
     testOscSmootherCanLock();
     testOscSmootherPeriod();
-
+    testOscAltPeriod();
 }
