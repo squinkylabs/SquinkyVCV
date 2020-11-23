@@ -35,11 +35,12 @@ static void testOscSmootherCanLock()
 
 static void testOscSmootherPeriod(int div)
 {
+    printf("---------- test osc over %d\n", div);
     const float expectedPhaseInc = 1.f / float(div);
     OscSmoother o;
     generateNPeriods(o, div, 20);
     assertEQ(o.isLocked(), true);
-    assertClose(o._getPhaseInc(), expectedPhaseInc, .0001);
+    assertClose(o._getPhaseInc(), expectedPhaseInc, .00001f);
 }
 
 static void testOscSmootherPeriod()

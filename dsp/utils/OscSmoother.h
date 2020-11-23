@@ -33,7 +33,7 @@ public:
         }
         return (float) std::sin( acc * AudioMath::Pi * 2);
     }
-    float _getFrequency() const { return delta;  }
+    float getFrequency() const { return delta;  }
 private:
     float acc = 0;
     float delta = 0;
@@ -77,9 +77,9 @@ private:
     int cycleInCurrentGroup = 0;
     bool locked = false;
     Svco2 vco;
-  //  SchmidtTrigger inputConditioner;
-  // bool lastInput = false;
     RisingEdgeDetector edgeDetector;
+
+    int periodsSinceReset = 0;
     int samplesSinceReset = 0;
 };
 
@@ -93,25 +93,32 @@ inline bool OscSmoother::isLocked() const {
 
 inline float OscSmoother::_getPhaseInc() const 
 {
-    return 1.f / 6.f;
+   // return 1.f / 6.f;
+   return vco.getFrequency();
 }
 
 inline float OscSmoother::step(float input) {
     // run the edge detector, look for low to high edge
-    bool input2 = edgeDetector.step(input);
-#if 0
-    bool input2 = inputConditioner.go(input);
-    if (input2 != lastInput) {
-        lastInput = input2;
-        if (!input2) {
-            return 0;       // todo - return real waveform
-        }
-    }
-#endif
+    bool edge = edgeDetector.step(input);
 
-    ++samplesSinceReset;  
-    if (samplesSinceReset > 16) {
+    if (edge) {
+        periodsSinceReset++;
+    }
+
+    ++samplesSinceReset; 
+  //    printf("after: edge = %d, samples=%d per=%d\n", edge, samplesSinceReset, periodsSinceReset); fflush(stdout); 
+    if (periodsSinceReset > 16) {
         locked = true;
+        const float samplesPerCycle = float(samplesSinceReset -1) / 16.f;
+        printf("captured %f samples per cycle\n", samplesPerCycle); fflush(stdout);
+    //    printf("or, using minus one %f\n", float(samplesSinceReset-1) / 16.f);
+
+        const float newPhaseInc = 1.0f / samplesPerCycle;
+        vco.setPitch(newPhaseInc);
+
+        periodsSinceReset = 0;
+        samplesSinceReset = 0;
     } 
+  
     return 0;
 }
