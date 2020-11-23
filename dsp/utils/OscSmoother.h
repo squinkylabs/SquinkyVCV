@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <assert.h>
+#include <stdio.h>
 
 // can this move to SqMath?
 #ifndef _CLAMP
