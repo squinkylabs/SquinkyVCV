@@ -234,6 +234,56 @@ static void testRisingEdgeFractional_Half()
     assertClose(s.second, .5f, .01);
 }
 
+static void testRisingEdgeFractional_Quarter()
+{
+    RisingEdgeDetectorFractional det;
+
+    // force high, low
+    auto s = det.step(5); 
+    assert(!s.first);        
+    s = det.step(-5);
+    assert(!s.first);
+
+    // barely cross zero
+    s = det.step(-.001f);
+    assert(!s.first);
+    s = det.step(.001f * 3);
+    assert(s.first);
+    assertClose(s.second, .25f, .01);
+}
+
+
+static void testRisingEdgeFractional_Ratio(float ratio)
+{
+    assert(ratio > 1);
+    RisingEdgeDetectorFractional det;
+
+    const float lowVoltage = -.1f;
+    const float highVoltage = (ratio - 1) * .1f;
+
+    assertClose((highVoltage - lowVoltage),  ratio * .1f, .001);
+    assert(highVoltage > 0 && highVoltage < 1);
+    assert(lowVoltage < 0 && lowVoltage > -1);
+
+    // force high, low
+    auto s = det.step(5); 
+    assert(!s.first);        
+    s = det.step(-5);
+    assert(!s.first);
+
+    // barely cross zero
+    s = det.step(lowVoltage);
+    assert(!s.first);
+    s = det.step(highVoltage);
+    assert(s.first);
+    assertClose(s.second, 1.f / ratio, .0001);
+}
+
+static void  testRisingEdgeFractional_Ratio()
+{
+    testRisingEdgeFractional_Ratio(2);
+    assert(false);
+}
 
 void testOscSmoother()
 {
@@ -241,6 +291,8 @@ void testOscSmoother()
     testRisingEdgeFractional_simpleRiseFall();
     testRisingEdgeFractional_RiseFall2();
     testRisingEdgeFractional_Half();
+    testRisingEdgeFractional_Quarter();
+    testRisingEdgeFractional_Ratio();
     #if 0   // these broke. must fix
     testOscSmootherInit();
     testOscSmootherCanLock();
