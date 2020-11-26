@@ -114,12 +114,15 @@ RisingEdgeDetectorFractional::step(float input)
     auto ret = std::make_pair<bool, float>(false, 0);
     if ( (input >= 0) && (lastValue < 0) && wasHigh && wasLow) {
         ret.first = true;
-        ret.second = 0;     // TODO: real fraction
+
+        float delta = input - lastValue;
+	    float crossing = -lastValue / delta;
+        printf("crossing, delta = %f crossing = %f\n", delta, crossing); fflush(stdout);
+        ret.second = crossing;     // TODO: real fraction
         wasHigh = false;
         wasLow = false;
-    } else {
-
-    }
+    } 
+    
     lastValue = input;
 
     if (input > 1) {

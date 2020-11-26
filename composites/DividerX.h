@@ -144,16 +144,11 @@ inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
     timeSinceLastCrossing += args.sampleTime;
   
     const bool useBlep = TBase::params[MINBLEP_PARAM].value > .5;
-
     const bool useStabilzer = TBase::params[STABILIZER_PARAM].value > .5f;
-
     const T inputClockRaw = TBase::inputs[MAIN_INPUT].getVoltage(0);
     const float stabilized = smoother.step(inputClockRaw);
-
     const float inputToUse = useStabilzer ? stabilized : inputClockRaw;
     
-    
-
     T deltaClock = inputToUse - lastClockValue;
 	T clockCrossing = -lastClockValue / deltaClock;
     lastClockValue = inputToUse;
@@ -169,7 +164,6 @@ inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
         //   counter = 3;
             state = !state;
             waveForm *= -1;
-          //  doBlep = true;
             minBlep.insertDiscontinuity(p, x);
         }       
     }
