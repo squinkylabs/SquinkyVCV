@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <memory>
 #include "IComposite.h"
+#include "OscSmoother.h"
 
 #include "simd.h"
 
@@ -126,6 +127,8 @@ private:
     int numCrossings=0;;
     float totalTime=0;
 
+    OscSmoother smoother;
+
  
 };
 
@@ -142,21 +145,24 @@ inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
   
     const bool useBlep = TBase::params[MINBLEP_PARAM].value > .5;
 
-    const T inputClock = TBase::inputs[MAIN_INPUT].getVoltage(0);
-    //inputClock = std::max(inputClock, -1.f);
-    //inputClock = std::min(inputClock, 1.f);
+    const bool useStabilzer = TBase::params[STABILIZER_PARAM].value > .5f;
 
-   // const T orig = lastClockValue;
+    const T inputClockRaw = TBase::inputs[MAIN_INPUT].getVoltage(0);
+    const float stabilized = smoother.step(inputClockRaw);
 
-    T deltaClock = inputClock - lastClockValue;
+    const float inputToUse = useStabilzer ? stabilized : inputClockRaw;
+    
+    
+
+    T deltaClock = inputToUse - lastClockValue;
 	T clockCrossing = -lastClockValue / deltaClock;
-    lastClockValue = inputClock;
+    lastClockValue = inputToUse;
 
-    float waveForm =  state ? 1 : -1;
-    bool newClock =  (0.f < clockCrossing) & (clockCrossing <= 1.f) & (inputClock >= 0.f);
+    float waveForm =  state ? 1.f : -1.f;
+    bool newClock =  (0.f < clockCrossing) & (clockCrossing <= 1.f) & (inputToUse >= 0.f);
     if (newClock) {
         float p = clockCrossing - 1.f;
-        float x = state ? 2 : -2;
+        float x = state ? 2.f : -2.f;
 
         if (--counter < 0) {
             counter = 0;
@@ -179,6 +185,7 @@ inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
 
  //   TBase::outputs[DEBUG_OUTPUT].setVoltage(blep, 0);
     TBase::outputs[DEBUG_OUTPUT].setVoltage(state ? 1.f : -1.f, 0);
+    TBase::outputs[STABILIZER_OUTPUT].setVoltage(stabilized, 0);
 
 }
 

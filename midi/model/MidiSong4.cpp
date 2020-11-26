@@ -7,8 +7,8 @@ void MidiSong4::assertValid()
 {
     for (int track=0; track<numTracks; ++track) {
         for (int sect=0; sect<numSectionsPerTrack; ++sect) {
-#if !defined(NDEBUG)
-            bool hasTrack = !!this->getTrack(track, sect);
+             bool hasTrack = !!this->getTrack(track, sect);
+#if !defined(NDEBUG)           
             bool hasOpt = !!this->getOptions(track, sect);
             assert(hasTrack == hasOpt);
 #endif

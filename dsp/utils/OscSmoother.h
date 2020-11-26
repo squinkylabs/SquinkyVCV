@@ -32,14 +32,39 @@ public:
         if (acc > 1) {
             acc -= 1;
         }
+        // we don't use sin - this is a waste.
         return (float) std::sin( acc * AudioMath::Pi * 2);
     }
     float getFrequency() const { return delta;  }
+    float getTriangle() const {
+        float x;
+        //printf("add = %f delta=%f", acc, delta);
+        if (acc < .25f) {
+            x = acc * 2;
+           // printf(" a: %f\n", x);
+        } else if (acc < .5f) {
+            x = 1 -2 * acc;
+           // printf(" b: %f\n", x);
+        } else if (acc < .75f) {
+            x = 1 - 2 * acc;
+            //printf(" c: %f\n", x);
+        } else {
+            x = 2 * (acc - 1);
+            //printf(" d: %f\n", x);
+        }
+        return x;
+    }
+
 private:
     float acc = 0;
     float delta = 0;
 };
 
+/**
+ * 
+ * 
+ * 
+ */
 class RisingEdgeDetector
 {
 public:
@@ -66,6 +91,49 @@ inline bool RisingEdgeDetector::step(float input)
     }
     return false;
 }
+
+/**
+ * 
+ * 
+ * 
+ */
+class RisingEdgeDetectorFractional
+{
+public:
+    using Edge = std::pair<bool, float>;
+    Edge step(float);
+private:
+    float lastValue = 0;
+    bool wasHigh = false;
+    bool wasLow = false;
+};
+
+inline RisingEdgeDetectorFractional::Edge
+RisingEdgeDetectorFractional::step(float input)
+{
+    auto ret = std::make_pair<bool, float>(false, 0);
+    if ( (input >= 0) && (lastValue < 0) && wasHigh && wasLow) {
+        ret.first = true;
+        ret.second = 0;     // TODO: real fraction
+        wasHigh = false;
+        wasLow = false;
+    } else {
+
+    }
+    lastValue = input;
+
+    if (input > 1) {
+        wasHigh = true;
+    } else if (input < -1) {
+        wasLow = true;
+    }
+    return ret;
+}
+/**
+ * 
+ * 
+ * 
+ */
 
 class OscSmoother
 {
@@ -98,6 +166,7 @@ inline float OscSmoother::_getPhaseInc() const
    return vco.getFrequency();
 }
 
+#define PERIOD_CYCLES 16 * 4
 inline float OscSmoother::step(float input) {
     // run the edge detector, look for low to high edge
     bool edge = edgeDetector.step(input);
@@ -108,18 +177,23 @@ inline float OscSmoother::step(float input) {
 
     ++samplesSinceReset; 
   //    printf("after: edge = %d, samples=%d per=%d\n", edge, samplesSinceReset, periodsSinceReset); fflush(stdout); 
-    if (periodsSinceReset > 16) {
+    if (periodsSinceReset > PERIOD_CYCLES) {
         locked = true;
-        const float samplesPerCycle = float(samplesSinceReset -1) / 16.f;
-        printf("captured %f samples per cycle\n", samplesPerCycle); fflush(stdout);
+        const float samplesPerCycle = float(samplesSinceReset -1) / float(PERIOD_CYCLES);
+        printf("captured %f samples per cycle %d per period\n", samplesPerCycle, samplesSinceReset); fflush(stdout);
     //    printf("or, using minus one %f\n", float(samplesSinceReset-1) / 16.f);
 
+
+        // experiment - let's try constant
+      //  const float newPhaseInc = 1.0f /  40.f;
         const float newPhaseInc = 1.0f / samplesPerCycle;
+
+
         vco.setPitch(newPhaseInc);
 
         periodsSinceReset = 0;
         samplesSinceReset = 0;
     } 
-  
-    return 0;
+    vco.process();
+    return 10 * vco.getTriangle();
 }

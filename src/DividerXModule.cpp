@@ -75,33 +75,79 @@ struct DividerXWidget : ModuleWidget
 void DividerXWidget::addJacks(DividerXModule *module, std::shared_ptr<IComposite> icomp)
 {
     const float jackX = 14;
-    const float jackY = 249;
-    const float dy = 30;
+    const float jackY = 180;
+    const float dy = 46;
+     const float labelDy = -15;
 
+    addLabel(
+        Vec(jackX - 4, jackY + labelDy),
+        "In"
+    );
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY + 0 * dy),
         module,
         Comp::MAIN_INPUT));
 
+    addLabel(
+        Vec(jackX - 4, jackY + 1 * dy + labelDy),
+        "Out"
+    );
     addOutput(createOutput<PJ301MPort>(
         Vec(jackX, jackY + 1 * dy),
         module,
         Comp::FIRST_OUTPUT)); 
+
+    addLabel(
+        Vec(jackX - 10, jackY + 2 * dy + labelDy),
+        "Stab"
+    );
     addOutput(createOutput<PJ301MPort>(
         Vec(jackX, jackY + 2 * dy),
+        module,
+        Comp::STABILIZER_OUTPUT)); 
+
+    addLabel(
+        Vec(0, jackY + 3 * dy + labelDy),
+        "Debug"
+    );
+    addOutput(createOutput<PJ301MPort>(
+        Vec(jackX, jackY + 3 * dy),
         module,
         Comp::DEBUG_OUTPUT)); 
 }
 
 void DividerXWidget::addControls(DividerXModule *module, std::shared_ptr<IComposite> icomp)
 {
-   ToggleButton* tog = SqHelper::createParam<ToggleButton>(
+    const float dy = 45;
+    const float y = 50;
+    const float labelDy = -18;
+
+#if 1
+    addLabel(
+        Vec(0, y + labelDy),
+        "Stab"
+    );
+    #endif
+    ToggleButton* tog = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(11, 50),
+        Vec(11, y),        // was y
+        module,  Comp::STABILIZER_PARAM);  
+    tog->addSvg("res/square-button-01.svg");
+    tog->addSvg("res/square-button-02.svg");
+    addParam(tog);
+#if 1
+    addLabel(
+        Vec(11 - 10, y + 1 * dy + labelDy),
+        "MinBLEP"
+    );
+    tog = SqHelper::createParam<ToggleButton>(
+        icomp,
+        Vec(11, y + 1 * dy),
         module,  Comp::MINBLEP_PARAM);  
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
     addParam(tog);
+#endif
 }
 
 
