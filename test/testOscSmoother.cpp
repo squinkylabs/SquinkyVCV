@@ -166,9 +166,55 @@ static void testRisingEdgeFractional_simpleRiseFall()
     assert(!s.first);
 
     s = det.step(-5);
-    assert(!s.first);
+    assert(!
+    s.first);
     s = det.step(-5);
     assert(!s.first);
+}
+
+static void testRisingEdgeFractional_RiseFall2()
+{
+    RisingEdgeDetectorFractional det;
+
+    // force high, low
+    auto s = det.step(5); 
+    assert(!s.first);        
+    s = det.step(-5);
+    assert(!s.first);
+
+    // barely cross zero
+    s = det.step(-.001f);
+    assert(!s.first);
+    s = det.step(.001f);
+    assert(s.first);
+
+    // now go super low
+    s = det.step(-5);
+    assert(!s.first);
+
+    // leading edge ignored, didn't go above thresh yet
+    s = det.step(5);
+    assert(!s.first);
+
+    // barely cross zero ignored - we haven't been below thresh yet
+    s = det.step(-.001f);
+    assert(!s.first);
+    s = det.step(.001f);
+    assert(s.first);
+
+    // prev cleared out L,H
+    // force LH
+    s = det.step(-5);
+    s = det.step(5);
+    assert(!s.first);
+
+     // barely cross zero should work now
+    s = det.step(-.001f);
+    assert(!s.first);
+    s = det.step(.001f);
+    assert(s.first);
+
+ 
 }
 
 
@@ -176,6 +222,7 @@ void testOscSmoother()
 {
     testRisingEdgeFractional_init();
     testRisingEdgeFractional_simpleRiseFall();
+    testRisingEdgeFractional_RiseFall2();
     #if 0   // these broke. must fix
     testOscSmootherInit();
     testOscSmootherCanLock();
