@@ -33,25 +33,28 @@ static void testOscSmootherCanLock()
     assertEQ(o.isLocked(), true);
 }
 
+template <class T>
 static void testOscSmootherPeriod(int div)
 {
     const float expectedPhaseInc = 1.f / float(div);
-    OscSmoother o;
+    T o;
     generateNPeriods(o, div, 20);
     assertEQ(o.isLocked(), true);
     assertClose(o._getPhaseInc(), expectedPhaseInc, .00001f);
 }
 
+template <class T>
 static void testOscSmootherPeriod()
 {
-    testOscSmootherPeriod(6);
-    testOscSmootherPeriod(10);
-    testOscSmootherPeriod(101);
+    testOscSmootherPeriod<T>(6);
+    testOscSmootherPeriod<T>(10);
+    testOscSmootherPeriod<T>(101);
 }
 
+template <class T>
 static void testOscAltPeriod()
 {
-    OscSmoother o;
+    T o;
     for (int cycle = 0; cycle < 16; ++cycle) {
         int period = (cycle == 0) ? 9 : 10;
         assert(!o.isLocked());
@@ -64,12 +67,12 @@ static void testOscAltPeriod()
     float expectedPeriod = (10.f * 15 + 9) / 16.f;
     const float expectedFreq = 1.f / expectedPeriod;
     assertClose(o._getPhaseInc(), expectedFreq, .00001f);
-
 }
 
+template <class T>
 static void testChangeFreq()
 {
-    OscSmoother o;
+    T o;
 
     // 16 cycles of 7
     for (int cycle = 0; cycle < 16; ++cycle) {
@@ -102,11 +105,12 @@ static void testChangeFreq()
   //  assertClose(o._getPhaseInc(), expectedFreq, .00001f);
 }
 
+template <class T>
 static void testOutput()
 {
     int div = 50;
     const float expectedPhaseInc = 1.f / float(div);
-    OscSmoother o;
+    T o;
     generateNPeriods(o, div, 20);
 
   
@@ -270,7 +274,6 @@ static void  testRisingEdgeFractional_Ratio()
     testRisingEdgeFractional_Ratio(1.f / 4.f);
     testRisingEdgeFractional_Ratio(1.f / 10.f);
     testRisingEdgeFractional_Ratio(1.f / 100.f);
-   
 }
 
 template <class T>
@@ -278,10 +281,10 @@ static void testOscSmootherT()
 {
     testOscSmootherInit<T>();
     testOscSmootherCanLock<T>();
-    testOscSmootherPeriod();
-    testOscAltPeriod();
-    testChangeFreq();
-    testOutput();
+    testOscSmootherPeriod<T>();
+    testOscAltPeriod<T>();
+    testChangeFreq<T>();
+    testOutput<T>();
 }
 
 void testOscSmoother()

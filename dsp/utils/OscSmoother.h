@@ -240,6 +240,13 @@ inline bool OscSmoother2::isLocked() const {
     return locked;
 }
 
+
+inline float OscSmoother2::_getPhaseInc() const 
+{
+   // return 1.f / 6.f;
+   return vco.getFrequency();
+}
+
 inline float OscSmoother2::step(float input) {
     // run the edge detector, look for low to high edge
     auto edge = edgeDetector.step(input);
