@@ -13,7 +13,9 @@ static void generateNPeriods(T& c, int period, int times)
 
     for (int i = 0; i < times; ++i) {
         for (int t = 0; t < period; ++t) {
-            c.step(t < firstHalfPeriod ? 5.f : -5.f);
+            const float input = t < firstHalfPeriod ? 5.f : -5.f;
+            printf("generate sending input volt: %f\n", input);
+            c.step(input);
         }
     }
 }
@@ -46,9 +48,13 @@ static void testOscSmootherPeriod(int div)
 template <class T>
 static void testOscSmootherPeriod()
 {
+    printf("----- testOscSmootherPeriod\n");
     testOscSmootherPeriod<T>(6);
-    testOscSmootherPeriod<T>(10);
-    testOscSmootherPeriod<T>(101);
+
+    // TODO
+    printf("turn this two back on!!\n");
+   // testOscSmootherPeriod<T>(10);
+   // testOscSmootherPeriod<T>(101);
 }
 
 template <class T>
@@ -279,32 +285,22 @@ static void  testRisingEdgeFractional_Ratio()
 template <class T>
 static void testOscSmootherT()
 {
-    testOscSmootherInit<T>();
-    testOscSmootherCanLock<T>();
+ //   testOscSmootherInit<T>();
+ //   testOscSmootherCanLock<T>();
     testOscSmootherPeriod<T>();
-    testOscAltPeriod<T>();
-    testChangeFreq<T>();
-    testOutput<T>();
+ //   testOscAltPeriod<T>();
+ //   testChangeFreq<T>();
+  //  testOutput<T>();
 }
 
 void testOscSmoother()
 {
+#if 0
     testRisingEdgeFractional_init();
     testRisingEdgeFractional_simpleRiseFall();
     testRisingEdgeFractional_RiseFall2();
     testRisingEdgeFractional_Ratio();
-
+#endif
     testOscSmootherT<OscSmoother>();
-    testOscSmootherT<OscSmoother2>();
-
-    #if 0  // these broke. must fix
-    testOscSmootherInit();
-    testOscSmootherCanLock();
-    testOscSmootherPeriod();
-    testOscAltPeriod();
-    testChangeFreq();
-    testOutput();
-    #endif
-
-    
+    testOscSmootherT<OscSmoother2>();    
 }

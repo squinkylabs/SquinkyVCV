@@ -97,10 +97,12 @@ class RisingEdgeDetectorFractional
 public:
     /**
      * x.first = bool: did cross
-     * x.secnod = float fraction: where did it fall between prev sample and cur?
+     * x.second = float fraction: where did it fall between prev sample and cur?
      *          0 -> it happened on this sample
      *          1 -> it happened on the last sample
      *          .5 -> it happened in between last and current
+     * 
+     * So it is how far back in time did it cross.
      */
     using Edge = std::pair<bool, float>;
     Edge step(float);
@@ -119,7 +121,7 @@ RisingEdgeDetectorFractional::step(float input)
 
         float delta = input - lastValue;
 	    float crossing = -lastValue / delta;
-        printf("crossing, delta = %f crossing = %f\n", delta, crossing); fflush(stdout);
+       // printf("crossing, delta = %f crossing = %f\n", delta, crossing); fflush(stdout);
         ret.second = crossing;     // TODO: real fraction
         wasHigh = false;
         wasLow = false;
@@ -180,11 +182,12 @@ inline float OscSmoother::step(float input) {
     }
 
     ++samplesSinceReset; 
-  //    printf("after: edge = %d, samples=%d per=%d\n", edge, samplesSinceReset, periodsSinceReset); fflush(stdout); 
+    printf("after: edge = %d, samples=%d per=%d\n", edge, samplesSinceReset, periodsSinceReset); fflush(stdout); 
     if (periodsSinceReset > PERIOD_CYCLES) {
         locked = true;
         const float samplesPerCycle = float(samplesSinceReset -1) / float(PERIOD_CYCLES);
         printf("captured %f samples per cycle %d per period\n", samplesPerCycle, samplesSinceReset); fflush(stdout);
+        printf("  actual sample count was %d, but sub 1 to %d\n", samplesSinceReset, samplesSinceReset-1);
     //    printf("or, using minus one %f\n", float(samplesSinceReset-1) / 16.f);
 
 
@@ -240,7 +243,6 @@ inline bool OscSmoother2::isLocked() const {
     return locked;
 }
 
-
 inline float OscSmoother2::_getPhaseInc() const 
 {
    // return 1.f / 6.f;
@@ -258,7 +260,7 @@ inline float OscSmoother2::step(float input) {
     }
 
   //  ++samplesSinceReset; 
-  //    printf("after: edge = %d, samples=%d per=%d\n", edge, samplesSinceReset, periodsSinceReset); fflush(stdout); 
+    printf("after: edge = %d, samples=%d per=%d\n", newEdge, integerSamplesSinceReset, integerPeriodsSinceReset); fflush(stdout); 
     if (integerPeriodsSinceReset > PERIOD_CYCLES) {
         locked = true;
 
@@ -269,6 +271,7 @@ inline float OscSmoother2::step(float input) {
 
 // TODO: print something useful here
         printf("captured %f samples per cycle %d per period\n", samplesPerCycle, integerSamplesSinceReset); fflush(stdout);
+        printf("integer samples was %d, fract %f\n", integerSamplesSinceReset, fractionalSamplesSinceReset);
     //    printf("or, using minus one %f\n", float(samplesSinceReset-1) / 16.f);
 
 
