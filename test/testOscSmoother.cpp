@@ -8,13 +8,17 @@ static void generateNPeriods(T& c, int period, int times)
 {
     assertGT(times, 0);
 
+    c._primeForTest();          // make sure edge detector is setup up to interpret 5V as an edge
+
     const int firstHalfPeriod = period / 2;
     // const int secondHalfPeriod = period - firstHalfPeriod;
 
     for (int i = 0; i < times; ++i) {
         for (int t = 0; t < period; ++t) {
             const float input = t < firstHalfPeriod ? 5.f : -5.f;
+#ifdef _OSL
             printf("generate sending input volt: %f\n", input);
+#endif
             c.step(input);
         }
     }
@@ -48,13 +52,9 @@ static void testOscSmootherPeriod(int div)
 template <class T>
 static void testOscSmootherPeriod()
 {
-    printf("----- testOscSmootherPeriod\n");
     testOscSmootherPeriod<T>(6);
-
-    // TODO
-    printf("turn this two back on!!\n");
-   // testOscSmootherPeriod<T>(10);
-   // testOscSmootherPeriod<T>(101);
+    testOscSmootherPeriod<T>(10);
+    testOscSmootherPeriod<T>(101);
 }
 
 template <class T>
@@ -285,8 +285,8 @@ static void  testRisingEdgeFractional_Ratio()
 template <class T>
 static void testOscSmootherT()
 {
- //   testOscSmootherInit<T>();
- //   testOscSmootherCanLock<T>();
+    testOscSmootherInit<T>();
+    testOscSmootherCanLock<T>();
     testOscSmootherPeriod<T>();
  //   testOscAltPeriod<T>();
  //   testChangeFreq<T>();
@@ -295,7 +295,7 @@ static void testOscSmootherT()
 
 void testOscSmoother()
 {
-#if 0
+#if 1
     testRisingEdgeFractional_init();
     testRisingEdgeFractional_simpleRiseFall();
     testRisingEdgeFractional_RiseFall2();
