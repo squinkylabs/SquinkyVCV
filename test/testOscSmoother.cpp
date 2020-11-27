@@ -288,9 +288,9 @@ static void testOscSmootherT()
     testOscSmootherInit<T>();
     testOscSmootherCanLock<T>();
     testOscSmootherPeriod<T>();
- //   testOscAltPeriod<T>();
- //   testChangeFreq<T>();
-  //  testOutput<T>();
+    testOscAltPeriod<T>();
+    testChangeFreq<T>();
+    testOutput<T>();
 }
 
 void testOscSmoother()
