@@ -255,13 +255,29 @@ static void testRisingEdgeFractional_Quarter()
 
 static void testRisingEdgeFractional_Ratio(float ratio)
 {
-    assert(ratio > 1);
+    assert(ratio > 0);
     RisingEdgeDetectorFractional det;
 
-    const float lowVoltage = -.1f;
-    const float highVoltage = (ratio - 1) * .1f;
+    const float scale = .01f;
 
-    assertClose((highVoltage - lowVoltage),  ratio * .1f, .001);
+    float lowVoltage = 0;
+    float highVoltage = 0;
+    float expectedSubsample = 0;
+    if (ratio > 1) {
+        lowVoltage = -scale;
+        highVoltage = (ratio - 1) * scale;
+        assertClose((highVoltage - lowVoltage), ratio * scale, .001);
+
+        expectedSubsample = 1.f / ratio;
+    }
+    else {
+        const float invRatio = 1 / ratio;
+        highVoltage = scale;
+        lowVoltage = (1 - invRatio ) * scale;
+        expectedSubsample = 1 - ratio;
+    }
+
+    
     assert(highVoltage > 0 && highVoltage < 1);
     assert(lowVoltage < 0 && lowVoltage > -1);
 
@@ -276,13 +292,26 @@ static void testRisingEdgeFractional_Ratio(float ratio)
     assert(!s.first);
     s = det.step(highVoltage);
     assert(s.first);
-    assertClose(s.second, 1.f / ratio, .0001);
+
+    printf("in test rati0 = %f expected = %f, actual = %f\n", ratio, expectedSubsample, s.second);
+    assertClose(s.second, expectedSubsample, .0001);
 }
 
 static void  testRisingEdgeFractional_Ratio()
 {
     testRisingEdgeFractional_Ratio(2);
-    assert(false);
+    testRisingEdgeFractional_Ratio(3);
+    testRisingEdgeFractional_Ratio(4);
+    testRisingEdgeFractional_Ratio(10);
+    testRisingEdgeFractional_Ratio(100);
+
+    testRisingEdgeFractional_Ratio(1.f / 2.f);
+    testRisingEdgeFractional_Ratio(1.f / 3.f);
+    testRisingEdgeFractional_Ratio(1.f / 2.f);
+    testRisingEdgeFractional_Ratio(1.f / 4.f);
+    testRisingEdgeFractional_Ratio(1.f / 10.f);
+    testRisingEdgeFractional_Ratio(1.f / 100.f);
+   
 }
 
 void testOscSmoother()
