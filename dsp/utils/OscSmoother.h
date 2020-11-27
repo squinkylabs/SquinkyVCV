@@ -41,16 +41,12 @@ public:
         //printf("add = %f delta=%f", acc, delta);
         if (acc < .25f) {
             x = acc * 2;
-           // printf(" a: %f\n", x);
         } else if (acc < .5f) {
             x = 1 -2 * acc;
-           // printf(" b: %f\n", x);
         } else if (acc < .75f) {
             x = 1 - 2 * acc;
-            //printf(" c: %f\n", x);
         } else {
             x = 2 * (acc - 1);
-            //printf(" d: %f\n", x);
         }
         return x;
     }
@@ -77,7 +73,6 @@ private:
 
 inline RisingEdgeDetector::RisingEdgeDetector() : inputConditioner(-1, 1)
 {
-
 }
 
 inline bool RisingEdgeDetector::step(float input)
@@ -100,6 +95,13 @@ inline bool RisingEdgeDetector::step(float input)
 class RisingEdgeDetectorFractional
 {
 public:
+    /**
+     * x.first = bool: did cross
+     * x.secnod = float fraction: where did it fall between prev sample and cur?
+     *          0 -> it happened on this sample
+     *          1 -> it happened on the last sample
+     *          .5 -> it happened in between last and current
+     */
     using Edge = std::pair<bool, float>;
     Edge step(float);
 private:
@@ -122,7 +124,7 @@ RisingEdgeDetectorFractional::step(float input)
         wasHigh = false;
         wasLow = false;
     } 
-    
+
     lastValue = input;
 
     if (input > 1) {
@@ -137,7 +139,6 @@ RisingEdgeDetectorFractional::step(float input)
  * 
  * 
  */
-
 class OscSmoother
 {
 public:
@@ -169,7 +170,7 @@ inline float OscSmoother::_getPhaseInc() const
    return vco.getFrequency();
 }
 
-#define PERIOD_CYCLES 16 * 4
+#define PERIOD_CYCLES 16
 inline float OscSmoother::step(float input) {
     // run the edge detector, look for low to high edge
     bool edge = edgeDetector.step(input);
@@ -197,6 +198,87 @@ inline float OscSmoother::step(float input) {
         periodsSinceReset = 0;
         samplesSinceReset = 0;
     } 
+    vco.process();
+    return 10 * vco.getTriangle();
+}
+
+/**
+ * 
+ * 
+ * 
+ */
+class OscSmoother2
+{
+public:
+   // OscSmoother2();
+    float step(float input);
+    bool isLocked() const;
+    float _getPhaseInc() const;
+private:
+    int cycleInCurrentGroup = 0;
+    bool locked = false;
+    Svco2 vco;
+    RisingEdgeDetectorFractional edgeDetector;
+   // RisingEdgeDetector edgeDetector;
+
+ //   int periodsSinceReset = 0;
+ //   int samplesSinceReset = 0;
+
+    /**
+     * just used found counting up until next to to do calculation.
+     * Note required to be super accurate.
+     */
+    int integerPeriodsSinceReset = 0;
+
+    /**
+     */
+    float fractionalSamplesSinceReset = 0;
+    int integerSamplesSinceReset = 0;
+};
+
+inline bool OscSmoother2::isLocked() const {
+    return locked;
+}
+
+inline float OscSmoother2::step(float input) {
+    // run the edge detector, look for low to high edge
+    auto edge = edgeDetector.step(input);
+    const bool newEdge = edge.first;
+    const float phaseLag = edge.second;
+
+    if (newEdge) {
+        integerPeriodsSinceReset++;
+    }
+
+  //  ++samplesSinceReset; 
+  //    printf("after: edge = %d, samples=%d per=%d\n", edge, samplesSinceReset, periodsSinceReset); fflush(stdout); 
+    if (integerPeriodsSinceReset > PERIOD_CYCLES) {
+        locked = true;
+
+        // TODO: current fract
+        const float fullPeriodSampled = integerSamplesSinceReset + fractionalSamplesSinceReset;
+        const float samplesPerCycle = fullPeriodSampled / float(PERIOD_CYCLES);
+       // const float samplesPerCycle = float(samplesSinceReset -1) / float(PERIOD_CYCLES);
+
+// TODO: print something useful here
+        printf("captured %f samples per cycle %d per period\n", samplesPerCycle, integerSamplesSinceReset); fflush(stdout);
+    //    printf("or, using minus one %f\n", float(samplesSinceReset-1) / 16.f);
+
+
+        // experiment - let's try constant
+      //  const float newPhaseInc = 1.0f /  40.f;
+        const float newPhaseInc = 1.0f / samplesPerCycle;
+
+
+        vco.setPitch(newPhaseInc);
+
+        // TODO: carry fraction
+        fractionalSamplesSinceReset = 0;
+        integerSamplesSinceReset = 0;
+        integerPeriodsSinceReset = 0;
+    } else {
+        integerSamplesSinceReset++;
+    }
     vco.process();
     return 10 * vco.getTriangle();
 }

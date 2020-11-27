@@ -3,8 +3,8 @@
 
 #include "asserts.h"
 
-
-static void generateNPeriods(OscSmoother& c, int period, int times)
+template <class T>
+static void generateNPeriods(T& c, int period, int times)
 {
     assertGT(times, 0);
 
@@ -18,24 +18,23 @@ static void generateNPeriods(OscSmoother& c, int period, int times)
     }
 }
 
+template <class T>
 static void testOscSmootherInit()
 {
-    OscSmoother o;
+    T o;
     assertEQ(o.isLocked(), false);
 }
 
+template <class T>
 static void testOscSmootherCanLock()
 {
-    OscSmoother o;
+    T o;
     generateNPeriods(o, 6, 20);
     assertEQ(o.isLocked(), true);
 }
 
-
-
 static void testOscSmootherPeriod(int div)
 {
-    printf("---------- test osc over %d\n", div);
     const float expectedPhaseInc = 1.f / float(div);
     OscSmoother o;
     generateNPeriods(o, div, 20);
@@ -52,7 +51,6 @@ static void testOscSmootherPeriod()
 
 static void testOscAltPeriod()
 {
-    printf("---------- test ALT\n");
     OscSmoother o;
     for (int cycle = 0; cycle < 16; ++cycle) {
         int period = (cycle == 0) ? 9 : 10;
@@ -106,7 +104,6 @@ static void testChangeFreq()
 
 static void testOutput()
 {
-  printf("---------- test output\n");
     int div = 50;
     const float expectedPhaseInc = 1.f / float(div);
     OscSmoother o;
@@ -117,10 +114,8 @@ static void testOutput()
     float maxv = -10;
     float minv = 10;
     float last = 0;
-    printf("----- after warmup\n"); fflush(stdout);
     for (int i=0; i< 200; ++i) {
         float x = o.step(0);
-       // printf("outpu = %f\n", x);
         if (first) {
             first = false;
             last = x;
@@ -216,43 +211,6 @@ static void testRisingEdgeFractional_RiseFall2()
 }
 
 
-static void testRisingEdgeFractional_Half()
-{
-    RisingEdgeDetectorFractional det;
-
-    // force high, low
-    auto s = det.step(5); 
-    assert(!s.first);        
-    s = det.step(-5);
-    assert(!s.first);
-
-    // barely cross zero
-    s = det.step(-.001f);
-    assert(!s.first);
-    s = det.step(.001f);
-    assert(s.first);
-    assertClose(s.second, .5f, .01);
-}
-
-static void testRisingEdgeFractional_Quarter()
-{
-    RisingEdgeDetectorFractional det;
-
-    // force high, low
-    auto s = det.step(5); 
-    assert(!s.first);        
-    s = det.step(-5);
-    assert(!s.first);
-
-    // barely cross zero
-    s = det.step(-.001f);
-    assert(!s.first);
-    s = det.step(.001f * 3);
-    assert(s.first);
-    assertClose(s.second, .25f, .01);
-}
-
-
 static void testRisingEdgeFractional_Ratio(float ratio)
 {
     assert(ratio > 0);
@@ -293,7 +251,8 @@ static void testRisingEdgeFractional_Ratio(float ratio)
     s = det.step(highVoltage);
     assert(s.first);
 
-    printf("in test rati0 = %f expected = %f, actual = %f\n", ratio, expectedSubsample, s.second);
+   // printf("ratio = %f, hi=%f lo=%f\n", ratio, highVoltage, lowVoltage);
+  //  printf("frac = %f\n", s.second);
     assertClose(s.second, expectedSubsample, .0001);
 }
 
@@ -314,15 +273,28 @@ static void  testRisingEdgeFractional_Ratio()
    
 }
 
+template <class T>
+static void testOscSmootherT()
+{
+    testOscSmootherInit<T>();
+    testOscSmootherCanLock<T>();
+    testOscSmootherPeriod();
+    testOscAltPeriod();
+    testChangeFreq();
+    testOutput();
+}
+
 void testOscSmoother()
 {
     testRisingEdgeFractional_init();
     testRisingEdgeFractional_simpleRiseFall();
     testRisingEdgeFractional_RiseFall2();
-    testRisingEdgeFractional_Half();
-    testRisingEdgeFractional_Quarter();
     testRisingEdgeFractional_Ratio();
-    #if 0   // these broke. must fix
+
+    testOscSmootherT<OscSmoother>();
+    testOscSmootherT<OscSmoother2>();
+
+    #if 0  // these broke. must fix
     testOscSmootherInit();
     testOscSmootherCanLock();
     testOscSmootherPeriod();
