@@ -301,6 +301,25 @@ static void testRisingEdgeFractional_Far()
     assertGE(x.second, .999f);
 }
 
+static void testRisingEdgeFractional_HighFreq()
+{
+    RisingEdgeDetectorFractional det;
+    det.step(5);
+    det.step(-5);
+    auto x = det.step(5);
+    assert(x.first);
+    assertClose(x.second, .5, .001);
+    x = det.step(-5);
+    assert(x.first);
+    assertClose(x.second, .5, .001);
+    x = det.step(5);
+    assert(x.first);
+    assertClose(x.second, .5, .001);
+    x = det.step(-5);
+    assert(x.first);
+    assertClose(x.second, .5, .001);
+}
+
 static void testRisingEdgeFractional_Ratio(float ratio)
 {
     assert(ratio > 0);
@@ -316,13 +335,16 @@ static void testRisingEdgeFractional_Ratio(float ratio)
         highVoltage = (ratio - 1) * scale;
         assertClose((highVoltage - lowVoltage), ratio * scale, .001);
 
-        expectedSubsample = 1.f / ratio;
+       // expectedSubsample = 1.f / ratio;
+       // did this backwards origianally
+       expectedSubsample = 1 - (1.f / ratio);
     }
     else {
         const float invRatio = 1 / ratio;
         highVoltage = scale;
         lowVoltage = (1 - invRatio ) * scale;
-        expectedSubsample = 1 - ratio;
+        //expectedSubsample = 1 - ratio;
+        expectedSubsample = ratio;
     }
 
     
@@ -382,6 +404,8 @@ void testOscSmoother()
     testRisingEdgeFractional_Close();
     testRisingEdgeFractional_Far();
     testRisingEdgeFractional_Ratio();
+    testRisingEdgeFractional_HighFreq();
+
 
     testOscSmootherT<OscSmoother>();
     testOscSmootherT<OscSmoother2>();
