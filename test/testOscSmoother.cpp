@@ -310,14 +310,13 @@ static void testRisingEdgeFractional_HighFreq()
     assert(x.first);
     assertClose(x.second, .5, .001);
     x = det.step(-5);
-    assert(x.first);
-    assertClose(x.second, .5, .001);
+    assert(!x.first);
+
     x = det.step(5);
     assert(x.first);
     assertClose(x.second, .5, .001);
     x = det.step(-5);
-    assert(x.first);
-    assertClose(x.second, .5, .001);
+    assert(!x.first);
 }
 
 static void testRisingEdgeFractional_Ratio(float ratio)
