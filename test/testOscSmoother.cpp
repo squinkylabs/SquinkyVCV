@@ -1,4 +1,5 @@
 
+#include "ObjectCache.h"
 #include "OscSmoother.h"
 
 #include "asserts.h"
@@ -24,6 +25,61 @@ static void generateNPeriods(T& c, int period, int times)
     }
 }
 
+class SimpleSine
+{
+public:
+    SimpleSine(float inc, float init) : normPhase(init), normPhaseInc(inc) {}
+    float step() {
+        float ret = LookupTable<float>::lookup(*lookup, normPhase);
+        normPhase += normPhaseInc;
+        if (normPhase > 1) {
+            normPhase -= 1;
+        }
+        return ret;
+    }
+    float normPhase = 0;
+    float normPhaseInc = 0;
+    std::shared_ptr<LookupTableParams<float>> lookup = ObjectCache<float>::getSinLookup();
+};
+
+static void testSimpleSine()
+{
+    SimpleSine osc(.25f, 0);
+    assertEQ(osc.normPhase, 0);
+    assertEQ(osc.normPhaseInc, .25f);
+
+    float x = osc.step();
+    assertClose(x, 0, .00001f);
+    x = osc.step();
+    assertClose(x, 1, .00001f);
+    x = osc.step();
+    assertClose(x, 0, .00001f);
+    x = osc.step();
+    assertClose(x, -1, .00001f);
+    x = osc.step();
+    assertClose(x, 0, .00001f);
+    x = osc.step();
+    assertClose(x, 1, .00001f);
+
+    SimpleSine osc2(.25f, .125f);
+    x = osc2.step();
+    assertClose(x, 1 / std::sqrt(2.f), .00001f);
+    x = osc2.step();
+    assertClose(x, 1 / std::sqrt(2.f), .00001f);
+    x = osc2.step();
+    assertClose(x, -1 / std::sqrt(2.f), .00001f);
+    x = osc2.step();
+    assertClose(x, -1 / std::sqrt(2.f), .00001f);
+}
+
+template <class T>
+static void generateFractionalPeriods(T& c, float period, int times)
+{
+    printf("----------- generateFractionalPeriods (%f)\n", period);
+    assert(false);
+}
+
+#if 0
 template <class T>
 static void generateFractionalPeriods(T& c, float period, int times)
 {
@@ -62,6 +118,7 @@ static void generateFractionalPeriods(T& c, float period, int times)
         }  
     }
 }
+#endif
 
 template <class T>
 static void testOscSmootherInit()
@@ -397,6 +454,7 @@ static void testOscSmootherT()
 void testOscSmoother()
 {
 #if 1
+    testSimpleSine();
     testRisingEdgeFractional_init();
     testRisingEdgeFractional_simpleRiseFall();
     testRisingEdgeFractional_RiseFall2();
