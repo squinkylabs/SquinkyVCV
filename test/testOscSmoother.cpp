@@ -136,7 +136,7 @@ static void testOscFractionalPeriod(const TestParams& params)
 {
     printf("----------- testOscFractionalPeriod (%f)\n", params.period);
     const float expectedPhaseInc = 1.f / params.period;
-    T o;
+    T o (params.periodOfSmoother);
     generateFractionalPeriods(o, params.period, params.cycles);
     assertEQ(o.isLocked(), params.expectLock);
     if (params.expectLock) {
@@ -147,6 +147,12 @@ static void testOscFractionalPeriod(const TestParams& params)
 template <class T>
 static void testOscFractionalPeriod()
 {
+    TestParams p2;
+    p2.period = 4.5;
+    p2.cycles = 1;
+    p2.periodOfSmoother = 1;
+    testOscFractionalPeriod<T>(p2);
+
     TestParams p;
     p.period = 4.5;
     p.cycles = 20;

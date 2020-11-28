@@ -191,7 +191,7 @@ inline float OscSmoother::_getPhaseInc() const
    return vco.getFrequency();
 }
 
-#define PERIOD_CYCLES 16
+ #define PERIOD_CYCLES_DEF 16
 inline float OscSmoother::step(float input) {
     // run the edge detector, look for low to high edge
     bool edge = edgeDetector.step(input);
@@ -204,9 +204,9 @@ inline float OscSmoother::step(float input) {
 #ifdef _OSL
     printf("after: edge = %d, samples=%d per=%d\n", edge, samplesSinceReset, periodsSinceReset); fflush(stdout); 
 #endif
-    if (periodsSinceReset > PERIOD_CYCLES) {
+    if (periodsSinceReset > PERIOD_CYCLES_DEF) {
         locked = true;
-        const float samplesPerCycle = float(samplesSinceReset -1) / float(PERIOD_CYCLES);
+        const float samplesPerCycle = float(samplesSinceReset -1) / float(PERIOD_CYCLES_DEF);
 #ifdef _OSL
         printf("captured %f samples per cycle %d per period\n", samplesPerCycle, samplesSinceReset); fflush(stdout);
         printf("  actual sample count was %d, but sub 1 to %d\n", samplesSinceReset, samplesSinceReset-1);
@@ -233,7 +233,8 @@ inline float OscSmoother::step(float input) {
 class OscSmoother2
 {
 public:
-   // OscSmoother2();
+    OscSmoother2() : smootherPeriodCycles(PERIOD_CYCLES_DEF) {}
+    OscSmoother2(int periodCycles) : smootherPeriodCycles(periodCycles) {}
     float step(float input);
     bool isLocked() const;
     float _getPhaseInc() const;
@@ -254,6 +255,8 @@ private:
      */
     float fractionalSamplesSinceReset = 0;
     int integerSamplesSinceReset = 0;
+
+    const int smootherPeriodCycles;
 };
 
 inline void OscSmoother2::_primeForTest(float last)
@@ -287,12 +290,12 @@ inline float OscSmoother2::step(float input) {
 #ifdef _OSL
     printf("after: edge = %d+%f, samples=%d per=%d\n", newEdge, edge.second, integerSamplesSinceReset, integerPeriodsSinceReset); fflush(stdout); 
 #endif
-    if (integerPeriodsSinceReset > PERIOD_CYCLES) {
+    if (integerPeriodsSinceReset > smootherPeriodCycles) {
         locked = true;
 
         // TODO: current fract
         const float fullPeriodSampled = integerSamplesSinceReset + fractionalSamplesSinceReset;
-        const float samplesPerCycle = fullPeriodSampled / float(PERIOD_CYCLES);
+        const float samplesPerCycle = fullPeriodSampled / float(smootherPeriodCycles);
        // const float samplesPerCycle = float(samplesSinceReset -1) / float(PERIOD_CYCLES);
 
 #ifdef _OSL
