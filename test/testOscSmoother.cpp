@@ -9,7 +9,7 @@ static void generateNPeriods(T& c, int period, int times)
 {
     assertGT(times, 0);
 
-    c._primeForTest();          // make sure edge detector is setup up to interpret 5V as an edge
+    c._primeForTest(-.0001f);          // make sure edge detector is setup up to interpret 5V as an edge
 
     const int firstHalfPeriod = period / 2;
     // const int secondHalfPeriod = period - firstHalfPeriod;
@@ -30,7 +30,7 @@ class SimpleSine
 public:
     SimpleSine(float inc, float init) : normPhase(init), normPhaseInc(inc) {}
     float step() {
-        float ret = LookupTable<float>::lookup(*lookup, normPhase);
+        float ret = 5 * LookupTable<float>::lookup(*lookup, normPhase);
         normPhase += normPhaseInc;
         if (normPhase > 1) {
             normPhase -= 1;
@@ -51,74 +51,43 @@ static void testSimpleSine()
     float x = osc.step();
     assertClose(x, 0, .00001f);
     x = osc.step();
-    assertClose(x, 1, .00001f);
+    assertClose(x, 5, .00001f);
     x = osc.step();
     assertClose(x, 0, .00001f);
     x = osc.step();
-    assertClose(x, -1, .00001f);
+    assertClose(x, -5, .00001f);
     x = osc.step();
     assertClose(x, 0, .00001f);
     x = osc.step();
-    assertClose(x, 1, .00001f);
+    assertClose(x, 5, .00001f);
 
     SimpleSine osc2(.25f, .125f);
     x = osc2.step();
-    assertClose(x, 1 / std::sqrt(2.f), .00001f);
+    assertClose(x, 5 / std::sqrt(2.f), .00001f);
     x = osc2.step();
-    assertClose(x, 1 / std::sqrt(2.f), .00001f);
+    assertClose(x, 5 / std::sqrt(2.f), .00001f);
     x = osc2.step();
-    assertClose(x, -1 / std::sqrt(2.f), .00001f);
+    assertClose(x, -5 / std::sqrt(2.f), .00001f);
     x = osc2.step();
-    assertClose(x, -1 / std::sqrt(2.f), .00001f);
+    assertClose(x, -5 / std::sqrt(2.f), .00001f);
 }
 
 template <class T>
-static void generateFractionalPeriods(T& c, float period, int times)
+static void generateFractionalPeriods(T& smoother, float period, int times)
 {
     printf("----------- generateFractionalPeriods (%f)\n", period);
-    assert(false);
+    smoother._primeForTest(-.0001f);
+
+    const float freq = 1.f / period;
+    SimpleSine osc(freq, .00001f);
+    const int totalSamples = int(times * period);
+    printf("times=%d total=%d\n", times, totalSamples);
+    for (int i = 0; i < totalSamples; ++i) {
+        float x = osc.step();
+        smoother.step(x);
+    }   
 }
 
-#if 0
-template <class T>
-static void generateFractionalPeriods(T& c, float period, int times)
-{
-    printf("----------- generateFractionalPeriods (%f)\n", period);
-    assertGT(times, 0);
-    assertGE(period, 4);
-    c._primeForTest();          // make sure edge detector is setup up to interpret 5V as an edge
-
-    for (int i = 0; i < times; ++i) {
-        printf("i=%d: generating standard pramble (5,5,-5)\n", i);
-        float cyclesThisPeriod = period;
-        c.step(5);   // start with full on 5v
-        c.step(5);  // and another to arm detector for next
-        c.step(-5);   
-        cyclesThisPeriod -= 1;
-
-        // generate a series of -5 / +5
-        while (cyclesThisPeriod > 1) {
-            printf("generating filler cycles of -5,+5\n");
-            c.step(-5);
-            c.step(5);
-            cyclesThisPeriod -= 1;
-        }
-        // go full down to prime it
-        printf("generate full neg to arm\n");
-        c.step(-5);         
-        if (cyclesThisPeriod >= .5f) {
-            printf("remainder is %f\n", cyclesThisPeriod);
-            // generate a pulee close, with 1V for the second pulse
-            const float vHi = 1;
-            const float vLo = - (cyclesThisPeriod + .5f);   // this is probably wrong.
-            c.step(vLo);
-            c.step(vHi);
-        } else {
-            assert(false);
-        }  
-    }
-}
-#endif
 
 template <class T>
 static void testOscSmootherInit()
@@ -153,21 +122,44 @@ static void testOscSmootherPeriod()
     testOscSmootherPeriod<T>(101);
 }
 
-template <class T>
-static void testOscFractionalPeriod(float period)
+class TestParams
 {
-    printf("----------- testOscFractionalPeriod (%f)\n", period);
-    const float expectedPhaseInc = 1.f / period;
+public:
+    float period = 1;       // the period of the tests signal, in cycles
+    int cycles = 1;         // how much test signal to generate
+    bool expectLock = true;
+    int periodOfSmoother = 16;
+};
+
+template <class T>
+static void testOscFractionalPeriod(const TestParams& params)
+{
+    printf("----------- testOscFractionalPeriod (%f)\n", params.period);
+    const float expectedPhaseInc = 1.f / params.period;
     T o;
-    generateFractionalPeriods(o, period, 20);
-    assertEQ(o.isLocked(), true);
-    assertClose(o._getPhaseInc(), expectedPhaseInc, .00001f);
+    generateFractionalPeriods(o, params.period, params.cycles);
+    assertEQ(o.isLocked(), params.expectLock);
+    if (params.expectLock) {
+        assertClose(o._getPhaseInc(), expectedPhaseInc, .00001f);
+    }
 }
 
 template <class T>
 static void testOscFractionalPeriod()
 {
-    testOscFractionalPeriod<T>(4.5f);
+    TestParams p;
+    p.period = 4.5;
+    p.cycles = 20;
+    p.periodOfSmoother = 16;
+    testOscFractionalPeriod<T>(p);
+
+    p.cycles = 10;
+    p.expectLock = false;
+    testOscFractionalPeriod<T>(p);
+
+    p.cycles = 40;
+    p.expectLock = true;
+    testOscFractionalPeriod<T>(p);
 }
 
 template <class T>
@@ -453,7 +445,7 @@ static void testOscSmootherT()
 
 void testOscSmoother()
 {
-#if 1
+#if 0
     testSimpleSine();
     testRisingEdgeFractional_init();
     testRisingEdgeFractional_simpleRiseFall();

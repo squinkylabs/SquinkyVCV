@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#define _OSL
+// #define _OSL
 
 // can this move to SqMath?
 #ifndef _CLAMP
@@ -110,18 +110,18 @@ public:
     using Edge = std::pair<bool, float>;
     Edge step(float);
 
-    void _primeForTest();
+    void _primeForTest(float last);
 private:
     float lastValue = 0;
     bool wasHigh = false;
     bool wasLow = false;
 };
 
-inline  void RisingEdgeDetectorFractional::_primeForTest()
+inline  void RisingEdgeDetectorFractional::_primeForTest(float last)
 {
     wasLow = true;
     wasHigh = true;
-    lastValue = -.0001f;
+    lastValue = last;
     assert(lastValue < 0);
 }
 
@@ -166,7 +166,7 @@ public:
     float step(float input);
     bool isLocked() const;
     float _getPhaseInc() const;
-    void _primeForTest() {}
+    void _primeForTest(float first) {}
 private:
     int cycleInCurrentGroup = 0;
     bool locked = false;
@@ -213,14 +213,11 @@ inline float OscSmoother::step(float input) {
     //    printf("or, using minus one %f\n", float(samplesSinceReset-1) / 16.f);
 #endif
 
-
         // experiment - let's try constant
-      //  const float newPhaseInc = 1.0f /  40.f;
+        //  const float newPhaseInc = 1.0f /  40.f;
         const float newPhaseInc = 1.0f / samplesPerCycle;
 
-
         vco.setPitch(newPhaseInc);
-
         periodsSinceReset = 0;
         samplesSinceReset = 0;
     } 
@@ -240,16 +237,12 @@ public:
     float step(float input);
     bool isLocked() const;
     float _getPhaseInc() const;
-    void _primeForTest();
+    void _primeForTest(float last);
 private:
     int cycleInCurrentGroup = 0;
     bool locked = false;
     Svco2 vco;
     RisingEdgeDetectorFractional edgeDetector;
-   // RisingEdgeDetector edgeDetector;
-
- //   int periodsSinceReset = 0;
- //   int samplesSinceReset = 0;
 
     /**
      * just used found counting up until next to to do calculation.
@@ -263,9 +256,9 @@ private:
     int integerSamplesSinceReset = 0;
 };
 
-inline void OscSmoother2::_primeForTest()
+inline void OscSmoother2::_primeForTest(float last)
 {
-    edgeDetector._primeForTest();
+    edgeDetector._primeForTest(last);
 }
 
 inline bool OscSmoother2::isLocked() const {
@@ -274,7 +267,6 @@ inline bool OscSmoother2::isLocked() const {
 
 inline float OscSmoother2::_getPhaseInc() const 
 {
-   // return 1.f / 6.f;
    return vco.getFrequency();
 }
 
