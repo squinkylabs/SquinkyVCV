@@ -103,6 +103,7 @@ public:
      *          0 -> it happened on this sample
      *          1 -> it happened on the last sample
      *          .5 -> it happened in between last and current
+     *          .001 -> It happened right before current
      * 
      * So it is how far back in time did it cross.
      */
@@ -134,7 +135,12 @@ RisingEdgeDetectorFractional::step(float input)
         float delta = input - lastValue;
 	    float crossing = -lastValue / delta;
        // printf("crossing, delta = %f crossing = %f\n", delta, crossing); fflush(stdout);
-        ret.second = crossing;     // TODO: real fraction
+        assert(crossing >= 0);
+        assert(crossing <= 1);
+
+        // flip it, so small numbers are close to current sample,
+        // large numerse close to prev.
+        ret.second = 1 - crossing;     // TODO: real fraction
         wasHigh = false;
         wasLow = false;
     } 

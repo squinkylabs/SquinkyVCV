@@ -270,6 +270,36 @@ static void testRisingEdgeFractional_RiseFall2()
     assert(s.first); 
 }
 
+/**
+ * like the ratio tests, but a simple
+ * case of the cross happening right before current sample
+ */
+static void testRisingEdgeFractional_Close()
+{
+    RisingEdgeDetectorFractional det;
+    det.step(5);
+    det.step(-5);
+    det.step(-5);
+    auto x = det.step(.0001f);
+    assert(x.first);
+    assertLE(x.second, .0001f);
+}
+
+/**
+ * like the ratio tests, but a simple
+ * case of the cross happening right after prev sample
+ */
+static void testRisingEdgeFractional_Far()
+{
+    RisingEdgeDetectorFractional det;
+    det.step(5);
+    det.step(-5);
+    det.step(-5);
+    det.step(-.0001f);
+    auto x = det.step(5);
+    assert(x.first);
+    assertGE(x.second, .999f);
+}
 
 static void testRisingEdgeFractional_Ratio(float ratio)
 {
@@ -345,10 +375,12 @@ static void testOscSmootherT()
 
 void testOscSmoother()
 {
-#if 0
+#if 1
     testRisingEdgeFractional_init();
     testRisingEdgeFractional_simpleRiseFall();
     testRisingEdgeFractional_RiseFall2();
+    testRisingEdgeFractional_Close();
+    testRisingEdgeFractional_Far();
     testRisingEdgeFractional_Ratio();
 
     testOscSmootherT<OscSmoother>();
