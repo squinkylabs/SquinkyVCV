@@ -25,6 +25,45 @@ static void generateNPeriods(T& c, int period, int times)
 }
 
 template <class T>
+static void generateFractionalPeriods(T& c, float period, int times)
+{
+    printf("----------- generateFractionalPeriods (%f)\n", period);
+    assertGT(times, 0);
+    assertGE(period, 4);
+    c._primeForTest();          // make sure edge detector is setup up to interpret 5V as an edge
+
+    for (int i = 0; i < times; ++i) {
+        printf("i=%d: generating standard pramble (5,5,-5)\n", i);
+        float cyclesThisPeriod = period;
+        c.step(5);   // start with full on 5v
+        c.step(5);  // and another to arm detector for next
+        c.step(-5);   
+        cyclesThisPeriod -= 1;
+
+        // generate a series of -5 / +5
+        while (cyclesThisPeriod > 1) {
+            printf("generating filler cycles of -5,+5\n");
+            c.step(-5);
+            c.step(5);
+            cyclesThisPeriod -= 1;
+        }
+        // go full down to prime it
+        printf("generate full neg to arm\n");
+        c.step(-5);         
+        if (cyclesThisPeriod >= .5f) {
+            printf("remainder is %f\n", cyclesThisPeriod);
+            // generate a pulee close, with 1V for the second pulse
+            const float vHi = 1;
+            const float vLo = - (cyclesThisPeriod + .5f);   // this is probably wrong.
+            c.step(vLo);
+            c.step(vHi);
+        } else {
+            assert(false);
+        }  
+    }
+}
+
+template <class T>
 static void testOscSmootherInit()
 {
     T o;
@@ -55,6 +94,23 @@ static void testOscSmootherPeriod()
     testOscSmootherPeriod<T>(6);
     testOscSmootherPeriod<T>(10);
     testOscSmootherPeriod<T>(101);
+}
+
+template <class T>
+static void testOscFractionalPeriod(float period)
+{
+    printf("----------- testOscFractionalPeriod (%f)\n", period);
+    const float expectedPhaseInc = 1.f / period;
+    T o;
+    generateFractionalPeriods(o, period, 20);
+    assertEQ(o.isLocked(), true);
+    assertClose(o._getPhaseInc(), expectedPhaseInc, .00001f);
+}
+
+template <class T>
+static void testOscFractionalPeriod()
+{
+    testOscFractionalPeriod<T>(4.5f);
 }
 
 template <class T>
@@ -101,14 +157,8 @@ static void testChangeFreq()
     o.step(-5);
     o.step(5);
 
-    // why isn't this closer?
+
     assertClose(o._getPhaseInc(), 1.f / 17.f, .001f);
-
-
-
-   // float expectedPeriod = (10.f * 15 + 9) / 16.f;
-   // const float expectedFreq = 1.f / expectedPeriod;
-  //  assertClose(o._getPhaseInc(), expectedFreq, .00001f);
 }
 
 template <class T>
@@ -295,12 +345,15 @@ static void testOscSmootherT()
 
 void testOscSmoother()
 {
-#if 1
+#if 0
     testRisingEdgeFractional_init();
     testRisingEdgeFractional_simpleRiseFall();
     testRisingEdgeFractional_RiseFall2();
     testRisingEdgeFractional_Ratio();
-#endif
+
     testOscSmootherT<OscSmoother>();
-    testOscSmootherT<OscSmoother2>();    
+    testOscSmootherT<OscSmoother2>();
+#endif
+
+    testOscFractionalPeriod<OscSmoother2>();
 }
