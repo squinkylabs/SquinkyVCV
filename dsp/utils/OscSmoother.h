@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-// #define _OSL
+#define _OSL
 
 // can this move to SqMath?
 #ifndef _CLAMP
@@ -294,7 +294,7 @@ inline float OscSmoother2::step(float input) {
         locked = true;
 
         // TODO: current fract
-        const float fullPeriodSampled = integerSamplesSinceReset + fractionalSamplesSinceReset;
+        const float fullPeriodSampled = integerSamplesSinceReset + fractionalSamplesSinceReset - phaseLag;
         const float samplesPerCycle = fullPeriodSampled / float(smootherPeriodCycles);
        // const float samplesPerCycle = float(samplesSinceReset -1) / float(PERIOD_CYCLES);
 
@@ -313,7 +313,7 @@ inline float OscSmoother2::step(float input) {
         vco.setPitch(newPhaseInc);
 
         // TODO: carry fraction
-        fractionalSamplesSinceReset = 0;
+        fractionalSamplesSinceReset = phaseLag;
         integerSamplesSinceReset = 0;
         integerPeriodsSinceReset = 0;
     } else {
