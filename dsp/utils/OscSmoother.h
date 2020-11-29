@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#define _OSL
+// #define _OSL
 
 // can this move to SqMath?
 #ifndef _CLAMP
@@ -293,6 +293,10 @@ inline float OscSmoother2::step(float input) {
     if (integerPeriodsSinceReset > smootherPeriodCycles) {
         locked = true;
 
+#ifdef _OSL
+        printf("about to capture, int samples=%d, frac=%f, (sub) current lag = %f\n", integerSamplesSinceReset, fractionalSamplesSinceReset, phaseLag);
+#endif
+
         // TODO: current fract
         const float fullPeriodSampled = integerSamplesSinceReset + fractionalSamplesSinceReset - phaseLag;
         const float samplesPerCycle = fullPeriodSampled / float(smootherPeriodCycles);
@@ -300,7 +304,7 @@ inline float OscSmoother2::step(float input) {
 
 #ifdef _OSL
         printf("*** captured %f samples per cycle %d per period\n", samplesPerCycle, integerSamplesSinceReset); fflush(stdout);
-        printf("*** integer samples was %d, fract %f\n", integerSamplesSinceReset, fractionalSamplesSinceReset);
+        printf("*** integer samples was %d, fract %f smootherPeriod=%d\n", integerSamplesSinceReset, fractionalSamplesSinceReset, smootherPeriodCycles);
 #endif
     //    printf("or, using minus one %f\n", float(samplesSinceReset-1) / 16.f);
 

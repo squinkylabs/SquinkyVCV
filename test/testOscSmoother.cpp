@@ -132,32 +132,46 @@ public:
     int cycles = 1;         // how much test signal to generate
     bool expectLock = true;
     int periodOfSmoother = 16;
+    float tolerance = .00001f;
 };
 
 template <class T>
 static void testOscFractionalPeriod(const TestParams& params)
 {
-    printf("----------- testOscFractionalPeriod (%f)\n", params.period);
+    printf("\n----------- testOscFractionalPeriod (%f)\n", params.period);
     printf("  test cycles = %d smoother period = %d\n", params.cycles, params.periodOfSmoother);
     const float expectedPhaseInc = 1.f / params.period;
     T o (params.periodOfSmoother);
     generateFractionalPeriods(o, params.period, params.cycles);
     assertEQ(o.isLocked(), params.expectLock);
     if (params.expectLock) {
-        assertClose(o._getPhaseInc(), expectedPhaseInc, .00001f);
+        assertClose(o._getPhaseInc(), expectedPhaseInc, params.tolerance);
     }
 }
 
 template <class T>
 static void testOscFractionalPeriod()
 {
+#if 0
     TestParams p2;
     p2.period = 4.5;
     p2.cycles = 1;
     p2.periodOfSmoother = 1;
     testOscFractionalPeriod<T>(p2);
 
-    printf("TODO: put these back\n");
+    p2.period = 4.6f;
+    p2.tolerance = .001f;        // at high freq assumptions about linear approx aren't good.
+                                // so increase the tolerance
+    testOscFractionalPeriod<T>(p2);
+#endif
+
+    TestParams p;
+    p.period = 4.5;
+    p.cycles = 10;
+    p.periodOfSmoother = 2;
+    testOscFractionalPeriod<T>(p);
+
+    //printf("TODO: put these back\n");
 #if 0
     TestParams p;
     p.period = 4.5;
