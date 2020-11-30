@@ -110,11 +110,12 @@ static void testOscSmootherCanLock()
 template <class T>
 static void testOscSmootherPeriod(int div)
 {
+    printf("\n---- testOscSmootherPeriod %d\n", div);
     const float expectedPhaseInc = 1.f / float(div);
     T o;
     generateNPeriods(o, div, 20);
     assertEQ(o.isLocked(), true);
-    assertClose(o._getPhaseInc(), expectedPhaseInc, .00001f);
+    assertClose(o._getPhaseInc(), expectedPhaseInc, .001f);
 }
 
 template <class T>
@@ -152,18 +153,22 @@ static void testOscFractionalPeriod(const TestParams& params)
 template <class T>
 static void testOscFractionalPeriod()
 {
-#if 0
+
     TestParams p2;
-    p2.period = 4.5;
     p2.cycles = 1;
     p2.periodOfSmoother = 1;
+
+    p2.period = 4;
+    testOscFractionalPeriod<T>(p2);
+
+    p2.period = 4.5;
     testOscFractionalPeriod<T>(p2);
 
     p2.period = 4.6f;
     p2.tolerance = .001f;        // at high freq assumptions about linear approx aren't good.
                                 // so increase the tolerance
     testOscFractionalPeriod<T>(p2);
-#endif
+
 
     TestParams p;
     p.period = 4.5;
@@ -171,9 +176,8 @@ static void testOscFractionalPeriod()
     p.periodOfSmoother = 2;
     testOscFractionalPeriod<T>(p);
 
-    //printf("TODO: put these back\n");
-#if 0
-    TestParams p;
+
+  //  TestParams p;
     p.period = 4.5;
     p.cycles = 20;
     p.periodOfSmoother = 16;
@@ -186,7 +190,6 @@ static void testOscFractionalPeriod()
     p.cycles = 40;
     p.expectLock = true;
     testOscFractionalPeriod<T>(p);
-#endif
 }
 
 template <class T>
@@ -204,7 +207,7 @@ static void testOscAltPeriod()
 
     float expectedPeriod = (10.f * 15 + 9) / 16.f;
     const float expectedFreq = 1.f / expectedPeriod;
-    assertClose(o._getPhaseInc(), expectedFreq, .00001f);
+    assertClose(o._getPhaseInc(), expectedFreq, .001f);
 }
 
 template <class T>
@@ -472,7 +475,7 @@ static void testOscSmootherT()
 
 void testOscSmoother()
 {
-#if 0
+#if 1
     testSimpleSine();
     testRisingEdgeFractional_init();
     testRisingEdgeFractional_simpleRiseFall();

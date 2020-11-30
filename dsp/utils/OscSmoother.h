@@ -257,6 +257,10 @@ private:
     int integerSamplesSinceReset = 0;
 
     const int smootherPeriodCycles;
+
+    // treat first clocks special.
+    // Later we can generalize this.
+    bool isFirstClock = true;
 };
 
 inline void OscSmoother2::_primeForTest(float last)
@@ -275,12 +279,21 @@ inline float OscSmoother2::_getPhaseInc() const
 
 inline float OscSmoother2::step(float input) {
 #ifdef _OSL
-    printf("step(%f)\n", input);
+    printf("\nstep(%f)\n", input);
 #endif
     // run the edge detector, look for low to high edge
     auto edge = edgeDetector.step(input);
     const bool newEdge = edge.first;
     const float phaseLag = edge.second;
+
+    if (newEdge && isFirstClock) {
+        isFirstClock = false;
+        fractionalSamplesSinceReset = phaseLag;
+#ifdef _OSL
+        printf("swallowing first clock, frac = %f\n", fractionalSamplesSinceReset);
+#endif
+        return input;
+    }
 
     if (newEdge) {
         integerPeriodsSinceReset++;
@@ -288,17 +301,20 @@ inline float OscSmoother2::step(float input) {
 
   //  ++samplesSinceReset; 
 #ifdef _OSL
-    printf("after: edge = %d+%f, samples=%d per=%d\n", newEdge, edge.second, integerSamplesSinceReset, integerPeriodsSinceReset); fflush(stdout); 
+    printf("after: edge = %d + %f, samples=%d per=%d\n", newEdge, edge.second, integerSamplesSinceReset, integerPeriodsSinceReset); fflush(stdout); 
+    printf(" will comparse per since reset = %d with target %d\n", integerPeriodsSinceReset, smootherPeriodCycles);
 #endif
-    if (integerPeriodsSinceReset > smootherPeriodCycles) {
+
+    // now that we are ignoring first, maybe this more sensible >= compare will work?
+    if (integerPeriodsSinceReset >= smootherPeriodCycles) {
         locked = true;
 
 #ifdef _OSL
         printf("about to capture, int samples=%d, frac=%f, (sub) current lag = %f\n", integerSamplesSinceReset, fractionalSamplesSinceReset, phaseLag);
 #endif
 
-        // TODO: current fract
-        const float fullPeriodSampled = integerSamplesSinceReset + fractionalSamplesSinceReset - phaseLag;
+        // add one to make sample count come out right
+        const float fullPeriodSampled = 1 + integerSamplesSinceReset + fractionalSamplesSinceReset - phaseLag;
         const float samplesPerCycle = fullPeriodSampled / float(smootherPeriodCycles);
        // const float samplesPerCycle = float(samplesSinceReset -1) / float(PERIOD_CYCLES);
 
@@ -306,22 +322,21 @@ inline float OscSmoother2::step(float input) {
         printf("*** captured %f samples per cycle %d per period\n", samplesPerCycle, integerSamplesSinceReset); fflush(stdout);
         printf("*** integer samples was %d, fract %f smootherPeriod=%d\n", integerSamplesSinceReset, fractionalSamplesSinceReset, smootherPeriodCycles);
 #endif
-    //    printf("or, using minus one %f\n", float(samplesSinceReset-1) / 16.f);
-
+        //    printf("or, using minus one %f\n", float(samplesSinceReset-1) / 16.f);
 
         // experiment - let's try constant
-      //  const float newPhaseInc = 1.0f /  40.f;
+        //  const float newPhaseInc = 1.0f /  40.f;
         const float newPhaseInc = 1.0f / samplesPerCycle;
-
-
         vco.setPitch(newPhaseInc);
 
-        // TODO: carry fraction
         fractionalSamplesSinceReset = phaseLag;
         integerSamplesSinceReset = 0;
         integerPeriodsSinceReset = 0;
     } else {
         integerSamplesSinceReset++;
+#ifdef _OSL
+        printf("dindn't capture, not time yet\n");
+#endif
     }
     vco.process();
     return 10 * vco.getTriangle();

@@ -364,8 +364,6 @@ static void testLookupAboveTheshNoKnee2(float ratioToTest)
         const float outputDbAboveTh = outputDb - threshDb;
 
         const float observedRatio = inputDbAboveTh / outputDbAboveTh;
-        printf("input = %.2f, ratio=%.2f\n", input, observedRatio);
-        printf("put back this assert\n");
         assertClosePct(observedRatio, ratioToTest, 1);
 
     }
