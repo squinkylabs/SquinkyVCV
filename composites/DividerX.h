@@ -173,7 +173,7 @@ inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
         float blep = minBlep.process(); 
         v -= blep;
     }
- 
+    v *= 5;
 
     TBase::outputs[FIRST_OUTPUT].setVoltage(v, 0);
 
