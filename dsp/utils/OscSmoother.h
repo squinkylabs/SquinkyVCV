@@ -38,6 +38,7 @@ namespace std {
 }
 #endif
 
+// don't know why I needed to make this...
 template <typename T>
 inline T clamp_t(T v, T lo, T hi)
 {
@@ -51,7 +52,7 @@ class Svco2
 {
 public:
     void setPitch(T pitch) {
-        delta = std::clamp<T>(pitch, 0.f, .5f);
+        delta = clamp_t<T>(pitch, 0.f, .5f);
     }
     void reset(T normalizedPitch, T normalizedPhase) {
         //printf("reset(%f, %f), current = %f, %f)\n", normalizedPitch, normalizedPhase, delta, acc);
