@@ -7,8 +7,8 @@
 
 
  //static __m128 twoPi = {_mm_set_ps1(2 * 3.141592653589793238)};
- static float twoPi = 2 * 3.141592653589793238;
-static float pi =  3.141592653589793238;
+ static float twoPi = 2 * 3.141592653589793238f;
+static float pi =  3.141592653589793238f;
 
 
 inline double taylor2(double x)
@@ -34,7 +34,7 @@ inline float_4 simdSinPiToPi(float_4 _x) {
     xOffset += _x;
     float_4 xSquared = xOffset * xOffset;
     float_4 ret = xSquared * float_4(1.f / 24.f);
-    float_4 correction = ret * xSquared *  float_4(.02 / .254);
+    float_4 correction = ret * xSquared *  float_4(float(.02 / .254));
     ret += float_4(-.5);
     ret *= xSquared;
     ret += float_4(1.f);
@@ -90,7 +90,7 @@ static void compare()
     double xErr = -100;
     for (double x = -pi; x<= pi; x += .01) {
         double s = std::sin(x);
-        float_4 d = simdSinPiToPi(x);
+        float_4 d = simdSinPiToPi(float(x));
        // float_4 d2 = simdSinTwoPi(x);
 
         double err = std::abs(s - d[0]);
@@ -109,7 +109,7 @@ static void compare3()
     double xErr = -100;
     for (double x = 0; x<= twoPi; x += .01) {
         double s = std::sin(x);
-        float_4 d = SimdBlocks::sinTwoPi(x);
+        float_4 d = SimdBlocks::sinTwoPi(float(x));
        // float_4 d2 = simdSinTwoPi(x);
 
         double err = std::abs(s - d[0]);
@@ -138,7 +138,7 @@ static void compareSecond()
     for (double x = 0; x<= twoPi; x += .2) {
         double s = std::sin(x);
       //  float_4 d = SimdBlocks::sinTwoPi(x);
-        float d = secondOrder(x);
+        float d = secondOrder(float(x));
         // printf("y = %f, approx = %f\n", s, d);
 
        // float_4 d2 = simdSinTwoPi(x);

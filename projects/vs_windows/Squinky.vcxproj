@@ -35,8 +35,11 @@
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiEventList.cpp" />
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiFile.cpp" />
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiMessage.cpp" />
+    <ClCompile Include="..\..\dsp\third-party\src\minblep.cpp" />
     <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
+    <ClCompile Include="..\..\dsp\utils\AutioMath_4.cpp" />
+    <ClCompile Include="..\..\dsp\utils\Cmprsr.cpp" />
     <ClCompile Include="..\..\dsp\utils\CompCurves.cpp" />
     <ClCompile Include="..\..\dsp\utils\ObjectCache.cpp" />
     <ClCompile Include="..\..\dsp\utils\SimpleQuantizer.cpp" />
@@ -79,9 +82,11 @@
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\perfTest.cpp" />
     <ClCompile Include="..\..\test\perfTest2.cpp" />
+    <ClCompile Include="..\..\test\simd_testBiquad.cpp" />
     <ClCompile Include="..\..\test\SqWaveFile.cpp" />
     <ClCompile Include="..\..\test\testAudioMath.cpp" />
     <ClCompile Include="..\..\test\testAudition.cpp" />
+    <ClCompile Include="..\..\test\testBasic.cpp" />
     <ClCompile Include="..\..\test\testBiquad.cpp" />
     <ClCompile Include="..\..\test\testButterLookup.cpp" />
     <ClCompile Include="..\..\test\testChaos.cpp" />
@@ -90,6 +95,7 @@
     <ClCompile Include="..\..\test\testColoredNoise.cpp" />
     <ClCompile Include="..\..\test\testCommChannels.cpp" />
     <ClCompile Include="..\..\test\testCompCurves.cpp" />
+    <ClCompile Include="..\..\test\testDC.cpp" />
     <ClCompile Include="..\..\test\testDelay.cpp" />
     <ClCompile Include="..\..\test\testDrumTrigger.cpp" />
     <ClCompile Include="..\..\test\testEditCommands4.cpp" />
@@ -97,6 +103,7 @@
     <ClCompile Include="..\..\test\testFFTCrossFader.cpp" />
     <ClCompile Include="..\..\test\testAnalyzer.cpp" />
     <ClCompile Include="..\..\test\testFilter.cpp" />
+    <ClCompile Include="..\..\test\testFilterComposite.cpp" />
     <ClCompile Include="..\..\test\testFilterDesign.cpp" />
     <ClCompile Include="..\..\test\testFilteredIterator.cpp" />
     <ClCompile Include="..\..\test\testFinalLeaks.cpp" />
@@ -127,12 +134,14 @@
     <ClCompile Include="..\..\test\testMix4.cpp" />
     <ClCompile Include="..\..\test\testMix8.cpp" />
     <ClCompile Include="..\..\test\testMixHelper.cpp" />
+    <ClCompile Include="..\..\test\testMultiLag2.cpp" />
     <ClCompile Include="..\..\test\testNewSongDataCommand.cpp" />
     <ClCompile Include="..\..\test\testNoteScreenScale.cpp" />
     <ClCompile Include="..\..\test\testObjectCache.cpp" />
     <ClCompile Include="..\..\test\testMidiPlayer4.cpp" />
     <ClCompile Include="..\..\test\testOnset.cpp" />
     <ClCompile Include="..\..\test\testOnset2.cpp" />
+    <ClCompile Include="..\..\test\testOscSmoother.cpp" />
     <ClCompile Include="..\..\test\testPoly.cpp" />
     <ClCompile Include="..\..\test\testRateConversion.cpp" />
     <ClCompile Include="..\..\test\testReplaceCommand.cpp" />
@@ -142,8 +151,11 @@
     <ClCompile Include="..\..\test\testSeqClock.cpp" />
     <ClCompile Include="..\..\test\testSeqComposite.cpp" />
     <ClCompile Include="..\..\test\testSeqComposite4.cpp" />
+    <ClCompile Include="..\..\test\testSimd.cpp" />
+    <ClCompile Include="..\..\test\testSimdLookup.cpp" />
     <ClCompile Include="..\..\test\testSimpleQuantizer.cpp" />
     <ClCompile Include="..\..\test\testSin.cpp" />
+    <ClCompile Include="..\..\test\testSines.cpp" />
     <ClCompile Include="..\..\test\testSinOscillator.cpp" />
     <ClCompile Include="..\..\test\testSlew4.cpp" />
     <ClCompile Include="..\..\test\testSpline.cpp" />
@@ -152,6 +164,7 @@
     <ClCompile Include="..\..\test\testStepRecordInput.cpp" />
     <ClCompile Include="..\..\test\testStereoMix.cpp" />
     <ClCompile Include="..\..\test\testStochasticGrammar.cpp" />
+    <ClCompile Include="..\..\test\testSub.cpp" />
     <ClCompile Include="..\..\test\testSuper.cpp" />
     <ClCompile Include="..\..\test\testTestSignal.cpp" />
     <ClCompile Include="..\..\test\testThread.cpp" />
@@ -163,6 +176,7 @@
     <ClCompile Include="..\..\test\testVCOAlias.cpp" />
     <ClCompile Include="..\..\test\testVec.cpp" />
     <ClCompile Include="..\..\test\testVocalAnimator.cpp" />
+    <ClCompile Include="..\..\test\testWVCO.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\composites\Blank.h" />
@@ -217,6 +231,8 @@
     <ClInclude Include="..\..\dsp\generators\MultiModOsc.h" />
     <ClInclude Include="..\..\dsp\generators\SawOscillator.h" />
     <ClInclude Include="..\..\dsp\generators\SinOscillator.h" />
+    <ClInclude Include="..\..\dsp\simd.h" />
+    <ClInclude Include="..\..\dsp\SimdBlocks.h" />
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h" />
     <ClInclude Include="..\..\dsp\third-party\kiss_fft130\kiss_fft.h" />
     <ClInclude Include="..\..\dsp\third-party\kiss_fft130\tools\kiss_fftr.h" />
@@ -387,7 +403,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\dsp;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -395,7 +411,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;..\..\..\..\libRack.a;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -420,7 +436,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\dsp;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -429,7 +445,7 @@
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>winmm.lib;..\..\..\..\libRack.a;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

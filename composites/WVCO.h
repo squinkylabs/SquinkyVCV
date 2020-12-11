@@ -74,7 +74,8 @@ float -> float_4 isn't free.
 #include <memory>
 #include <vector>
 
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
+#if 1
 #include "ADSR16.h"
 #include "WVCODsp.h"
 #include "LookupTable.h"
@@ -210,7 +211,9 @@ public:
     /**
      * Main processing entry point. Called every sample
      */
+#ifndef _MSC_VER
      __attribute__((flatten))
+#endif
     void step() override;
 
     static std::vector<std::string> getWaveformNames()
@@ -322,14 +325,14 @@ inline void WVCO<TBase>::stepm()
     basePitch += q;
     basePitch_m = float_4(basePitch);
 
-    depth_m = .3 * LookupTable<float>::lookup(
+    depth_m = .3f * LookupTable<float>::lookup(
                 *audioTaperLookupParams, 
                 TBase::params[FM_DEPTH_PARAM].value * .01f);
 
 
     freqMultiplier_m =  float_4(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
 
-    baseFmDepth_m = float_4(WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003);
+    baseFmDepth_m = float_4(WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003f);
     {
         Port& depthCVPort = WVCO<TBase>::inputs[LINEAR_FM_DEPTH_INPUT];
         fmDepthConnected_m = depthCVPort.isConnected();
@@ -399,17 +402,17 @@ inline void WVCO<TBase>::stepm()
 
     float k = 1;
     if (snap || snap2) {
-        k = .6;
+        k = .6f;
     }
      if (snap3 || (snap && snap2)) {
-        k = .3;
+        k = .3f;
     }
  
     adsr.setParams(
-        TBase::params[ATTACK_PARAM].value * .01,
-        TBase::params[DECAY_PARAM].value * .01,
-        TBase::params[SUSTAIN_PARAM].value * .01,
-        TBase::params[RELEASE_PARAM].value * .01,
+        TBase::params[ATTACK_PARAM].value * .01f,
+        TBase::params[DECAY_PARAM].value * .01f,
+        TBase::params[SUSTAIN_PARAM].value * .01f,
+        TBase::params[RELEASE_PARAM].value * .01f,
         k
     ) ;
 
@@ -471,7 +474,7 @@ inline void WVCO<TBase>::updateShapes_n()
             case WVCODsp::WaveForm::Sine:
                 break;
             case WVCODsp::WaveForm::Fold:
-                correctedWaveShapeMultiplier += float_4(.095);
+                correctedWaveShapeMultiplier += float_4(.095f);
                 correctedWaveShapeMultiplier *= 10;
                 break;
             case WVCODsp::WaveForm::SawTri:
@@ -490,7 +493,7 @@ inline void WVCO<TBase>::updateShapes_n()
         // could to this at 'n' rate, and only it triangle
         // now let's compute triangle params
         if (dsp[bank].waveform == WVCODsp::WaveForm::SawTri) {
-            const float_4 shapeGain = rack::simd::clamp(baseGain * envMult, .01, .99);
+            const float_4 shapeGain = rack::simd::clamp(baseGain * envMult, .01f, .99f);
             simd_assertLT(shapeGain, float_4(2));
             simd_assertGT(shapeGain, float_4(0));
 
@@ -513,8 +516,13 @@ inline void WVCO<TBase>::stepn_lowerRate()
     updateShapes_n();
 }
 
+#ifndef _MSC_VER
 template <class TBase>
 inline void  __attribute__((flatten)) WVCO<TBase>::stepn_fullRate()
+#else
+template <class TBase>
+inline void WVCO<TBase>::stepn_fullRate()
+#endif
 {
     assert(numBanks_m > 0);
 
@@ -545,7 +553,7 @@ inline void  __attribute__((flatten)) WVCO<TBase>::stepn_fullRate()
         }
         if (feedbackConnected_m) {
             Port& feedbackPort = WVCO<TBase>::inputs[FEEDBACK_INPUT];
-            feedbackAmount *= feedbackPort.getPolyVoltageSimd<float_4>(bank * 4) * float_4(.1);
+            feedbackAmount *= feedbackPort.getPolyVoltageSimd<float_4>(bank * 4) * float_4(.1f);
             feedbackAmount = rack::simd::clamp(feedbackAmount, float_4(0), float_4(1));
         }
         dsp[bank].feedback = feedbackAmount;
@@ -558,8 +566,14 @@ inline void  __attribute__((flatten)) WVCO<TBase>::stepn_fullRate()
     }
 }
 
+
+
 template <class TBase>
+#ifndef _MSC_VER
 inline void  __attribute__((flatten)) WVCO<TBase>::step()
+#else
+inline void WVCO<TBase>::step()
+#endif
 {
     // clock the sub-sample rate tasks
     divn.step();

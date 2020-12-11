@@ -1,9 +1,9 @@
 
 #include <assert.h>
 
-#ifndef _MSC_VER 
+
 #include "simd.h"
-#endif
+
 
 #include "AudioMath.h"
 #include "ButterworthFilterDesigner.h"
@@ -252,7 +252,7 @@ std::weak_ptr<LookupTableParams<T>> ObjectCache<T>::mixerPanR;
 template class ObjectCache<double>;
 template class ObjectCache<float>;
 
-#ifndef _MSC_VER 
-    // we don't want to do the entire object cache in simd, but we do need this:
-    template std::shared_ptr<BiquadParams<float_4, 3>>  ObjectCache<float_4>::get6PLPParams(float normalizedFc);
-#endif
+
+// we don't want to do the entire object cache in simd, but we do need this:
+template std::shared_ptr<BiquadParams<float_4, 3>>  ObjectCache<float_4>::get6PLPParams(float normalizedFc);
+

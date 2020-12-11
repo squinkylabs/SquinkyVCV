@@ -89,8 +89,9 @@ static void testClockRecoveryAlternatingPeriods()
 
 void testClockRecovery() 
 {
-    printf("skipping test clock recovery\n");
 #if 0
+    printf("skipping test clock recovery\n");
+#else
     testClockRecoveryInit();
     testClockRecoveryOnePeriod();
     testClockRecoveryTwoPeriods();

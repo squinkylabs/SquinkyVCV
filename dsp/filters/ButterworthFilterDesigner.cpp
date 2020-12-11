@@ -123,8 +123,9 @@ template class ButterworthFilterDesigner<double>;
 template class ButterworthFilterDesigner<float>;
 
 #if 1
-#include <simd/vector.hpp>
-#include <simd/functions.hpp>
+//#include <simd/vector.hpp>
+//#include <simd/functions.hpp>
+#include "simd.h"
 
 static void setVectorElementFromScalar(
     BiquadParams<rack::simd::float_4, 3>& dest,

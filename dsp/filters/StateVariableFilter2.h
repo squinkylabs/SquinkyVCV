@@ -297,13 +297,13 @@ public:
     T _qGain() const { return qGain; }
 private:
     T qGain = 1.;		// internal amp gains
-    T fcGain = T(.001);
+    T fcGain = T(.001f);
 };
 
 template<>
 inline void StateVariableFilterParams2<float>::setQ(float q)
 {
-    const float qLimit = .49;
+    const float qLimit = .49f;
     q = std::max(q, qLimit);
     qGain = 1 / q;
     //printf("q = %f, qg = %f\n", q, qGain);
@@ -312,7 +312,7 @@ inline void StateVariableFilterParams2<float>::setQ(float q)
 template<>
 inline void StateVariableFilterParams2<float_4>::setQ(float_4 q)
 {
-    const float_4 qLimit = .49;
+    const float_4 qLimit = .49f;
     q = SimdBlocks::max(q, qLimit);
     qGain = 1 / q;
 }
@@ -339,8 +339,8 @@ inline void StateVariableFilterParams2<float_4>::setFreq(float_4 fc)
 {
     // Note that we are skipping the high freq warping.
     // Going for speed over accuracy
-    fcGain = float_4(AudioMath::Pi) * float_4(2) * fc;
-    fcGain = SimdBlocks::min(fcGain, float_4(.79));
+    fcGain = float_4(float(AudioMath::Pi)) * float_4(2) * fc;
+    fcGain = SimdBlocks::min(fcGain, float_4(.79f));
 }
 
 template <typename T>

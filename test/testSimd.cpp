@@ -1,5 +1,6 @@
 
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
+#if 1
 
 #include "asserts.h"
 #include "SimdBlocks.h"
@@ -7,10 +8,10 @@
 static void testAsserts()
 {
     simd_assertEQ( float_4(1,2,3,4), float_4(1,2,3,4));
-    simd_assertGT( float_4(1.01,2.01,3.01,4.01), float_4(1,2,3,4));
-    simd_assertLT( float_4(1,2,3,4), float_4(1.01,2.01,3.01,4.01));
+    simd_assertGT( float_4(1.01f,2.01f,3.01f,4.01f), float_4(1,2,3,4));
+    simd_assertLT( float_4(1,2,3,4), float_4(1.01f,2.01f,3.01f,4.01f));
 
-    simd_assertBetween( float_4(1,2,3,4),  float_4(.9,1.9,2.9,3.9),  float_4(1.1,2.1,3.1,4.1));
+    simd_assertBetween( float_4(1,2,3,4),  float_4(.9f,1.9f,2.9f,3.9f),  float_4(1.1f,2.1f,3.1f,4.1f));
 }
 
 #if 0

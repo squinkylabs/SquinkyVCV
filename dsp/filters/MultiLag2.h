@@ -1,6 +1,7 @@
 #pragma once
 
-#ifndef _MSC_VER
+// #ifndef _MSC_VER
+#if 1
 #include "simd.h"
 #include "SimdBlocks.h"
 

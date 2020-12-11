@@ -1,9 +1,7 @@
 
+#include "simd.h"
 #include "MeasureTime.h"
-
 #include "asserts.h"
-
-
 
 double overheadInOut = 0;
 double overheadOutOnly = 0;

@@ -44,7 +44,7 @@ void FFTUtils::getStats2(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b,
     assert(a.size() == c.size());
     assert(!a.isPolar() && !b.isPolar() && !c.isPolar());
 
-    double biggestJump = 0;
+    // double biggestJump = 0;
     double magSum = 0;
     double magSumNot10 = 0;
     double weightedJumpSum = 0;
@@ -61,11 +61,11 @@ void FFTUtils::getStats2(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b,
         const double phasea = std::arg(an);
 
         std::complex<double> bn = b.get(bin);
-        const double magb = std::abs(bn);
+     //   const double magb = std::abs(bn);
         const double phaseb = std::arg(bn);
 
         std::complex<double> cn = c.get(bin);
-        const double magc = std::abs(cn);
+      //  const double magc = std::abs(cn);
         const double phasec = std::arg(cn);
 
         const double phaseDiff0 = PhaseAngleUtil::distance(phaseb, phasea, print);
@@ -99,7 +99,7 @@ void FFTUtils::getStats(Stats& stats, const FFTDataCpx& a, const FFTDataCpx& b, 
     assert(a.size() == c.size());
     assert(a.isPolar() && b.isPolar() && c.isPolar());
 
-    double biggestJump = 0;
+    // double biggestJump = 0;
     double magSum = 0;
     double weightedJumpSum = 0;
     

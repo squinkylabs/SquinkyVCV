@@ -343,7 +343,7 @@ float cf(float x, float fold_gain)
     return x;
 }
 
-float sq(float x)
+float sFuncq(float x)
 {
    
     return 5 * AudioMath::fold(x);
@@ -357,7 +357,7 @@ static void testCf()
     const float fold_gain = 1;
     for (float x = 0; x < 2; x += .05f) {
         const float c = cf(x, fold_gain);
-        const float s = sq(x);
+        const float s = sqFunc(x);
         printf("x=%.2f c=%.2f s=%.2f\n", x, c, s);
         assertClose(s, c, .01);
 

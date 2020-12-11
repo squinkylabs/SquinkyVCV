@@ -30,7 +30,8 @@
 #include "KSComposite.h"
 #include "Seq.h"
 
-#ifndef _MSC_VER
+//#ifndef _MSC_VER
+#if 1
 #include "WVCO.h"
 #include "Sub.h"
 #include "Sines.h"
@@ -155,9 +156,10 @@ std::shared_ptr<LookupTableParams<float>> makeSinTable()
 
 
 
-#ifndef _MSC_VER 
+// #ifndef _MSC_VER 
+#if 1
 
-static float pi =  3.141592653589793238;
+static float pi =  3.141592653589793238f;
 inline float_4 sine2(float_4 _x)
 {
     float_4 xneg = _x < float_4::zero();
@@ -172,7 +174,7 @@ inline float_4 sine2(float_4 _x)
 #endif
 
     float_4 ret = xSquared * float_4(1.f / 24.f);
-    float_4 correction = ret * xSquared *  float_4(.02 / .254);
+    float_4 correction = ret * xSquared *  float_4(float(.02 / .254));
     ret += float_4(-.5);
     ret *= xSquared;
     ret += float_4(1.f);
@@ -674,13 +676,14 @@ static void testBiquad()
         }, 1);
 }
 
-#ifndef _MSC_VER
-
+//#ifndef _MSC_VER
+#if 1
+ 
 static void simd_testBiquad()
 {
     BiquadParams<float_4, 3> params;
     BiquadState<float_4, 3> state;
-    ButterworthFilterDesigner<float_4>::designSixPoleLowpass(params, .1);
+    ButterworthFilterDesigner<float_4>::designSixPoleLowpass(params, .1f);
    
     MeasureTime<float>::run(overheadInOut, "6p LP x4 simd", [&state, &params]() {
         float_4 d = BiquadFilter<float_4>::run(TestBuffers<float>::get(), state, params);
@@ -730,7 +733,7 @@ static void testBasic(const std::string& name, Basic<TestComposite>::Waves wavef
         vco.process(args);
         if (dynamicCV) {
             toggle = !toggle;
-            float v = toggle ? 0 : 2.23;
+            float v = toggle ? 0 : 2.23f;
             vco.inputs[Basic<TestComposite>::VOCT_INPUT].setVoltage(v, 0);
         }
         return vco.outputs[Basic<TestComposite>::MAIN_OUTPUT].getVoltage(0);           

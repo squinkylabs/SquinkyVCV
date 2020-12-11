@@ -1,9 +1,12 @@
 
+// TODO: why does this need to come first? who is fogetting him?
+#include "SqMath.h"
 #include "tutil.h"
 #include "asserts.h"
 
 #include "Sub.h"
 #include "TestComposite.h"
+
 
 
 using Comp = Sub<TestComposite>;
@@ -412,7 +415,7 @@ static void testNormalize1()
     assertEQ(b, 1.0);
     assertEQ(c, 0);
 
-    a = .1;
+    a = .1f;
     b = 0;
     c = 0;
     Comp::normalizeVolume(a, b, c, d, e, f);
@@ -431,6 +434,7 @@ static void testNormalize1()
 
 void testSub()
 {
+#ifndef _MSC_VER
     testChannels();
     testSub1();
     testSub2();
@@ -451,4 +455,7 @@ void testSub()
 
     testSubLevel(false, 0, 1);
     testSubLevel(false, 1, 1);
+#else
+    printf("skipping testSub - need minBlep\n");
+#endif
 }

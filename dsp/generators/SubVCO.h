@@ -5,7 +5,8 @@
 
 #pragma once
 
-#ifndef _MSC_VER 
+// #ifndef _MSC_VER 
+#if 1
 #include "simd.h"
 #include "SimdBlocks.h"
 #include "dsp/minblep.hpp"
@@ -152,7 +153,7 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::setWaveform(T mainSaw, T s
 template <int OV, int Q, typename T, typename I>
 inline void VoltageControlledOscillator<OV, Q, T, I>::computeOffsetCorrection(float sampleTime)
 {
-	const float sawCorrect = 5.698 * sampleTime * -1;
+	const float sawCorrect = 5.698f * sampleTime * -1;
 	const T pwCorrect((pulseWidth * 2)- 1);
 	mainDCOffset = SimdBlocks::ifelse(mainIsSaw, sawCorrect * freq, pwCorrect );
 	subDCOffset[0] =  SimdBlocks::ifelse(subIsSaw, sawCorrect * subFreq[0], pwCorrect );
@@ -286,7 +287,7 @@ inline void VoltageControlledOscillator<OV, Q, T, I>::process(float deltaTime, T
 #if 1	// new, clean way
 						{
 							const float temp = mainPhase[channelNumber];
-							const float divisor = subDivisionAmount[subIndex][channelNumber];
+							const float divisor = float(subDivisionAmount[subIndex][channelNumber]);
 							const float newPhase = temp / divisor;
 							subPhase[subIndex][channelNumber] = newPhase;
 

@@ -46,7 +46,7 @@ static void testBasic2()
     double phase = -2.1;
     for (int i=0; phase <= 1.2; ++ i) {
         phase = -1 + i * delta;
-        testSub(s, .1);
+        testSub(s, .1f);
     }
 }
 
@@ -66,8 +66,12 @@ static void testBasic3()
 // this test might be superfluous...
 void testBasic()
 {
+#ifndef _MSC_VER 
     testBasic0();
     testBasic1();
     testBasic2();
     testBasic3();
+#else
+    printf("testBasic skipped for MS compiler: no minBlep\n");
+#endif
 }

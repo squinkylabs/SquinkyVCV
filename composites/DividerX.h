@@ -5,6 +5,9 @@
 #include <assert.h>
 #include <memory>
 #include "IComposite.h"
+#include "OscSmoother.h"
+
+#include "simd.h"
 
 namespace rack {
     namespace engine {
@@ -74,7 +77,8 @@ public:
 
     enum ParamIds
     {
-        TEST_PARAM,
+        MINBLEP_PARAM,
+        STABILIZER_PARAM,
         NUM_PARAMS
     };
 
@@ -88,6 +92,7 @@ public:
     {
         FIRST_OUTPUT,
         DEBUG_OUTPUT,
+        STABILIZER_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -113,7 +118,7 @@ private:
     T lastClockValue = 0;
     int counter = 0;
     bool state = false;
-    dsp::MinBlepGenerator<16, 16, T> minBlep;
+    rack::dsp::MinBlepGenerator<16, 16, T> minBlep;
 
     // debugging
     float timeSinceLastCrossing=0;
@@ -121,6 +126,8 @@ private:
     float minTime=1000000;
     int numCrossings=0;;
     float totalTime=0;
+
+    OscSmoother2<double> smoother;
 
  
 };
@@ -136,42 +143,43 @@ inline void DividerX<TBase>::process(const typename TBase::ProcessArgs& args)
 {
     timeSinceLastCrossing += args.sampleTime;
   
-
-    const T inputClock = TBase::inputs[MAIN_INPUT].getVoltage(0);
-    //inputClock = std::max(inputClock, -1.f);
-    //inputClock = std::min(inputClock, 1.f);
-
-    const T orig = lastClockValue;
-
-    T deltaClock = inputClock - lastClockValue;
+    const bool useBlep = TBase::params[MINBLEP_PARAM].value > .5;
+    const bool useStabilzer = TBase::params[STABILIZER_PARAM].value > .5f;
+    const T inputClockRaw = TBase::inputs[MAIN_INPUT].getVoltage(0);
+    const float stabilized = smoother.step(inputClockRaw);
+    const float inputToUse = useStabilzer ? stabilized : inputClockRaw;
+    
+    T deltaClock = inputToUse - lastClockValue;
 	T clockCrossing = -lastClockValue / deltaClock;
-    lastClockValue = inputClock;
+    lastClockValue = inputToUse;
 
-    float waveForm =  state ? 1 : -1;
-    bool newClock =  (0.f < clockCrossing) & (clockCrossing <= 1.f) & (inputClock >= 0.f);
+    float waveForm =  state ? 1.f : -1.f;
+    bool newClock =  (0.f < clockCrossing) & (clockCrossing <= 1.f) & (inputToUse >= 0.f);
     if (newClock) {
         float p = clockCrossing - 1.f;
-        float x = state ? 2 : -2;
+        float x = state ? 2.f : -2.f;
 
         if (--counter < 0) {
             counter = 0;
         //   counter = 3;
             state = !state;
             waveForm *= -1;
-          //  doBlep = true;
             minBlep.insertDiscontinuity(p, x);
         }       
     }
 
     float v = waveForm;
-    float blep = minBlep.process(); 
-    v -= blep;
- 
+    if (useBlep) {
+        float blep = minBlep.process(); 
+        v -= blep;
+    }
+    v *= 5;
 
     TBase::outputs[FIRST_OUTPUT].setVoltage(v, 0);
 
  //   TBase::outputs[DEBUG_OUTPUT].setVoltage(blep, 0);
     TBase::outputs[DEBUG_OUTPUT].setVoltage(state ? 1.f : -1.f, 0);
+    TBase::outputs[STABILIZER_OUTPUT].setVoltage(stabilized, 0);
 
 }
 
@@ -186,8 +194,11 @@ inline IComposite::Config DividerXDescription<TBase>::getParam(int i)
 {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case DividerX<TBase>::TEST_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Test"};
+        case DividerX<TBase>::MINBLEP_PARAM:
+            ret = {0, 1.0f, 1, "MinBLEP"};
+            break;
+          case DividerX<TBase>::STABILIZER_PARAM:
+            ret = {0, 1.0f, 0, "Stabliize"};
             break;
         default:
             assert(false);

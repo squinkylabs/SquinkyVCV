@@ -9,8 +9,10 @@
 #include "SqMath.h"
 #include "StateVariableFilter2.h"
 
-#include "dsp/common.hpp"
+//#include "dsp/common.hpp"
 #include <algorithm>
+
+// This file is out of date! The poly one is the one we use now
 #if 0
 
 #ifndef _CLAMP

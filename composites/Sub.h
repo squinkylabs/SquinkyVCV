@@ -1,7 +1,8 @@
 
 #pragma once
 
-#ifndef _MSC_VER 
+//#ifndef _MSC_VER 
+#if 1
 #include "asserts.h"
 #include "AudioMath.h"
 #include "Divider.h"
@@ -334,7 +335,7 @@ inline float Sub<TBase>::computeGain(float knobValue, SqInput& cv, int pairChann
 {
     float value = LookupTable<float>::lookup(audioTaper, knobValue * .01f);
     value *= cv.isConnected() ? cv.getPolyVoltage(pairChannel) : 10;
-    value *= .1;
+    value *= .1f;
 
     return value;
 }
@@ -638,9 +639,10 @@ inline void Sub<TBase>::step()
             subs1[0] * params0.subBGain +
             subs1[1] * params1.subBGain;
         
-        const float limit = 15;
-        assert(mixed0 < limit);
-        assert(mixed0 > -limit);
+
+        assert(mixed0 < 15);
+        assert(mixed0 > -15);
+
 
         mixed0 = std::clamp(mixed0, -10, 10);
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed0, channelPairNumber++);
@@ -656,8 +658,8 @@ inline void Sub<TBase>::step()
                 subs1[2] * params0.subBGain +
                 subs1[3] * params1.subBGain;
             
-            assert(mixed0 < limit);
-            assert(mixed0 > -limit);
+            assert(mixed0 < 15);
+            assert(mixed0 > -15);
             std::clamp(mixed0, -10, 10);
             Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed0, channelPairNumber++);
         }
