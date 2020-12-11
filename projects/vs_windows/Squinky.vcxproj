@@ -35,6 +35,7 @@
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiEventList.cpp" />
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiFile.cpp" />
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiMessage.cpp" />
+    <ClCompile Include="..\..\dsp\third-party\pugixml\pugixml.cpp" />
     <ClCompile Include="..\..\dsp\third-party\src\minblep.cpp" />
     <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
@@ -177,6 +178,7 @@
     <ClCompile Include="..\..\test\testVec.cpp" />
     <ClCompile Include="..\..\test\testVocalAnimator.cpp" />
     <ClCompile Include="..\..\test\testWVCO.cpp" />
+    <ClCompile Include="..\..\test\testx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\composites\Blank.h" />
@@ -241,6 +243,8 @@
     <ClInclude Include="..\..\dsp\third-party\midifile\MidiEventList.h" />
     <ClInclude Include="..\..\dsp\third-party\midifile\MidiFile.h" />
     <ClInclude Include="..\..\dsp\third-party\midifile\MidiMessage.h" />
+    <ClInclude Include="..\..\dsp\third-party\pugixml\pugiconfig.hpp" />
+    <ClInclude Include="..\..\dsp\third-party\pugixml\pugixml.hpp" />
     <ClInclude Include="..\..\dsp\third-party\src\FunVCO.h" />
     <ClInclude Include="..\..\dsp\third-party\src\FunVCO3.h" />
     <ClInclude Include="..\..\dsp\third-party\src\SQMath.h" />
@@ -326,6 +330,9 @@
     <ClInclude Include="..\..\test\TimeStatsCollector.h" />
     <ClInclude Include="..\..\util\FilteredIterator.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\test\testx.cpp()" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{5DAF445F-56A2-5B5C-EB47-1D24590CF72A}</ProjectGuid>
@@ -403,7 +410,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\dsp;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dsp\third-party\pugixml;..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\dsp;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -436,7 +443,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\dsp;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dsp\third-party\pugixml;..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\dsp;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>

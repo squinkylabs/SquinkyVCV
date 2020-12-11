@@ -75,22 +75,17 @@ static void testSimpleSine()
 template <class T>
 static void generateFractionalPeriods(T& smoother, float period, int times)
 {
-    printf("----------- generateFractionalPeriods (%f)\n", period);
-  //  smoother._primeForTest(-.0001f);
-
     // we want the first click to happen really close to the first sample
     smoother._primeForTest(-5);
 
     const float freq = 1.f / period;
     SimpleSine osc(freq, .00001f);
     const int totalSamples = 2 +  int(times * period);
-    printf("times=%d total=%d\n", times, totalSamples);
     for (int i = 0; i < totalSamples; ++i) {
         float x = osc.step();
         smoother.step(x);
     }   
 }
-
 
 template <class T>
 static void testOscSmootherInit()
@@ -110,7 +105,6 @@ static void testOscSmootherCanLock()
 template <class T>
 static void testOscSmootherPeriod(int div)
 {
-    printf("\n---- testOscSmootherPeriod %d\n", div);
     const float expectedPhaseInc = 1.f / float(div);
     T o;
     generateNPeriods(o, div, 20);
@@ -139,8 +133,6 @@ public:
 template <class T>
 static void testOscFractionalPeriod(const TestParams& params)
 {
-    printf("\n----------- testOscFractionalPeriod (%f)\n", params.period);
-    printf("  test cycles = %d smoother period = %d\n", params.cycles, params.periodOfSmoother);
     const float expectedPhaseInc = 1.f / params.period;
     T o (params.periodOfSmoother);
     generateFractionalPeriods(o, params.period, params.cycles);
@@ -153,7 +145,6 @@ static void testOscFractionalPeriod(const TestParams& params)
 template <class T>
 static void testOscFractionalPeriod()
 {
-
     TestParams p2;
     p2.cycles = 1;
     p2.periodOfSmoother = 1;
@@ -169,15 +160,12 @@ static void testOscFractionalPeriod()
                                 // so increase the tolerance
     testOscFractionalPeriod<T>(p2);
 
-
     TestParams p;
     p.period = 4.5;
     p.cycles = 10;
     p.periodOfSmoother = 2;
     testOscFractionalPeriod<T>(p);
 
-
-  //  TestParams p;
     p.period = 4.5;
     p.cycles = 20;
     p.periodOfSmoother = 16;
@@ -236,7 +224,6 @@ static void testChangeFreq()
     o.step(-5);
     o.step(5);
 
-
     assertClose(o._getPhaseInc(), 1.f / 17.f, .001f);
 }
 
@@ -248,7 +235,7 @@ static void testOutput()
     T o;
     generateNPeriods(o, div, 20);
 
-  
+
     bool first = true;
     float maxv = -10;
     float minv = 10;
@@ -441,8 +428,6 @@ static void testRisingEdgeFractional_Ratio(float ratio)
     s = det.step(highVoltage);
     assert(s.first);
 
-   // printf("ratio = %f, hi=%f lo=%f\n", ratio, highVoltage, lowVoltage);
-  //  printf("frac = %f\n", s.second);
     assertClose(s.second, expectedSubsample, .0001);
 }
 
@@ -484,8 +469,6 @@ void testOscSmoother()
     testRisingEdgeFractional_Far();
     testRisingEdgeFractional_Ratio();
     testRisingEdgeFractional_HighFreq();
-
-
     testOscSmootherT<OscSmoother<double>>();
     testOscSmootherT<OscSmoother2<double>>();
 #endif

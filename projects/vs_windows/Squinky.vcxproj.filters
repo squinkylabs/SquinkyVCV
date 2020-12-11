@@ -139,6 +139,12 @@
     <Filter Include="Source Files\sqsrc\util">
       <UniqueIdentifier>{8cd94f6b-5889-4eee-a9fe-49432b5a171f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\dsp\third-party\pugixml">
+      <UniqueIdentifier>{7573ade3-6b63-4b11-a7dd-3d8424e0cd5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\dsp\third-party\pugixml">
+      <UniqueIdentifier>{2a9ebd66-c0b0-4217-9705-dd4e6da37f72}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -615,6 +621,12 @@
     <ClCompile Include="..\..\test\testOscSmoother.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testx.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\pugixml\pugixml.cpp">
+      <Filter>Source Files\dsp\third-party\pugixml</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -1055,5 +1067,16 @@
     <ClInclude Include="..\..\dsp\SimdBlocks.h">
       <Filter>Header Files\dsp</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\pugixml\pugiconfig.hpp">
+      <Filter>Header Files\dsp\third-party\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\third-party\pugixml\pugixml.hpp">
+      <Filter>Header Files\dsp\third-party\pugixml</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\test\testx.cpp()">
+      <Filter>Source Files\test</Filter>
+    </None>
   </ItemGroup>
 </Project>

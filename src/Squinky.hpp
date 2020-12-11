@@ -27,9 +27,9 @@
 //#define _CHAOS
 //#define _DG
 
-// #define _DIVR
-// #define _F2
-#define _F4
+#define _DIVR
+#define _F2
+//#define _F4
 
 
 //#define _BLANKMODULE
