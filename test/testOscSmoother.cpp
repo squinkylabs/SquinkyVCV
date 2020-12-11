@@ -486,9 +486,9 @@ void testOscSmoother()
     testRisingEdgeFractional_HighFreq();
 
 
-    testOscSmootherT<OscSmoother>();
-    testOscSmootherT<OscSmoother2>();
+    testOscSmootherT<OscSmoother<double>>();
+    testOscSmootherT<OscSmoother2<double>>();
 #endif
 
-    testOscFractionalPeriod<OscSmoother2>();
+    testOscFractionalPeriod<OscSmoother2<double>>();
 }

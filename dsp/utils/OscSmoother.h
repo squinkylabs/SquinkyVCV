@@ -9,25 +9,55 @@
 #include <stdio.h>
 
 // #define _OSL
+#define _FULL_RESET
 
 // can this move to SqMath?
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
+
+    template <typename T>
+    inline T clamp(T v, T lo, T hi)
+    {
+        assert(lo < hi);
+        return std::min<T>(hi, std::max<T>(v, lo));
+    }
+#if 0
     inline float clamp(float v, float lo, float hi)
     {
         assert(lo < hi);
         return std::min(hi, std::max(v, lo));
     }
+
+    inline double clamp(double v, double lo, double hi)
+    {
+        assert(lo < hi);
+        return std::min(hi, std::max(v, lo));
+    }
+#endif
 }
 #endif
 
+template <typename T>
+inline T clamp_t(T v, T lo, T hi)
+{
+    assert(lo < hi);
+    return std::min<T>(hi, std::max<T>(v, lo));
+}
+
 // super simple  vco
+template <typename T>
 class Svco2
 {
 public:
-    void setPitch(float pitch) {
-        delta = std::clamp(pitch, 0.f, .5f);
+    void setPitch(T pitch) {
+        delta = std::clamp<T>(pitch, 0.f, .5f);
+    }
+    void reset(T normalizedPitch, T normalizedPhase) {
+        //printf("reset(%f, %f), current = %f, %f)\n", normalizedPitch, normalizedPhase, delta, acc);
+       // printf("vco reset delta phase = %f delta f = %f\n", (normalizedPhase - acc), (normalizedPitch - delta)) ;
+        acc = normalizedPhase;
+        delta = clamp_t<T>(normalizedPitch, T(0), T(.5));
     }
     float process() {
         acc += delta;
@@ -37,9 +67,9 @@ public:
         // we don't use sin - this is a waste.
         return (float) std::sin( acc * AudioMath::Pi * 2);
     }
-    float getFrequency() const { return delta;  }
-    float getTriangle() const {
-        float x;
+    T getFrequency() const { return delta;  }
+    T getTriangle() const {
+        T x;
         //printf("add = %f delta=%f", acc, delta);
         if (acc < .25f) {
             x = acc * 2;
@@ -54,8 +84,8 @@ public:
     }
 
 private:
-    float acc = 0;
-    float delta = 0;
+    T acc = 0;
+    T delta = 0;
 };
 
 /**
@@ -159,40 +189,46 @@ RisingEdgeDetectorFractional::step(float input)
  * 
  * 
  */
+
+template <typename T>
 class OscSmoother
 {
 public:
     OscSmoother();
     float step(float input);
     bool isLocked() const;
-    float _getPhaseInc() const;
+    T _getPhaseInc() const;
     void _primeForTest(float first) {}
 private:
     int cycleInCurrentGroup = 0;
     bool locked = false;
-    Svco2 vco;
+    Svco2<T> vco;
     RisingEdgeDetector edgeDetector;
 
     int periodsSinceReset = 0;
     int samplesSinceReset = 0;
 };
 
-inline OscSmoother::OscSmoother()
+template <typename T>
+inline OscSmoother<T>::OscSmoother()
 {
 }
 
-inline bool OscSmoother::isLocked() const {
+template <typename T>
+inline bool OscSmoother<T>::isLocked() const {
     return locked;
 }
 
-inline float OscSmoother::_getPhaseInc() const 
+template <typename T>
+inline T OscSmoother<T>::_getPhaseInc() const
 {
    // return 1.f / 6.f;
    return vco.getFrequency();
 }
 
  #define PERIOD_CYCLES_DEF 16
-inline float OscSmoother::step(float input) {
+template <typename T>
+inline float OscSmoother<T>::step(float input) {
     // run the edge detector, look for low to high edge
     bool edge = edgeDetector.step(input);
 
@@ -222,7 +258,7 @@ inline float OscSmoother::step(float input) {
         samplesSinceReset = 0;
     } 
     vco.process();
-    return 10 * vco.getTriangle();
+    return float(10 * vco.getTriangle());
 }
 
 /**
@@ -230,6 +266,7 @@ inline float OscSmoother::step(float input) {
  * 
  * 
  */
+template <typename T>
 class OscSmoother2
 {
 public:
@@ -237,12 +274,12 @@ public:
     OscSmoother2(int periodCycles) : smootherPeriodCycles(periodCycles) {}
     float step(float input);
     bool isLocked() const;
-    float _getPhaseInc() const;
+    T _getPhaseInc() const;
     void _primeForTest(float last);
 private:
     int cycleInCurrentGroup = 0;
     bool locked = false;
-    Svco2 vco;
+    Svco2<T> vco;
     RisingEdgeDetectorFractional edgeDetector;
 
     /**
@@ -253,7 +290,7 @@ private:
 
     /**
      */
-    float fractionalSamplesSinceReset = 0;
+    T fractionalSamplesSinceReset = 0;
     int integerSamplesSinceReset = 0;
 
     const int smootherPeriodCycles;
@@ -263,21 +300,25 @@ private:
     bool isFirstClock = true;
 };
 
-inline void OscSmoother2::_primeForTest(float last)
+template <typename T>
+inline void OscSmoother2<T>::_primeForTest(float last)
 {
     edgeDetector._primeForTest(last);
 }
 
-inline bool OscSmoother2::isLocked() const {
+template <typename T>
+inline bool OscSmoother2<T>::isLocked() const {
     return locked;
 }
 
-inline float OscSmoother2::_getPhaseInc() const 
+template <typename T>
+inline T OscSmoother2<T>::_getPhaseInc() const
 {
    return vco.getFrequency();
 }
 
-inline float OscSmoother2::step(float input) {
+template <typename T>
+inline float OscSmoother2<T>::step(float input) {
 #ifdef _OSL
     printf("\nstep(%f)\n", input);
 #endif
@@ -314,8 +355,8 @@ inline float OscSmoother2::step(float input) {
 #endif
 
         // add one to make sample count come out right
-        const float fullPeriodSampled = 1 + integerSamplesSinceReset + fractionalSamplesSinceReset - phaseLag;
-        const float samplesPerCycle = fullPeriodSampled / float(smootherPeriodCycles);
+        const T fullPeriodSampled = 1 + integerSamplesSinceReset + fractionalSamplesSinceReset - phaseLag;
+        const T samplesPerCycle = fullPeriodSampled / T(smootherPeriodCycles);
        // const float samplesPerCycle = float(samplesSinceReset -1) / float(PERIOD_CYCLES);
 
 #ifdef _OSL
@@ -326,8 +367,13 @@ inline float OscSmoother2::step(float input) {
 
         // experiment - let's try constant
         //  const float newPhaseInc = 1.0f /  40.f;
-        const float newPhaseInc = 1.0f / samplesPerCycle;
+        const T newPhaseInc = 1.0 / samplesPerCycle;
+
+#ifdef _FULL_RESET
+        vco.reset(newPhaseInc, phaseLag * newPhaseInc);
+#else
         vco.setPitch(newPhaseInc);
+#endif
 
         fractionalSamplesSinceReset = phaseLag;
         integerSamplesSinceReset = 0;
@@ -339,5 +385,5 @@ inline float OscSmoother2::step(float input) {
 #endif
     }
     vco.process();
-    return 10 * vco.getTriangle();
+    return float(10 * vco.getTriangle());
 }

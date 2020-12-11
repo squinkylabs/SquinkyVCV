@@ -26,8 +26,11 @@
 #define _USERKB
 //#define _CHAOS
 //#define _DG
-#define _F2
+
+// #define _DIVR
+// #define _F2
 #define _F4
+
 
 //#define _BLANKMODULE
 
@@ -145,6 +148,8 @@ extern Model *modelSubModule;
 extern Model *modelSinesModule;
 #endif
 extern Model *modelBasicModule;
+#ifdef  _DIVR
 extern Model *modelDividerXModule;
+#endif
 
 

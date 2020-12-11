@@ -127,7 +127,7 @@ private:
     int numCrossings=0;;
     float totalTime=0;
 
-    OscSmoother2 smoother;
+    OscSmoother2<double> smoother;
 
  
 };
