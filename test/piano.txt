@@ -1,0 +1,167 @@
+//+ Name: Upright piano KW (small)
+//+ Date: 2019-07-03
+//+ URL: http://freepats.zenvoid.org/Piano/acoustic-grand-piano.html#UprightKW
+
+<global>
+ //+ Instrument: Upright piano KW
+ ampeg_release=0.6
+
+<group>
+ loop_mode=loop_continuous
+<region>
+ lokey=21
+ hikey=26
+ pitch_keycenter=24
+ loop_start=306378
+ loop_end=424657
+ sample=samples/C1vH.wav
+<region>
+ lokey=27
+ hikey=32
+ pitch_keycenter=30
+ loop_start=240705
+ loop_end=351556
+ sample=samples/F#1vH.wav
+<region>
+ lokey=33
+ hikey=36
+ pitch_keycenter=35
+ loop_start=256475
+ loop_end=366932
+ sample=samples/B1vH.wav
+<region>
+ lokey=37
+ hikey=40
+ pitch_keycenter=39
+ loop_start=288169
+ loop_end=398441
+ sample=samples/D#2vH.wav
+<region>
+ lokey=41
+ hikey=44
+ pitch_keycenter=42
+ loop_start=250236
+ loop_end=393511
+ sample=samples/F#2vH.wav
+<region>
+ lokey=45
+ hikey=48
+ pitch_keycenter=47
+ loop_start=238940
+ loop_end=341297
+ sample=samples/B2vH.wav
+<region>
+ lokey=49
+ hikey=52
+ pitch_keycenter=51
+ loop_start=162986
+ loop_end=240314
+ sample=samples/D#3vH.wav
+<region>
+ lokey=53
+ hikey=55
+ pitch_keycenter=54
+ loop_start=194343
+ loop_end=265634
+ sample=samples/F#3vH.wav
+<region>
+ lokey=56
+ hikey=58
+ pitch_keycenter=57
+ loop_start=120679
+ loop_end=186801
+ sample=samples/A3vH.wav
+<region>
+ lokey=59
+ hikey=61
+ pitch_keycenter=60
+ loop_start=145927
+ loop_end=213379
+ sample=samples/C4vH.wav
+<region>
+ lokey=62
+ hikey=64
+ pitch_keycenter=63
+ loop_start=151896
+ loop_end=217597
+ sample=samples/D#4vH.wav
+<region>
+ lokey=65
+ hikey=67
+ pitch_keycenter=66
+ loop_start=138527
+ loop_end=185330
+ sample=samples/F#4vH.wav
+
+<group>
+ loop_mode=no_loop
+<region>
+ lokey=68
+ hikey=70
+ pitch_keycenter=69
+ sample=samples/A4vH.wav
+<region>
+ lokey=71
+ hikey=73
+ pitch_keycenter=72
+ sample=samples/C5vH.wav
+<region>
+ lokey=74
+ hikey=76
+ pitch_keycenter=75
+ sample=samples/D#5vH.wav
+<region>
+ lokey=77
+ hikey=79
+ pitch_keycenter=78
+ sample=samples/F#5vH.wav
+<region>
+ lokey=80
+ hikey=82
+ pitch_keycenter=81
+ sample=samples/A5vH.wav
+<region>
+ lokey=83
+ hikey=85
+ pitch_keycenter=84
+ sample=samples/C6vH.wav
+<region>
+ lokey=86
+ hikey=88
+ pitch_keycenter=87
+ sample=samples/D#6vH.wav
+<region>
+ lokey=89
+ hikey=91
+ pitch_keycenter=90
+ sample=samples/F#6vH.wav
+<region>
+ lokey=92
+ hikey=94
+ pitch_keycenter=93
+ sample=samples/A6vH.wav
+<region>
+ lokey=95
+ hikey=97
+ pitch_keycenter=96
+ sample=samples/C7vH.wav
+<region>
+ lokey=98
+ hikey=100
+ pitch_keycenter=99
+ sample=samples/D#7vH.wav
+<region>
+ lokey=101
+ hikey=103
+ pitch_keycenter=102
+ sample=samples/F#7vH.wav
+<region>
+ lokey=104
+ hikey=105
+ pitch_keycenter=105
+ sample=samples/A7vH.wav
+<region>
+ lokey=106
+ hikey=108
+ pitch_keycenter=107
+ sample=samples/B7vH.wav

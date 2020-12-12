@@ -145,6 +145,12 @@
     <Filter Include="Source Files\dsp\third-party\pugixml">
       <UniqueIdentifier>{2a9ebd66-c0b0-4217-9705-dd4e6da37f72}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\dsp\samp">
+      <UniqueIdentifier>{1419667e-a14e-4d18-bcdb-6cfcac686f3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\dsp\samp">
+      <UniqueIdentifier>{1a158232-c412-421c-81fa-99a58e1e5370}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -627,6 +633,9 @@
     <ClCompile Include="..\..\dsp\third-party\pugixml\pugixml.cpp">
       <Filter>Source Files\dsp\third-party\pugixml</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dsp\samp\SLex.cpp">
+      <Filter>Source Files\dsp\samp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -1072,6 +1081,9 @@
     </ClInclude>
     <ClInclude Include="..\..\dsp\third-party\pugixml\pugixml.hpp">
       <Filter>Header Files\dsp\third-party\pugixml</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\dsp\samp\SLex.h">
+      <Filter>Header Files\dsp\samp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
