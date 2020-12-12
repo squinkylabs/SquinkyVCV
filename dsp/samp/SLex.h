@@ -53,10 +53,11 @@ private:
     bool procNextChar(char c);
     bool procFreshChar(char c);
     bool procNextTagChar(char c);
+    bool procNextCommentChar(char c);
     bool procEnd();
     bool proxNextIdentifierChar(char c);
 
-
+    bool inComment = false;
     bool inTag = false;
     bool inIdentifier = false;
     std::string curItem;

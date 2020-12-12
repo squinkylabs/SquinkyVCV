@@ -57,6 +57,28 @@ static void testx4()
     assertEQ(pid->idName, "abc");
 }
 
+static void testLexComment()
+{
+    SLexPtr lex = SLex::go("// comment\n<global>");
+    assert(lex);
+    assertEQ(lex->items.size(), 1);
+    assert(lex->items[0]->itemType == SLexItem::Type::Tag);
+    SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
+    assertEQ(pTag->tagName, "global")
+}
+
+
+static void testLexComment2()
+{
+    SLexPtr lex = SLex::go("// comment\n//comment\n\n<global>\n\n");
+    assert(lex);
+    assertEQ(lex->items.size(), 1);
+    assert(lex->items[0]->itemType == SLexItem::Type::Tag);
+    SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
+    assertEQ(pTag->tagName, "global")
+}
+
+
 static void testparse1()
 {
     auto inst = SParse::go("random-text");
@@ -70,14 +92,41 @@ static void testparse2()
     assert(inst);
 }
 
+static void testParseGlobal()
+{
+    auto inst = SParse::go("<global>");
+    assert(inst);
+}
+
+static void testParseComment()
+{
+     auto inst = SParse::go("// comment\n<global>");
+    assert(inst);
+}
+
+static void testparse_piano1()
+{
+    const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
+    printf("p=%s\n", p);
+ auto inst = SParse::goFile(p);
+    assert(inst);
+}
+
 void testx()
 {
+    #if 1
     testx0();
     testx1();
     testx2();
     testx3();
     testx4();
+    testLexComment();
+    testLexComment2();
 
     testparse1();
     testparse2();
+    testParseGlobal();
+    testParseComment();
+    #endif
+    testparse_piano1();
 }
