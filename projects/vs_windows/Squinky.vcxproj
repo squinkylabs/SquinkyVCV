@@ -28,6 +28,7 @@
     <ClCompile Include="..\..\dsp\filters\FormantTables2.cpp" />
     <ClCompile Include="..\..\dsp\filters\HilbertFilterDesigner.cpp" />
     <ClCompile Include="..\..\dsp\samp\SLex.cpp" />
+    <ClCompile Include="..\..\dsp\samp\SParse.cpp" />
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp" />
     <ClCompile Include="..\..\dsp\third-party\kiss_fft130\kiss_fft.c" />
     <ClCompile Include="..\..\dsp\third-party\kiss_fft130\tools\kiss_fftr.c" />

@@ -14,10 +14,7 @@ public:
         Equal
     };
     SLexItem(Type t) : itemType(t) {}
-
-
     const Type itemType;
-
 };
 
 class SLexTag : public SLexItem {
@@ -45,6 +42,12 @@ class SLex
 public: 
     static SLexPtr go(const std::string& s);
     std::vector<SLexItemPtr> items;
+    SLexItemPtr next() {
+        return currentIndex < items.size() ? items[currentIndex] : nullptr;
+    }
+    void consume() {
+        currentIndex++;
+    }
 private:
     // return true if no error
     bool procNextChar(char c);
@@ -57,6 +60,8 @@ private:
     bool inTag = false;
     bool inIdentifier = false;
     std::string curItem;
+
+    int currentIndex = 0;
 
    
 };

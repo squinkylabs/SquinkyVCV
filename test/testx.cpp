@@ -2,6 +2,7 @@
 
 #include "pugixml.hpp"
 #include "SLex.h"
+#include "SParse.h"
 
 #include "asserts.h"
 
@@ -56,6 +57,19 @@ static void testx4()
     assertEQ(pid->idName, "abc");
 }
 
+static void testparse1()
+{
+    auto inst = SParse::go("random-text");
+    assert(!inst);
+}
+
+static void testparse2()
+{
+    printf("start testprse2\n");
+    auto inst = SParse::go("<region>pitch_keycenter=24");
+    assert(inst);
+}
+
 void testx()
 {
     testx0();
@@ -63,4 +77,7 @@ void testx()
     testx2();
     testx3();
     testx4();
+
+    testparse1();
+    testparse2();
 }
