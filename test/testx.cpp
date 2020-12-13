@@ -277,7 +277,7 @@ static void testparse_piano1()
 
 void testx()
 {
-    #if 1
+
     testx0();
     testx1();
     testx2();
@@ -301,7 +301,7 @@ void testx()
     testParseGlobalAndRegion();
     testParseComment();
     testParseGroups();
-    #endif
+ 
     testParseGlobalWithData();
     testParseTwoGroupsA();
     testParseTwoGroupsB();

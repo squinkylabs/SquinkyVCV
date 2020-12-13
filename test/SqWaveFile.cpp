@@ -1,8 +1,9 @@
 
 #include "SqWaveFile.h"
 
-#define DR_WAV_IMPLEMENTATION
+//#define DR_WAV_IMPLEMENTATION
 #include "dr_wav.h"
+#include <assert.h>
 
 const char* wave_path = "C:\\Users\\bruce\\Documents\\VCV\\samples\\multi-note.wav";
 
@@ -27,7 +28,8 @@ bool SqWaveFile::load(const std::string& path)
 
     if (retValue) {
         data.resize(wav.totalPCMFrameCount);
-        drwav_read_pcm_frames_f32__pcm(&wav, wav.totalPCMFrameCount, data.data());
+        assert(false);  // fix this
+        //drwav_read_pcm_frames_f32__pcm(&wav, wav.totalPCMFrameCount, data.data());
     }
 
     drwav_uninit(&wav);
