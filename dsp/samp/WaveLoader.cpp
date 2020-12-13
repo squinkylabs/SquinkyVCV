@@ -51,9 +51,6 @@ void WaveLoader::load(const std::string& fileName) {
    
     wi->load();
     info.push_back(wi);
-    printf("after push, there are %d entries\n", int(info.size())); fflush(stdout);
-
-
 }
 
 void WaveLoader::clear()
@@ -62,7 +59,7 @@ void WaveLoader::clear()
 }
 
 WaveLoader::WaveInfoPtr WaveLoader::getInfo(int index) const {
-    assert(index < info.size());
+    assert(index < int(info.size()));
     return info[index];
 
 }
@@ -85,7 +82,6 @@ void WaveLoader::WaveInfo::load() {
 
 WaveLoader::WaveInfo::~WaveInfo() {
     if (data) {
-        //fprintf(stderr, "leaking memory, please fix\n");
           drwav_free(data, nullptr);
           data = nullptr;
     }

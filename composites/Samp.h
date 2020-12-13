@@ -1,9 +1,13 @@
 
 #pragma once
 
+#include "Sampler4vx.h"
+
 #include <assert.h>
 #include <memory>
 #include "IComposite.h"
+
+
 
 namespace rack {
     namespace engine {
@@ -49,11 +53,15 @@ public:
 
     enum InputIds
     {
+        PITCH_INPUT,
+        VELOCITY_INPUT,
+        GATE_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds
     {
+        AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
@@ -76,6 +84,8 @@ public:
     void process(const typename TBase::ProcessArgs& args) override;
 
 private:
+
+    Sampler4xv playback[4];         // 16 voices of polyphony
 
 };
 
