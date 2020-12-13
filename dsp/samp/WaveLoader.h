@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -19,10 +20,11 @@ public:
         uint64_t totalFrameCount = 0;
         const std::string fileName;
     };
+    using WaveInfoPtr = std::shared_ptr<WaveInfo>;
 
     void load(const std::string& fileName);
-    const WaveInfo& getInfo(int index) const;
+    WaveInfoPtr getInfo(int index) const;
 private:
-    std::vector<WaveInfo> info;
+    std::vector<WaveInfoPtr> info;
     void clear();
 };

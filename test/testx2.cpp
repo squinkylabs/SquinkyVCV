@@ -8,7 +8,7 @@ static void testWaveLoader0()
     w.load("fake file name");
     auto x = w.getInfo(0);
     printf("foo\n");
-    assert(!x.valid);
+    assert(!x->valid);
 }
 
 static void testWaveLoader1()
@@ -17,12 +17,12 @@ static void testWaveLoader1()
     w.load("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav");
     auto x = w.getInfo(0);
     printf("foo\n");
-    assert(x.valid);
+    assert(x->valid);
 }
 
 void testx2()
 {
-    testWaveLoader0();
+  //  testWaveLoader0();
     testWaveLoader1();
-    assert(false);
+
 }
