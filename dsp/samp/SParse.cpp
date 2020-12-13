@@ -40,42 +40,54 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
     if (!sError.empty()) {
         return sError;
     }
-    sError = matchGroups(inst->groups, lex);
+    sError = matchGroupsOrRegions(inst->groups, lex);
     if (!sError.empty()) {
         return sError;
     }
     if (lex->next() != nullptr) {
-        sError = "extra tokens";
+        printf("extra tok index %d\n", lex->_index());
+        return "extra tokens";
+    }
+    if (inst->groups.empty()) {
+        return "no groups or regions";
     }
     return sError;
 }
 
-
 // try to make a list of groups. If not possible,
 // make a dummy group and put the regions inside
-std::string SParse::matchGroups(SGroupList& groups, SLexPtr lex) {
+std::string SParse::matchGroupsOrRegions(SGroupList& groups, SLexPtr lex) {
     auto token = lex->next();
-    if (getTagName(token) == "group") {
-        lex->consume();
-        SGroupPtr group = std::make_shared<SGroup>();
-        std::string error = matchKeyValuePairs(group->values, lex);
-        if (!error.empty()) {
-            return error;
-        }
-        //error = matchRegions(group->regions, lex);
-        token = lex->next();
+    if (!token) {
+        return "";          // nothing left to match
     }
     if (getTagName(token) == "region") {
-        // OK, the first thing is a region. To let's put it in a group, and continue
+          // OK, the first thing is a region. To let's put it in a group, and continue
         SGroupPtr fakeGroup = std::make_shared<SGroup>();
         groups.push_back(fakeGroup);
-        auto x = matchRegions(fakeGroup->regions, lex);
-        
-
-        return x;
+        auto resultString = matchRegions(fakeGroup->regions, lex);
+        if (!resultString.empty()) {
+            return resultString;
+        }
+        // now continue on adding more groups, if present
+        return matchGroups(groups, lex);
     }
-    // down here must be random garbage?
-    return "no groups or regions";
+    if (getTagName(token) == "group") {
+         return matchGroups(groups, lex);
+    }
+   
+    return "";
+}
+
+std::string SParse::matchGroups(SGroupList& groups, SLexPtr lex) {
+     for (bool done = false; !done; ) {
+        auto result = matchGroup(groups, lex);
+        if (result.res == Result::error) {
+            return result.errorMessage;
+        }
+        done = result.res == Result::no_match;
+    }
+    return "";
 }
 
 std::string SParse::matchRegions(SRegionList& regions, SLexPtr lex) {
@@ -86,8 +98,38 @@ std::string SParse::matchRegions(SRegionList& regions, SLexPtr lex) {
         }
         done = result.res == Result::no_match;
     }
-
     return "";
+}
+
+SParse::Result SParse::matchGroup(SGroupList& groups, SLexPtr lex) {
+    Result result;
+    auto tok = lex->next();
+    if (!tok || (getTagName(tok) != "group")) {
+        result.res = Result::Res::no_match;
+        return result;
+    }
+
+    // consume the <group> tag
+    lex->consume();
+
+    // make a new group to hold this one, and put it into the groups
+    SGroupPtr newGroup = std::make_shared<SGroup>();
+    groups.push_back(newGroup);
+
+    // add all the key-values that belong to the group
+    std::string s = matchKeyValuePairs(newGroup->values, lex);
+   
+    if (!s.empty()) {
+        result.res = Result::Res::error;
+        result.errorMessage = s;
+    }
+
+    std::string regionsError = matchRegions(newGroup->regions, lex);
+    if (!regionsError.empty()) {
+        result.res = Result::Res::error;
+        result.errorMessage = regionsError;
+    }
+    return result;
 }
 
 SParse::Result SParse::matchRegion(SRegionList& regions, SLexPtr lex) {
@@ -98,7 +140,7 @@ SParse::Result SParse::matchRegion(SRegionList& regions, SLexPtr lex) {
         return result;
     }
 
-    // cosume the <region> tag
+    // consume the <region> tag
     lex->consume();
 
     // make a new region to hold this one, and put it into the group

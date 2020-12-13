@@ -32,8 +32,6 @@ static void testx2()
     assert(lex);
     assertEQ(lex->items.size(), 1);
     assert(lex->items[0]->itemType == SLexItem::Type::Equal);
-    //SLexTag* ptag = static_cast<SLexTag*>(lex->items[0].get());
-   // assertEQ(ptag->tagName, "global");
 }
 
 
@@ -102,7 +100,6 @@ static void testLexComment2()
 static void testLexGlobalWithData()
 {
     printf("testParseGlobalWithData\n");
- //   SInstrumentPtr inst = std::make_shared<SInstrument>();
     SLexPtr lex = SLex::go("<global>ampeg_release=0.6<region>");
 
     assertEQ(lex->items.size(), 5);
@@ -114,7 +111,6 @@ static void testLexGlobalWithData()
 static void testLexTwoRegions()
 {
     printf("testLexTwoRegions\n");
-   // SInstrumentPtr inst = std::make_shared<SInstrument>();
     SLexPtr lex = SLex::go("<region><region>");
 
     assertEQ(lex->items.size(), 2);
@@ -127,7 +123,6 @@ static void testLexTwoRegions()
 static void testLexTwoKeys()
 {
     printf("testLexTwoRegionsValues\n");
- //   SInstrumentPtr inst = std::make_shared<SInstrument>();
     SLexPtr lex = SLex::go("a=b\nc=d");
     lex->_dump();
 
@@ -140,7 +135,6 @@ static void testLexTwoKeys()
 static void testLexTwoRegionsWithKeys()
 {
     printf("testLexTwoRegionsValues\n");
-  //  SInstrumentPtr inst = std::make_shared<SInstrument>();
     SLexPtr lex = SLex::go("<region>a=b\nc=d<region>q=w\ne=r");
     lex->_dump();
 
@@ -160,14 +154,26 @@ static void testLexMangledId()
 static void testLex4()
 {
     printf("\ntestLex5s\n");
-  //  SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto lex = SLex::go("<group><region><region><group><region.");
     assert(!lex);
 }
 
+static void testLex5()
+{
+    printf("\ntestLex5\n");
+    auto lex = SLex::go("\n<group>");
+    if (lex) {
+        lex->_dump();
+    }
+    assert(lex);
+}
+
+
+
 static void testparse1()
 {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
+
     auto err = SParse::go("random-text", inst);
     assert(!err.empty());
 }
@@ -274,6 +280,7 @@ void testx()
     testLexTwoRegionsWithKeys();
     testLexMangledId();
     testLex4();
+    testLex5();
 
 
     testparse1();

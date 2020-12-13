@@ -79,6 +79,9 @@ private:
     static std::string matchRegions(SRegionList&, SLexPtr);
     static Result matchRegion(SRegionList&, SLexPtr);
     static std::string matchGroups(SGroupList& , SLexPtr lex);
+     static Result matchGroup(SGroupList&, SLexPtr);
+    static std::string matchGroupsOrRegions(SGroupList& , SLexPtr lex);
+
     static std::string matchKeyValuePairs(SKeyValueList&, SLexPtr);
     static Result matchKeyValuePair(SKeyValueList&, SLexPtr);
 

@@ -13,27 +13,63 @@ SLexPtr SLex::go(const std::string& s)
         }
     }
     bool ret = result->procEnd();
+    if (ret) {
+        result->validate();
+    }
     return ret ? result : nullptr;;
 }
 
-void SLex::_dump() {
-    printf("dump lexer, there are %d tokens\n", (int)items.size());
+void SLex::validateName(const std::string& name) {
+      for (char const &c: name) {
+          assert(!isspace(c));
+      }
+}
+
+void SLex::validate() const {
     for (auto item : items) {
+        switch(item->itemType) {
+            case SLexItem::Type::Tag:
+            {
+                SLexTag* tag = static_cast<SLexTag*>(item.get());
+                validateName(tag->tagName);
+            }
+                break;
+            case SLexItem::Type::Identifier:
+            {
+                SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
+                validateName(id->idName);
+            }
+                break;
+            case SLexItem::Type::Equal:
+                break;
+            default:
+                assert(false);
+        }
+    }
+}
+        
+
+void SLex::_dump() const {
+    printf("dump lexer, there are %d tokens\n", (int)items.size());
+    for (int i = 0; i < items.size(); ++i) {
+   // for (auto item : items) {
+        auto item = items[i];
+        printf("tok[%d] ", i);
         switch(item->itemType) {
         case SLexItem::Type::Tag:
                 {
                     SLexTag* tag = static_cast<SLexTag*>(item.get());
-                    printf("item is tag: %s\n", tag->tagName.c_str());
+                    printf("tag=%s\n", tag->tagName.c_str());
                 }
                 break;
             case SLexItem::Type::Identifier:
                 {
                     SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
-                    printf("item is id: %s\n", id->idName.c_str());
+                    printf("id=%s\n", id->idName.c_str());
                 }
                 break;
             case SLexItem::Type::Equal:
-                printf("Item is =\n");
+                printf("Equal\n");
                 break;
             default:
                 assert(false);
@@ -88,6 +124,7 @@ bool SLex::procFreshChar(char c) {
 }
 
 bool SLex::procNextTagChar(char c) {
+   // printf("nextteag=%c\n", c);
     if (isspace(c)) {
         return false;       // can't have white space in the middle of a tag
     }
