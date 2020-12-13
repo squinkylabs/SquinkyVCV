@@ -20,6 +20,7 @@ static void testx1()
 {
     SLexPtr lex = SLex::go("<global>");
     assert(lex);
+    lex->validate();
     assertEQ(lex->items.size(), 1);
     assert(lex->items[0]->itemType == SLexItem::Type::Tag);
     SLexTag* ptag = static_cast<SLexTag *>(lex->items[0].get());
@@ -30,6 +31,7 @@ static void testx2()
 {
     SLexPtr lex = SLex::go("=");
     assert(lex);
+    lex->validate();
     assertEQ(lex->items.size(), 1);
     assert(lex->items[0]->itemType == SLexItem::Type::Equal);
 }
@@ -39,6 +41,7 @@ static void testx3()
 {
     SLexPtr lex = SLex::go("qrst");
     assert(lex);
+    lex->validate();
     assertEQ(lex->items.size(), 1);
     assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
     SLexIdentifier* pid = static_cast<SLexIdentifier *>(lex->items[0].get());
@@ -49,6 +52,7 @@ static void testxKVP()
 {
     SLexPtr lex = SLex::go("abc=def");
     assert(lex);
+    lex->validate();
     assertEQ(lex->items.size(), 3);
     assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
     SLexIdentifier* pid = static_cast<SLexIdentifier *>(lex->items[0].get());
@@ -66,6 +70,7 @@ static void testxKVP2()
 {
     SLexPtr lex = SLex::go("ampeg_release=0.6");
     assert(lex);
+    lex->validate();
     assertEQ(lex->items.size(), 3);
     assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
     SLexIdentifier* pid = static_cast<SLexIdentifier*>(lex->items[0].get());
@@ -80,6 +85,7 @@ static void testLexComment()
 {
     SLexPtr lex = SLex::go("// comment\n<global>");
     assert(lex);
+    lex->validate();
     assertEQ(lex->items.size(), 1);
     assert(lex->items[0]->itemType == SLexItem::Type::Tag);
     SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
@@ -91,6 +97,7 @@ static void testLexComment2()
 {
     SLexPtr lex = SLex::go("// comment\n//comment\n\n<global>\n\n");
     assert(lex);
+    lex->validate();
     assertEQ(lex->items.size(), 1);
     assert(lex->items[0]->itemType == SLexItem::Type::Tag);
     SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
@@ -101,7 +108,8 @@ static void testLexGlobalWithData()
 {
     printf("testParseGlobalWithData\n");
     SLexPtr lex = SLex::go("<global>ampeg_release=0.6<region>");
-
+    assert(lex);
+    lex->validate();
     assertEQ(lex->items.size(), 5);
     assert(lex->items.back()->itemType == SLexItem::Type::Tag);
     SLexTag* tag = static_cast<SLexTag*>(lex->items.back().get());
@@ -112,6 +120,8 @@ static void testLexTwoRegions()
 {
     printf("testLexTwoRegions\n");
     SLexPtr lex = SLex::go("<region><region>");
+    assert(lex);
+    lex->validate();
 
     assertEQ(lex->items.size(), 2);
     assert(lex->items.back()->itemType == SLexItem::Type::Tag);
@@ -124,7 +134,9 @@ static void testLexTwoKeys()
 {
     printf("testLexTwoRegionsValues\n");
     SLexPtr lex = SLex::go("a=b\nc=d");
-    lex->_dump();
+    assert(lex);
+    lex->validate();
+    //lex->_dump();
 
     assertEQ(lex->items.size(), 6);
     assert(lex->items.back()->itemType == SLexItem::Type::Identifier);
@@ -136,7 +148,9 @@ static void testLexTwoRegionsWithKeys()
 {
     printf("testLexTwoRegionsValues\n");
     SLexPtr lex = SLex::go("<region>a=b\nc=d<region>q=w\ne=r");
-    lex->_dump();
+    assert(lex);
+    lex->validate();
+    //lex->_dump();
 
     assertEQ(lex->items.size(), 14);
     assert(lex->items.back()->itemType == SLexItem::Type::Identifier);
@@ -147,7 +161,7 @@ static void testLexTwoRegionsWithKeys()
 static void testLexMangledId()
 {
     SLexPtr lex = SLex::go("<abd\ndef>");
-    if (lex) lex->_dump();
+   // if (lex) lex->_dump();
     assert(!lex);
 }
 
@@ -162,13 +176,11 @@ static void testLex5()
 {
     printf("\ntestLex5\n");
     auto lex = SLex::go("\n<group>");
-    if (lex) {
-        lex->_dump();
-    }
     assert(lex);
+    lex->validate();
+    SLexTag* tag = static_cast<SLexTag*>(lex->items.back().get());
+    assertEQ(tag->tagName, "group");
 }
-
-
 
 static void testparse1()
 {

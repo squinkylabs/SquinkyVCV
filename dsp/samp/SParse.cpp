@@ -34,7 +34,7 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
         printf("lexer failed\n");
         return "";
     }
-    lex->_dump();
+    // lex->_dump();
 
     std::string sError = matchGlobal(inst->global, lex);
     if (!sError.empty()) {

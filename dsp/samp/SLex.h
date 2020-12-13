@@ -47,12 +47,13 @@ public:
     }
     void consume() {
         currentIndex++;
-        printf("after lex::consume, index = %d\n", currentIndex);
+        // printf("after lex::consume, index = %d\n", currentIndex);
     }
     void _dump() const;
     int _index() const {
         return currentIndex;
     }
+    void validate() const;
 private:
     // return true if no error
     bool procNextChar(char c);
@@ -69,7 +70,7 @@ private:
 
     int currentIndex = 0;
 
-    void validate() const;
+    
     static void validateName(const std::string& );
 
    

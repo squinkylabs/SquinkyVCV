@@ -13,9 +13,6 @@ SLexPtr SLex::go(const std::string& s)
         }
     }
     bool ret = result->procEnd();
-    if (ret) {
-        result->validate();
-    }
     return ret ? result : nullptr;;
 }
 
@@ -48,7 +45,6 @@ void SLex::validate() const {
     }
 }
         
-
 void SLex::_dump() const {
     printf("dump lexer, there are %d tokens\n", (int)items.size());
     for (int i = 0; i < items.size(); ++i) {
@@ -120,6 +116,8 @@ bool SLex::procFreshChar(char c) {
     inIdentifier = true;
     curItem.clear();
     curItem += c;
+    //printf("119, curItem = %s\n", curItem.c_str());
+    validateName(curItem);
     return true;
 }
 
@@ -129,10 +127,11 @@ bool SLex::procNextTagChar(char c) {
         return false;       // can't have white space in the middle of a tag
     }
     if (c == '<') {
-        printf("nested tag\n");
+       // printf("nested tag\n");
         return false;
     }
     if (c == '>') {
+        validateName(curItem);
         items.push_back(std::make_shared<SLexTag>(curItem));
         curItem.clear();
         inTag = false;
@@ -140,25 +139,27 @@ bool SLex::procNextTagChar(char c) {
     }
 
     curItem += c;           // do we care about line feeds?
+   // printf("141, curItem = %s\n", curItem.c_str());
+    validateName(curItem);
     return true;
 }
 
 bool SLex::procEnd() {
     if (inIdentifier) {
+        validateName(curItem);
         items.push_back(std::make_shared<SLexIdentifier>(curItem));
         curItem.clear();
         return true;
     }
 
     if (inTag) {
-        printf("final tag unterminated\n");
+        //printf("final tag unterminated\n");
         return false;
     }
 
     return true;
 }
 bool SLex::proxNextIdentifierChar(char c) {
-
     // terminate identifier on these, but proc them
     if (c == '<' || c == '<' || c == '=') {
         items.push_back(std::make_shared<SLexIdentifier>(curItem));
@@ -166,11 +167,17 @@ bool SLex::proxNextIdentifierChar(char c) {
         inIdentifier = false;
         return procFreshChar(c);
     }
+
+    // terminate on these, but don't prox
     if (c == 10 || c == 13) {
         items.push_back(std::make_shared<SLexIdentifier>(curItem));
         curItem.clear();
         inIdentifier = false;
+        return true;
     }
+    assert(inIdentifier);
     curItem += c;
+    //printf("175, curItem = %s\n", curItem.c_str());
+    validateName(curItem);
     return true;
 }
