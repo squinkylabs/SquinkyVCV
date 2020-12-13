@@ -85,7 +85,9 @@ public:
 
 private:
 
-    Sampler4xv playback[4];         // 16 voices of polyphony
+    Sampler4vx playback[4];         // 16 voices of polyphony
+
+    bool lastGate[16];
 
 };
 
@@ -93,11 +95,21 @@ private:
 template <class TBase>
 inline void Samp<TBase>::init()
 {
+    for (int i = 0; i<16; ++i) {
+        lastGate[i] = false;
+    }
 }
 
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args)
 {
+    // mono, for now
+    bool gate = TBase::inputs[GATE_INPUT].value > 1;
+    if (gate != lastGate[0]) {
+
+    }
+    auto output = playback[0].step();
+    TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, 0);
 }
 
 template <class TBase>

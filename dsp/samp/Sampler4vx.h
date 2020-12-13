@@ -2,7 +2,7 @@
 
 #include "SimdBlocks.h"
 
-class Sampler4xv
+class Sampler4vx
 {
 public:
     void note_on(int channel, int midiPitch, int midiVoltage);
