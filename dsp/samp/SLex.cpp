@@ -16,6 +16,31 @@ SLexPtr SLex::go(const std::string& s)
     return ret ? result : nullptr;;
 }
 
+void SLex::_dump() {
+    printf("dump lexer, there are %d tokens\n", (int)items.size());
+    for (auto item : items) {
+        switch(item->itemType) {
+        case SLexItem::Type::Tag:
+                {
+                    SLexTag* tag = static_cast<SLexTag*>(item.get());
+                    printf("item is tag: %s\n", tag->tagName.c_str());
+                }
+                break;
+            case SLexItem::Type::Identifier:
+                {
+                    SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
+                    printf("item is id: %s\n", id->idName.c_str());
+                }
+                break;
+            case SLexItem::Type::Equal:
+                printf("Item is =\n");
+                break;
+            default:
+                assert(false);
+        }
+    }
+}
+
 bool SLex::procNextChar(char c) {
     if (!inTag && !inIdentifier && !inComment) {
         return procFreshChar(c);

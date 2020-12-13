@@ -11,9 +11,33 @@ public:
     std::string value;
 };
 using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>; 
+using SKeyValueList = std::vector<SKeyValuePairPtr>;
+
+class SRegion {
+public:
+    SKeyValueList values;
+};
+using SRegionPtr = std::shared_ptr<SRegion>; 
+using SRegionList = std::vector<SRegionPtr>;
+
+// Groups have a list of values
+// and they usually have children.
+class SGroup {
+public:
+   SRegionList regions;
+};
+using SGroupPtr = std::shared_ptr<SRegion>; 
+using SGroupList = std::vector<SRegionPtr>;
+
+// Eventually we will need more complex top level objects
+class SGlobal {
+public:
+    SKeyValueList values;
+};
 
 
 // lists are made up or groups and regions
+#if 0
 class SRegionOrGroupInstrument {
 public:
     std::vector<SKeyValuePair>  values;
@@ -21,6 +45,7 @@ public:
 
 using SRegionOrGroupInstrumentPtr = std::shared_ptr<SRegionOrGroupInstrument>;
 using SListOfThings = std::vector<SRegionOrGroupInstrumentPtr>;
+
 
 
 // groups are things that can be in lists,
@@ -35,45 +60,60 @@ public:
 // they have a list of vaules
 class SRegionInstrument : public SRegionOrGroupInstrument {
 };
-
+#endif
 
 // An entire instrument.
-class SDataInstrument {
+class SInstrument {
 public:
-    using ListOfThings = std::vector<SRegionOrGroupInstrumentPtr>;
+    SGlobal global;
 
-  //  SGroupInstrument global;
-    ListOfThings topLevelThings;
-    ListOfThings regionList;
+    // Even if there are no groups, we make a dummy one so that data is nicer.
+    SGroupList groups;
+
 };
-using SDataInstrumentPtr = std::shared_ptr<SDataInstrument>;
+using SInstrumentPtr = std::shared_ptr<SInstrument>;
+
 
 
 class SLex;
+class SLexItem;
 using SLexPtr = std::shared_ptr<SLex>;
+using SLexItemPtr = std::shared_ptr<SLexItem>;
 
 class SParse
 {
 public:
-    static SDataInstrumentPtr go(const std::string& s);
-    static SDataInstrumentPtr goFile(const std::string& sPath);
+
+  // static SInstrumentPtr go(const std::string& s);
+  //  static SInstrumentPtr goFile(const std::string& sPath);
+  static std::string go(const std::string& s, SInstrumentPtr);
+  static std::string goFile(const std::string& s, SInstrumentPtr);
 
 private:
+
+    class Result {
+    public:
+       
+        std::string errorMessage;
+        enum Res {
+            ok,                 // matched
+            no_match,           // finished matching
+            error
+        };
+        Res res = Res::ok;
+    };
+
+    static std::string matchGlobal(SGlobal&, SLexPtr);
+    static std::string matchKeyValuePairs(SKeyValueList&, SLexPtr);
+    static Result matchKeyValuePair(SKeyValueList&, SLexPtr);
+
+    // return empty if it's not a tag
+    static std::string getTagName(SLexItemPtr);
+#if 0
     static SDataInstrumentPtr matchStart(SLexPtr);
     // must be called with next item is a tag
     static SDataInstrumentPtr finishMatchStart(SLexPtr);
 
-    #if 0   // TODO
-
-    static SDataInstrumentPtr parseGlobal(SDataInstrumentPtr, SLexPtr);
-
-  //  static SDataInstrumentPtr matchRegions(SDataInstrumentPtr, SLexPtr);
-
-    // Reads all the regions and puts them in destination.
-    matchRegions(SDataInstrument::ListOfThings destination, SLexPtr lex);
-    // return 0 = got one, 1 = all done, 2 = error
-    static int matchRegion(SDataInstrumentPtr, SLexPtr);
-#endif 
 
     static bool isLegalTopLevelGlobalName(const std::string& name);
     static bool isLegalRegionListName(const std::string& name);
@@ -81,6 +121,6 @@ private:
     static SDataInstrumentPtr matchRegionListItems(SDataInstrumentPtr inst, SLexPtr lex);
     static SKeyValuePairPtr matchKeyValuePair(SLexPtr lex);
 
-
+#endif
 
 };

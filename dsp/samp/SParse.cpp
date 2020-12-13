@@ -7,7 +7,7 @@
 #include <fstream>
 #include <streambuf>
 
-SDataInstrumentPtr SParse::goFile(const std::string& sPath) {
+std::string SParse::goFile(const std::string& sPath, SInstrumentPtr inst) {
     
     FILE* fp = nullptr;
      fopen_s(&fp, sPath.c_str(), "r");
@@ -24,18 +24,101 @@ SDataInstrumentPtr SParse::goFile(const std::string& sPath) {
     if (str.empty()) {
         return nullptr;
     }
-    return go(str);
+    return go(str, inst);
 }
 
-SDataInstrumentPtr SParse::go(const std::string& s) {
+std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
 
     SLexPtr lex = SLex::go(s);
     if (!lex) {
         printf("lexer failed\n");
         return nullptr;
     }
-    return matchStart(lex);
+    lex->_dump();
+
+   std::string sError = matchGlobal(inst->global, lex);
+   if (!sError.empty()) {
+       return sError;
+   }
+   return "";
 }
+
+std::string SParse::matchGlobal(SGlobal& g, SLexPtr lex) {
+    auto token = lex->next();
+    std::string sError;
+    if (getTagName(token) == "global") {
+        lex->consume();
+        sError = matchKeyValuePairs(g.values, lex);
+    }
+  
+    return sError;
+}
+
+std::string SParse::matchKeyValuePairs(SKeyValueList& values, SLexPtr lex) {
+    for (bool done=false; !done; ) {
+        auto result = matchKeyValuePair(values, lex);
+        if (result.res == Result::error) {
+            return result.errorMessage;
+        }
+        done = result.res == Result::no_match;
+    }
+    
+    return "";
+}
+
+SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
+    auto keyToken = lex->next();
+    Result result;
+
+    // if all done, or no more pairs, then leave
+    if (!keyToken || (keyToken->itemType != SLexItem::Type::Identifier)) {
+        result.res = Result::no_match;
+        return result;
+    }
+    /*
+    if (keyToken->itemType != SLexItem::Type::Identifier) {
+        result.errorMessage ="key in kvp not id";
+        result.res = Result::error;
+        return result;
+    }
+    */
+    SLexIdentifier* pid =  static_cast<SLexIdentifier *>(keyToken.get());
+    SKeyValuePairPtr thePair = std::make_shared<SKeyValuePair>();
+    thePair->key = pid->idName;
+    lex->consume();
+
+    keyToken = lex->next();
+    if (keyToken->itemType != SLexItem::Type::Equal) {
+        result.errorMessage = "= in kvp missing =";
+        result.res = Result::error;
+        return result;
+    }
+    lex->consume();
+
+    keyToken = lex->next();
+    if (keyToken->itemType != SLexItem::Type::Identifier) {
+        result.errorMessage = "value in kvp not id";
+        result.res = Result::error;
+        return result;
+    }
+    lex->consume();
+    pid =  static_cast<SLexIdentifier *>(keyToken.get());
+    thePair->value = pid->idName;
+
+    values.push_back(thePair);
+    return result;
+}
+
+
+std::string SParse::getTagName(SLexItemPtr item) {
+    if (item->itemType != SLexItem::Type::Tag) {
+        return "";
+    }
+    SLexTag* tag = static_cast<SLexTag *>(item.get());
+    return tag->tagName;
+}
+
+#if 0 // old stuff, version 2
 
 SDataInstrumentPtr SParse::matchStart(SLexPtr lex) {
     auto nextToken = lex->next();
@@ -93,23 +176,6 @@ SDataInstrumentPtr SParse::finishMatchStart(SLexPtr lex) {
         }
 
         assert(theInstrument);
-#if 0
-        if (tag->tagName == "global") {
-            lex->consume();
-            theInstrument = parseGlobal(theInstrument, lex);
-        } else if (tag->tagName == "group") {
-            assert(false);
-        } else if (tag->tagName == "region") {
-            readingGlobals = false;
-        } else {
-            assert(false);
-        }     
-        
-        if (!theInstrument) {
-            return nullptr;
-        }
-#endif
-
     }
     return theInstrument;
 }
@@ -172,8 +238,9 @@ SKeyValuePairPtr SParse::matchKeyValuePair(SLexPtr lex) {
 
     return thePair;
 }
+#endif
 
-#if 0
+#if 0   // OLD stuff, version 1
 SDataInstrumentPtr SParse::matchStart(SLexPtr lex) {
     auto nextToken = lex->next();
 

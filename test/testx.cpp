@@ -47,7 +47,7 @@ static void testx3()
     assertEQ(pid->idName, "qrst");
 }
 
-static void testx4()
+static void testxKVP()
 {
     SLexPtr lex = SLex::go("abc=def");
     assert(lex);
@@ -55,6 +55,27 @@ static void testx4()
     assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
     SLexIdentifier* pid = static_cast<SLexIdentifier *>(lex->items[0].get());
     assertEQ(pid->idName, "abc");
+
+    assert(lex->items[1]->itemType == SLexItem::Type::Equal);
+
+    assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
+    pid = static_cast<SLexIdentifier*>(lex->items[2].get());
+    assertEQ(pid->idName, "def");
+}
+
+
+static void testxKVP2()
+{
+    SLexPtr lex = SLex::go("ampeg_release=0.6");
+    assert(lex);
+    assertEQ(lex->items.size(), 3);
+    assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
+    SLexIdentifier* pid = static_cast<SLexIdentifier*>(lex->items[0].get());
+    assertEQ(pid->idName, "ampeg_release");
+
+    assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
+    pid = static_cast<SLexIdentifier*>(lex->items[2].get());
+    assertEQ(pid->idName, "0.6");
 }
 
 static void testLexComment()
@@ -81,35 +102,48 @@ static void testLexComment2()
 
 static void testparse1()
 {
-    auto inst = SParse::go("random-text");
-    assert(!inst);
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("random-text", inst);
+    assert(err.empty());
 }
 
 static void testparse2()
 {
     printf("start testprse2\n");
-    auto inst = SParse::go("<region>pitch_keycenter=24");
-    assert(inst);
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<region>pitch_keycenter=24", inst);
+    assert(err.empty());;
 }
 
 static void testParseGlobal()
 {
-    auto inst = SParse::go("<global>");
-    assert(inst);
+    printf("start test parse global\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<global>", inst);
+    assert(err.empty());
 }
 
 static void testParseComment()
 {
-     auto inst = SParse::go("// comment\n<global>");
-    assert(inst);
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("// comment\n<global>", inst);
+    assert(err.empty());
+}
+
+static void testParseGlobalWithData()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<global>ampeg_release=0.6", inst);
+    assert(err.empty());
 }
 
 static void testparse_piano1()
 {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
     printf("p=%s\n", p);
- auto inst = SParse::goFile(p);
-    assert(inst);
+    auto err = SParse::goFile(p, inst);
+    assert(err.empty());
 }
 
 void testx()
@@ -119,7 +153,8 @@ void testx()
     testx1();
     testx2();
     testx3();
-    testx4();
+    testxKVP();
+    testxKVP2();
     testLexComment();
     testLexComment2();
 
@@ -128,5 +163,6 @@ void testx()
     testParseGlobal();
     testParseComment();
     #endif
+    testParseGlobalWithData();
     testparse_piano1();
 }

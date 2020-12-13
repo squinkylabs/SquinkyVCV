@@ -48,6 +48,7 @@ public:
     void consume() {
         currentIndex++;
     }
+    void _dump();
 private:
     // return true if no error
     bool procNextChar(char c);
