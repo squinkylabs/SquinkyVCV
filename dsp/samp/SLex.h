@@ -47,6 +47,7 @@ public:
     }
     void consume() {
         currentIndex++;
+        printf("after lex::consume, index = %d\n", currentIndex);
     }
     void _dump();
 private:

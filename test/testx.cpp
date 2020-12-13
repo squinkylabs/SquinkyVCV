@@ -99,20 +99,94 @@ static void testLexComment2()
     assertEQ(pTag->tagName, "global")
 }
 
+static void testLexGlobalWithData()
+{
+    printf("testParseGlobalWithData\n");
+ //   SInstrumentPtr inst = std::make_shared<SInstrument>();
+    SLexPtr lex = SLex::go("<global>ampeg_release=0.6<region>");
+
+    assertEQ(lex->items.size(), 5);
+    assert(lex->items.back()->itemType == SLexItem::Type::Tag);
+    SLexTag* tag = static_cast<SLexTag*>(lex->items.back().get());
+    assertEQ(tag->tagName, "region");
+}
+
+static void testLexTwoRegions()
+{
+    printf("testLexTwoRegions\n");
+   // SInstrumentPtr inst = std::make_shared<SInstrument>();
+    SLexPtr lex = SLex::go("<region><region>");
+
+    assertEQ(lex->items.size(), 2);
+    assert(lex->items.back()->itemType == SLexItem::Type::Tag);
+    SLexTag* tag = static_cast<SLexTag*>(lex->items.back().get());
+    assertEQ(tag->tagName, "region");
+}
+
+
+static void testLexTwoKeys()
+{
+    printf("testLexTwoRegionsValues\n");
+ //   SInstrumentPtr inst = std::make_shared<SInstrument>();
+    SLexPtr lex = SLex::go("a=b\nc=d");
+    lex->_dump();
+
+    assertEQ(lex->items.size(), 6);
+    assert(lex->items.back()->itemType == SLexItem::Type::Identifier);
+    SLexIdentifier* id = static_cast<SLexIdentifier*>(lex->items.back().get());
+    assertEQ(id->idName, "d");
+}
+
+static void testLexTwoRegionsWithKeys()
+{
+    printf("testLexTwoRegionsValues\n");
+  //  SInstrumentPtr inst = std::make_shared<SInstrument>();
+    SLexPtr lex = SLex::go("<region>a=b\nc=d<region>q=w\ne=r");
+    lex->_dump();
+
+    assertEQ(lex->items.size(), 14);
+    assert(lex->items.back()->itemType == SLexItem::Type::Identifier);
+    SLexIdentifier* id = static_cast<SLexIdentifier*>(lex->items.back().get());
+    assertEQ(id->idName, "r");
+}
+
+static void testLexMangledId()
+{
+    SLexPtr lex = SLex::go("<abd\ndef>");
+    if (lex) lex->_dump();
+    assert(!lex);
+}
+
+static void testLex4()
+{
+    printf("\ntestLex5s\n");
+  //  SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto lex = SLex::go("<group><region><region><group><region.");
+    assert(!lex);
+}
 
 static void testparse1()
 {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("random-text", inst);
-    assert(err.empty());
+    assert(!err.empty());
 }
 
 static void testparse2()
 {
-    printf("start testprse2\n");
+    printf("\nstart testprse2\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>pitch_keycenter=24", inst);
     assert(err.empty());;
+    assertEQ(inst->groups.size(), 1);
+    SGroupPtr group = inst->groups[0];
+    assert(group->values.empty());
+    assertEQ(group->regions.size(), 1);
+    SRegionPtr region = group->regions[0];
+    assertEQ(region->values.size(), 1);
+    SKeyValuePairPtr kv = region->values[0];
+    assertEQ(kv->key, "pitch_keycenter");
+    assertEQ(kv->value , "24");
 }
 
 static void testParseGlobal()
@@ -120,20 +194,48 @@ static void testParseGlobal()
     printf("start test parse global\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global>", inst);
+    // no regions - that's not legal
+    assert(!err.empty());
+}
+
+static void testParseGlobalAndRegion()
+{
+    printf("start test parse global\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<global><region>", inst);
+
     assert(err.empty());
 }
 
 static void testParseComment()
 {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    auto err = SParse::go("// comment\n<global>", inst);
+    auto err = SParse::go("// comment\n<global><region>", inst);
     assert(err.empty());
+}
+
+static void testParseGroups()
+{
+    printf("testParseGroups\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<group><region><region>", inst);
+    assert(err.empty());
+}
+
+static void testParseTwoGroups()
+{
+    printf("\ntestParseTwoGroups\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<group><region><region><group><region>", inst);
+    assert(err.empty());
+    assertEQ(inst->groups.size(), 2);
 }
 
 static void testParseGlobalWithData()
 {
+    printf("testParseGlobalWithData\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    auto err = SParse::go("<global>ampeg_release=0.6", inst);
+    auto err = SParse::go("<global>ampeg_release=0.6<region>", inst);
     assert(err.empty());
 }
 
@@ -157,12 +259,22 @@ void testx()
     testxKVP2();
     testLexComment();
     testLexComment2();
+    testLexGlobalWithData();
+    testLexTwoRegions();
+    testLexTwoKeys();
+    testLexTwoRegionsWithKeys();
+    testLexMangledId();
+    testLex4();
+
 
     testparse1();
     testparse2();
     testParseGlobal();
+    testParseGlobalAndRegion();
     testParseComment();
+    testParseGroups();
     #endif
     testParseGlobalWithData();
+    testParseTwoGroups();
     testparse_piano1();
 }

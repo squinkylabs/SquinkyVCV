@@ -32,16 +32,101 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
     SLexPtr lex = SLex::go(s);
     if (!lex) {
         printf("lexer failed\n");
-        return nullptr;
+        return "";
     }
     lex->_dump();
 
-   std::string sError = matchGlobal(inst->global, lex);
-   if (!sError.empty()) {
-       return sError;
-   }
-   return "";
+    std::string sError = matchGlobal(inst->global, lex);
+    if (!sError.empty()) {
+        return sError;
+    }
+    return matchGroups(inst->groups, lex);
 }
+
+
+// try to make a list of groups. If not possible,
+// make a dummy group and put the regions inside
+std::string SParse::matchGroups(SGroupList& groups, SLexPtr lex) {
+    auto token = lex->next();
+    if (getTagName(token) == "group") {
+        lex->consume();
+        SGroupPtr group = std::make_shared<SGroup>();
+        std::string error = matchKeyValuePairs(group->values, lex);
+        if (!error.empty()) {
+            return error;
+        }
+        //error = matchRegions(group->regions, lex);
+        token = lex->next();
+    }
+    if (getTagName(token) == "region") {
+        // OK, the first thing is a region. To let's put it in a group, and continue
+        SGroupPtr fakeGroup = std::make_shared<SGroup>();
+        groups.push_back(fakeGroup);
+        auto x = matchRegions(fakeGroup->regions, lex);
+        
+
+        return x;
+    }
+    // down here must be random garbage?
+    return "no groups or regions";
+}
+
+std::string SParse::matchRegions(SRegionList& regions, SLexPtr lex) {
+    for (bool done = false; !done; ) {
+        auto result = matchRegion(regions, lex);
+        if (result.res == Result::error) {
+            return result.errorMessage;
+        }
+        done = result.res == Result::no_match;
+    }
+
+    return "";
+}
+
+SParse::Result SParse::matchRegion(SRegionList& regions, SLexPtr lex) {
+    Result result;
+    auto tok = lex->next();
+    if (!tok || (getTagName(tok) != "region")) {
+        result.res = Result::Res::no_match;
+        return result;
+    }
+
+    // cosume the <region> tag
+    lex->consume();
+
+    // make a new region to hold this one, and put it into the group
+    SRegionPtr newRegion = std::make_shared<SRegion>();
+    regions.push_back(newRegion);
+
+    std::string s = matchKeyValuePairs(newRegion->values, lex);
+   
+    if (!s.empty()) {
+        result.res = Result::Res::error;
+        result.errorMessage = s;
+    }
+    return result;
+
+}
+
+#if 0
+SParse::Result SParse::matchRegions(SRegionList& regions, SLexPtr lex) {
+    Result result;
+
+    // is the first potential region empty?
+    auto tok = lex->next();
+    if (!tok) {
+        result.res = Result::Res::no_match;
+        return result;
+    }
+    if (getTagName(tok) != "region") {
+        result.res = Result::Res::error;
+        result.errorMessage = "first potential region not resion";
+    }
+    // Ok, here we know we have a region
+    assert(false);
+    return result;
+}
+#endif
 
 std::string SParse::matchGlobal(SGlobal& g, SLexPtr lex) {
     auto token = lex->next();
@@ -75,13 +160,7 @@ SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
         result.res = Result::no_match;
         return result;
     }
-    /*
-    if (keyToken->itemType != SLexItem::Type::Identifier) {
-        result.errorMessage ="key in kvp not id";
-        result.res = Result::error;
-        return result;
-    }
-    */
+
     SLexIdentifier* pid =  static_cast<SLexIdentifier *>(keyToken.get());
     SKeyValuePairPtr thePair = std::make_shared<SKeyValuePair>();
     thePair->key = pid->idName;
@@ -111,6 +190,10 @@ SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
 
 
 std::string SParse::getTagName(SLexItemPtr item) {
+    // maybe shouldn't call this with null ptr??
+    if (!item) {
+        return "";
+    }
     if (item->itemType != SLexItem::Type::Tag) {
         return "";
     }

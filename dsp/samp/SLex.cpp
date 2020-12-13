@@ -88,6 +88,9 @@ bool SLex::procFreshChar(char c) {
 }
 
 bool SLex::procNextTagChar(char c) {
+    if (isspace(c)) {
+        return false;       // can't have white space in the middle of a tag
+    }
     if (c == '<') {
         printf("nested tag\n");
         return false;
@@ -118,10 +121,18 @@ bool SLex::procEnd() {
     return true;
 }
 bool SLex::proxNextIdentifierChar(char c) {
-     if (c == '<' || c == '<' || c == '=') {
+
+    // terminate identifier on these, but proc them
+    if (c == '<' || c == '<' || c == '=') {
         items.push_back(std::make_shared<SLexIdentifier>(curItem));
         curItem.clear();
+        inIdentifier = false;
         return procFreshChar(c);
+    }
+    if (c == 10 || c == 13) {
+        items.push_back(std::make_shared<SLexIdentifier>(curItem));
+        curItem.clear();
+        inIdentifier = false;
     }
     curItem += c;
     return true;
