@@ -263,6 +263,14 @@
 			"disabled": false,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/dividerx.md",
 			"tags": ["Polyphonic"]
+		},
+		{
+			"slug": "squinkylabs-samp",
+			"name": "Samp",
+			"description": "x",
+			"disabled": false,
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/samp.md",
+			"tags": ["Polyphonic"]
 		}
 	]
 }

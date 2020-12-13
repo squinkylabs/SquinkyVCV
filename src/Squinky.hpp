@@ -30,6 +30,7 @@
 #define _DIVR
 #define _F2
 //#define _F4
+#define _SAMP
 
 
 //#define _BLANKMODULE
@@ -150,6 +151,10 @@ extern Model *modelSinesModule;
 extern Model *modelBasicModule;
 #ifdef  _DIVR
 extern Model *modelDividerXModule;
+#endif
+
+#ifdef  _SAMP
+extern Model *modelSampModule;
 #endif
 
 
