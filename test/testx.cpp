@@ -222,7 +222,16 @@ static void testParseGroups()
     assert(err.empty());
 }
 
-static void testParseTwoGroups()
+static void testParseTwoGroupsA()
+{
+    printf("\ntestParseTwoGroups\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<group><group>", inst);
+    assert(err.empty());
+    assertEQ(inst->groups.size(), 2);
+}
+
+static void testParseTwoGroupsB()
 {
     printf("\ntestParseTwoGroups\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -275,6 +284,7 @@ void testx()
     testParseGroups();
     #endif
     testParseGlobalWithData();
-    testParseTwoGroups();
+    testParseTwoGroupsA();
+    testParseTwoGroupsB();
     testparse_piano1();
 }

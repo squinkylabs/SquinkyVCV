@@ -40,7 +40,14 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
     if (!sError.empty()) {
         return sError;
     }
-    return matchGroups(inst->groups, lex);
+    sError = matchGroups(inst->groups, lex);
+    if (!sError.empty()) {
+        return sError;
+    }
+    if (lex->next() != nullptr) {
+        sError = "extra tokens";
+    }
+    return sError;
 }
 
 
