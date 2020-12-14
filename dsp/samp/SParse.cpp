@@ -1,4 +1,5 @@
 
+#include "SInstrument.h"
 #include "SParse.h"
 #include "SLex.h"
 

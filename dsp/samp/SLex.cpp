@@ -47,7 +47,7 @@ void SLex::validate() const {
         
 void SLex::_dump() const {
     printf("dump lexer, there are %d tokens\n", (int)items.size());
-    for (int i = 0; i < items.size(); ++i) {
+    for (int i = 0; i < int(items.size()); ++i) {
    // for (auto item : items) {
         auto item = items[i];
         printf("tok[%d] ", i);

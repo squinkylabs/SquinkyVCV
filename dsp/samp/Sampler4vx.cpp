@@ -1,10 +1,21 @@
 
 #include "Sampler4vx.h"
+#include "SParse.h"
 
 
-void Sampler4vx::note_on(int channel, int midiPitch, int midiVoltage)
+void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity)
 {
-
+    if (!patch || !waves) {
+        printf("4vx not intit\n");
+        return;
+    }
+    SVoicePlayInfo info;
+    patch->getInfo(info, midiPitch, midiVelocity);
+    if (!info.valid) {
+        printf("could not get play info\n");
+        return;
+    }
+    printf("finish me\n");
 }
 
 void Sampler4vx::note_off(int channel)

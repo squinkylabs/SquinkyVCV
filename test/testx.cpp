@@ -1,6 +1,7 @@
 
 
 #include "pugixml.hpp"
+#include "SInstrument.h"
 #include "SLex.h"
 #include "SParse.h"
 

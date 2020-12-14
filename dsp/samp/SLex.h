@@ -43,7 +43,7 @@ public:
     static SLexPtr go(const std::string& s);
     std::vector<SLexItemPtr> items;
     SLexItemPtr next() {
-        return currentIndex < items.size() ? items[currentIndex] : nullptr;
+        return currentIndex < int(items.size()) ? items[currentIndex] : nullptr;
     }
     void consume() {
         currentIndex++;

@@ -28,3 +28,5 @@ private:
     std::vector<WaveInfoPtr> info;
     void clear();
 };
+
+using WaveLoaderPtr = std::shared_ptr<WaveLoader>;

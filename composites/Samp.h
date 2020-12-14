@@ -106,11 +106,19 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args)
     // mono, for now
     bool gate = TBase::inputs[GATE_INPUT].value > 1;
     if (gate != lastGate[0]) {
-        float pitchCV = TBase::inputs[PITCH_INPUT].value;
-        int midiPitch = 60 + int(std::floor(pitchCV * 12));
-        printf("input = %f mid=%d\n", pitchCV, midiPitch); fflush(stdout);
-
+       
         lastGate[0] = gate;
+        if (gate) {
+            const float pitchCV = TBase::inputs[PITCH_INPUT].value;
+            const int midiPitch = 60 + int(std::floor(pitchCV * 12));
+           
+            // void note_on(int channel, int midiPitch, int midiVVelocity);
+            const int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].value * 12);
+             printf("input = %f pi=%d v=%d\n", pitchCV, midiPitch, midiVelocity); fflush(stdout);
+            playback[0].note_on(0, midiPitch, midiVelocity);
+        } else {
+            playback[0].note_off(0);
+        }
 
     }
     auto output = playback[0].step();

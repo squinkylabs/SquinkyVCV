@@ -37,22 +37,12 @@ public:
 };
 
 
-// An entire instrument.
-class SInstrument {
-public:
-    SGlobal global;
-
-    // Even if there are no groups, we make a dummy one so that data is nicer.
-    SGroupList groups;
-
-};
-using SInstrumentPtr = std::shared_ptr<SInstrument>;
-
-
 class SLex;
 class SLexItem;
+class SInstrument;
 using SLexPtr = std::shared_ptr<SLex>;
 using SLexItemPtr = std::shared_ptr<SLexItem>;
+using SInstrumentPtr = std::shared_ptr<SInstrument>;
 
 class SParse
 {
