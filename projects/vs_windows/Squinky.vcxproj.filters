@@ -645,6 +645,12 @@
     <ClCompile Include="..\..\dsp\samp\WaveLoader.cpp">
       <Filter>Source Files\dsp\samp</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dsp\samp\SInstrument.cpp">
+      <Filter>Source Files\dsp\samp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\samp\Streamer.cpp">
+      <Filter>Source Files\dsp\samp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

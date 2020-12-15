@@ -1,6 +1,6 @@
 
 #include "Sampler4vx.h"
-#include "SParse.h"
+#include "SInstrument.h"
 
 
 void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity)

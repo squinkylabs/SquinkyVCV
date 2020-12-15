@@ -10,6 +10,15 @@ public:
     float transposeAmt = 1;
 };
 
+/**
+
+    parse the file, generate instrument
+    look through insturment, find all wave files.
+    get loader to load the files
+
+    to play note: let's start easy.
+    look through all the regions until we find one that plays. use that
+*/
 
 
 /**

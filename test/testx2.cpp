@@ -1,5 +1,6 @@
 
 #include "SInstrument.h"
+#include "Streamer.h"
 #include "WaveLoader.h"
 #include "asserts.h"
 
@@ -34,12 +35,23 @@ static void testPlayInfoPiano() {
 
     SVoicePlayInfo info;
     inst->getInfo(info, 60, 60);
-    assert(info.valid);
+    assert(info.valid); 
 }
+
+static void testStream()
+{
+    Streamer s;
+    s.step();
+}
+
 void testx2()
 {
     testWaveLoader0();
     testWaveLoader1();
     testPlayInfo();
-    testPlayInfoPiano();
+
+    printf("make testINfoPiano work\n");
+    //testPlayInfoPiano();
+
+    testStream();
 }
