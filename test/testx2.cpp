@@ -57,14 +57,30 @@ static void testStreamEnd()
     Streamer s;
     assert(!s.canPlay());
     s.step();
-// void setSample(float* data, int frames);
- //   void setTranspose(bool doTranspoe, float amount);
 
     float x[6] = {0};
     s.setSample(x, 6);
     assert(s.canPlay());
     for (int i=0; i< 6; ++i) {
         s.step();
+    }
+    assert(!s.canPlay());
+}
+
+static void testStreamValues()
+{
+    Streamer s;
+    assert(!s.canPlay());
+    s.step();
+
+    float x[6] = {6,5,4,3,2,1};
+    assertEQ(x[0], 6);
+
+    s.setSample(x, 6);
+    assert(s.canPlay());
+    for (int i=0; i< 6; ++i) {
+        float v = s.step();
+        assertEQ(v, 6-i);
     }
     assert(!s.canPlay());
 }
@@ -80,4 +96,5 @@ void testx2()
 
     testStream();
     testStreamEnd();
+    testStreamValues();
 }

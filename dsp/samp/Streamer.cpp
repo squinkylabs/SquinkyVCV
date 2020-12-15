@@ -2,18 +2,25 @@
 #pragma once
 
 #include "Streamer.h"
+#include <assert.h>
 
 float Streamer::step() 
 {
     //int curIntegerSampleOffset = 0;
     float ret = 0;
-    if (curIntegerSampleOffset < (frames-1)) {
-        ++curIntegerSampleOffset;
-    } else {
-        arePlaying = false;
 
+    // we don't need this compare, could be arePlaying
+    if (curIntegerSampleOffset < (frames)) {
+        assert(arePlaying);
+        ret = data[curIntegerSampleOffset];
+        ++curIntegerSampleOffset;
     }
-    return 0;
+    if (curIntegerSampleOffset >= frames) {
+        arePlaying = false;;
+    }
+
+
+    return ret;
 }
 
 bool Streamer::canPlay() 
