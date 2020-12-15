@@ -51,6 +51,24 @@ static void testStream()
     assert(s.canPlay());
 }
 
+
+static void testStreamEnd()
+{
+    Streamer s;
+    assert(!s.canPlay());
+    s.step();
+// void setSample(float* data, int frames);
+ //   void setTranspose(bool doTranspoe, float amount);
+
+    float x[6] = {0};
+    s.setSample(x, 6);
+    assert(s.canPlay());
+    for (int i=0; i< 6; ++i) {
+        s.step();
+    }
+    assert(!s.canPlay());
+}
+
 void testx2()
 {
     testWaveLoader0();
@@ -61,4 +79,5 @@ void testx2()
     //testPlayInfoPiano();
 
     testStream();
+    testStreamEnd();
 }

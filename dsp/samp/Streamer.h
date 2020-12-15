@@ -13,4 +13,10 @@ public:
 public:
     float* data = nullptr;
     int frames = 0;
+
+    int curIntegerSampleOffset = 0;
+    bool arePlaying  =false;
+    float curFloatSampleOffset = 0;
+    bool areTransposing = false;
+
 };
