@@ -10,4 +10,7 @@ public:
 
     // TODO: float 4?
     float step();
+public:
+    float* data = nullptr;
+    int frames = 0;
 };

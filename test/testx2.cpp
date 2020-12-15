@@ -41,7 +41,14 @@ static void testPlayInfoPiano() {
 static void testStream()
 {
     Streamer s;
+    assert(!s.canPlay());
     s.step();
+// void setSample(float* data, int frames);
+ //   void setTranspose(bool doTranspoe, float amount);
+
+    float x[6] = {0};
+    s.setSample(x, 6);
+    assert(s.canPlay());
 }
 
 void testx2()

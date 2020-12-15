@@ -10,12 +10,13 @@ float Streamer::step()
 
 bool Streamer::canPlay() 
 {
-    return false;
+    return bool(data);
 }
 
-void Streamer::setSample(float* data, int frames)
+void Streamer::setSample(float* d, int f)
 {
-
+    data = d;
+    frames = f;
 }
 void Streamer::setTranspose(bool doTranspoe, float amount)
 {
