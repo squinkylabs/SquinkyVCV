@@ -29,5 +29,12 @@ void Sampler4vx::setNumVoices(int voices)
 }
 
 float_4 Sampler4vx::step() {
+    if (patch && waves) {
+        assert(false);      // now what?
+    }
+    else {
+        assert(false);      // always set the patch and waves first
+        return 0;
+    }
     return 0.f;
 }

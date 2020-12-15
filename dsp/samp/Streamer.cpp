@@ -1,6 +1,4 @@
 
-#pragma once
-
 #include "Streamer.h"
 #include <assert.h>
 
@@ -18,8 +16,6 @@ float Streamer::step()
     if (curIntegerSampleOffset >= frames) {
         arePlaying = false;;
     }
-
-
     return ret;
 }
 
@@ -34,7 +30,8 @@ void Streamer::setSample(float* d, int f)
     frames = f;
     arePlaying = true;
 }
-void Streamer::setTranspose(bool doTranspoe, float amount)
+void Streamer::setTranspose(bool doTranspose, float amount)
 {
-    
+    assert(!doTranspose);
+    assert(amount == 0);  
 }

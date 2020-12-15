@@ -14,8 +14,12 @@ public:
     void note_on(int channel, int midiPitch, int midiVelocity);
     void note_off(int channel);
 
-    void setPatch(SInstrumentPtr inst);
-    void setLoader(WaveLoaderPtr loader);
+    void setPatch(SInstrumentPtr inst) {
+        patch = inst;
+    }
+    void setLoader(WaveLoaderPtr loader) {
+        waves = loader;
+    }
 
     /**
      * zero to 4

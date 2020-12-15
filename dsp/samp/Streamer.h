@@ -18,5 +18,6 @@ public:
     bool arePlaying  =false;
     float curFloatSampleOffset = 0;
     bool areTransposing = false;
+    bool transposeEnabled = false;
 
 };

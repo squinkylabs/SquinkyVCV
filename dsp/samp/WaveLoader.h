@@ -23,6 +23,10 @@ public:
     using WaveInfoPtr = std::shared_ptr<WaveInfo>;
 
     void load(const std::string& fileName);
+
+    /**
+     * Index is one based. 
+     */
     WaveInfoPtr getInfo(int index) const;
 private:
     std::vector<WaveInfoPtr> info;

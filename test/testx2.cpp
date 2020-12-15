@@ -1,4 +1,5 @@
 
+#include "Sampler4vx.h"
 #include "SInstrument.h"
 #include "Streamer.h"
 #include "WaveLoader.h"
@@ -8,16 +9,19 @@ static void testWaveLoader0()
 {
     WaveLoader w;
     w.load("fake file name");
-    auto x = w.getInfo(0);
+    auto x = w.getInfo(1);
     printf("foo\n");
     assert(!x->valid);
+
+    x = w.getInfo(0);
+    assert(!x);
 }
 
 static void testWaveLoader1()
 {
     WaveLoader w;
     w.load("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav");
-    auto x = w.getInfo(0);
+    auto x = w.getInfo(1);
     printf("foo\n");
     assert(x->valid);
 }
@@ -43,20 +47,16 @@ static void testStream()
     Streamer s;
     assert(!s.canPlay());
     s.step();
-// void setSample(float* data, int frames);
- //   void setTranspose(bool doTranspoe, float amount);
 
     float x[6] = {0};
     s.setSample(x, 6);
     assert(s.canPlay());
 }
 
-
 static void testStreamEnd()
 {
     Streamer s;
     assert(!s.canPlay());
-    s.step();
 
     float x[6] = {0};
     s.setSample(x, 6);
@@ -71,18 +71,37 @@ static void testStreamValues()
 {
     Streamer s;
     assert(!s.canPlay());
-    s.step();
 
     float x[6] = {6,5,4,3,2,1};
     assertEQ(x[0], 6);
 
     s.setSample(x, 6);
+    s.setTranspose(false, 0);
     assert(s.canPlay());
     for (int i=0; i< 6; ++i) {
         float v = s.step();
         assertEQ(v, 6-i);
     }
     assert(!s.canPlay());
+}
+
+
+static void testSampler()
+{
+    Sampler4vx s;
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    WaveLoaderPtr w = std::make_shared<WaveLoader>();
+
+    s.setLoader(w);
+    s.setNumVoices(1);
+    s.setPatch(inst);
+
+    const int channel = 0;
+    const int midiPitch = 60;
+    const int midiVel = 60;
+    s.note_on(channel, midiPitch, midiVel);
+    float_4 x = s.step();
+    assert(x[0] != 0);
 }
 
 void testx2()
@@ -97,4 +116,6 @@ void testx2()
     testStream();
     testStreamEnd();
     testStreamValues();
+
+    testSampler();
 }

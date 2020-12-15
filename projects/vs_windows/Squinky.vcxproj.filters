@@ -651,6 +651,9 @@
     <ClCompile Include="..\..\dsp\samp\Streamer.cpp">
       <Filter>Source Files\dsp\samp</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dsp\samp\Sampler4vx.cpp">
+      <Filter>Source Files\dsp\samp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

@@ -90,7 +90,7 @@ static void testLexComment()
     assertEQ(lex->items.size(), 1);
     assert(lex->items[0]->itemType == SLexItem::Type::Tag);
     SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
-    assertEQ(pTag->tagName, "global")
+    assertEQ(pTag->tagName, "global");
 }
 
 
@@ -102,7 +102,7 @@ static void testLexComment2()
     assertEQ(lex->items.size(), 1);
     assert(lex->items[0]->itemType == SLexItem::Type::Tag);
     SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
-    assertEQ(pTag->tagName, "global")
+    assertEQ(pTag->tagName, "global");
 }
 
 static void testLexGlobalWithData()

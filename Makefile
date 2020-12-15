@@ -5,7 +5,7 @@ SLUG = squinkylabs-plug1
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
 FLAGS += -I./dsp/third-party/falco -I./dsp/third-party/kiss_fft130 
 FLAGS += -I./dsp/third-party/kiss_fft130/tools -I./dsp/third-party/src -I./dsp/third-party/midifile
-FLAGS += -I./dsp -I./dsp/samp
+FLAGS += -I./dsp -I./dsp/samp -I./dsp/third-party/pugixml
 FLAGS += -I./sqsrc/thread -I./dsp/fft -I./composites
 FLAGS += -I./sqsrc/noise -I./sqsrc/util -I./sqsrc/clock -I./sqsrc/grammar -I./sqsrc/delay
 FLAGS += -I./midi/model -I./midi/view -I./midi/controller -I./util
@@ -46,6 +46,7 @@ SOURCES += $(wildcard midi/**/*.cpp)
 SOURCES += $(wildcard src/third-party/*.cpp)
 SOURCES += $(wildcard src/seq/*.cpp)
 SOURCES += $(wildcard src/kbd/*.cpp)
+
 
 # include res and presets folder
 DISTRIBUTABLES += $(wildcard LICENSE*) res presets

@@ -59,8 +59,10 @@ void WaveLoader::clear()
 }
 
 WaveLoader::WaveInfoPtr WaveLoader::getInfo(int index) const {
-    assert(index < int(info.size()));
-    return info[index];
+    if (index < 1 || index > int(info.size())) {
+        return nullptr;
+    }
+    return info[index-1];
 
 }
 

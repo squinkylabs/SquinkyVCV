@@ -10,6 +10,7 @@ TEST_SOURCES += $(wildcard dsp/third-party/midifile/*.cpp)
 TEST_SOURCES += $(wildcard sqsrc/**/*.cpp)
 TEST_SOURCES += dsp/third-party/kiss_fft130/tools/kiss_fftr.c
 TEST_SOURCES += dsp/third-party/kiss_fft130/kiss_fft.c
+TEST_SOURCES += $(wildcard dsp/third-party/pugixml/*.cpp)
 
 ## This is a list of full paths to the .o files we want to build
 TEST_OBJECTS = $(patsubst %, build_test/%.o, $(TEST_SOURCES))
