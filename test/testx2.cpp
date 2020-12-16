@@ -85,6 +85,30 @@ static void testStreamValues()
     assert(!s.canPlay());
 }
 
+static void testStreamRetrigger()
+{
+    Streamer s;
+
+    float x[6] = { 6,5,4,3,2,1 };
+
+    s.setSample(x, 6);
+    s.setTranspose(false, 0);
+    assert(s.canPlay());
+    for (int i = 0; i < 6; ++i) {
+        float v = s.step();
+    }
+    assert(!s.canPlay());
+
+    s.setSample(x, 6);
+    assert(s.canPlay());
+    for (int i = 0; i < 6; ++i) {
+        assert(s.canPlay());
+        float v = s.step();
+       
+    }
+    assert(!s.canPlay());
+}
+
 
 static void testSampler()
 {
@@ -126,7 +150,11 @@ static void testSamplerRealSound()
     const int midiVel = 60;
     s.note_on(channel, midiPitch, midiVel);
     float_4 x = s.step();
+    assert(x[0] == 0);
+
+    x = s.step();
     assert(x[0] != 0);
+
 }
 
 void testx2()
@@ -141,6 +169,7 @@ void testx2()
     testStream();
     testStreamEnd();
     testStreamValues();
+    testStreamRetrigger();
 
     //testSampler();
     testSamplerRealSound();

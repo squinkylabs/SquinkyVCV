@@ -22,6 +22,7 @@ void Sampler4vx::setLoader(WaveLoaderPtr loader) {
 
 void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity)
 {
+    printf("note on\n"); fflush(stdout);
     if (!patch || !waves) {
         printf("4vx not intit\n");
         return;
@@ -36,7 +37,7 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity)
     assert(waveInfo->valid);
     assert(waveInfo->numChannels == 1);
     player.setSample(waveInfo->data, int(waveInfo->totalFrameCount));
-    printf("finish me\n");
+   //printf("finish me\n");
 }
 
 void Sampler4vx::note_off(int channel)
@@ -51,8 +52,7 @@ void Sampler4vx::setNumVoices(int voices)
 
 float_4 Sampler4vx::step() {
     if (patch && waves) {
-           printf("samp stepnimp\n"); fflush(stdout);
-        //assert(false);      // now what?
+        return player.step();
     }
     else {
          printf("samp step not patch and waves\n"); fflush(stdout);

@@ -30,6 +30,7 @@ void Streamer::setSample(float* d, int f)
     data = d;
     frames = f;
     arePlaying = true;
+    curIntegerSampleOffset = 0;
 }
 void Streamer::setTranspose(bool doTranspose, float amount)
 {
