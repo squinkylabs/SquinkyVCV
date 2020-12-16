@@ -17,9 +17,13 @@ float Streamer::step()
     if (curIntegerSampleOffset >= frames) {
         arePlaying = false;;
     }
-    return ret;
+    return ret * vol;
 }
 
+void Streamer::mute() 
+{
+    vol = 0;
+}
 bool Streamer::canPlay() 
 {
     return bool(data && arePlaying);
@@ -31,6 +35,7 @@ void Streamer::setSample(float* d, int f)
     frames = f;
     arePlaying = true;
     curIntegerSampleOffset = 0;
+    vol = 1;
 }
 void Streamer::setTranspose(bool doTranspose, float amount)
 {

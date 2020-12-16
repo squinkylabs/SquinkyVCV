@@ -7,6 +7,7 @@ public:
     void setSample(float* data, int frames);
     void setTranspose(bool doTranspoe, float amount);
     bool canPlay();
+    void mute();
 
     // TODO: float 4?
     float step();
@@ -19,4 +20,5 @@ public:
     float curFloatSampleOffset = 0;
     bool areTransposing = false;
     bool transposeEnabled = false;
+    float vol = 1;
 };
