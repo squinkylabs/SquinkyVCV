@@ -29,6 +29,9 @@ public:
 class SInstrument {
 public:
     void getInfo(SVoicePlayInfo&, int midiPitch, int midiVelocity);
+    void _setTestMode() {
+        testMode = true;
+    }
 
 
     //---------- part used by parse
@@ -37,5 +40,7 @@ public:
     // Even if there are no groups, we make a dummy one so that data is nicer.
     SGroupList groups;
 
+private:
+    bool testMode = false;
 };
 using SInstrumentPtr = std::shared_ptr<SInstrument>;

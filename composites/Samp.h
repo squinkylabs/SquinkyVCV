@@ -2,12 +2,12 @@
 #pragma once
 
 #include "Sampler4vx.h"
+#include "SInstrument.h"
+#include "WaveLoader.h"
 
 #include <assert.h>
 #include <memory>
 #include "IComposite.h"
-
-
 
 namespace rack {
     namespace engine {
@@ -86,8 +86,12 @@ public:
 private:
 
     Sampler4vx playback[4];         // 16 voices of polyphony
+    SInstrumentPtr instrument;
+    WaveLoaderPtr waves;
 
     bool lastGate[16];
+
+    void setupSamplesDummy();
 
 };
 
@@ -95,9 +99,31 @@ private:
 template <class TBase>
 inline void Samp<TBase>::init()
 {
+      printf("init 102\n"); fflush(stdout);
     for (int i = 0; i<16; ++i) {
         lastGate[i] = false;
     }
+    setupSamplesDummy();
+      printf("init 107\n"); fflush(stdout);
+}
+
+template <class TBase>
+inline void Samp<TBase>::setupSamplesDummy()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    WaveLoaderPtr w = std::make_shared<WaveLoader>();
+    inst->_setTestMode();
+
+    const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
+    w->load(p);
+    playback[0].setPatch(inst);
+
+    WaveLoader::WaveInfoPtr info = w->getInfo(1);
+    assert(info->valid);
+
+    playback[0].setLoader(w);
+    playback[0].setNumVoices(1);
+    playback[0].setLoader(w);
 }
 
 template <class TBase>
@@ -106,7 +132,6 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args)
     // mono, for now
     bool gate = TBase::inputs[GATE_INPUT].value > 1;
     if (gate != lastGate[0]) {
-       
         lastGate[0] = gate;
         if (gate) {
             const float pitchCV = TBase::inputs[PITCH_INPUT].value;
@@ -114,7 +139,6 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args)
            
             // void note_on(int channel, int midiPitch, int midiVVelocity);
             const int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].value * 12);
-             printf("input = %f pi=%d v=%d\n", pitchCV, midiPitch, midiVelocity); fflush(stdout);
             playback[0].note_on(0, midiPitch, midiVelocity);
         } else {
             playback[0].note_off(0);

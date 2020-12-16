@@ -101,6 +101,31 @@ static void testSampler()
     const int midiVel = 60;
     s.note_on(channel, midiPitch, midiVel);
     float_4 x = s.step();
+    assert(x[0] == 0);
+}
+
+static void testSamplerRealSound()
+{
+    Sampler4vx s;
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    WaveLoaderPtr w = std::make_shared<WaveLoader>();
+    inst->_setTestMode();
+
+    const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
+    w->load(p);
+
+    WaveLoader::WaveInfoPtr info = w->getInfo(1);
+    assert(info->valid);
+
+    s.setLoader(w);
+    s.setNumVoices(1);
+    s.setPatch(inst);
+
+    const int channel = 0;
+    const int midiPitch = 60;
+    const int midiVel = 60;
+    s.note_on(channel, midiPitch, midiVel);
+    float_4 x = s.step();
     assert(x[0] != 0);
 }
 
@@ -117,5 +142,6 @@ void testx2()
     testStreamEnd();
     testStreamValues();
 
-    testSampler();
+    //testSampler();
+    testSamplerRealSound();
 }

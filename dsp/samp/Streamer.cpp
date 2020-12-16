@@ -2,6 +2,7 @@
 #include "Streamer.h"
 #include <assert.h>
 
+
 float Streamer::step() 
 {
     //int curIntegerSampleOffset = 0;

@@ -19,5 +19,4 @@ public:
     float curFloatSampleOffset = 0;
     bool areTransposing = false;
     bool transposeEnabled = false;
-
 };
