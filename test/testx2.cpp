@@ -169,10 +169,32 @@ static void testCIKeysAndValues()
 
  
     auto output = ci::compile(l);
-    assertEQ(output._size(), 1);
-    ci::ValuePtr vp = output.get(ci::Opcode::HI_KEY);
+    assertEQ(output->_size(), 1);
+    ci::ValuePtr vp = output->get(ci::Opcode::HI_KEY);
     assert(vp);
     assertEQ(vp->numeric, 12);
+}
+
+static void testParseGlobalAndRegion2()
+{
+    printf("start test parse global\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<global><region>", inst);
+
+    assert(err.empty());
+    ci::expandAllKV(inst);
+    assert(inst->global.compiledValues);
+    assertEQ(inst->global.compiledValues->_size(), 0);
+
+    SGroupPtr group = inst->groups[0];
+    assert(group);
+    assert(group->compiledValues);
+    assertEQ(group->compiledValues->_size(), 0);
+
+   // assert(region);
+
+  //  assert(region.compiledValues);
+
 }
 
 void testx2()
@@ -193,6 +215,7 @@ void testx2()
     testSamplerRealSound();
 
     testCIKeysAndValues();
+    testParseGlobalAndRegion2();
 
 
 }

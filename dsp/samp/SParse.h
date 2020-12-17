@@ -4,6 +4,12 @@
 #include <memory>
 #include <vector>
 
+namespace ci
+{
+    class KeysAndValues;
+    using KeysAndValuesPtr = std::shared_ptr<KeysAndValues>;
+};
+
 
 class SKeyValuePair {
 public:
@@ -18,6 +24,7 @@ using SKeyValueList = std::vector<SKeyValuePairPtr>;
 class SRegion {
 public:
     SKeyValueList values;
+    ci::KeysAndValuesPtr compiledValues;
 };
 using SRegionPtr = std::shared_ptr<SRegion>; 
 using SRegionList = std::vector<SRegionPtr>;
@@ -27,6 +34,7 @@ using SRegionList = std::vector<SRegionPtr>;
 class SGroup {
 public:
     SKeyValueList values;
+    ci::KeysAndValuesPtr compiledValues;
     SRegionList regions;
 };
 using SGroupPtr = std::shared_ptr<SGroup>; 
@@ -36,6 +44,7 @@ using SGroupList = std::vector<SGroupPtr>;
 class SGlobal {
 public:
     SKeyValueList values;
+    ci::KeysAndValuesPtr compiledValues;
 };
 
 

@@ -1,5 +1,6 @@
 
 #include "CompiledInstrument.h"
+#include "SInstrument.h"
 #include "SParse.h"
 
 #include <assert.h>
@@ -22,7 +23,7 @@ static DiscreteValue translated(const std::string& s) {
     return DiscreteValue::NONE;
 }
 
-static void compile(KeysAndValues& results, SKeyValuePairPtr input) {
+static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input) {
     Opcode o = translate(input->key);
     DiscreteValue dv = translated(input->value);
     ValuePtr vp = std::make_shared<Value>();
@@ -32,17 +33,28 @@ static void compile(KeysAndValues& results, SKeyValuePairPtr input) {
         vp->numeric = x;
     }
 
-    results.add(o, vp);
+    results->add(o, vp);
  
 }
-KeysAndValues compile(const SKeyValueList& inputs) {
 
-    KeysAndValues results;
+KeysAndValuesPtr compile(const SKeyValueList& inputs) {
+
+    KeysAndValuesPtr results = std::make_shared<KeysAndValues>();
     for (auto input : inputs) {
         compile(results, input);
     }
     return results;
 
+}
+
+void expandAllKV(SInstrumentPtr inst) {
+    inst->global.compiledValues = compile(inst->global.values);
+    for (auto group : inst->groups) {
+        group->compiledValues = compile(group->values);
+        for (auto region : group->regions) {
+            assert(false);
+        }
+    }
 }
 
 }
