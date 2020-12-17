@@ -4,6 +4,8 @@
 #include "Streamer.h"
 #include "WaveLoader.h"
 #include "asserts.h"
+#include "CompiledInstrument.h"
+//#include "SParse.h"
 
 static void testWaveLoader0()
 {
@@ -157,6 +159,22 @@ static void testSamplerRealSound()
 
 }
 
+static void testCIKeysAndValues()
+{
+
+    SKeyValuePair p2 = { "hikey", "12" };
+
+    SKeyValuePairPtr p = std::make_shared<SKeyValuePair>("hikey", "12");
+    SKeyValueList l = { p };
+
+ 
+    auto output = ci::compile(l);
+    assertEQ(output._size(), 1);
+    ci::ValuePtr vp = output.get(ci::Opcode::HI_KEY);
+    assert(vp);
+    assertEQ(vp->numeric, 12);
+}
+
 void testx2()
 {
     testWaveLoader0();
@@ -173,4 +191,8 @@ void testx2()
 
     //testSampler();
     testSamplerRealSound();
+
+    testCIKeysAndValues();
+
+
 }

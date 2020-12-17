@@ -7,6 +7,8 @@
 
 class SKeyValuePair {
 public:
+    SKeyValuePair(const std::string& k ,const std::string& v) : key(k), value(v) {}
+    SKeyValuePair() = default;
     std::string key;
     std::string value;
 };

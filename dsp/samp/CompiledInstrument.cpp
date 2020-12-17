@@ -1,0 +1,48 @@
+
+#include "CompiledInstrument.h"
+#include "SParse.h"
+
+#include <assert.h>
+#include <string>
+
+namespace ci
+{
+
+static Opcode translate(const std::string& s) {
+    if (s == "hikey") 
+        return Opcode::HI_KEY;
+     if (s == "lokey") 
+        return Opcode::LO_KEY;
+
+    return Opcode::NONE;
+
+}
+
+static DiscreteValue translated(const std::string& s) {
+    return DiscreteValue::NONE;
+}
+
+static void compile(KeysAndValues& results, SKeyValuePairPtr input) {
+    Opcode o = translate(input->key);
+    DiscreteValue dv = translated(input->value);
+    ValuePtr vp = std::make_shared<Value>();
+    vp->nonNUmeric = dv;
+    if (dv == DiscreteValue::NONE) {
+        int x = std::stoi(input->value);
+        vp->numeric = x;
+    }
+
+    results.add(o, vp);
+ 
+}
+KeysAndValues compile(const SKeyValueList& inputs) {
+
+    KeysAndValues results;
+    for (auto input : inputs) {
+        compile(results, input);
+    }
+    return results;
+
+}
+
+}

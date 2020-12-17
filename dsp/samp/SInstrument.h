@@ -25,6 +25,7 @@ public:
  * An entire instrument.
  * Note that this is used by parser, but it also
  * is used for note playback
+ * update: won't user for playback
  */
 class SInstrument {
 public:
