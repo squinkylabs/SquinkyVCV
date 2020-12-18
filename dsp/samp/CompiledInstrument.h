@@ -59,9 +59,30 @@ private:
     std::map<Opcode, ValuePtr> data;
 };
 
-using KeysAndValuesPtr = std::shared_ptr<KeysAndValues>;
+class VoicePlayInfo {
+public:
+    bool valid = false;
+    int sampleIndex = 0;
+    bool needsTranspose = false;
+    float transposeAmt = 1;
+};
 
+class CompiledInstrument {
+public:
+    void getInfo(VoicePlayInfo&, int midiPitch, int midiVelocity);
+    void _setTestMode() {
+        testMode = true;
+    }
+private:
+
+    bool testMode = false;
+};
+using CompiledInstrumentPtr = std::shared_ptr<CompiledInstrument>;
+
+
+using KeysAndValuesPtr = std::shared_ptr<KeysAndValues>;
 KeysAndValuesPtr compile(const SKeyValueList&);
+CompiledInstrumentPtr compile(const SInstrumentPtr);
 
 /**
  * finds all the key/value pairs and expands them in place.

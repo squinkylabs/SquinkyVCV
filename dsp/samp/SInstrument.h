@@ -29,6 +29,7 @@ public:
  */
 class SInstrument {
 public:
+    // This stuff will be leaving, and going to CompiledInstrument
     void getInfo(SVoicePlayInfo&, int midiPitch, int midiVelocity);
     void _setTestMode() {
         testMode = true;

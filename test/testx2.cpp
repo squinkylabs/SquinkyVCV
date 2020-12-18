@@ -175,7 +175,7 @@ static void testCIKeysAndValues()
     assertEQ(vp->numeric, 12);
 }
 
-static void testParseGlobalAndRegion2()
+static void testParseGlobalAndRegionCompiled()
 {
     printf("start test parse global\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -190,11 +190,68 @@ static void testParseGlobalAndRegion2()
     assert(group);
     assert(group->compiledValues);
     assertEQ(group->compiledValues->_size(), 0);
+}
 
-   // assert(region);
+static void testParseGlobalWithKVAndRegionCompiled()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<global>hikey=57<region>", inst);
 
-  //  assert(region.compiledValues);
+    assert(err.empty());
+    ci::expandAllKV(inst);
+    assert(inst->global.compiledValues);
+    assertEQ(inst->global.compiledValues->_size(), 1);
+    auto val  = inst->global.compiledValues->get(ci::Opcode::HI_KEY);
+    assertEQ(val->numeric, 57);
 
+    SGroupPtr group = inst->groups[0];
+    assert(group);
+    assert(group->compiledValues);
+    assertEQ(group->compiledValues->_size(), 0);
+}
+
+static void testParseGlobalWitRegionKVCompiled()
+{
+    printf("start test parse global\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<global><region><region>lokey=57<region>", inst);
+
+    assert(err.empty());
+    ci::expandAllKV(inst);
+    assert(inst->global.compiledValues);
+    assertEQ(inst->global.compiledValues->_size(), 0);
+   // auto val = inst->global.compiledValues->get(ci::Opcode::HI_KEY);
+  //  assertEQ(val->numeric, 57);
+
+    SGroupPtr group = inst->groups[0];
+    assert(group);
+    assert(group->compiledValues);
+    assertEQ(group->compiledValues->_size(), 0);
+
+    assertEQ(group->regions.size(), 3)
+    SRegionPtr r = group->regions[0];
+    assertEQ(r->compiledValues->_size(), 0);
+    r = group->regions[2];
+    assertEQ(r->compiledValues->_size(), 0);
+    r = group->regions[1];
+    assertEQ(r->compiledValues->_size(), 1);
+
+    auto val = r->compiledValues->get(ci::Opcode::LO_KEY);
+    assertEQ(val->numeric, 57);
+
+}
+
+static void testCompileInst1()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<global><region><region>lokey=57<region>", inst);
+    assert(err.empty());
+
+    //   void getInfo(VoicePlayInfo&, int midiPitch, int midiVelocity);
+    ci::CompiledInstrumentPtr i = ci::compile(inst);
+
+    ci::VoicePlayInfo info;
+    i->getInfo(info, 60, 60);
 }
 
 void testx2()
@@ -215,7 +272,11 @@ void testx2()
     testSamplerRealSound();
 
     testCIKeysAndValues();
-    testParseGlobalAndRegion2();
+    testParseGlobalAndRegionCompiled();
+    testParseGlobalWithKVAndRegionCompiled();
+    testParseGlobalWitRegionKVCompiled();
+
+    testCompileInst1();
 
 
 }

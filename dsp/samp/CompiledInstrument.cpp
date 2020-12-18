@@ -52,9 +52,20 @@ void expandAllKV(SInstrumentPtr inst) {
     for (auto group : inst->groups) {
         group->compiledValues = compile(group->values);
         for (auto region : group->regions) {
-            assert(false);
+            region->compiledValues = compile(region->values);
         }
     }
 }
+
+CompiledInstrumentPtr compile(const SInstrumentPtr in) {
+    CompiledInstrumentPtr instOut = std::make_shared< CompiledInstrument>();
+    return instOut;
+}
+
+
+ void CompiledInstrument::getInfo(VoicePlayInfo&, int midiPitch, int midiVelocity) {
+     
+ }
+
 
 }
