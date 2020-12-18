@@ -1,10 +1,11 @@
 
+#include "CompiledInstrument.h"
 #include "Sampler4vx.h"
 #include "SInstrument.h"
 #include "WaveLoader.h"
 
 
- void Sampler4vx::setPatch(SInstrumentPtr inst) {
+ void Sampler4vx::setPatch(ci::CompiledInstrumentPtr inst) {
     patch = inst;
 }
 
@@ -18,7 +19,7 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity)
         printf("4vx not intit\n");
         return;
     }
-    SVoicePlayInfo patchInfo;
+    ci::VoicePlayInfo patchInfo;
     patch->getInfo(patchInfo, midiPitch, midiVelocity);
     if (!patchInfo.valid) {
         printf("could not get play info\n");

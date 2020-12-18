@@ -2,6 +2,8 @@
 
 #include "SParse.h"
 #include <memory>
+
+#if 0
 class SVoicePlayInfo {
 public:
     bool valid = false;
@@ -9,6 +11,7 @@ public:
     bool needsTranspose = false;
     float transposeAmt = 1;
 };
+#endif
 
 /**
 
@@ -29,11 +32,13 @@ public:
  */
 class SInstrument {
 public:
+#if 0
     // This stuff will be leaving, and going to CompiledInstrument
     void getInfo(SVoicePlayInfo&, int midiPitch, int midiVelocity);
     void _setTestMode() {
         testMode = true;
     }
+    #endif
 
 
     //---------- part used by parse
@@ -43,6 +48,6 @@ public:
     SGroupList groups;
 
 private:
-    bool testMode = false;
+   // bool testMode = false;
 };
 using SInstrumentPtr = std::shared_ptr<SInstrument>;

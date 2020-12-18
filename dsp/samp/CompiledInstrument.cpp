@@ -63,8 +63,13 @@ CompiledInstrumentPtr compile(const SInstrumentPtr in) {
 }
 
 
- void CompiledInstrument::getInfo(VoicePlayInfo&, int midiPitch, int midiVelocity) {
-     
+ void CompiledInstrument::getInfo(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
+     if (!testMode) return;
+
+     info.sampleIndex = 1;
+     info.needsTranspose = false;
+     info.transposeAmt = 1;
+     info.valid = true;
  }
 
 

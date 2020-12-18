@@ -29,7 +29,7 @@ static void testWaveLoader1()
 }
 
 static void testPlayInfo() {
-    SVoicePlayInfo info;
+    ci::VoicePlayInfo info;
     assertEQ(info.valid, false);
 }
 
@@ -39,8 +39,9 @@ static void testPlayInfoPiano() {
     auto err = SParse::goFile(p, inst);
     assert(err.empty());
 
-    SVoicePlayInfo info;
-    inst->getInfo(info, 60, 60);
+    ci::CompiledInstrumentPtr cinst = ci::compile(inst);
+    ci::VoicePlayInfo info;
+    cinst->getInfo(info, 60, 60);
     assert(info.valid); 
 }
 
@@ -116,11 +117,12 @@ static void testSampler()
 {
     Sampler4vx s;
     SInstrumentPtr inst = std::make_shared<SInstrument>();
+    ci::CompiledInstrumentPtr cinst = ci::compile(inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
 
     s.setLoader(w);
     s.setNumVoices(1);
-    s.setPatch(inst);
+    s.setPatch(cinst);
 
     const int channel = 0;
     const int midiPitch = 60;
@@ -134,8 +136,9 @@ static void testSamplerRealSound()
 {
     Sampler4vx s;
     SInstrumentPtr inst = std::make_shared<SInstrument>();
+    ci::CompiledInstrumentPtr cinst = ci::compile(inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
-    inst->_setTestMode();
+    cinst->_setTestMode();
 
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
     w->load(p);
@@ -145,7 +148,7 @@ static void testSamplerRealSound()
 
     s.setLoader(w);
     s.setNumVoices(1);
-    s.setPatch(inst);
+    s.setPatch(cinst);
 
     const int channel = 0;
     const int midiPitch = 60;
@@ -251,7 +254,11 @@ static void testCompileInst1()
     ci::CompiledInstrumentPtr i = ci::compile(inst);
 
     ci::VoicePlayInfo info;
+    info.sampleIndex = 0;
+    assert(!info.valid);
     i->getInfo(info, 60, 60);
+    assert(info.valid);  // this will fail until we implement a real compiler
+    assertNE(info.sampleIndex, 0);
 }
 
 void testx2()

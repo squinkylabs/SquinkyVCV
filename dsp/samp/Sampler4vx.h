@@ -3,10 +3,15 @@
 #include "SimdBlocks.h"
 #include <memory>
 
+namespace ci {
+    class CompiledInstrument;
+    using CompiledInstrumentPtr = std::shared_ptr<CompiledInstrument>;
+}
+
 class WaveLoader;
 class SInstrument;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
-using SInstrumentPtr = std::shared_ptr<SInstrument>;
+
 
 #include"Streamer.h"
 
@@ -16,7 +21,7 @@ public:
     void note_on(int channel, int midiPitch, int midiVelocity);
     void note_off(int channel);
 
-    void setPatch(SInstrumentPtr inst);
+    void setPatch(ci::CompiledInstrumentPtr inst);
     void setLoader(WaveLoaderPtr loader);
 
     /**
@@ -25,7 +30,7 @@ public:
     void setNumVoices(int voices);
     float_4 step();
 private:
-    SInstrumentPtr patch;
+    ci::CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;
     Streamer player;
 
