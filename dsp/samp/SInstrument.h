@@ -47,7 +47,9 @@ public:
     // Even if there are no groups, we make a dummy one so that data is nicer.
     SGroupList groups;
 
+    bool wasExpanded = false;
 private:
    // bool testMode = false;
+ 
 };
 using SInstrumentPtr = std::shared_ptr<SInstrument>;

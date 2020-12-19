@@ -6,6 +6,7 @@
 
 class SKeyValuePair;
 class SInstrument;
+class SRegion;
 using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>; 
 using SKeyValueList = std::vector<SKeyValuePairPtr>;
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
@@ -66,23 +67,32 @@ public:
     bool needsTranspose = false;
     float transposeAmt = 1;
 };
+using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
+using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 
 class CompiledInstrument {
 public:
+    static CompiledInstrumentPtr make(const SInstrumentPtr);
     void getInfo(VoicePlayInfo&, int midiPitch, int midiVelocity);
     void _setTestMode() {
         testMode = true;
     }
+
 private:
 
     bool testMode = false;
+    std::map<int, VoicePlayInfoPtr> pitchMap;
+
+    void compile(const SInstrumentPtr);
+
+   
 };
-using CompiledInstrumentPtr = std::shared_ptr<CompiledInstrument>;
+
 
 
 using KeysAndValuesPtr = std::shared_ptr<KeysAndValues>;
 KeysAndValuesPtr compile(const SKeyValueList&);
-CompiledInstrumentPtr compile(const SInstrumentPtr);
+//CompiledInstrumentPtr compile(const SInstrumentPtr);
 
 /**
  * finds all the key/value pairs and expands them in place.

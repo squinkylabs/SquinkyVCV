@@ -39,7 +39,8 @@ static void testPlayInfoPiano() {
     auto err = SParse::goFile(p, inst);
     assert(err.empty());
 
-    ci::CompiledInstrumentPtr cinst = ci::compile(inst);
+  //  ci::CompiledInstrumentPtr cinst = ci::compile(inst);
+    ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
     ci::VoicePlayInfo info;
     cinst->getInfo(info, 60, 60);
     assert(info.valid); 
@@ -117,7 +118,7 @@ static void testSampler()
 {
     Sampler4vx s;
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    ci::CompiledInstrumentPtr cinst = ci::compile(inst);
+    ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
 
     s.setLoader(w);
@@ -136,7 +137,9 @@ static void testSamplerRealSound()
 {
     Sampler4vx s;
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    ci::CompiledInstrumentPtr cinst = ci::compile(inst);
+ //   ci::expandAllKV(inst);
+  //  ci::CompiledInstrumentPtr cinst = ci::compile(inst);
+    ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
     cinst->_setTestMode();
 
@@ -246,12 +249,12 @@ static void testParseGlobalWitRegionKVCompiled()
 
 static void testCompileInst1()
 {
+    printf("\n-- test comp inst 1\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    auto err = SParse::go("<global><region><region>lokey=57<region>", inst);
+    auto err = SParse::go("<global><region><region>lokey=60\nhikey=60<region>", inst);
     assert(err.empty());
 
-    //   void getInfo(VoicePlayInfo&, int midiPitch, int midiVelocity);
-    ci::CompiledInstrumentPtr i = ci::compile(inst);
+    ci::CompiledInstrumentPtr i = ci::CompiledInstrument::make(inst);
 
     ci::VoicePlayInfo info;
     info.sampleIndex = 0;

@@ -48,6 +48,7 @@ KeysAndValuesPtr compile(const SKeyValueList& inputs) {
 }
 
 void expandAllKV(SInstrumentPtr inst) {
+    assert(!inst->wasExpanded);
     inst->global.compiledValues = compile(inst->global.values);
     for (auto group : inst->groups) {
         group->compiledValues = compile(group->values);
@@ -55,21 +56,98 @@ void expandAllKV(SInstrumentPtr inst) {
             region->compiledValues = compile(region->values);
         }
     }
+    inst->wasExpanded = true;
 }
 
-CompiledInstrumentPtr compile(const SInstrumentPtr in) {
+void CompiledInstrument::compile(const SInstrumentPtr in) {
+    assert(in->wasExpanded);
+    for (auto group : in->groups) {
+        //
+        printf("comp group with %zd regions\n", group->regions.size());
+        for (auto region : group->regions) {
+            printf("compiling region\n");
+            const SRegion& reg = *region;
+            VoicePlayInfoPtr info = std::make_shared< VoicePlayInfo>();
+            int lokey = -1;
+            int hikey = -1;
+            int onlykey = -1;
+#if 0
+            for (auto value : *(reg.compiledValues)) {
+                switch (value->key) {
+                    case Opcode::LO_KEY:
+                        lowkey = value->value;
+                        break:
+                    default:
+                        assert(false);
+                }
+               
+            }
+#endif
+            auto value = reg.compiledValues->get(Opcode::LO_KEY);
+            if (value) {
+                lokey = value->numeric;
+            }
+            value = reg.compiledValues->get(Opcode::HI_KEY);
+            if (value) {
+                hikey = value->numeric;
+            }
+#if 0
+            value = reg.compiledValues->get(Opcode::KEY);
+            if (value) {
+                hikey = value->numeric;
+            }
+#endif
+            
+
+
+            if ((lokey >= 0) && (hikey >= 0)) {
+                for (int key = lokey; key <= hikey; ++key) {
+                    info->valid = true;
+                    // need to add sample index, transpose amount, etc...
+                    info->sampleIndex = 1;
+                    printf("faking sample index 1\n");
+                    printf("adding entry for pitch %d\n", key);
+                    pitchMap[key] = info;
+                }
+            }
+            else {
+                printf("region defined nothing\n");
+            }
+        }
+    }
+}
+
+
+
+CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPtr inst)
+{
+    assert(!inst->wasExpanded);
+    expandAllKV(inst);
     CompiledInstrumentPtr instOut = std::make_shared< CompiledInstrument>();
+    instOut->compile(inst);
     return instOut;
+
 }
 
 
  void CompiledInstrument::getInfo(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
-     if (!testMode) return;
+    
+     if (testMode) {
 
-     info.sampleIndex = 1;
-     info.needsTranspose = false;
-     info.transposeAmt = 1;
-     info.valid = true;
+         info.sampleIndex = 1;
+         info.needsTranspose = false;
+         info.transposeAmt = 1;
+         info.valid = true;
+         return;
+     }
+     info.valid = false;
+     auto entry = pitchMap.find(midiPitch);
+     if (entry != pitchMap.end()) {
+         //assert(false);
+         info = *entry->second;         // this requires copy - we could use smart pointers
+         
+     }
+     else printf("pitch %d not found\n", midiPitch);
  }
 
 
