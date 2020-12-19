@@ -10,16 +10,37 @@ namespace ci
 {
 
 static Opcode translate(const std::string& s) {
-    if (s == "hikey") 
+    if (s == "hikey")
         return Opcode::HI_KEY;
-     if (s == "lokey") 
+    else if (s == "lokey")
         return Opcode::LO_KEY;
+    else if (s == "pitch_keycenter")
+        return Opcode::PITCH_KEYCENTER;
+    else if (s == "ampeg_release")
+        return Opcode::AMPEG_RELEASE;
+    else if (s == "loop_mode")
+        return Opcode::LOOP_MODE;
+    else if (s == "loop_continuous")
+        return Opcode::LOOP_CONTINUOUS;
+    else if (s == "loop_start")
+        return Opcode::LOOP_START; 
+    else if (s == "loop_end")
+        return Opcode::LOOP_END;
+    else if (s == "sample")
+        return Opcode::SAMPLE;
+
+    else printf("!! unrecognized optode %s\n", s.c_str());
 
     return Opcode::NONE;
 
 }
 
 static DiscreteValue translated(const std::string& s) {
+    if (s == "loop_continuous") 
+        return DiscreteValue::LOOP_CONTINUOUS;
+    if (s == "no_loop")
+         return DiscreteValue::NO_LOOP;
+    
     return DiscreteValue::NONE;
 }
 
@@ -28,12 +49,27 @@ static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input) {
     DiscreteValue dv = translated(input->value);
     ValuePtr vp = std::make_shared<Value>();
     vp->nonNUmeric = dv;
-    if (dv == DiscreteValue::NONE) {
-        int x = std::stoi(input->value);
-        vp->numeric = x;
+    bool isValid = true;
+
+    if (o == Opcode::SAMPLE) {
+        vp->string = input->value;
     }
 
-    results->add(o, vp);
+    // TODO: excpetions don't work in rack
+    else if (dv == DiscreteValue::NONE) {
+        try {
+            int x = std::stoi(input->value);
+            vp->numeric = x;
+        }
+        catch (std::exception& ) {
+            isValid = false;
+            printf("could not convert %s to number\n", input->value.c_str());
+        }
+    }
+
+    if (isValid) {
+        results->add(o, vp);
+    }
  
 }
 

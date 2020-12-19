@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <vector>
 #include <map>
 
@@ -19,10 +20,19 @@ namespace ci
 enum class Opcode {
     NONE,
     HI_KEY,
-    LO_KEY
+    LO_KEY,
+    AMPEG_RELEASE,
+    LOOP_CONTINUOUS,
+    LOOP_MODE,
+    LOOP_START,
+    LOOP_END,
+    PITCH_KEYCENTER,
+    SAMPLE
 };
 
 enum class DiscreteValue {
+    LOOP_CONTINUOUS,
+    NO_LOOP,
     NONE
 };
 
@@ -33,6 +43,7 @@ class Value {
 public:
     int numeric;
     DiscreteValue nonNUmeric;
+    std::string string;
 };
 
 using ValuePtr = std::shared_ptr<Value>;
@@ -66,6 +77,10 @@ public:
     int sampleIndex = 0;
     bool needsTranspose = false;
     float transposeAmt = 1;
+
+    bool canPlay() const {
+        return valid && (sampleIndex > 0);
+    }
 };
 using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
@@ -82,6 +97,13 @@ private:
 
     bool testMode = false;
     std::map<int, VoicePlayInfoPtr> pitchMap;
+
+    /**
+     * Track all the unique relative paths here
+     * key = file path
+     * value = index (wave id);
+     */
+    std::map<std::string, int> relativeFilePaths;    
 
     void compile(const SInstrumentPtr);
 
