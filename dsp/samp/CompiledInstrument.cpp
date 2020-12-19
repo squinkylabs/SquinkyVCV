@@ -95,30 +95,16 @@ void expandAllKV(SInstrumentPtr inst) {
     inst->wasExpanded = true;
 }
 
-void CompiledInstrument::compile(const SInstrumentPtr in) {
-    assert(in->wasExpanded);
-    for (auto group : in->groups) {
-        //
-        printf("comp group with %zd regions\n", group->regions.size());
-        for (auto region : group->regions) {
-            printf("compiling region\n");
-            const SRegion& reg = *region;
+void CompiledInstrument::compileSub(const SRegionPtr region)
+{
+   const SRegion& reg = *region;
             VoicePlayInfoPtr info = std::make_shared< VoicePlayInfo>();
             int lokey = -1;
             int hikey = -1;
             int onlykey = -1;
-#if 0
-            for (auto value : *(reg.compiledValues)) {
-                switch (value->key) {
-                    case Opcode::LO_KEY:
-                        lowkey = value->value;
-                        break:
-                    default:
-                        assert(false);
-                }
-               
-            }
-#endif
+            std::string sampleFile;
+
+        // this may not scale ;-)
             auto value = reg.compiledValues->get(Opcode::LO_KEY);
             if (value) {
                 lokey = value->numeric;
@@ -127,28 +113,53 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
             if (value) {
                 hikey = value->numeric;
             }
-#if 0
-            value = reg.compiledValues->get(Opcode::KEY);
+
+            value = reg.compiledValues->get(Opcode::SAMPLE);
             if (value) {
-                hikey = value->numeric;
+                assert(!value->string.empty());
+                sampleFile = value->string;
             }
-#endif
-            
 
 
-            if ((lokey >= 0) && (hikey >= 0)) {
+            if ((lokey >= 0) && (hikey >= 0) && !sampleFile.empty()) {
+
+                const int sampleIndex = addSampleFile(sampleFile);
                 for (int key = lokey; key <= hikey; ++key) {
                     info->valid = true;
                     // need to add sample index, transpose amount, etc...
-                    info->sampleIndex = 1;
-                    printf("faking sample index 1\n");
-                    printf("adding entry for pitch %d\n", key);
+                  //  info->sampleIndex = 1;
+                    info->sampleIndex = sampleIndex;
+                 //   printf("faking sample index 1\n");
+                    printf("adding entry for pitch %d, si=%d\n", key, sampleIndex);
                     pitchMap[key] = info;
+                
                 }
             }
             else {
                 printf("region defined nothing\n");
-            }
+            } 
+}
+
+int CompiledInstrument::addSampleFile(const std::string& s) {
+    int ret = 0;
+    auto it = relativeFilePaths.find(s);
+    if (it != relativeFilePaths.end()) {
+        ret = it->second;
+    } else {
+        relativeFilePaths.insert({s, nextIndex});
+        ret = nextIndex++;
+    }
+    return ret;
+}
+
+void CompiledInstrument::compile(const SInstrumentPtr in) {
+    assert(in->wasExpanded);
+    for (auto group : in->groups) {
+        //
+        printf("comp group with %zd regions\n", group->regions.size());
+        for (auto region : group->regions) {
+            printf("compiling region\n");
+            compileSub(region);
         }
     }
 }

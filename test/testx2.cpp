@@ -266,7 +266,7 @@ static void testCompileInst1()
 {
     printf("\n-- test comp inst 1\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    auto err = SParse::go("<global><region><region>lokey=60\nhikey=60<region>", inst);
+    auto err = SParse::go("<global><region><region>lokey=60\nhikey=60\nsample=foo<region>", inst);
     assert(err.empty());
 
     ci::CompiledInstrumentPtr i = ci::CompiledInstrument::make(inst);

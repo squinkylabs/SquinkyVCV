@@ -11,6 +11,7 @@ class SRegion;
 using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>; 
 using SKeyValueList = std::vector<SKeyValuePairPtr>;
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
+using SRegionPtr = std::shared_ptr<SRegion>;
 
 namespace ci
 {
@@ -104,10 +105,14 @@ private:
      * value = index (wave id);
      */
     std::map<std::string, int> relativeFilePaths;    
+    int nextIndex = 1;
 
     void compile(const SInstrumentPtr);
+    void compileSub(const SRegionPtr);
 
-   
+    /** Returns wave index
+     */
+    int addSampleFile(const std::string& s);
 };
 
 
