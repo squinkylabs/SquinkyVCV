@@ -8,10 +8,12 @@
 class SKeyValuePair;
 class SInstrument;
 class SRegion;
+class WaveLoader;
 using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>; 
 using SKeyValueList = std::vector<SKeyValuePairPtr>;
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
 using SRegionPtr = std::shared_ptr<SRegion>;
+using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 
 namespace ci
 {
@@ -86,6 +88,8 @@ public:
 using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 
+
+
 class CompiledInstrument {
 public:
     static CompiledInstrumentPtr make(const SInstrumentPtr);
@@ -93,6 +97,11 @@ public:
     void _setTestMode() {
         testMode = true;
     }
+
+    /**
+     * move all the waves from here to wave loader
+     */
+    void setWaves(WaveLoaderPtr waveLoader, const std::string& rootPath);
 
 private:
 

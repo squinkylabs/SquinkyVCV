@@ -44,7 +44,7 @@ void initmycb()
 }
 #endif
 
-
+#if 0
 void WaveLoader::load(const std::string& fileName) {
     clear();
     WaveInfoPtr wi = std::make_shared<WaveInfo>(fileName);
@@ -52,17 +52,19 @@ void WaveLoader::load(const std::string& fileName) {
     wi->load();
     info.push_back(wi);
 }
+#endif
 
 void WaveLoader::clear()
 {
-    info.clear();
+    finalInfo.clear();
 }
 
 WaveLoader::WaveInfoPtr WaveLoader::getInfo(int index) const {
-    if (index < 1 || index > int(info.size())) {
+    assert(didLoad);
+    if (index < 1 || index > int(finalInfo.size())) {
         return nullptr;
     }
-    return info[index-1];
+    return finalInfo[index-1];
 
 }
 
@@ -70,6 +72,28 @@ WaveLoader::WaveInfo::WaveInfo(const std::string& path) : fileName(path) {
     //initmycb();
 }
 
+void WaveLoader::addNextSample(const std::string& fileName)
+{
+    assert(!didLoad);
+    printf("adding %s\n", fileName.c_str());
+    filesToLoad.push_back(fileName);
+}
+
+void WaveLoader::load()
+{
+    printf("waveLoader::load\n");
+    assert(!didLoad);
+    didLoad = true;
+    for (std::string& file : filesToLoad) {
+        WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
+        waveInfo->load();
+
+        finalInfo.push_back(waveInfo);
+        printf("adding one\n");
+    }
+}
+
+#if 1
 void WaveLoader::WaveInfo::load() {
     printf("loading: %s\n", fileName.c_str());
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
@@ -78,9 +102,11 @@ void WaveLoader::WaveInfo::load() {
         printf("error opening wave\n");
         return;
     }
+    printf("after load, frames = %lld\n", totalFrameCount);
     data = pSampleData;
     valid = true;
 }
+#endif
 
 WaveLoader::WaveInfo::~WaveInfo() {
     if (data) {

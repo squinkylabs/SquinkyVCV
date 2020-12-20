@@ -10,7 +10,8 @@
 static void testWaveLoader0()
 {
     WaveLoader w;
-    w.load("fake file name");
+    w.addNextSample("fake file name");
+    w.load();
     auto x = w.getInfo(1);
     printf("foo\n");
     assert(!x->valid);
@@ -22,7 +23,8 @@ static void testWaveLoader0()
 static void testWaveLoader1()
 {
     WaveLoader w;
-    w.load("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav");
+    w.addNextSample("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav");
+    w.load();
     auto x = w.getInfo(1);
     printf("foo\n");
     assert(x->valid);
@@ -62,6 +64,22 @@ static void testPlayInfoPiano() {
     assert(minSampleIndex == 1);
     assert(maxSampleIndex > 4);
 
+}
+
+static void testLoadWavesPiano()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
+    auto err = SParse::goFile(p, inst);
+    assert(err.empty());
+
+    ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
+    WaveLoaderPtr loader = std::make_shared<WaveLoader>();
+
+    const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
+    cinst->setWaves(loader, pRoot);
+    loader->load();
+    // assert(false);
 }
 
 static void testStream()
@@ -162,7 +180,8 @@ static void testSamplerRealSound()
     cinst->_setTestMode();
 
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
-    w->load(p);
+    w->addNextSample(p);
+    w->load();
 
     WaveLoader::WaveInfoPtr info = w->getInfo(1);
     assert(info->valid);
@@ -304,6 +323,7 @@ void testx2()
     testCompileInst1();
     printf("make testINfoPiano work\n");
     testPlayInfoPiano();
+    testLoadWavesPiano();
 
 
 }

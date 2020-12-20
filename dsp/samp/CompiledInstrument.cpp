@@ -2,6 +2,7 @@
 #include "CompiledInstrument.h"
 #include "SInstrument.h"
 #include "SParse.h"
+#include "WaveLoader.h"
 
 #include <assert.h>
 #include <string>
@@ -196,6 +197,39 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPt
      }
      else printf("pitch %d not found\n", midiPitch);
  }
+
+void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootPath) 
+{
+    std::vector<std::string> tempPaths;
+    assert(!rootPath.empty());
+
+    auto num = relativeFilePaths.size();
+    tempPaths.resize(num);
+    printf("resized to %zd\n", num);
+    // index is 1..
+    for (auto pathEntry : relativeFilePaths) {
+        std::string path = pathEntry.first;
+     
+        int waveIndex = pathEntry.second;
+        printf("in setWaves, entry has %s index = %d\n", path.c_str(), waveIndex);
+       // tempPaths.resize(waveIndex);
+        assert(waveIndex > 0);
+        assert(!path.empty());
+        tempPaths[waveIndex - 1] = path;
+     
+    }
+    printf("after fill, size of temp = %zd, started with %zd\n", tempPaths.size(), relativeFilePaths.size());
+
+    for (auto path : tempPaths) {
+        printf("temp: %s\n", path.c_str());
+    }
+
+
+    for (auto path : tempPaths) {
+        assert(!path.empty());
+        loader->addNextSample(rootPath + path);
+    }
+}
 
 
 }
