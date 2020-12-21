@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "CompiledInstrument.h"
 #include "Sampler4vx.h"
 #include "SInstrument.h"
 #include "WaveLoader.h"
@@ -110,20 +111,39 @@ inline void Samp<TBase>::init()
 template <class TBase>
 inline void Samp<TBase>::setupSamplesDummy()
 {
+#if 0
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
-    inst->_setTestMode();
+    ci::CompiledInstrument cinst(inst);
+    //inst->_setTestMode();
+#endif
+   // const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
 
-    const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
-    w->load(p);
-    playback[0].setPatch(inst);
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
+    const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
+    auto err = SParse::goFile(p, inst);
+    assert(err.empty());
 
-    WaveLoader::WaveInfoPtr info = w->getInfo(1);
+    ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
+    waves = std::make_shared<WaveLoader>();
+
+   // assert(false);
+   // w->load(p);
+    cinst->setWaves(waves, pRoot);
+    playback[0].setPatch(cinst);
+
+    fprintf(stderr, "about load waves\n");
+    waves->load();
+    fprintf(stderr, "loaded waves\n");
+    WaveLoader::WaveInfoPtr info = waves->getInfo(1);
     assert(info->valid);
 
-    playback[0].setLoader(w);
+    playback[0].setLoader(waves);
     playback[0].setNumVoices(1);
-    playback[0].setLoader(w);
+
+    // why did I do this twice?
+    playback[0].setLoader(waves);
 }
 
 template <class TBase>
