@@ -116,11 +116,29 @@ static void testStreamValues()
     assertEQ(x[0], 6);
 
     s.setSample(x, 6);
-    s.setTranspose(false, 0);
+    s.setTranspose(false, 1.f);
     assert(s.canPlay());
     for (int i=0; i< 6; ++i) {
         float v = s.step();
         assertEQ(v, 6-i);
+    }
+    assert(!s.canPlay());
+}
+
+static void testStreamXpose()
+{
+    Streamer s;
+    assert(!s.canPlay());
+
+    float x[6] = {6,5,4,3,2,1};
+    assertEQ(x[0], 6);
+
+    s.setSample(x, 6);
+    s.setTranspose(true, 2.f);
+    assert(s.canPlay());
+    for (int i=0; i< 3; ++i) {
+        float v = s.step();
+        assertEQ(v, 6-(2*i));
     }
     assert(!s.canPlay());
 }
@@ -132,7 +150,7 @@ static void testStreamRetrigger()
     float x[6] = { 6,5,4,3,2,1 };
 
     s.setSample(x, 6);
-    s.setTranspose(false, 0);
+    s.setTranspose(false, 1.f);
     assert(s.canPlay());
     for (int i = 0; i < 6; ++i) {
         float v = s.step();
@@ -144,10 +162,11 @@ static void testStreamRetrigger()
     for (int i = 0; i < 6; ++i) {
         assert(s.canPlay());
         float v = s.step();
-       
     }
     assert(!s.canPlay());
 }
+
+
 
 
 static void testSampler()
@@ -173,8 +192,7 @@ static void testSamplerRealSound()
 {
     Sampler4vx s;
     SInstrumentPtr inst = std::make_shared<SInstrument>();
- //   ci::expandAllKV(inst);
-  //  ci::CompiledInstrumentPtr cinst = ci::compile(inst);
+
     ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
     cinst->_setTestMode();
@@ -199,12 +217,10 @@ static void testSamplerRealSound()
 
     x = s.step();
     assert(x[0] != 0);
-
 }
 
 static void testCIKeysAndValues()
 {
-
     SKeyValuePair p2 = { "hikey", "12" };
 
     SKeyValuePairPtr p = std::make_shared<SKeyValuePair>("hikey", "12");
@@ -278,7 +294,6 @@ static void testParseGlobalWitRegionKVCompiled()
 
     auto val = r->compiledValues->get(ci::Opcode::LO_KEY);
     assertEQ(val->numeric, 57);
-
 }
 
 static void testCompileInst1()
@@ -305,12 +320,11 @@ void testx2()
     testWaveLoader1();
     testPlayInfo();
 
-
-
     testStream();
     testStreamEnd();
     testStreamValues();
     testStreamRetrigger();
+    testStreamXpose();
 
     //testSampler();
     testSamplerRealSound();
@@ -321,7 +335,6 @@ void testx2()
     testParseGlobalWitRegionKVCompiled();
 
     testCompileInst1();
-    printf("make testINfoPiano work\n");
     testPlayInfoPiano();
     testLoadWavesPiano();
 

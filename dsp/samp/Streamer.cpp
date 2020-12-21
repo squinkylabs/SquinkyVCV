@@ -2,11 +2,35 @@
 #include "Streamer.h"
 #include <assert.h>
 
-
 float Streamer::step() 
 {
-    //int curIntegerSampleOffset = 0;
+    return transposeEnabled ? stepTranspose() :  stepNoTranspose();
+}
+
+float Streamer::stepTranspose() 
+{
     float ret = 0;
+     assert(transposeEnabled);
+
+    // we don't need this compare, could be arePlaying
+    if (curFloatSampleOffset < (frames)) {
+        assert(arePlaying);
+
+        // TODO: interp
+        const int index = int(curFloatSampleOffset);
+        ret = data[index];
+        curFloatSampleOffset += transposeMultiplier;
+    }
+    if (curFloatSampleOffset >= frames) {
+        arePlaying = false;;
+    }
+    return ret * vol;
+}
+
+float Streamer::stepNoTranspose() 
+{
+    float ret = 0;
+    assert(!transposeEnabled);
 
     // we don't need this compare, could be arePlaying
     if (curIntegerSampleOffset < (frames)) {
@@ -39,6 +63,6 @@ void Streamer::setSample(float* d, int f)
 }
 void Streamer::setTranspose(bool doTranspose, float amount)
 {
-    assert(!doTranspose);
-    assert(amount == 0);  
+    transposeEnabled = doTranspose;
+    transposeMultiplier = amount;
 }

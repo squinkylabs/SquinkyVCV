@@ -15,10 +15,15 @@ public:
     float* data = nullptr;
     int frames = 0;
 
+    float vol = 1;
+
     int curIntegerSampleOffset = 0;
-    bool arePlaying  =false;
+    bool arePlaying = false;
     float curFloatSampleOffset = 0;
     bool areTransposing = false;
     bool transposeEnabled = false;
-    float vol = 1;
+    float transposeMultiplier = 1;
+
+    float stepNoTranspose();
+    float stepTranspose();
 };

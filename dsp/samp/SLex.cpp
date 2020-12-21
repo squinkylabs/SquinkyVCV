@@ -5,12 +5,14 @@
 #include <assert.h>
 SLexPtr SLex::go(const std::string& s) 
 {
+    int count = 0;
     SLexPtr result = std::make_shared<SLex>();
     for (const char& c : s) {
         bool ret = result->procNextChar(c);
         if (!ret) {
             return nullptr;
         }
+        ++count;
     }
     bool ret = result->procEnd();
     return ret ? result : nullptr;;
@@ -168,8 +170,8 @@ bool SLex::proxNextIdentifierChar(char c) {
         return procFreshChar(c);
     }
 
-    // terminate on these, but don't prox
-    if (c == 10 || c == 13) {
+    // terminate on these, but don't proc
+    if (isspace(c)) {
         items.push_back(std::make_shared<SLexIdentifier>(curItem));
         curItem.clear();
         inIdentifier = false;

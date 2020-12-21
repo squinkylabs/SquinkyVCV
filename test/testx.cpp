@@ -145,6 +145,20 @@ static void testLexTwoKeys()
     assertEQ(id->idName, "d");
 }
 
+static void testLexTwoKeysOneLine()
+{
+  
+    SLexPtr lex = SLex::go("a=b c=d");
+    assert(lex);
+    lex->validate();
+    //lex->_dump();
+
+    assertEQ(lex->items.size(), 6);
+    assert(lex->items.back()->itemType == SLexItem::Type::Identifier);
+    SLexIdentifier* id = static_cast<SLexIdentifier*>(lex->items.back().get());
+    assertEQ(id->idName, "d");
+}
+
 static void testLexTwoRegionsWithKeys()
 {
     printf("testLexTwoRegionsValues\n");
@@ -276,6 +290,54 @@ static void testparse_piano1()
     assert(err.empty());
 }
 
+#if 0
+static void testparse_piano2b()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    const char* pOrig = R"foo(
+//©2015-2016 Rudi Fiasco
+//rev.22.08.2016
+
+<global>
+pan=16
+
+//note on dampened
+
+<group> group=0 trigger=attack ampeg_release=0.5 volume=9
+<region> sample=K18\A0.pp.wav lovel=1 hivel=22 lokey=21 hikey=22 pitch_keycenter=21
+<region> sample=K18\A0.p.wav lovel=23 hivel=43 lokey=21 hikey=22 pitch_keycenter=21)foo";
+
+
+    const char* p2 = R"foo(<global>
+pan=16
+
+//note on dampened
+
+<group> group=0 trigger=attack ampeg_release=0.5 volume=9
+<region> sample=K18\A0.pp.wav lovel=1 hivel=22 lokey=21 hikey=22 pitch_keycenter=21
+<region> sample=K18\A0.p.wav lovel=23 hivel=43 lokey=21 hikey=22 pitch_keycenter=21)foo";
+
+    const char* p3 = R"foo(<group> group=0 trigger=attack ampeg_release=0.5 volume=9
+<region> sample=K18\A0.pp.wav lovel=1 hivel=22 lokey=21 hikey=22 pitch_keycenter=21
+<region> sample=K18\A0.p.wav lovel=23 hivel=43 lokey=21 hikey=22 pitch_keycenter=21)foo";
+
+    const char* p4 = R"foo(<group> group=0 trigger=attack)foo";
+    const char* p = "a=b c=d";
+    auto lex = SLex::go(p);
+    assert(lex);
+}
+#endif
+
+static void testparse_piano2()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    const char* p = R"foo(D:\samples\k18-Upright-Piano\k18-Upright-Piano.sfz)foo";
+    printf("p=%s\n", p);
+    auto err = SParse::goFile(p, inst);
+    assert(err.empty());
+}
+
 void testx()
 {
 
@@ -290,6 +352,7 @@ void testx()
     testLexGlobalWithData();
     testLexTwoRegions();
     testLexTwoKeys();
+    testLexTwoKeysOneLine();
     testLexTwoRegionsWithKeys();
     testLexMangledId();
     testLex4();
@@ -307,4 +370,7 @@ void testx()
     testParseTwoGroupsA();
     testParseTwoGroupsB();
     testparse_piano1();
+   // testparse_piano2b();
+    printf("put back 2 piano!!!\n");
+    testparse_piano2();
 }
