@@ -89,7 +89,6 @@ using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 
 
-
 class CompiledInstrument {
 public:
     static CompiledInstrumentPtr make(const SInstrumentPtr);

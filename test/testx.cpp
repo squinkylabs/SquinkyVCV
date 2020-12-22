@@ -338,6 +338,8 @@ static void testparse_piano2()
     assert(err.empty());
 }
 
+
+
 void testx()
 {
     testx0();
@@ -356,7 +358,6 @@ void testx()
     testLexMangledId();
     testLex4();
     testLex5();
-
 
     testparse1();
     testparse2();

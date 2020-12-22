@@ -313,6 +313,20 @@ static void testCompileInst1()
     assertNE(info.sampleIndex, 0);
 }
 
+static void testTranspose1()
+{
+    auto inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(R"foo(<region> sample=K18\D#1.pp.wav lovel=1 hivel=22 lokey=26 hikey=28 pitch_keycenter=27)foo", inst);
+    assert(err.empty());
+    auto cinst = ci::CompiledInstrument::make(inst);
+    ci::VoicePlayInfo info;
+    printf("about to fetch ifo for key = 26\n");
+    cinst->getInfo(info, 26, 64);
+    assert(info.needsTranspose);
+    assertEQ(info.transposeAmt, 26.f/27.f);
+
+}
+
 
 void testx2()
 {
@@ -338,5 +352,6 @@ void testx2()
     testPlayInfoPiano();
     testLoadWavesPiano();
 
+    testTranspose1();
 
 }

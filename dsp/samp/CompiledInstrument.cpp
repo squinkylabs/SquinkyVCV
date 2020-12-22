@@ -99,10 +99,11 @@ void expandAllKV(SInstrumentPtr inst) {
 void CompiledInstrument::compileSub(const SRegionPtr region)
 {
    const SRegion& reg = *region;
-            VoicePlayInfoPtr info = std::make_shared< VoicePlayInfo>();
+         
             int lokey = -1;
             int hikey = -1;
             int onlykey = -1;
+            int keycenter = -1;
             std::string sampleFile;
 
         // this may not scale ;-)
@@ -120,16 +121,32 @@ void CompiledInstrument::compileSub(const SRegionPtr region)
                 assert(!value->string.empty());
                 sampleFile = value->string;
             }
-
+            
+            value = reg.compiledValues->get(Opcode::PITCH_KEYCENTER);
+            if (value) {
+                keycenter = value->numeric;
+            }
 
             if ((lokey >= 0) && (hikey >= 0) && !sampleFile.empty()) {
 
                 const int sampleIndex = addSampleFile(sampleFile);
                 for (int key = lokey; key <= hikey; ++key) {
+                    VoicePlayInfoPtr info = std::make_shared< VoicePlayInfo>();
                     info->valid = true;
                     // need to add sample index, transpose amount, etc...
-                  //  info->sampleIndex = 1;
+     
                     info->sampleIndex = sampleIndex;
+                    if (key != keycenter && (keycenter != -1)) {
+                        // we really would like the sample rate info here!
+
+                        float amount = float(key) / float(keycenter);
+                        printf("just added amount = %f key = %d, center = %d\n", amount, key, keycenter);
+                        info->needsTranspose = true;
+                        info->transposeAmt = amount;
+                    } else {
+                        info->needsTranspose = false;
+                        info->transposeAmt = 1;
+                    }
                  //   printf("faking sample index 1\n");
                     printf("adding entry for pitch %d, si=%d\n", key, sampleIndex);
                     pitchMap[key] = info;
@@ -165,8 +182,6 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
     }
 }
 
-
-
 CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPtr inst)
 {
     assert(!inst->wasExpanded);
@@ -174,14 +189,11 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPt
     CompiledInstrumentPtr instOut = std::make_shared< CompiledInstrument>();
     instOut->compile(inst);
     return instOut;
-
 }
 
-
- void CompiledInstrument::getInfo(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
+void CompiledInstrument::getInfo(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
     
      if (testMode) {
-
          info.sampleIndex = 1;
          info.needsTranspose = false;
          info.transposeAmt = 1;
