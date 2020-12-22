@@ -340,7 +340,6 @@ static void testparse_piano2()
 
 void testx()
 {
-
     testx0();
     testx1();
     testx2();
