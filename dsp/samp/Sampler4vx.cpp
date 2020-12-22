@@ -30,12 +30,14 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity)
     assert(waveInfo->numChannels == 1);
     player.setSample(waveInfo->data, int(waveInfo->totalFrameCount));
     player.setTranspose(patchInfo.needsTranspose, patchInfo.transposeAmt);
-   // printf("just set player trans(%d, %f)\n", patchInfo.needsTranspose, patchInfo.transposeAmt); fflush(stdout);
+    // printf("note_on %d, %d, %d\n", channel, midiPitch, midiVelocity);
+    // printf("just set player trans(%d, %f)\n", patchInfo.needsTranspose, patchInfo.transposeAmt); fflush(stdout);
 }
 
 void Sampler4vx::note_off(int channel)
 {
     player.mute();
+    // printf("note off %d\n", channel);  fflush(stdout);
 }
 
 void Sampler4vx::setNumVoices(int voices)

@@ -2,7 +2,9 @@
 #pragma once
 
 #include "CompiledInstrument.h"
+#include "Divider.h"
 #include "Sampler4vx.h"
+#include "SqPort.h"
 #include "SInstrument.h"
 #include "WaveLoader.h"
 
@@ -91,6 +93,10 @@ private:
     WaveLoaderPtr waves;
 
     bool lastGate[16];
+    Divider divn;
+    int numChannels_m = 1;
+
+    void stepn();
 
     void setupSamplesDummy();
 
@@ -100,12 +106,14 @@ private:
 template <class TBase>
 inline void Samp<TBase>::init()
 {
-      printf("init 102\n"); fflush(stdout);
+    divn.setup(32, [this]() {
+        this->stepn();
+    });
+
     for (int i = 0; i<16; ++i) {
         lastGate[i] = false;
     }
     setupSamplesDummy();
-      printf("init 107\n"); fflush(stdout);
 }
 
 template <class TBase>
@@ -147,26 +155,45 @@ inline void Samp<TBase>::setupSamplesDummy()
 }
 
 template <class TBase>
+inline void Samp<TBase>::stepn()
+{
+    SqInput& inPort = TBase::inputs[PITCH_INPUT];
+    SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
+    numChannels_m = inPort.channels;
+    outPort.setChannels(numChannels_m);
+   // printf("just set to %d channels\n", numChannels_m); fflush(stdout);
+}
+
+template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args)
 {
-    // mono, for now
-    bool gate = TBase::inputs[GATE_INPUT].value > 1;
-    if (gate != lastGate[0]) {
-        lastGate[0] = gate;
-        if (gate) {
-            const float pitchCV = TBase::inputs[PITCH_INPUT].value;
-            const int midiPitch = 60 + int(std::floor(pitchCV * 12));
-           
-            // void note_on(int channel, int midiPitch, int midiVVelocity);
-            const int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].value * 12);
-            playback[0].note_on(0, midiPitch, midiVelocity);
-        } else {
-            playback[0].note_off(0);
-        }
+    divn.step();
 
+    int numBanks = numChannels_m / 4;
+    if (numBanks * 4 < numChannels_m) {
+        numBanks++;
     }
-    auto output = playback[0].step();
-    TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, 0);
+
+    for (int bank = 0; bank < numBanks; ++bank) {
+        for (int iSub=0; iSub<4; ++iSub) {
+            const int channel = iSub + bank * 4;
+            const bool gate = TBase::inputs[GATE_INPUT].getVoltage(channel) > 1;   
+            if (gate != lastGate[channel]) { 
+                if (gate) {
+                    const float pitchCV = TBase::inputs[PITCH_INPUT].getVoltage(channel);
+                    const int midiPitch = 60 + int(std::floor(pitchCV * 12));
+            
+                    const int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].value * 12);
+                    playback[bank].note_on(iSub, midiPitch, midiVelocity);
+                } else {
+                    playback[bank].note_off(iSub);
+                } 
+                lastGate[channel] = gate;
+            } 
+        }
+        auto output = playback[bank].step();
+        TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
+    }
 }
 
 template <class TBase>
