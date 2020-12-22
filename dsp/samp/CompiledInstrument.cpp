@@ -5,6 +5,7 @@
 #include "WaveLoader.h"
 
 #include <assert.h>
+#include <cmath>
 #include <string>
 
 namespace ci
@@ -139,16 +140,18 @@ void CompiledInstrument::compileSub(const SRegionPtr region)
                     if (key != keycenter && (keycenter != -1)) {
                         // we really would like the sample rate info here!
 
-                        float amount = float(key) / float(keycenter);
-                        printf("just added amount = %f key = %d, center = %d\n", amount, key, keycenter);
+                      //  float amount = float(key) / float(keycenter);
+                        int semiOffset = key - keycenter;
+                        float pitchMul = float(std::pow(2, semiOffset / 12.0));
+                       // printf("just added amount = %f key = %d, center = %d\n", pitchMul, key, keycenter);
                         info->needsTranspose = true;
-                        info->transposeAmt = amount;
+                        info->transposeAmt = pitchMul;
                     } else {
                         info->needsTranspose = false;
                         info->transposeAmt = 1;
                     }
                  //   printf("faking sample index 1\n");
-                    printf("adding entry for pitch %d, si=%d\n", key, sampleIndex);
+                  //  printf("adding entry for pitch %d, si=%d\n", key, sampleIndex);
                     pitchMap[key] = info;
                 
                 }

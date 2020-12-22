@@ -29,6 +29,8 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity)
     assert(waveInfo->valid);
     assert(waveInfo->numChannels == 1);
     player.setSample(waveInfo->data, int(waveInfo->totalFrameCount));
+    player.setTranspose(patchInfo.needsTranspose, patchInfo.transposeAmt);
+   // printf("just set player trans(%d, %f)\n", patchInfo.needsTranspose, patchInfo.transposeAmt); fflush(stdout);
 }
 
 void Sampler4vx::note_off(int channel)
