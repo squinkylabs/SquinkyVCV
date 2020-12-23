@@ -102,7 +102,7 @@ void WaveLoader::WaveInfo::load() {
         printf("error opening wave\n");
         return;
     }
-    printf("after load, frames = %lld\n", totalFrameCount);
+    printf("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
     data = pSampleData;
     valid = true;
 }

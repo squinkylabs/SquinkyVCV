@@ -6,11 +6,43 @@
 
 #include <assert.h>
 #include <cmath>
+#include <set>
 #include <string>
 
 namespace ci
 {
 
+static std::map<std::string, Opcode> opcodes = {
+    {"hikey", Opcode::HI_KEY},
+    {"lokey", Opcode::LO_KEY},
+    {"pitch_keycenter", Opcode::PITCH_KEYCENTER},
+    {"ampeg_release", Opcode::AMPEG_RELEASE},
+    {"loop_mode", Opcode::LOOP_MODE},
+    {"loop_continuous", Opcode::LOOP_CONTINUOUS},
+    {"loop_start", Opcode::LOOP_START},
+    {"loop_end", Opcode::LOOP_END},
+    {"sample", Opcode::SAMPLE}
+};
+
+static std::set<std::string> unrecognized;
+
+
+static Opcode translate(const std::string& s) {
+    auto entry = opcodes.find(s);
+    if (entry == opcodes.end()) {
+        auto find2 = unrecognized.find(s);
+        if (find2 == unrecognized.end()) {
+            unrecognized.insert({ s });
+            printf("!! unrecognized opcode %s\n", s.c_str());
+        }
+
+        return Opcode::NONE;
+    } else {
+        return entry->second;
+    }
+}
+
+#if 0
 static Opcode translate(const std::string& s) {
     if (s == "hikey")
         return Opcode::HI_KEY;
@@ -31,11 +63,12 @@ static Opcode translate(const std::string& s) {
     else if (s == "sample")
         return Opcode::SAMPLE;
 
-    else printf("!! unrecognized optode %s\n", s.c_str());
+    else printf("!! unrecognized opcode %s\n", s.c_str());
 
     return Opcode::NONE;
 
 }
+#endif
 
 static DiscreteValue translated(const std::string& s) {
     if (s == "loop_continuous") 
@@ -99,66 +132,66 @@ void expandAllKV(SInstrumentPtr inst) {
 
 void CompiledInstrument::compileSub(const SRegionPtr region)
 {
-   const SRegion& reg = *region;
+    const SRegion& reg = *region;
          
-            int lokey = -1;
-            int hikey = -1;
-            int onlykey = -1;
-            int keycenter = -1;
-            std::string sampleFile;
+    int lokey = -1;
+    int hikey = -1;
+    int onlykey = -1;
+    int keycenter = -1;
+    std::string sampleFile;
 
-        // this may not scale ;-)
-            auto value = reg.compiledValues->get(Opcode::LO_KEY);
-            if (value) {
-                lokey = value->numeric;
-            }
-            value = reg.compiledValues->get(Opcode::HI_KEY);
-            if (value) {
-                hikey = value->numeric;
-            }
+// this may not scale ;-)
+    auto value = reg.compiledValues->get(Opcode::LO_KEY);
+    if (value) {
+        lokey = value->numeric;
+    }
+    value = reg.compiledValues->get(Opcode::HI_KEY);
+    if (value) {
+        hikey = value->numeric;
+    }
 
-            value = reg.compiledValues->get(Opcode::SAMPLE);
-            if (value) {
-                assert(!value->string.empty());
-                sampleFile = value->string;
-            }
+    value = reg.compiledValues->get(Opcode::SAMPLE);
+    if (value) {
+        assert(!value->string.empty());
+        sampleFile = value->string;
+    }
             
-            value = reg.compiledValues->get(Opcode::PITCH_KEYCENTER);
-            if (value) {
-                keycenter = value->numeric;
-            }
+    value = reg.compiledValues->get(Opcode::PITCH_KEYCENTER);
+    if (value) {
+        keycenter = value->numeric;
+    }
 
-            if ((lokey >= 0) && (hikey >= 0) && !sampleFile.empty()) {
+    if ((lokey >= 0) && (hikey >= 0) && !sampleFile.empty()) {
 
-                const int sampleIndex = addSampleFile(sampleFile);
-                for (int key = lokey; key <= hikey; ++key) {
-                    VoicePlayInfoPtr info = std::make_shared< VoicePlayInfo>();
-                    info->valid = true;
-                    // need to add sample index, transpose amount, etc...
+        const int sampleIndex = addSampleFile(sampleFile);
+        for (int key = lokey; key <= hikey; ++key) {
+            VoicePlayInfoPtr info = std::make_shared< VoicePlayInfo>();
+            info->valid = true;
+            // need to add sample index, transpose amount, etc...
      
-                    info->sampleIndex = sampleIndex;
-                    if (key != keycenter && (keycenter != -1)) {
-                        // we really would like the sample rate info here!
+            info->sampleIndex = sampleIndex;
+            if (key != keycenter && (keycenter != -1)) {
+                // we really would like the sample rate info here!
 
-                      //  float amount = float(key) / float(keycenter);
-                        int semiOffset = key - keycenter;
-                        float pitchMul = float(std::pow(2, semiOffset / 12.0));
-                       // printf("just added amount = %f key = %d, center = %d\n", pitchMul, key, keycenter);
-                        info->needsTranspose = true;
-                        info->transposeAmt = pitchMul;
-                    } else {
-                        info->needsTranspose = false;
-                        info->transposeAmt = 1;
-                    }
-                 //   printf("faking sample index 1\n");
-                  //  printf("adding entry for pitch %d, si=%d\n", key, sampleIndex);
-                    pitchMap[key] = info;
-                
-                }
+                //  float amount = float(key) / float(keycenter);
+                int semiOffset = key - keycenter;
+                float pitchMul = float(std::pow(2, semiOffset / 12.0));
+                // printf("just added amount = %f key = %d, center = %d\n", pitchMul, key, keycenter);
+                info->needsTranspose = true;
+                info->transposeAmt = pitchMul;
+            } else {
+                info->needsTranspose = false;
+                info->transposeAmt = 1;
             }
-            else {
-                printf("region defined nothing\n");
-            } 
+            //   printf("faking sample index 1\n");
+            //  printf("adding entry for pitch %d, si=%d\n", key, sampleIndex);
+            pitchMap[key] = info;
+                
+        }
+    }
+    else {
+        printf("region defined nothing\n");
+    } 
 }
 
 int CompiledInstrument::addSampleFile(const std::string& s) {
