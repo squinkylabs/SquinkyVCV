@@ -3,69 +3,89 @@
 #include <assert.h>
 #include <stdio.h>
 
-float Streamer::step() 
+
+float_4 Streamer::step() 
 {
-    return transposeEnabled ? stepTranspose() :  stepNoTranspose();
+    float_4 ret;
+    for (int channel = 0; channel < 4; ++channel) {
+        ChannelData& cd = channels[channel];
+        float f =  cd.transposeEnabled ? stepTranspose(cd) : stepNoTranspose(cd);
+        ret[channel] = f;
+    }
+    return ret;
 }
 
-float Streamer::stepTranspose() 
+
+float Streamer::stepTranspose(ChannelData& cd)
 {
     float ret = 0;
-    assert(transposeEnabled);
+    assert(cd.transposeEnabled);
 
     // we don't need this compare, could be arePlaying
-    if (curFloatSampleOffset < (frames)) {
-        assert(arePlaying);
+    if (cd.curFloatSampleOffset < (cd.frames)) {
+        assert(cd.arePlaying);
 
         // TODO: interpolate
-        const int index = int(curFloatSampleOffset);
-        ret = data[index];
-        curFloatSampleOffset += transposeMultiplier;
+        const int index = int(cd.curFloatSampleOffset);
+        ret = cd.data[index];
+        cd.curFloatSampleOffset += cd.transposeMultiplier;
      //   printf("index=%d : %f\n",index, curFloatSampleOffset);
     }
-    if (curFloatSampleOffset >= frames) {
-        arePlaying = false;
+    if (cd.curFloatSampleOffset >= cd.frames) {
+        cd.arePlaying = false;
     }
-    return ret * vol;
+    return ret * cd.vol;
 }
 
-float Streamer::stepNoTranspose() 
+float Streamer::stepNoTranspose(ChannelData& cd)
 {
     float ret = 0;
-    assert(!transposeEnabled);
+    assert(!cd.transposeEnabled);
 
     // we don't need this compare, could be arePlaying
-    if (curIntegerSampleOffset < (frames)) {
-        assert(arePlaying);
-        ret = data[curIntegerSampleOffset];
-        ++curIntegerSampleOffset;
+    if (cd.curIntegerSampleOffset < (cd.frames)) {
+        assert(cd.arePlaying);
+        ret = cd.data[cd.curIntegerSampleOffset];
+        ++cd.curIntegerSampleOffset;
     }
-    if (curIntegerSampleOffset >= frames) {
-        arePlaying = false;
+    if (cd.curIntegerSampleOffset >= cd.frames) {
+        cd.arePlaying = false;
     }
-    return ret * vol;
+    return ret * cd.vol;
 }
 
-void Streamer::mute() 
+
+void Streamer::mute(int channel) 
 {
-    vol = 0;
-}
-bool Streamer::canPlay() 
-{
-    return bool(data && arePlaying);
+    assert(channel < 4);
+    channels[channel].vol = 0;
 }
 
-void Streamer::setSample(float* d, int f)
+bool Streamer::canPlay(int channel) 
 {
-    data = d;
-    frames = f;
-    arePlaying = true;
-    curIntegerSampleOffset = 0;
-    curFloatSampleOffset = 0;
-    vol = 1;
+    assert(channel < 4);
+    const ChannelData& cd = channels[channel];
+    return bool(cd.data && cd.arePlaying);
 }
-void Streamer::setTranspose(bool doTranspose, float amount)
+
+void Streamer::setSample(int channel, float* d, int f)
 {
-    transposeEnabled = doTranspose;
-    transposeMultiplier = amount;
+    assert(channel < 4);
+    ChannelData& cd = channels[channel];
+    
+    cd.data = d;
+    cd.frames = f;
+    cd.arePlaying = true;
+    cd.curIntegerSampleOffset = 0;
+    cd.curFloatSampleOffset = 0;
+    cd.vol = 1;
 }
+void Streamer::setTranspose(int channel, bool doTranspose, float amount)
+{
+    printf("streamer trans ch=%d\n", channel);
+    assert(channel < 4);
+    ChannelData& cd = channels[channel];
+    cd.transposeEnabled = doTranspose;
+    cd.transposeMultiplier = amount;
+}
+

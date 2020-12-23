@@ -139,7 +139,9 @@ inline void Samp<TBase>::setupSamplesDummy()
    // assert(false);
    // w->load(p);
     cinst->setWaves(waves, pRoot);
-    playback[0].setPatch(cinst);
+    for (int i=0; i<4; ++i) {
+        playback[i].setPatch(cinst);
+    }
 
     fprintf(stderr, "about load waves\n");
     waves->load();
@@ -147,12 +149,13 @@ inline void Samp<TBase>::setupSamplesDummy()
     WaveLoader::WaveInfoPtr info = waves->getInfo(1);
     assert(info->valid);
 
-    playback[0].setLoader(waves);
-    playback[0].setNumVoices(1);
-
-    // why did I do this twice?
-    playback[0].setLoader(waves);
+    for (int i=0; i<4; ++i) {
+        playback[i].setLoader(waves);
+        playback[i].setNumVoices(4);
+       // playback[i].setLoader(waves);       // why twice?
+    }
 }
+
 
 template <class TBase>
 inline void Samp<TBase>::stepn()
@@ -185,6 +188,7 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args)
             
                     const int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].value * 12);
                     playback[bank].note_on(iSub, midiPitch, midiVelocity);
+                    printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
                 } else {
                     playback[bank].note_off(iSub);
                 } 
