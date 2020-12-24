@@ -24,19 +24,34 @@ enum class Opcode {
     NONE,
     HI_KEY,
     LO_KEY,
+    HI_VEL,
+    LO_VEL,
     AMPEG_RELEASE,
     LOOP_CONTINUOUS,
     LOOP_MODE,
     LOOP_START,
     LOOP_END,
     PITCH_KEYCENTER,
-    SAMPLE
+    SAMPLE,
+    PAN,
+    GROUP,  // group is opcode as well at tag
+    TRIGGER,
+    VOLUME
 };
 
 enum class DiscreteValue {
     LOOP_CONTINUOUS,
     NO_LOOP,
+    ATTACK,         // trigger=attack
+    RELEASE,        // trigger= release
     NONE
+};
+
+enum class OpcodeType {
+    String,
+    Int,
+    Float,
+    Discrete
 };
 
 /**
@@ -44,9 +59,11 @@ enum class DiscreteValue {
  */
 class Value {
 public:
-    int numeric;
+    float numericFloat;
+    int numericInt;
     DiscreteValue nonNUmeric;
     std::string string;
+    OpcodeType type;
 };
 
 using ValuePtr = std::shared_ptr<Value>;

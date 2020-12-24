@@ -13,6 +13,8 @@ namespace ci
 {
 
 static std::map<std::string, Opcode> opcodes = {
+    {"hivel", Opcode::HI_VEL},
+    {"lokey", Opcode::LO_VEL},
     {"hikey", Opcode::HI_KEY},
     {"lokey", Opcode::LO_KEY},
     {"pitch_keycenter", Opcode::PITCH_KEYCENTER},
@@ -21,7 +23,11 @@ static std::map<std::string, Opcode> opcodes = {
     {"loop_continuous", Opcode::LOOP_CONTINUOUS},
     {"loop_start", Opcode::LOOP_START},
     {"loop_end", Opcode::LOOP_END},
-    {"sample", Opcode::SAMPLE}
+    {"sample", Opcode::SAMPLE},
+    {"pan", Opcode::PAN},
+    {"group", Opcode::GROUP},
+    {"trigger", Opcode::TRIGGER},
+    {"volume", Opcode::VOLUME}
 };
 
 static std::set<std::string> unrecognized;
@@ -42,43 +48,97 @@ static Opcode translate(const std::string& s) {
     }
 }
 
-#if 0
-static Opcode translate(const std::string& s) {
-    if (s == "hikey")
-        return Opcode::HI_KEY;
-    else if (s == "lokey")
-        return Opcode::LO_KEY;
-    else if (s == "pitch_keycenter")
-        return Opcode::PITCH_KEYCENTER;
-    else if (s == "ampeg_release")
-        return Opcode::AMPEG_RELEASE;
-    else if (s == "loop_mode")
-        return Opcode::LOOP_MODE;
-    else if (s == "loop_continuous")
-        return Opcode::LOOP_CONTINUOUS;
-    else if (s == "loop_start")
-        return Opcode::LOOP_START; 
-    else if (s == "loop_end")
-        return Opcode::LOOP_END;
-    else if (s == "sample")
-        return Opcode::SAMPLE;
 
-    else printf("!! unrecognized opcode %s\n", s.c_str());
-
-    return Opcode::NONE;
-
-}
-#endif
-
+// TODO: drive wil map like the others?
 static DiscreteValue translated(const std::string& s) {
-    if (s == "loop_continuous") 
+    if (s == "loop_continuous")
         return DiscreteValue::LOOP_CONTINUOUS;
     if (s == "no_loop")
-         return DiscreteValue::NO_LOOP;
+        return DiscreteValue::NO_LOOP;
+    if (s == "attack")
+        return DiscreteValue::ATTACK;
+    if (s == "release")
+        return DiscreteValue::RELEASE;
+
     
     return DiscreteValue::NONE;
 }
 
+
+
+// TODO: compare this to the spec
+static std::map<Opcode, OpcodeType> keyType = {
+    {Opcode::HI_KEY, OpcodeType::Int},
+    {Opcode::LO_KEY, OpcodeType::Int},
+    {Opcode::HI_VEL, OpcodeType::Int},
+    {Opcode::LO_VEL, OpcodeType::Int},
+    {Opcode::SAMPLE, OpcodeType::String},
+    {Opcode::AMPEG_RELEASE, OpcodeType::Float},
+    {Opcode::LOOP_MODE, OpcodeType::Discrete},
+    {Opcode::PITCH_KEYCENTER, OpcodeType::Int},
+    {Opcode::LOOP_START, OpcodeType::Int},
+    {Opcode::LOOP_END, OpcodeType::Int},
+    {Opcode::PAN, OpcodeType::Int},
+    {Opcode::GROUP, OpcodeType::Int},
+    {Opcode::TRIGGER, OpcodeType::Discrete},
+    {Opcode::VOLUME, OpcodeType::Float}
+};
+
+static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input) {
+    Opcode opcode = translate(input->key);
+    auto typeIter = keyType.find(opcode);
+    if (typeIter == keyType.end()) {
+        assert(false);
+        return;
+    }
+
+    const OpcodeType type = typeIter->second;
+    ValuePtr vp = std::make_shared<Value>();
+    vp->type = type;
+    bool isValid = true;
+    switch (type) {
+        case OpcodeType::Int:
+            try {
+                int x = std::stoi(input->value);
+                vp->numericInt = x;
+            }
+            catch (std::exception&) {
+                isValid = false;
+                printf("could not convert %s to number. key=%s\n", input->value.c_str(), input->key.c_str());
+                return;
+            }
+            break;
+        case OpcodeType::Float:
+            try {
+                float x = std::stof(input->value);
+                vp->numericFloat = x;
+            }
+            catch (std::exception&) {
+                isValid = false;
+                printf("could not convert %s to number. key=%s\n", input->value.c_str(), input->key.c_str());
+                return;
+            }
+            break;
+        case OpcodeType::String:
+            vp->string = input->value;
+            break;
+        case OpcodeType::Discrete:
+        {
+            DiscreteValue dv = translated(input->value);
+            assert(dv != DiscreteValue::NONE);
+            vp->nonNUmeric = dv;
+        }
+            break;
+        default:
+            assert(false);
+    }
+    if (isValid) {
+        results->add(opcode, vp);
+    }
+
+}
+
+#if 0
 static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input) {
     Opcode o = translate(input->key);
     DiscreteValue dv = translated(input->value);
@@ -90,7 +150,7 @@ static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input) {
         vp->string = input->value;
     }
 
-    // TODO: excpetions don't work in rack
+    // TODO: exceptions don't work in rack
     else if (dv == DiscreteValue::NONE) {
         try {
             int x = std::stoi(input->value);
@@ -98,7 +158,7 @@ static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input) {
         }
         catch (std::exception& ) {
             isValid = false;
-            printf("could not convert %s to number\n", input->value.c_str());
+            printf("could not convert %s to number. key=%s\n", input->value.c_str(), input->key.c_str());
         }
     }
 
@@ -107,6 +167,7 @@ static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input) {
     }
  
 }
+#endif
 
 KeysAndValuesPtr compile(const SKeyValueList& inputs) {
 
@@ -143,11 +204,11 @@ void CompiledInstrument::compileSub(const SRegionPtr region)
 // this may not scale ;-)
     auto value = reg.compiledValues->get(Opcode::LO_KEY);
     if (value) {
-        lokey = value->numeric;
+        lokey = value->numericInt;
     }
     value = reg.compiledValues->get(Opcode::HI_KEY);
     if (value) {
-        hikey = value->numeric;
+        hikey = value->numericInt;
     }
 
     value = reg.compiledValues->get(Opcode::SAMPLE);
@@ -158,7 +219,7 @@ void CompiledInstrument::compileSub(const SRegionPtr region)
             
     value = reg.compiledValues->get(Opcode::PITCH_KEYCENTER);
     if (value) {
-        keycenter = value->numeric;
+        keycenter = value->numericInt;
     }
 
     if ((lokey >= 0) && (hikey >= 0) && !sampleFile.empty()) {
@@ -185,6 +246,11 @@ void CompiledInstrument::compileSub(const SRegionPtr region)
             }
             //   printf("faking sample index 1\n");
             //  printf("adding entry for pitch %d, si=%d\n", key, sampleIndex);
+
+            // it we over-write something bad will happen
+            auto temp = pitchMap.find(key);
+            assert(temp == pitchMap.end());
+
             pitchMap[key] = info;
                 
         }

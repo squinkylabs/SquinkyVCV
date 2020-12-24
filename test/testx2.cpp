@@ -78,38 +78,6 @@ static void testPlayInfoTinnyPiano() {
 static void testPlayInfoSmallPiano() {
     testPlayInfo(smallPiano);
 }
-#if 0
-static void testPlayInfoTinnyPiano() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-
-    auto err = SParse::goFile(tinnyPiano, inst);
-    assert(err.empty());
-
-    ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
-    ci::VoicePlayInfo info;
-    cinst->getInfo(info, 60, 60);
-    assert(info.valid); 
-    int minSampleIndex = 200;
-    int maxSampleIndex = -200;
-    for (int pitch =21; pitch <= 108; ++ pitch) {
-        info.valid = false;
-        cinst->getInfo(info, pitch, 60);
-        assert(info.valid);
-        assert(info.canPlay());
-        minSampleIndex = std::min(minSampleIndex, info.sampleIndex);
-        maxSampleIndex = std::max(maxSampleIndex, info.sampleIndex);
-    }
-
-    cinst->getInfo(info, 20, 60);
-    assert(!info.valid);
-    cinst->getInfo(info, 109, 60);
-    assert(!info.valid);
-
-    assert(minSampleIndex == 1);
-    assert(maxSampleIndex > 4);
-
-}
-#endif
 
 static void testLoadWavesPiano()
 {
@@ -281,7 +249,7 @@ static void testCIKeysAndValues()
     assertEQ(output->_size(), 1);
     ci::ValuePtr vp = output->get(ci::Opcode::HI_KEY);
     assert(vp);
-    assertEQ(vp->numeric, 12);
+    assertEQ(vp->numericInt, 12);
 }
 
 static void testParseGlobalAndRegionCompiled()
@@ -311,7 +279,7 @@ static void testParseGlobalWithKVAndRegionCompiled()
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 1);
     auto val  = inst->global.compiledValues->get(ci::Opcode::HI_KEY);
-    assertEQ(val->numeric, 57);
+    assertEQ(val->numericInt, 57);
 
     SGroupPtr group = inst->groups[0];
     assert(group);
@@ -343,7 +311,7 @@ static void testParseGlobalWitRegionKVCompiled()
     assertEQ(r->compiledValues->_size(), 1);
 
     auto val = r->compiledValues->get(ci::Opcode::LO_KEY);
-    assertEQ(val->numeric, 57);
+    assertEQ(val->numericInt, 57);
 }
 
 static void testCompileInst1()
