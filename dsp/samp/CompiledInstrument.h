@@ -9,11 +9,14 @@ class SKeyValuePair;
 class SInstrument;
 class SRegion;
 class WaveLoader;
+class SGroup;
+
 using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>; 
 using SKeyValueList = std::vector<SKeyValuePairPtr>;
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
 using SRegionPtr = std::shared_ptr<SRegion>;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
+using SGroupPtr = std::shared_ptr<SGroup>;
 
 namespace ci
 {
@@ -36,7 +39,12 @@ enum class Opcode {
     PAN,
     GROUP,  // group is opcode as well at tag
     TRIGGER,
-    VOLUME
+    VOLUME,
+    TUNE,
+    OFFSET,
+    POLYPHONY,
+    PITCH_KEYTRACK,
+    AMP_VELTRACK
 };
 
 enum class DiscreteValue {
@@ -61,7 +69,7 @@ class Value {
 public:
     float numericFloat;
     int numericInt;
-    DiscreteValue nonNUmeric;
+    DiscreteValue discrete;
     std::string string;
     OpcodeType type;
 };
@@ -134,6 +142,7 @@ private:
 
     void compile(const SInstrumentPtr);
     void compileSub(const SRegionPtr);
+    bool shouldIgnoreGroup(SGroupPtr);
 
     /** Returns wave index
      */
@@ -144,7 +153,7 @@ private:
 
 using KeysAndValuesPtr = std::shared_ptr<KeysAndValues>;
 KeysAndValuesPtr compile(const SKeyValueList&);
-//CompiledInstrumentPtr compile(const SInstrumentPtr);
+
 
 /**
  * finds all the key/value pairs and expands them in place.

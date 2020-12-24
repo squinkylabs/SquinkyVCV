@@ -335,7 +335,7 @@ static void testTranspose1()
 {
     printf("\nstarting on transpose 1\n");
     auto inst = std::make_shared<SInstrument>();
-    auto err = SParse::go(R"foo(<region> sample=K18\D#1.pp.wav lovel=1 hivel=22 lokey=26 hikey=28 pitch_keycenter=27)foo", inst);
+    auto err = SParse::go(R"foo(<region> sample=K18\D#1.pp.wav lovel=1 hivel=65 lokey=26 hikey=28 pitch_keycenter=27)foo", inst);
     assert(err.empty());
     auto cinst = ci::CompiledInstrument::make(inst);
     ci::VoicePlayInfo info;
@@ -345,6 +345,7 @@ static void testTranspose1()
     int semiOffset = -1;
     float pitchMul = float(std::pow(2, semiOffset / 12.0));
     cinst->getInfo(info, 26, 64);
+    assert(info.valid);
     assert(info.needsTranspose);
     assertEQ(info.transposeAmt, pitchMul);
 

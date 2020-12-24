@@ -36,6 +36,9 @@ public:
     SKeyValueList values;
     ci::KeysAndValuesPtr compiledValues;
     SRegionList regions;
+
+    void _dump();
+    static void dumpKeysAndValues(const SKeyValueList& v);
 };
 using SGroupPtr = std::shared_ptr<SGroup>; 
 using SGroupList = std::vector<SGroupPtr>;

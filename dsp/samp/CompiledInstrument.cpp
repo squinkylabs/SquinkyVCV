@@ -14,7 +14,7 @@ namespace ci
 
 static std::map<std::string, Opcode> opcodes = {
     {"hivel", Opcode::HI_VEL},
-    {"lokey", Opcode::LO_VEL},
+    {"lovel", Opcode::LO_VEL},
     {"hikey", Opcode::HI_KEY},
     {"lokey", Opcode::LO_KEY},
     {"pitch_keycenter", Opcode::PITCH_KEYCENTER},
@@ -27,7 +27,12 @@ static std::map<std::string, Opcode> opcodes = {
     {"pan", Opcode::PAN},
     {"group", Opcode::GROUP},
     {"trigger", Opcode::TRIGGER},
-    {"volume", Opcode::VOLUME}
+    {"volume", Opcode::VOLUME},
+    {"tune", Opcode::TUNE},
+    {"offset", Opcode::OFFSET},
+    {"polyphony", Opcode::POLYPHONY},
+    {"pitch_keytrack", Opcode::PITCH_KEYTRACK},
+    {"amp_veltrack", Opcode::AMP_VELTRACK}
 };
 
 static std::set<std::string> unrecognized;
@@ -81,13 +86,23 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::PAN, OpcodeType::Int},
     {Opcode::GROUP, OpcodeType::Int},
     {Opcode::TRIGGER, OpcodeType::Discrete},
-    {Opcode::VOLUME, OpcodeType::Float}
+    {Opcode::VOLUME, OpcodeType::Float},
+    {Opcode::TUNE, OpcodeType::Int},
+    {Opcode::OFFSET, OpcodeType::Int},
+    {Opcode::POLYPHONY, OpcodeType::Int},
+    {Opcode::PITCH_KEYTRACK, OpcodeType::Int},
+    {Opcode::AMP_VELTRACK, OpcodeType::Float}
 };
 
 static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input) {
     Opcode opcode = translate(input->key);
+    if (opcode == Opcode::NONE) {
+        printf("could not translate opcode %s\n", input->key.c_str());
+        return;
+    }
     auto typeIter = keyType.find(opcode);
     if (typeIter == keyType.end()) {
+        printf("could not find type for %s\n", input->key.c_str());
         assert(false);
         return;
     }
@@ -126,7 +141,7 @@ static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input) {
         {
             DiscreteValue dv = translated(input->value);
             assert(dv != DiscreteValue::NONE);
-            vp->nonNUmeric = dv;
+            vp->discrete = dv;
         }
             break;
         default:
@@ -200,7 +215,10 @@ void CompiledInstrument::compileSub(const SRegionPtr region)
     int onlykey = -1;
     int keycenter = -1;
     std::string sampleFile;
+    int lowvel = 0;
+    int hivel = 127;
 
+    printf("compile Sub\n");
 // this may not scale ;-)
     auto value = reg.compiledValues->get(Opcode::LO_KEY);
     if (value) {
@@ -222,8 +240,26 @@ void CompiledInstrument::compileSub(const SRegionPtr region)
         keycenter = value->numericInt;
     }
 
+    value = reg.compiledValues->get(Opcode::LO_VEL);
+    if (value) {
+        lowvel = value->numericInt;
+    }
+
+    value = reg.compiledValues->get(Opcode::HI_VEL);
+    if (value) {
+        hivel = value->numericInt;
+    }
+
+    // until we do vel switching, just grab 64
+    if ((lowvel > 64) || (hivel < 64)) {
+        // printf("rejecting vel layer %d,%d\n", lowvel, hivel); fflush(stdout);
+        return;
+    }
+     printf("compile Sub 2\n");
+
     if ((lokey >= 0) && (hikey >= 0) && !sampleFile.empty()) {
 
+         printf("compile Sub 3\n");
         const int sampleIndex = addSampleFile(sampleFile);
         for (int key = lokey; key <= hikey; ++key) {
             VoicePlayInfoPtr info = std::make_shared< VoicePlayInfo>();
@@ -276,12 +312,30 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);
     for (auto group : in->groups) {
         //
-        printf("comp group with %zd regions\n", group->regions.size());
+        const bool ignoreGroup = shouldIgnoreGroup(group);
+
+        printf("comp group with %zd regions. ignore = %d\n", group->regions.size(), ignoreGroup);
+        group->_dump();
+       
+        if (ignoreGroup) {
+            return;
+        }
         for (auto region : group->regions) {
-            printf("compiling region\n");
+            // printf("compiling region\n");
             compileSub(region);
         }
     }
+}
+
+bool CompiledInstrument::shouldIgnoreGroup(SGroupPtr group) {
+    bool ignore = false;
+    auto value = group->compiledValues->get(Opcode::TRIGGER);
+    if (value) {
+        assert(value->type == OpcodeType::Discrete);
+        auto trigger = value->discrete;
+        ignore = (trigger != DiscreteValue::ATTACK);
+    }
+    return ignore;
 }
 
 CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPtr inst)
