@@ -81,7 +81,7 @@ void WaveLoader::addNextSample(const std::string& fileName)
 
 void WaveLoader::load()
 {
-    printf("waveLoader::load\n");
+    printf("waveLoader::load %lld\n", filesToLoad.size());
     assert(!didLoad);
     didLoad = true;
     for (std::string& file : filesToLoad) {
@@ -93,7 +93,6 @@ void WaveLoader::load()
     }
 }
 
-#if 1
 void WaveLoader::WaveInfo::load() {
     printf("loading: %s\n", fileName.c_str());
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
@@ -102,11 +101,10 @@ void WaveLoader::WaveInfo::load() {
         printf("error opening wave\n");
         return;
     }
-    printf("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
+    printf("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels); fflush(stdout);
     data = pSampleData;
     valid = true;
 }
-#endif
 
 WaveLoader::WaveInfo::~WaveInfo() {
     if (data) {

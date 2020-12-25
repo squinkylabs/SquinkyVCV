@@ -128,8 +128,12 @@ inline void Samp<TBase>::setupSamplesDummy()
    // const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
-    const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
+   // const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
+  //  const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
+
+    // small piano
+    static char* p =  R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo"; 
+    static char* pRoot =  R"foo(D:\samples\K18-Upright-Piano\)foo"; 
     auto err = SParse::goFile(p, inst);
     assert(err.empty());
 
