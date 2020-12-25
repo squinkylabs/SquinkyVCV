@@ -174,7 +174,8 @@ static void testStreamXpose2()
     assert(s.canPlay(channel));
     for (int i=0; i< 3; ++i) {
         float_4 v = s.step();
-        assertEQ(v[channel], 6-(2*i));
+        // start with 5, as interpoator forces us to start on second sample
+        assertEQ(v[channel], 5-(2*i));
     }
     assert(!s.canPlay(channel));
 }
@@ -367,13 +368,11 @@ static void testTranspose1()
 
 }
 
-//    static bool canInterpolate(T offset, unsigned int totalSize);
- //   static T interpolate(const T* data, T offset);
 static void testCubicInterp()
 {
     float data[] = {10, 9, 8, 7};
 
-    // would need -1 to interp
+    // would need sample at -1 to interpolate sample 0
     assertEQ(CubicInterpolator<float>::canInterpolate(0, 4), false);
     assertEQ(CubicInterpolator<float>::canInterpolate(1, 4), true);
     assertEQ(CubicInterpolator<float>::canInterpolate(2, 4), false);
