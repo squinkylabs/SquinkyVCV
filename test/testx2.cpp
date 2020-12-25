@@ -1,4 +1,4 @@
-
+#include "CubicInterpolator.h"
 #include "Sampler4vx.h"
 #include "SInstrument.h"
 #include "Streamer.h"
@@ -144,7 +144,23 @@ static void testStreamValues()
     assert(!s.canPlay(channel));
 }
 
-static void testStreamXpose()
+static void testStreamXpose1()
+{
+    Streamer s;
+    const int channel = 3;
+    assert(!s.canPlay(channel));
+
+    float x[6] = {6,5,4,3,2,1};
+    assertEQ(x[0], 6);
+
+    s.setSample(channel, x, 6);
+    s.setTranspose(channel, true, 1.f);
+    assert(s.canPlay(channel));
+    s.step();
+    assert(s.canPlay(channel));
+}
+
+static void testStreamXpose2()
 {
     Streamer s;
     const int channel = 3;
@@ -351,6 +367,31 @@ static void testTranspose1()
 
 }
 
+//    static bool canInterpolate(T offset, unsigned int totalSize);
+ //   static T interpolate(const T* data, T offset);
+static void testCubicInterp()
+{
+    float data[] = {10, 9, 8, 7};
+
+    // would need -1 to interp
+    assertEQ(CubicInterpolator<float>::canInterpolate(0, 4), false);
+    assertEQ(CubicInterpolator<float>::canInterpolate(1, 4), true);
+    assertEQ(CubicInterpolator<float>::canInterpolate(2, 4), false);
+    assertEQ(CubicInterpolator<float>::canInterpolate(3, 4), false);
+
+    assertEQ(CubicInterpolator<float>::canInterpolate(1.5f, 4), true);
+    assertEQ(CubicInterpolator<float>::canInterpolate(1.99f, 4), true);
+
+    float x = CubicInterpolator<float>::interpolate(data, 1);
+    assertClose(x, 9, .00001);
+    x = CubicInterpolator<float>::interpolate(data, 1.999f);
+    assertClose(x, 8, .002);
+
+    x = CubicInterpolator<float>::interpolate(data, 1.5f);
+    assertClose(x, 8.5f, .0001);
+
+}
+
 
 void testx2()
 {
@@ -358,11 +399,14 @@ void testx2()
     testWaveLoader1();
     testPlayInfo();
 
+    testCubicInterp();
+
     testStream();
     testStreamEnd();
     testStreamValues();
     testStreamRetrigger();
-    testStreamXpose();
+    testStreamXpose1();
+    testStreamXpose2();
 
     //testSampler();
     testSamplerRealSound();

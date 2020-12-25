@@ -1,4 +1,5 @@
 
+#include "CubicInterpolator.h"
 #include "Streamer.h"
 #include <assert.h>
 #include <stdio.h>
@@ -16,6 +17,7 @@ float_4 Streamer::step()
 }
 
 
+#if 0 // bad version with no interpolation
 float Streamer::stepTranspose(ChannelData& cd)
 {
     float ret = 0;
@@ -32,6 +34,25 @@ float Streamer::stepTranspose(ChannelData& cd)
      //   printf("index=%d : %f\n",index, curFloatSampleOffset);
     }
     if (cd.curFloatSampleOffset >= cd.frames) {
+        cd.arePlaying = false;
+    }
+    return ret * cd.vol;
+}
+#endif
+
+float Streamer::stepTranspose(ChannelData& cd)
+{
+    float ret = 0;
+    assert(cd.transposeEnabled);
+
+    if (CubicInterpolator<float>::canInterpolate(cd.curFloatSampleOffset, cd.frames)) {
+   // if (cd.curFloatSampleOffset < (cd.frames)) {
+        assert(cd.arePlaying);
+        ret = CubicInterpolator<float>::interpolate(cd.data, cd.curFloatSampleOffset);
+         cd.curFloatSampleOffset += cd.transposeMultiplier;
+    }
+
+    if (!CubicInterpolator<float>::canInterpolate(cd.curFloatSampleOffset, cd.frames)) {
         cd.arePlaying = false;
     }
     return ret * cd.vol;
@@ -77,7 +98,7 @@ void Streamer::setSample(int channel, float* d, int f)
     cd.frames = f;
     cd.arePlaying = true;
     cd.curIntegerSampleOffset = 0;
-    cd.curFloatSampleOffset = 0;
+    cd.curFloatSampleOffset = 1;        // start one past, to allow for interpolator padding
     cd.vol = 1;
 }
 void Streamer::setTranspose(int channel, bool doTranspose, float amount)
