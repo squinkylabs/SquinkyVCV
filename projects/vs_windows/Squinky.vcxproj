@@ -92,6 +92,7 @@
     <ClCompile Include="..\..\test\perfTest2.cpp" />
     <ClCompile Include="..\..\test\simd_testBiquad.cpp" />
     <ClCompile Include="..\..\test\SqWaveFile.cpp" />
+    <ClCompile Include="..\..\test\testx3.cpp" />
     <ClCompile Include="..\..\test\testAudioMath.cpp" />
     <ClCompile Include="..\..\test\testAudition.cpp" />
     <ClCompile Include="..\..\test\testBasic.cpp" />

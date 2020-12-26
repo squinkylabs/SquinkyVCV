@@ -106,6 +106,7 @@ extern void testSqStream();
 extern void testOscSmoother();
 extern void testx();
 extern void testx2();
+extern void testx3();
 
 #if 0
 #include <sstream>
@@ -183,6 +184,7 @@ if (runShaperGen) {
     
     testx();
     testx2();
+    testx3();
     testIComposite();
     testClockRecovery();
     testCompCurves();
