@@ -20,12 +20,20 @@ inline void VelSwitch::_addIndex(unsigned int index, unsigned int value)
 
 inline unsigned  VelSwitch::mapVelToIndex(unsigned  vel)
 {
-
+    unsigned ret = 0;
     auto it = velIndexMap.lower_bound(vel);
     if (it == velIndexMap.end()) {
         assert(false);                  // we should always have an init entry.
         return 0;
     }
-    unsigned int index = it->second;
-    return index;
+    unsigned int lb_key = it->first;
+    if (lb_key > vel) {
+        --it;
+        ret = it->second;
+    } else if (lb_key == vel) {
+        ret = it->second;
+    } else {
+        assert(false);
+    }
+    return ret;;
 }

@@ -24,8 +24,6 @@ inline bool CubicInterpolator<T>::canInterpolate(T offset, unsigned int totalSiz
 }
 
 #if defined(_MSC_VER)
-//#define __attribute__(x)
-
 #pragma warning (push)
 #pragma warning ( disable: 4244 4305 )
 #define NOMINMAX
@@ -35,20 +33,13 @@ template <typename T>
 inline T CubicInterpolator<T>::interpolate(const T* data, T offset)
 {
     unsigned int delayTimeSamples = getIntegerPart(offset);
-   // const double x = delayTime - delayTimeSamples;
     const double x = getFloatPart(offset);
-
 
     const T y0 = data[delayTimeSamples - 1];
     const T y1 = data[delayTimeSamples];
     const T y2 = data[delayTimeSamples + 1];
     const T y3 = data[delayTimeSamples + 2];
 
-#ifdef _LOG
-    printf("dt=%.2f, dts=%d x=%.2f ", delayTime, delayTimeSamples, x);
-    printf("y0=%.2f y1=%.2f y2=%.2f y3=%.2f\n", y0, y1, y2, y3);
-#endif
- 
     const double x0 = -1.0;
     const double x1 = 0.0;
     const double x2 = 1.0;
