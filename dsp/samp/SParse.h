@@ -1,14 +1,18 @@
 #pragma once
 
+#include "SamplerSchema.h"
+
 #include <string>
 #include <memory>
 #include <vector>
 
+#if 0
 namespace ci
 {
     class KeysAndValues;
     using KeysAndValuesPtr = std::shared_ptr<KeysAndValues>;
 };
+#endif
 
 
 class SKeyValuePair {
@@ -24,7 +28,8 @@ using SKeyValueList = std::vector<SKeyValuePairPtr>;
 class SRegion {
 public:
     SKeyValueList values;
-    ci::KeysAndValuesPtr compiledValues;
+   // ci::KeysAndValuesPtr compiledValues;
+   SamplerSchema::KeysAndValuesPtr compiledValues;
 };
 using SRegionPtr = std::shared_ptr<SRegion>; 
 using SRegionList = std::vector<SRegionPtr>;
@@ -34,7 +39,7 @@ using SRegionList = std::vector<SRegionPtr>;
 class SGroup {
 public:
     SKeyValueList values;
-    ci::KeysAndValuesPtr compiledValues;
+    SamplerSchema::KeysAndValuesPtr compiledValues;
     SRegionList regions;
 
     void _dump();
@@ -47,7 +52,7 @@ using SGroupList = std::vector<SGroupPtr>;
 class SGlobal {
 public:
     SKeyValueList values;
-    ci::KeysAndValuesPtr compiledValues;
+    SamplerSchema::KeysAndValuesPtr compiledValues;
 };
 
 

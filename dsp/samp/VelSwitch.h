@@ -4,7 +4,7 @@
 #include <map>
 
 /**
- * node in the instrument tree that represents a switch on velocity
+ * Node in the instrument tree that represents a switch on velocity
  * Implements ISamplerPlayback by lookup up velocity an a map, and branching to sub-nodes
  * under that.
  */

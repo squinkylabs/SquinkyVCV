@@ -9,203 +9,42 @@
 #include <set>
 #include <string>
 
+using Opcode = SamplerSchema::Opcode;
+using OpcodeType = SamplerSchema::OpcodeType;
+using DiscreteValue = SamplerSchema::DiscreteValue;
+using ValuePtr = SamplerSchema::ValuePtr;
+using Value = SamplerSchema::Value;
+
 namespace ci
 {
 
-static std::map<std::string, Opcode> opcodes = {
-    {"hivel", Opcode::HI_VEL},
-    {"lovel", Opcode::LO_VEL},
-    {"hikey", Opcode::HI_KEY},
-    {"lokey", Opcode::LO_KEY},
-    {"pitch_keycenter", Opcode::PITCH_KEYCENTER},
-    {"ampeg_release", Opcode::AMPEG_RELEASE},
-    {"loop_mode", Opcode::LOOP_MODE},
-    {"loop_continuous", Opcode::LOOP_CONTINUOUS},
-    {"loop_start", Opcode::LOOP_START},
-    {"loop_end", Opcode::LOOP_END},
-    {"sample", Opcode::SAMPLE},
-    {"pan", Opcode::PAN},
-    {"group", Opcode::GROUP},
-    {"trigger", Opcode::TRIGGER},
-    {"volume", Opcode::VOLUME},
-    {"tune", Opcode::TUNE},
-    {"offset", Opcode::OFFSET},
-    {"polyphony", Opcode::POLYPHONY},
-    {"pitch_keytrack", Opcode::PITCH_KEYTRACK},
-    {"amp_veltrack", Opcode::AMP_VELTRACK}
-};
+void CompiledInstrument::compile(const SInstrumentPtr in) {
+    assert(in->wasExpanded);
+    assert(false);      // we need new algo here
+    for (auto group : in->groups) {
+        //
+        const bool ignoreGroup = shouldIgnoreGroup(group);
 
-static std::set<std::string> unrecognized;
-
-
-static Opcode translate(const std::string& s) {
-    auto entry = opcodes.find(s);
-    if (entry == opcodes.end()) {
-        auto find2 = unrecognized.find(s);
-        if (find2 == unrecognized.end()) {
-            unrecognized.insert({ s });
-            printf("!! unrecognized opcode %s\n", s.c_str());
+        printf("comp group with %zd regions. ignore = %d\n", group->regions.size(), ignoreGroup);
+        group->_dump();
+       
+        if (ignoreGroup) {
+            return;
         }
-
-        return Opcode::NONE;
-    } else {
-        return entry->second;
-    }
-}
-
-
-// TODO: drive wil map like the others?
-static DiscreteValue translated(const std::string& s) {
-    if (s == "loop_continuous")
-        return DiscreteValue::LOOP_CONTINUOUS;
-    if (s == "no_loop")
-        return DiscreteValue::NO_LOOP;
-    if (s == "attack")
-        return DiscreteValue::ATTACK;
-    if (s == "release")
-        return DiscreteValue::RELEASE;
-
-    
-    return DiscreteValue::NONE;
-}
-
-
-
-// TODO: compare this to the spec
-static std::map<Opcode, OpcodeType> keyType = {
-    {Opcode::HI_KEY, OpcodeType::Int},
-    {Opcode::LO_KEY, OpcodeType::Int},
-    {Opcode::HI_VEL, OpcodeType::Int},
-    {Opcode::LO_VEL, OpcodeType::Int},
-    {Opcode::SAMPLE, OpcodeType::String},
-    {Opcode::AMPEG_RELEASE, OpcodeType::Float},
-    {Opcode::LOOP_MODE, OpcodeType::Discrete},
-    {Opcode::PITCH_KEYCENTER, OpcodeType::Int},
-    {Opcode::LOOP_START, OpcodeType::Int},
-    {Opcode::LOOP_END, OpcodeType::Int},
-    {Opcode::PAN, OpcodeType::Int},
-    {Opcode::GROUP, OpcodeType::Int},
-    {Opcode::TRIGGER, OpcodeType::Discrete},
-    {Opcode::VOLUME, OpcodeType::Float},
-    {Opcode::TUNE, OpcodeType::Int},
-    {Opcode::OFFSET, OpcodeType::Int},
-    {Opcode::POLYPHONY, OpcodeType::Int},
-    {Opcode::PITCH_KEYTRACK, OpcodeType::Int},
-    {Opcode::AMP_VELTRACK, OpcodeType::Float}
-};
-
-static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input) {
-    Opcode opcode = translate(input->key);
-    if (opcode == Opcode::NONE) {
-        printf("could not translate opcode %s\n", input->key.c_str());
-        return;
-    }
-    auto typeIter = keyType.find(opcode);
-    if (typeIter == keyType.end()) {
-        printf("could not find type for %s\n", input->key.c_str());
-        assert(false);
-        return;
-    }
-
-    const OpcodeType type = typeIter->second;
-    ValuePtr vp = std::make_shared<Value>();
-    vp->type = type;
-    bool isValid = true;
-    switch (type) {
-        case OpcodeType::Int:
-            try {
-                int x = std::stoi(input->value);
-                vp->numericInt = x;
-            }
-            catch (std::exception&) {
-                isValid = false;
-                printf("could not convert %s to number. key=%s\n", input->value.c_str(), input->key.c_str());
-                return;
-            }
-            break;
-        case OpcodeType::Float:
-            try {
-                float x = std::stof(input->value);
-                vp->numericFloat = x;
-            }
-            catch (std::exception&) {
-                isValid = false;
-                printf("could not convert %s to number. key=%s\n", input->value.c_str(), input->key.c_str());
-                return;
-            }
-            break;
-        case OpcodeType::String:
-            vp->string = input->value;
-            break;
-        case OpcodeType::Discrete:
-        {
-            DiscreteValue dv = translated(input->value);
-            assert(dv != DiscreteValue::NONE);
-            vp->discrete = dv;
-        }
-            break;
-        default:
-            assert(false);
-    }
-    if (isValid) {
-        results->add(opcode, vp);
-    }
-
-}
-
-#if 0
-static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input) {
-    Opcode o = translate(input->key);
-    DiscreteValue dv = translated(input->value);
-    ValuePtr vp = std::make_shared<Value>();
-    vp->nonNUmeric = dv;
-    bool isValid = true;
-
-    if (o == Opcode::SAMPLE) {
-        vp->string = input->value;
-    }
-
-    // TODO: exceptions don't work in rack
-    else if (dv == DiscreteValue::NONE) {
-        try {
-            int x = std::stoi(input->value);
-            vp->numeric = x;
-        }
-        catch (std::exception& ) {
-            isValid = false;
-            printf("could not convert %s to number. key=%s\n", input->value.c_str(), input->key.c_str());
-        }
-    }
-
-    if (isValid) {
-        results->add(o, vp);
-    }
- 
-}
-#endif
-
-KeysAndValuesPtr compile(const SKeyValueList& inputs) {
-
-    KeysAndValuesPtr results = std::make_shared<KeysAndValues>();
-    for (auto input : inputs) {
-        compile(results, input);
-    }
-    return results;
-
-}
-
-void expandAllKV(SInstrumentPtr inst) {
-    assert(!inst->wasExpanded);
-    inst->global.compiledValues = compile(inst->global.values);
-    for (auto group : inst->groups) {
-        group->compiledValues = compile(group->values);
         for (auto region : group->regions) {
-            region->compiledValues = compile(region->values);
+            // printf("compiling region\n");
+            compileSub(region);
         }
     }
-    inst->wasExpanded = true;
 }
 
+
+#if 1   // need to adapt to new object tree
+void CompiledInstrument::compileSub(const SRegionPtr region)
+{
+    assert(false);
+}
+#else
 void CompiledInstrument::compileSub(const SRegionPtr region)
 {
     const SRegion& reg = *region;
@@ -295,6 +134,7 @@ void CompiledInstrument::compileSub(const SRegionPtr region)
         printf("region defined nothing\n");
     } 
 }
+#endif
 
 int CompiledInstrument::addSampleFile(const std::string& s) {
     int ret = 0;
@@ -306,25 +146,6 @@ int CompiledInstrument::addSampleFile(const std::string& s) {
         ret = nextIndex++;
     }
     return ret;
-}
-
-void CompiledInstrument::compile(const SInstrumentPtr in) {
-    assert(in->wasExpanded);
-    for (auto group : in->groups) {
-        //
-        const bool ignoreGroup = shouldIgnoreGroup(group);
-
-        printf("comp group with %zd regions. ignore = %d\n", group->regions.size(), ignoreGroup);
-        group->_dump();
-       
-        if (ignoreGroup) {
-            return;
-        }
-        for (auto region : group->regions) {
-            // printf("compiling region\n");
-            compileSub(region);
-        }
-    }
 }
 
 bool CompiledInstrument::shouldIgnoreGroup(SGroupPtr group) {
@@ -348,7 +169,9 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPt
 }
 
 void CompiledInstrument::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
-    
+#if 1
+    pitchMap.play(info, midiPitch, midiVelocity);
+#else
      if (testMode) {
          info.sampleIndex = 1;
          info.needsTranspose = false;
@@ -364,6 +187,7 @@ void CompiledInstrument::play(VoicePlayInfo& info, int midiPitch, int midiVeloci
          
      }
      else printf("pitch %d not found\n", midiPitch);
+#endif
  }
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootPath) 
@@ -398,6 +222,178 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootP
         loader->addNextSample(rootPath + path);
     }
 }
+
+#if 0
+static std::map<std::string, Opcode> opcodes = {
+    {"hivel", Opcode::HI_VEL},
+    {"lovel", Opcode::LO_VEL},
+    {"hikey", Opcode::HI_KEY},
+    {"lokey", Opcode::LO_KEY},
+    {"pitch_keycenter", Opcode::PITCH_KEYCENTER},
+    {"ampeg_release", Opcode::AMPEG_RELEASE},
+    {"loop_mode", Opcode::LOOP_MODE},
+    {"loop_continuous", Opcode::LOOP_CONTINUOUS},
+    {"loop_start", Opcode::LOOP_START},
+    {"loop_end", Opcode::LOOP_END},
+    {"sample", Opcode::SAMPLE},
+    {"pan", Opcode::PAN},
+    {"group", Opcode::GROUP},
+    {"trigger", Opcode::TRIGGER},
+    {"volume", Opcode::VOLUME},
+    {"tune", Opcode::TUNE},
+    {"offset", Opcode::OFFSET},
+    {"polyphony", Opcode::POLYPHONY},
+    {"pitch_keytrack", Opcode::PITCH_KEYTRACK},
+    {"amp_veltrack", Opcode::AMP_VELTRACK}
+};
+
+
+static std::set<std::string> unrecognized;
+#endif
+
+
+#if 0
+static Opcode translate(const std::string& s) {
+    auto entry = opcodes.find(s);
+    if (entry == opcodes.end()) {
+        auto find2 = unrecognized.find(s);
+        if (find2 == unrecognized.end()) {
+            unrecognized.insert({ s });
+            printf("!! unrecognized opcode %s\n", s.c_str());
+        }
+
+        return Opcode::NONE;
+    } else {
+        return entry->second;
+    }
+}
+#endif
+
+#if 0
+// TODO: drive wil map like the others?
+static DiscreteValue translated(const std::string& s) {
+    if (s == "loop_continuous")
+        return DiscreteValue::LOOP_CONTINUOUS;
+    if (s == "no_loop")
+        return DiscreteValue::NO_LOOP;
+    if (s == "attack")
+        return DiscreteValue::ATTACK;
+    if (s == "release")
+        return DiscreteValue::RELEASE;
+
+    
+    return DiscreteValue::NONE;
+}
+#endif
+
+#if 0
+// TODO: compare this to the spec
+static std::map<Opcode, OpcodeType> keyType = {
+    {Opcode::HI_KEY, OpcodeType::Int},
+    {Opcode::LO_KEY, OpcodeType::Int},
+    {Opcode::HI_VEL, OpcodeType::Int},
+    {Opcode::LO_VEL, OpcodeType::Int},
+    {Opcode::SAMPLE, OpcodeType::String},
+    {Opcode::AMPEG_RELEASE, OpcodeType::Float},
+    {Opcode::LOOP_MODE, OpcodeType::Discrete},
+    {Opcode::PITCH_KEYCENTER, OpcodeType::Int},
+    {Opcode::LOOP_START, OpcodeType::Int},
+    {Opcode::LOOP_END, OpcodeType::Int},
+    {Opcode::PAN, OpcodeType::Int},
+    {Opcode::GROUP, OpcodeType::Int},
+    {Opcode::TRIGGER, OpcodeType::Discrete},
+    {Opcode::VOLUME, OpcodeType::Float},
+    {Opcode::TUNE, OpcodeType::Int},
+    {Opcode::OFFSET, OpcodeType::Int},
+    {Opcode::POLYPHONY, OpcodeType::Int},
+    {Opcode::PITCH_KEYTRACK, OpcodeType::Int},
+    {Opcode::AMP_VELTRACK, OpcodeType::Float}
+};
+#endif
+
+#if 0
+static void compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
+    Opcode opcode = translate(input->key);
+    if (opcode == Opcode::NONE) {
+        printf("could not translate opcode %s\n", input->key.c_str());
+        return;
+    }
+    auto typeIter = keyType.find(opcode);
+    if (typeIter == keyType.end()) {
+        printf("could not find type for %s\n", input->key.c_str());
+        assert(false);
+        return;
+    }
+
+    const OpcodeType type = typeIter->second;
+    ValuePtr vp = std::make_shared<Value>();
+    vp->type = type;
+    bool isValid = true;
+    switch (type) {
+        case OpcodeType::Int:
+            try {
+                int x = std::stoi(input->value);
+                vp->numericInt = x;
+            }
+            catch (std::exception&) {
+                isValid = false;
+                printf("could not convert %s to number. key=%s\n", input->value.c_str(), input->key.c_str());
+                return;
+            }
+            break;
+        case OpcodeType::Float:
+            try {
+                float x = std::stof(input->value);
+                vp->numericFloat = x;
+            }
+            catch (std::exception&) {
+                isValid = false;
+                printf("could not convert %s to number. key=%s\n", input->value.c_str(), input->key.c_str());
+                return;
+            }
+            break;
+        case OpcodeType::String:
+            vp->string = input->value;
+            break;
+        case OpcodeType::Discrete:
+        {
+            DiscreteValue dv = translated(input->value);
+            assert(dv != DiscreteValue::NONE);
+            vp->discrete = dv;
+        }
+            break;
+        default:
+            assert(false);
+    }
+    if (isValid) {
+        results->add(opcode, vp);
+    }
+
+}
+
+SamplerSchema::KeysAndValuesPtr compile(const SKeyValueList& inputs) {
+
+    SamplerSchema::KeysAndValuesPtr results = std::make_shared<SamplerSchema::KeysAndValues>();
+    for (auto input : inputs) {
+        compile(results, input);
+    }
+    return results;
+
+}
+#endif
+
+void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
+    assert(!inst->wasExpanded);
+    inst->global.compiledValues = SamplerSchema::compile(inst->global.values);
+    for (auto group : inst->groups) {
+        group->compiledValues = SamplerSchema::compile(group->values);
+        for (auto region : group->regions) {
+            region->compiledValues = SamplerSchema::compile(region->values);
+        }
+    }
+    inst->wasExpanded = true;
+}
+
 
 
 }

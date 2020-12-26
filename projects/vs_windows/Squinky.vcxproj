@@ -28,7 +28,9 @@
     <ClCompile Include="..\..\dsp\filters\FormantTables2.cpp" />
     <ClCompile Include="..\..\dsp\filters\HilbertFilterDesigner.cpp" />
     <ClCompile Include="..\..\dsp\samp\CompiledInstrument.cpp" />
+    <ClCompile Include="..\..\dsp\samp\CompiledRegion.cpp" />
     <ClCompile Include="..\..\dsp\samp\Sampler4vx.cpp" />
+    <ClCompile Include="..\..\dsp\samp\SamplerSchema.cpp" />
     <ClCompile Include="..\..\dsp\samp\SInstrument.cpp" />
     <ClCompile Include="..\..\dsp\samp\SLex.cpp" />
     <ClCompile Include="..\..\dsp\samp\SParse.cpp" />

@@ -22,3 +22,16 @@ public:
     virtual ~ISamplerPlayback() = default;
     virtual void play(VoicePlayInfo&, int midiPitch, int midiVelocity) = 0;
 };
+
+using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
+
+class SimpleVoicePlayer : public ISamplerPlayback
+{
+public:
+    void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
+
+private:
+    VoicePlayInfoPtr data;
+
+};
+

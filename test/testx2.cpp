@@ -1,12 +1,14 @@
+#include "asserts.h"
+#include "CompiledInstrument.h"
+#include "CompiledRegion.h"
 #include "CubicInterpolator.h"
 #include "Sampler4vx.h"
+#include "SamplerSchema.h"
 #include "SInstrument.h"
 #include "Streamer.h"
 #include "WaveLoader.h"
-#include "asserts.h"
-#include "CompiledInstrument.h"
-//#include "SParse.h"
 
+//#include "SParse.h"
 
 static char* tinnyPiano =  R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo"; 
 const char* tinnyPianoRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
@@ -263,10 +265,9 @@ static void testCIKeysAndValues()
     SKeyValuePairPtr p = std::make_shared<SKeyValuePair>("hikey", "12");
     SKeyValueList l = { p };
 
- 
-    auto output = ci::compile(l);
+    auto output = SamplerSchema::compile(l);
     assertEQ(output->_size(), 1);
-    ci::ValuePtr vp = output->get(ci::Opcode::HI_KEY);
+    SamplerSchema::ValuePtr vp = output->get(SamplerSchema::Opcode::HI_KEY);
     assert(vp);
     assertEQ(vp->numericInt, 12);
 }
@@ -278,7 +279,7 @@ static void testParseGlobalAndRegionCompiled()
     auto err = SParse::go("<global><region>", inst);
 
     assert(err.empty());
-    ci::expandAllKV(inst);
+    ci::CompiledInstrument::expandAllKV(inst);
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 0);
 
@@ -294,10 +295,10 @@ static void testParseGlobalWithKVAndRegionCompiled()
     auto err = SParse::go("<global>hikey=57<region>", inst);
 
     assert(err.empty());
-    ci::expandAllKV(inst);
+    ci::CompiledInstrument::expandAllKV(inst);
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 1);
-    auto val  = inst->global.compiledValues->get(ci::Opcode::HI_KEY);
+    auto val  = inst->global.compiledValues->get(SamplerSchema::Opcode::HI_KEY);
     assertEQ(val->numericInt, 57);
 
     SGroupPtr group = inst->groups[0];
@@ -312,7 +313,7 @@ static void testParseGlobalWitRegionKVCompiled()
     auto err = SParse::go("<global><region><region>lokey=57<region>", inst);
 
     assert(err.empty());
-    ci::expandAllKV(inst);
+    ci::CompiledInstrument::expandAllKV(inst);
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 0);
 
@@ -329,7 +330,7 @@ static void testParseGlobalWitRegionKVCompiled()
     r = group->regions[1];
     assertEQ(r->compiledValues->_size(), 1);
 
-    auto val = r->compiledValues->get(ci::Opcode::LO_KEY);
+    auto val = r->compiledValues->get(SamplerSchema::Opcode::LO_KEY);
     assertEQ(val->numericInt, 57);
 }
 
@@ -391,6 +392,31 @@ static void testCubicInterp()
     assertClose(x, 8.5f, .0001);
 }
 
+static void testCompiledRegion()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    const char* str = R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200)foo";
+    // "<region>pitch_keycenter=24"
+    auto err = SParse::go(str, inst);
+
+    SGroupPtr group = inst->groups[0];
+    SRegionPtr region = group->regions[0];
+   // inst->expandAllKV();
+    ci::CompiledInstrument::expandAllKV(inst);
+
+    assert(inst->wasExpanded);
+  
+
+  //  CompiledRegion cr(region);
+    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region);
+    assertEQ(cr->keycenter, 96);
+    assertEQ(cr->lovel, 1);
+    assertEQ(cr->hivel, 22);
+    assertEQ(cr->lokey, 95);
+    assertEQ(cr->hikey, 97);
+    assertEQ(cr->sampleFile, "K18\\C7.pp.wav");
+}
+
 void testx2()
 {
     testWaveLoader0();
@@ -408,13 +434,14 @@ void testx2()
     printf("fix testStreamXpose2\n");
     // testStreamXpose2();
 
-    testSampler();
-    testSamplerRealSound();
+   
 
     testCIKeysAndValues();
     testParseGlobalAndRegionCompiled();
     testParseGlobalWithKVAndRegionCompiled();
     testParseGlobalWitRegionKVCompiled();
+
+    testCompiledRegion();
 
     testCompileInst1();
     testPlayInfoTinnyPiano();
@@ -422,4 +449,7 @@ void testx2()
     testLoadWavesPiano();
 
     testTranspose1();
+
+    testSampler();
+    testSamplerRealSound();
 }
