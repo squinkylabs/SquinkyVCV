@@ -5,6 +5,8 @@
 #include <vector>
 #include <map>
 
+#include "SamplerPlayback.h"
+
 class SKeyValuePair;
 class SInstrument;
 class SRegion;
@@ -63,7 +65,8 @@ enum class OpcodeType {
 };
 
 /**
- * This holds the right had side of an opcode
+ * This holds the right had side of an opcode.
+ * It can hold in integer, a float, a string, or a named discrete value
  */
 class Value {
 public:
@@ -76,6 +79,9 @@ public:
 
 using ValuePtr = std::shared_ptr<Value>;
 
+/**
+ * hold the compiled form of a collection of group attributes.
+ */
 class KeysAndValues
 {
 public:
@@ -99,25 +105,14 @@ private:
     std::map<Opcode, ValuePtr> data;
 };
 
-class VoicePlayInfo {
-public:
-    bool valid = false;
-    int sampleIndex = 0;
-    bool needsTranspose = false;
-    float transposeAmt = 1;
 
-    bool canPlay() const {
-        return valid && (sampleIndex > 0);
-    }
-};
-using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 
 
-class CompiledInstrument {
+class CompiledInstrument : public ISamplerPlayback {
 public:
     static CompiledInstrumentPtr make(const SInstrumentPtr);
-    void getInfo(VoicePlayInfo&, int midiPitch, int midiVelocity);
+    void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
     void _setTestMode() {
         testMode = true;
     }
@@ -149,14 +144,12 @@ private:
     int addSampleFile(const std::string& s);
 };
 
-
-
 using KeysAndValuesPtr = std::shared_ptr<KeysAndValues>;
 KeysAndValuesPtr compile(const SKeyValueList&);
 
 
 /**
- * finds all the key/value pairs and expands them in place.
+ * finds all the key/value pairs in a parse tree and expands them in place.
  */
 void expandAllKV(SInstrumentPtr);
 

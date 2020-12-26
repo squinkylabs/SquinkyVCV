@@ -347,7 +347,7 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPt
     return instOut;
 }
 
-void CompiledInstrument::getInfo(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
+void CompiledInstrument::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
     
      if (testMode) {
          info.sampleIndex = 1;

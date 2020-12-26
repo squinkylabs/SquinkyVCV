@@ -212,6 +212,13 @@ inline void BasicVCO::doSquareHighToLowMinblep(float_4 phase, float_4 crossingTh
     }
 }
 
+
+#if defined(_MSC_VER)
+#pragma warning (push)
+#pragma warning ( disable: 4244 4305 )
+#define NOMINMAX
+#endif
+
 // from VCV Fundamental-1 VCO
 template <typename T>
 T sin2pi_pade_05_5_4(T x) {
@@ -219,6 +226,10 @@ T sin2pi_pade_05_5_4(T x) {
 	return (T(-6.283185307) * x + T(33.19863968) * rack::simd::pow(x, 3) - T(32.44191367) * rack::simd::pow(x, 5))
 	       / (1 + T(1.296008659) * rack::simd::pow(x, 2) + T(0.7028072946) * rack::simd::pow(x, 4));
 }
+
+#if defined(_MSC_VER)
+#pragma warning (pop)
+#endif
 
 
 inline float_4 BasicVCO::processEven(float deltaTime)
@@ -300,7 +311,6 @@ inline float_4 BasicVCO::processSaw(float deltaTime)
 
     return 5 * rawSaw;
 }
-
 
 inline float_4 BasicVCO::processSin(float deltaTime)
 {

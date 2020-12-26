@@ -19,8 +19,8 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity)
         printf("4vx not intit\n");
         return;
     }
-    ci::VoicePlayInfo patchInfo;
-    patch->getInfo(patchInfo, midiPitch, midiVelocity);
+    VoicePlayInfo patchInfo;
+    patch->play(patchInfo, midiPitch, midiVelocity);
     if (!patchInfo.valid) {
         printf("could not get play info\n");
         return;

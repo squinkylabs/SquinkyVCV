@@ -1,10 +1,18 @@
 #pragma once
+
+#include "SamplerPlayback.h"
 #include <map>
 
-class VelSwitch
+/**
+ * node in the instrument tree that represents a switch on velocity
+ * Implements ISamplerPlayback by lookup up velocity an a map, and branching to sub-nodes
+ * under that.
+ */
+class VelSwitch : public ISamplerPlayback
 {
 public:
     unsigned int mapVelToIndex(unsigned int vel);
+    void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
 
     void _addIndex(unsigned int index, unsigned int value);
 private:
@@ -36,4 +44,9 @@ inline unsigned  VelSwitch::mapVelToIndex(unsigned  vel)
         assert(false);
     }
     return ret;;
+}
+
+inline void VelSwitch::play(VoicePlayInfo&, int midiPitch, int midiVelocity) {
+    assert(false);
+
 }

@@ -37,7 +37,7 @@ static void testWaveLoader1()
 }
 
 static void testPlayInfo() {
-    ci::VoicePlayInfo info;
+    VoicePlayInfo info;
     assertEQ(info.valid, false);
 }
 
@@ -49,23 +49,23 @@ static void testPlayInfo(const char* patch)
     assert(err.empty());
 
     ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
-    ci::VoicePlayInfo info;
-    cinst->getInfo(info, 60, 60);
+    VoicePlayInfo info;
+    cinst->play(info, 60, 60);
     assert(info.valid); 
     int minSampleIndex = 200;
     int maxSampleIndex = -200;
     for (int pitch =21; pitch <= 108; ++ pitch) {
         info.valid = false;
-        cinst->getInfo(info, pitch, 60);
+        cinst->play(info, pitch, 60);
         assert(info.valid);
         assert(info.canPlay());
         minSampleIndex = std::min(minSampleIndex, info.sampleIndex);
         maxSampleIndex = std::max(maxSampleIndex, info.sampleIndex);
     }
 
-    cinst->getInfo(info, 20, 60);
+    cinst->play(info, 20, 60);
     assert(!info.valid);
-    cinst->getInfo(info, 109, 60);
+    cinst->play(info, 109, 60);
     assert(!info.valid);
 
     assert(minSampleIndex == 1);
@@ -342,10 +342,10 @@ static void testCompileInst1()
 
     ci::CompiledInstrumentPtr i = ci::CompiledInstrument::make(inst);
 
-    ci::VoicePlayInfo info;
+    VoicePlayInfo info;
     info.sampleIndex = 0;
     assert(!info.valid);
-    i->getInfo(info, 60, 60);
+    i->play(info, 60, 60);
     assert(info.valid);  // this will fail until we implement a real compiler
     assertNE(info.sampleIndex, 0);
 }
@@ -357,13 +357,13 @@ static void testTranspose1()
     auto err = SParse::go(R"foo(<region> sample=K18\D#1.pp.wav lovel=1 hivel=65 lokey=26 hikey=28 pitch_keycenter=27)foo", inst);
     assert(err.empty());
     auto cinst = ci::CompiledInstrument::make(inst);
-    ci::VoicePlayInfo info;
+    VoicePlayInfo info;
     printf("about to fetch ifo for key = 26\n");
 
     // figure the expected transpose for pitch 26
     int semiOffset = -1;
     float pitchMul = float(std::pow(2, semiOffset / 12.0));
-    cinst->getInfo(info, 26, 64);
+    cinst->play(info, 26, 64);
     assert(info.valid);
     assert(info.needsTranspose);
     assertEQ(info.transposeAmt, pitchMul);
