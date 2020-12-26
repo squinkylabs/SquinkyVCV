@@ -122,7 +122,7 @@ inline void Samp<TBase>::setupSamplesDummy()
 #if 0
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
-    ci::CompiledInstrument cinst(inst);
+    CompiledInstrument cinst(inst);
     //inst->_setTestMode();
 #endif
    // const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
@@ -137,7 +137,7 @@ inline void Samp<TBase>::setupSamplesDummy()
     auto err = SParse::goFile(p, inst);
     assert(err.empty());
 
-    ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     waves = std::make_shared<WaveLoader>();
 
    // assert(false);

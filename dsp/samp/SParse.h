@@ -6,15 +6,6 @@
 #include <memory>
 #include <vector>
 
-#if 0
-namespace ci
-{
-    class KeysAndValues;
-    using KeysAndValuesPtr = std::shared_ptr<KeysAndValues>;
-};
-#endif
-
-
 class SKeyValuePair {
 public:
     SKeyValuePair(const std::string& k ,const std::string& v) : key(k), value(v) {}
@@ -28,8 +19,7 @@ using SKeyValueList = std::vector<SKeyValuePairPtr>;
 class SRegion {
 public:
     SKeyValueList values;
-   // ci::KeysAndValuesPtr compiledValues;
-   SamplerSchema::KeysAndValuesPtr compiledValues;
+    SamplerSchema::KeysAndValuesPtr compiledValues;
 };
 using SRegionPtr = std::shared_ptr<SRegion>; 
 using SRegionList = std::vector<SRegionPtr>;

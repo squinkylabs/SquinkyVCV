@@ -21,7 +21,7 @@ public:
     void note_on(int channel, int midiPitch, int midiVelocity);
     void note_off(int channel);
 
-    void setPatch(ci::CompiledInstrumentPtr inst);
+    void setPatch(CompiledInstrumentPtr inst);
     void setLoader(WaveLoaderPtr loader);
 
     /**
@@ -30,7 +30,7 @@ public:
     void setNumVoices(int voices);
     float_4 step();
 private:
-    ci::CompiledInstrumentPtr patch;
+    CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;
     Streamer player;
 

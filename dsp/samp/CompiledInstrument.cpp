@@ -15,9 +15,6 @@ using DiscreteValue = SamplerSchema::DiscreteValue;
 using ValuePtr = SamplerSchema::ValuePtr;
 using Value = SamplerSchema::Value;
 
-namespace ci
-{
-
 void CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);
     assert(false);      // we need new algo here
@@ -392,8 +389,4 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
         }
     }
     inst->wasExpanded = true;
-}
-
-
-
 }

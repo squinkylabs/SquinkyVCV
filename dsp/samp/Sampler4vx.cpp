@@ -5,7 +5,7 @@
 #include "WaveLoader.h"
 
 
- void Sampler4vx::setPatch(ci::CompiledInstrumentPtr inst) {
+ void Sampler4vx::setPatch(CompiledInstrumentPtr inst) {
     patch = inst;
 }
 

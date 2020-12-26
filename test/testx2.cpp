@@ -50,7 +50,7 @@ static void testPlayInfo(const char* patch)
     auto err = SParse::goFile(patch, inst);
     assert(err.empty());
 
-    ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     VoicePlayInfo info;
     cinst->play(info, 60, 60);
     assert(info.valid); 
@@ -88,7 +88,7 @@ static void testLoadWavesPiano()
     auto err = SParse::goFile(tinnyPiano, inst);
     assert(err.empty());
 
-    ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     WaveLoaderPtr loader = std::make_shared<WaveLoader>();
 
    // const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
@@ -212,7 +212,7 @@ static void testSampler()
 {
     Sampler4vx s;
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
 
     s.setLoader(w);
@@ -232,7 +232,7 @@ static void testSamplerRealSound()
     Sampler4vx s;
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-    ci::CompiledInstrumentPtr cinst = ci::CompiledInstrument::make(inst);
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
     cinst->_setTestMode();
 
@@ -279,7 +279,7 @@ static void testParseGlobalAndRegionCompiled()
     auto err = SParse::go("<global><region>", inst);
 
     assert(err.empty());
-    ci::CompiledInstrument::expandAllKV(inst);
+    CompiledInstrument::expandAllKV(inst);
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 0);
 
@@ -295,7 +295,7 @@ static void testParseGlobalWithKVAndRegionCompiled()
     auto err = SParse::go("<global>hikey=57<region>", inst);
 
     assert(err.empty());
-    ci::CompiledInstrument::expandAllKV(inst);
+    CompiledInstrument::expandAllKV(inst);
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 1);
     auto val  = inst->global.compiledValues->get(SamplerSchema::Opcode::HI_KEY);
@@ -313,7 +313,7 @@ static void testParseGlobalWitRegionKVCompiled()
     auto err = SParse::go("<global><region><region>lokey=57<region>", inst);
 
     assert(err.empty());
-    ci::CompiledInstrument::expandAllKV(inst);
+    CompiledInstrument::expandAllKV(inst);
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 0);
 
@@ -341,7 +341,7 @@ static void testCompileInst1()
     auto err = SParse::go("<global><region><region>lokey=60\nhikey=60\nsample=foo<region>", inst);
     assert(err.empty());
 
-    ci::CompiledInstrumentPtr i = ci::CompiledInstrument::make(inst);
+    CompiledInstrumentPtr i = CompiledInstrument::make(inst);
 
     VoicePlayInfo info;
     info.sampleIndex = 0;
@@ -357,7 +357,7 @@ static void testTranspose1()
     auto inst = std::make_shared<SInstrument>();
     auto err = SParse::go(R"foo(<region> sample=K18\D#1.pp.wav lovel=1 hivel=65 lokey=26 hikey=28 pitch_keycenter=27)foo", inst);
     assert(err.empty());
-    auto cinst = ci::CompiledInstrument::make(inst);
+    auto cinst = CompiledInstrument::make(inst);
     VoicePlayInfo info;
     printf("about to fetch ifo for key = 26\n");
 
@@ -402,7 +402,7 @@ static void testCompiledRegion()
     SGroupPtr group = inst->groups[0];
     SRegionPtr region = group->regions[0];
    // inst->expandAllKV();
-    ci::CompiledInstrument::expandAllKV(inst);
+    CompiledInstrument::expandAllKV(inst);
 
     assert(inst->wasExpanded);
   

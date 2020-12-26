@@ -21,8 +21,6 @@ using SRegionPtr = std::shared_ptr<SRegion>;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 using SGroupPtr = std::shared_ptr<SGroup>;
 
-namespace ci
-{
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 
 
@@ -75,10 +73,3 @@ private:
 
 
 //KeysAndValuesPtr compile(const SKeyValueList&);
-
-
-
-
-
-
-}
