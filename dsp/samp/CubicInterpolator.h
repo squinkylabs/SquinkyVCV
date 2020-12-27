@@ -19,7 +19,7 @@ private:
 template <typename T>
 inline bool CubicInterpolator<T>::canInterpolate(T offset, unsigned int totalSize)
 {
-    const unsigned int index = getIntegerPart(offset);
+    // const unsigned int index = getIntegerPart(offset);
     return (offset > 0 && offset < (totalSize - 2));
 }
 

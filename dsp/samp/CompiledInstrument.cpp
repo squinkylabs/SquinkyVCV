@@ -52,7 +52,7 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
                 CompiledRegionPtr regBase = std::make_shared<CompiledRegion>(region);
                 const bool skipRegion = regBase->lokey < 0 || regBase->hikey < regBase->lokey;
                 if (!skipRegion) {
-                    const int sampleIndex = addSampleFile(regBase->sampleFile);
+                   // const int sampleIndex = addSampleFile(regBase->sampleFile);
                     for (int key = regBase->lokey; key <= regBase->hikey; ++key) {
                         assert(key >= 0 && key <= 127);
                        // printf("in key loop %d\n", key); fflush(stdout);
@@ -111,7 +111,7 @@ ISamplerPlaybackPtr CompiledInstrument::playbackMapVelocities(std::vector<Compil
 #endif
 
     auto vs = std::make_shared<VelSwitch>();
-    for (int index = 0; index < entriesForPitch.size(); ++index) {
+    for (int index = 0; index < int(entriesForPitch.size()); ++index) {
     // void _addIndex(unsigned int index, unsigned int value);
        // vs->_addIndex(index, entriesForPitch[index]->lovel);
         const int sampleIndex = addSampleFile(entriesForPitch[index]->sampleFile);

@@ -25,12 +25,13 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity)
         printf("could not get play info\n");
         return;
     }
+
     WaveLoader::WaveInfoPtr waveInfo = waves->getInfo(patchInfo.sampleIndex);
     assert(waveInfo->valid);
     assert(waveInfo->numChannels == 1);
     player.setSample(channel, waveInfo->data, int(waveInfo->totalFrameCount));
     player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
-    // printf("note_on %d, %d, %d\n", channel, midiPitch, midiVelocity);
+    printf("note_on ch=%d, pitch-%d, vel=%d sample=%d\n", channel, midiPitch, midiVelocity, patchInfo.sampleIndex); fflush(stdout);
     // printf("just set player trans(%d, %f)\n", patchInfo.needsTranspose, patchInfo.transposeAmt); fflush(stdout);
 }
 

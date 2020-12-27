@@ -41,6 +41,10 @@ static void testVelSwitch1()
     test = v.mapVelToPlayer(100);
     test->play(info, 0, 0);
     assertEQ(info.sampleIndex, 103);
+
+    test = v.mapVelToPlayer(101);
+    test->play(info, 0, 0);
+    assertEQ(info.sampleIndex, 103);
 }
 
 static char* smallPiano =  R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo"; 
@@ -76,6 +80,13 @@ static void testSmallPianoVelswitch()
     cinst->play(info, 64, 44);
     const int si44 = info.sampleIndex;
 
+    cinst->play(info, 64, 107);
+    const int si107 = info.sampleIndex;
+
+     cinst->play(info, 64, 127);
+    const int si127 = info.sampleIndex;
+
+
     assertEQ(si1, si22);
     assertNE(si23, si22);
 
@@ -83,7 +94,12 @@ static void testSmallPianoVelswitch()
     assertEQ(si43, si30);
     assertNE(si44, si43);
 
+    assertNE(si107, si44);
+    assertEQ(si107, si127);
+
     assertNE(si1, si44);
+
+
 
 }
 

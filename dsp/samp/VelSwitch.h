@@ -35,8 +35,14 @@ inline ISamplerPlaybackPtr VelSwitch::mapVelToPlayer(unsigned int vel) {
     ISamplerPlaybackPtr ret;
     auto it = velToPlayerMap.lower_bound(vel);
     if (it == velToPlayerMap.end()) {
-        assert(false);                  // we should always have an init entry.
-        return 0;
+        if (velToPlayerMap.empty()) {
+            assert(false);
+            return nullptr;
+        }
+        
+        it--;
+        // printf("in mapVelToPlayer vel=%d, went off end of map prev index=%d\n", vel, it->first); fflush(stdout);  
+        return it->second;
     }
     unsigned int lb_key = it->first;
     if (lb_key > vel) {
@@ -47,6 +53,7 @@ inline ISamplerPlaybackPtr VelSwitch::mapVelToPlayer(unsigned int vel) {
         ret = it->second;
     }
     else {
+        // printf("in mapVelToPlayer vel=%d, lb_key =%d\n", vel, lb_key); fflush(stdout);
         assert(false);
     }
     return ret;

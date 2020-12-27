@@ -179,9 +179,10 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args)
                     const float pitchCV = TBase::inputs[PITCH_INPUT].getVoltage(channel);
                     const int midiPitch = 60 + int(std::floor(pitchCV * 12));
             
-                    const int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].value * 12);
+                    // printf("raw vel input = %f\n", TBase::inputs[VELOCITY_INPUT].getVoltage(channel));
+                    const int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].getVoltage(channel) * 12.7f);
                     playback[bank].note_on(iSub, midiPitch, midiVelocity);
-                    printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
+                    // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
                 } else {
                     playback[bank].note_off(iSub);
                 } 

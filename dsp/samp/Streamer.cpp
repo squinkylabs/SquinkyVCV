@@ -103,7 +103,7 @@ void Streamer::setSample(int channel, float* d, int f)
 }
 void Streamer::setTranspose(int channel, bool doTranspose, float amount)
 {
-    printf("streamer trans ch=%d amd=%f\n", channel, amount); fflush(stdout);
+   // printf("streamer trans ch=%d amd=%f\n", channel, amount); fflush(stdout);
     assert(channel < 4);
     ChannelData& cd = channels[channel];
     cd.transposeEnabled = doTranspose;
