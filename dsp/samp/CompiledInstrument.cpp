@@ -40,14 +40,14 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
         //
         const bool ignoreGroup = shouldIgnoreGroup(group);
 
-        printf("comp group with %zd regions. ignore = %d\n", group->regions.size(), ignoreGroup);
-        group->_dump();
+        //printf("comp group with %zd regions. ignore = %d\n", group->regions.size(), ignoreGroup);
+        //group->_dump();
        
         if (!ignoreGroup) {
             for (auto region : group->regions) {
-                printf("in region loop\n");
-                region->_dump();
-                printf("there are %lld values, %lld compiledValue\n", region->values.size(), region->compiledValues->_size() );
+              //  printf("in region loop\n");
+               // region->_dump();
+               // printf("there are %lld values, %lld compiledValue\n", region->values.size(), region->compiledValues->_size() );
 
                 CompiledRegionPtr regBase = std::make_shared<CompiledRegion>(region);
                 const bool skipRegion = regBase->lokey < 0 || regBase->hikey < regBase->lokey;
@@ -55,11 +55,11 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
                     const int sampleIndex = addSampleFile(regBase->sampleFile);
                     for (int key = regBase->lokey; key <= regBase->hikey; ++key) {
                         assert(key >= 0 && key <= 127);
-                        printf("in key loop %d\n", key); fflush(stdout);
+                       // printf("in key loop %d\n", key); fflush(stdout);
                         std::vector<CompiledRegionPtr>& vels = pitchVelList[key];
                        
                         vels.push_back(regBase);
-                        printf("vels[%d] has %zd entried\n", key, vels.size());
+                       // printf("vels[%d] has %zd entried\n", key, vels.size());
                     }
                 }
             }
@@ -103,10 +103,12 @@ ISamplerPlaybackPtr CompiledInstrument::playbackMapVelocities(std::vector<Compil
         return less;
     });
 
+#if 0
     printf("------\n");
     for (auto x : entriesForPitch) {
         printf("after sort %d,%d\n", x->lovel, x->hivel);
     }
+#endif
 
     auto vs = std::make_shared<VelSwitch>();
     for (int index = 0; index < entriesForPitch.size(); ++index) {
@@ -304,24 +306,26 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootP
 
     auto num = relativeFilePaths.size();
     tempPaths.resize(num);
-    printf("resized to %zd\n", num);
+    // printf("resized to %zd\n", num);
     // index is 1..
     for (auto pathEntry : relativeFilePaths) {
         std::string path = pathEntry.first;
      
         int waveIndex = pathEntry.second;
-        printf("in setWaves, entry has %s index = %d\n", path.c_str(), waveIndex);
+        //printf("in setWaves, entry has %s index = %d\n", path.c_str(), waveIndex);
        // tempPaths.resize(waveIndex);
         assert(waveIndex > 0);
         assert(!path.empty());
         tempPaths[waveIndex - 1] = path;
      
     }
+#if 0
     printf("after fill, size of temp = %zd, started with %zd\n", tempPaths.size(), relativeFilePaths.size());
 
     for (auto path : tempPaths) {
         printf("temp: %s\n", path.c_str());
     }
+#endif
 
 
     for (auto path : tempPaths) {

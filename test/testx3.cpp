@@ -1,7 +1,10 @@
 
-#include "asserts.h"
-#include "VelSwitch.h"
+#include "CompiledInstrument.h"
+#include "SInstrument.h"
 #include "SParse.h"
+#include "VelSwitch.h"
+
+#include <asserts.h>
 
 static void testVelSwitch1()
 {
@@ -40,7 +43,53 @@ static void testVelSwitch1()
     assertEQ(info.sampleIndex, 103);
 }
 
+static char* smallPiano =  R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo"; 
+
+static void testSmallPianoVelswitch() 
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::goFile(smallPiano, inst);
+    assert(err.empty());
+
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    VoicePlayInfo info;
+    cinst->play(info, 60, 60);
+    assert(info.valid); 
+
+    //  {1, 23, 44, 65, 80, 107});
+    cinst->play(info, 64, 1);
+    const int si1 = info.sampleIndex;
+
+    cinst->play(info, 64, 22);
+    const int si22 = info.sampleIndex;
+
+    cinst->play(info, 64, 23);
+    const int si23 = info.sampleIndex;
+
+    cinst->play(info, 64, 30);
+    const int si30 = info.sampleIndex;
+
+    cinst->play(info, 64, 43);
+    const int si43 = info.sampleIndex;
+
+    cinst->play(info, 64, 44);
+    const int si44 = info.sampleIndex;
+
+    assertEQ(si1, si22);
+    assertNE(si23, si22);
+
+    assertEQ(si30, si23);
+    assertEQ(si43, si30);
+    assertNE(si44, si43);
+
+    assertNE(si1, si44);
+
+}
+
+
 void testx3()
 {
     testVelSwitch1();
+    testSmallPianoVelswitch();
 }

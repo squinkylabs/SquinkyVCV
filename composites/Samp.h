@@ -119,29 +119,19 @@ inline void Samp<TBase>::init()
 template <class TBase>
 inline void Samp<TBase>::setupSamplesDummy()
 {
-#if 0
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    WaveLoaderPtr w = std::make_shared<WaveLoader>();
-    CompiledInstrument cinst(inst);
-    //inst->_setTestMode();
-#endif
-   // const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
-
     SInstrumentPtr inst = std::make_shared<SInstrument>();
    // const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
   //  const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
 
-    // small piano
-    static char* p =  R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo"; 
-    static char* pRoot =  R"foo(D:\samples\K18-Upright-Piano\)foo"; 
+    // small piano, with vel keyswitch
+    static const char* p =  R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo"; 
+    static const char* pRoot =  R"foo(D:\samples\K18-Upright-Piano\)foo"; 
     auto err = SParse::goFile(p, inst);
     assert(err.empty());
 
     CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     waves = std::make_shared<WaveLoader>();
 
-   // assert(false);
-   // w->load(p);
     cinst->setWaves(waves, pRoot);
     for (int i=0; i<4; ++i) {
         playback[i].setPatch(cinst);
@@ -156,7 +146,6 @@ inline void Samp<TBase>::setupSamplesDummy()
     for (int i=0; i<4; ++i) {
         playback[i].setLoader(waves);
         playback[i].setNumVoices(4);
-       // playback[i].setLoader(waves);       // why twice?
     }
 }
 
