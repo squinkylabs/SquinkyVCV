@@ -238,6 +238,11 @@ void SGroup::_dump() {
     printf("done dumping group ----\n");
 }
 
+void SRegion::_dump() {
+    printf("dumping region ----\n");
+    SGroup::dumpKeysAndValues(values);
+    printf("done dumping region ----\n");
+}
 void SGroup::dumpKeysAndValues(const SKeyValueList& v) {
     for (auto x : v) {
         SKeyValuePairPtr kvp = x;

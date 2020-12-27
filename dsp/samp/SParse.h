@@ -20,6 +20,7 @@ class SRegion {
 public:
     SKeyValueList values;
     SamplerSchema::KeysAndValuesPtr compiledValues;
+    void _dump();
 };
 using SRegionPtr = std::shared_ptr<SRegion>; 
 using SRegionList = std::vector<SRegionPtr>;

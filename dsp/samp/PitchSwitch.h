@@ -11,29 +11,28 @@ class PitchSwitch : public ISamplerPlayback
 public:
     void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
     void _setTestMode() { testMode = true; }
+    void addEntry(int pitch, ISamplerPlaybackPtr data) {
+        assert(!pitchMap[pitch]);
+        pitchMap[pitch] = data;
+    }
 private:
     bool testMode = false;
+    std::vector<ISamplerPlaybackPtr> pitchMap = std::vector<ISamplerPlaybackPtr>(128);
 };
 
-inline void PitchSwitch::play(VoicePlayInfo&, int midiPitch, int midiVelocity)
+inline void PitchSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVelocity)
 {
-    assert(false);
-
-    /* old stuff from CompiledInsturment
       if (testMode) {
          info.sampleIndex = 1;
          info.needsTranspose = false;
          info.transposeAmt = 1;
          info.valid = true;
          return;
-     }
-     info.valid = false;
-     auto entry = pitchMap.find(midiPitch);
-     if (entry != pitchMap.end()) {
-         //assert(false);
-         info = *entry->second;         // this requires copy - we could use smart pointers
-         
-     }
-     else printf("pitch %d not found\n", midiPitch)
-     */
+      }
+
+      info.valid = false;
+      const ISamplerPlaybackPtr entry = pitchMap[midiPitch];
+      if (entry) {
+          entry->play(info, midiPitch, midiVelocity);
+      }
 }

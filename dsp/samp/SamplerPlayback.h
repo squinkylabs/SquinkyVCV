@@ -1,5 +1,6 @@
 #pragma once
 
+#include "CompiledRegion.h"
 /**
  * When a patch is asked to "play", it serves up one of these.
  */
@@ -20,6 +21,7 @@ using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
 class ISamplerPlayback {
 public:
     virtual ~ISamplerPlayback() = default;
+    // TODO: should this return VoicePlayInfoPtr??
     virtual void play(VoicePlayInfo&, int midiPitch, int midiVelocity) = 0;
 };
 
@@ -28,10 +30,17 @@ using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
 class SimpleVoicePlayer : public ISamplerPlayback
 {
 public:
-    void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
+    SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex) {
+        data->valid = true;
+        data->sampleIndex = sampleIndex;
+        printf("SimpleVoicePlayer can't figure out transpose yet\n");
+    }
+    void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override {
+        info = *data;
+    }
 
 private:
-    VoicePlayInfoPtr data;
+    VoicePlayInfoPtr data = std::make_shared<VoicePlayInfo>();
 
 };
 

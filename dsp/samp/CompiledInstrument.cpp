@@ -1,6 +1,7 @@
 
 #include "CompiledInstrument.h"
 #include "SInstrument.h"
+#include "CompiledRegion.h"
 #include "SParse.h"
 #include "WaveLoader.h"
 
@@ -15,6 +16,72 @@ using DiscreteValue = SamplerSchema::DiscreteValue;
 using ValuePtr = SamplerSchema::ValuePtr;
 using Value = SamplerSchema::Value;
 
+
+/**
+ * new compile algorithm
+ * 1) filter the regions, and generate a list of compiled regions, each one for a specific pitch
+ *  compileRegionList(std::vector<CimpiledREgionPtr>).
+ * 
+ * std::vector< std::vector<CompiledRegions
+ * 
+ * x[pitch] is a vector of compiled regions for a pitch
+ * 
+ */
+
+void CompiledInstrument::compile(const SInstrumentPtr in) {
+    assert(in->wasExpanded);
+
+    std::vector< std::vector<CompiledRegionPtr>> pitchVelList(128);
+    assert(pitchVelList.size() == 128);
+    for (auto group : in->groups) {
+        //
+        const bool ignoreGroup = shouldIgnoreGroup(group);
+
+        printf("comp group with %zd regions. ignore = %d\n", group->regions.size(), ignoreGroup);
+        group->_dump();
+       
+        if (!ignoreGroup) {
+            for (auto region : group->regions) {
+                printf("in region loop\n");
+                region->_dump();
+                printf("there are %lld values, %lld compiledValue\n", region->values.size(), region->compiledValues->_size() );
+
+                CompiledRegionPtr regBase = std::make_shared<CompiledRegion>(region);
+                const bool skipRegion = regBase->lokey < 0 || regBase->hikey < regBase->lokey;
+                if (!skipRegion) {
+                    const int sampleIndex = addSampleFile(regBase->sampleFile);
+                    for (int key = regBase->lokey; key <= regBase->hikey; ++key) {
+                        assert(key >= 0 && key <= 127);
+                        printf("in key loop %d\n", key); fflush(stdout);
+                        std::vector<CompiledRegionPtr>& vels = pitchVelList[key];
+                       
+                        vels.push_back(regBase);
+                        printf("vels[%d] has %zd entried\n", key, vels.size());
+                    }
+                }
+            }
+        }
+    }
+
+    // OK, now pitchVelList has all the data we need
+    for (int pitch = 1; pitch < 128; ++pitch) {
+        const auto entriesForPitch = pitchVelList[pitch];
+        const int numEntries = int(entriesForPitch.size());
+
+        if (numEntries == 0) {
+            // do nothing if play data for this pitch
+        } else if (numEntries == 1) {
+            const int sampleIndex = addSampleFile(entriesForPitch[0]->sampleFile);
+            ISamplerPlaybackPtr playback = std::make_shared<SimpleVoicePlayer>(entriesForPitch[0], sampleIndex);
+            pitchMap.addEntry(pitch, playback);
+        }
+        else {
+            assert(false);
+        }
+    }
+   
+}
+#if 0
 void CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);
     assert(false);      // we need new algo here
@@ -34,6 +101,7 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
         }
     }
 }
+#endif
 
 
 #if 1   // need to adapt to new object tree
