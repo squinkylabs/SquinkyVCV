@@ -76,19 +76,19 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
             // do nothing if play data for this pitch
         } else if (numEntries == 1) {
             const int sampleIndex = addSampleFile(entriesForPitch[0]->sampleFile);
-            ISamplerPlaybackPtr playback = std::make_shared<SimpleVoicePlayer>(entriesForPitch[0], sampleIndex);
+            ISamplerPlaybackPtr playback = std::make_shared<SimpleVoicePlayer>(entriesForPitch[0], sampleIndex, pitch);
             pitchMap.addEntry(pitch, playback);
         }
         else {
             // this is going to sort the entries
-            ISamplerPlaybackPtr player = playbackMapVelocities(entriesForPitch);
+            ISamplerPlaybackPtr player = playbackMapVelocities(entriesForPitch, pitch);
             pitchMap.addEntry(pitch, player);
         }
     }
 }
 
 
-ISamplerPlaybackPtr CompiledInstrument::playbackMapVelocities(std::vector<CompiledRegionPtr>& entriesForPitch) {
+ISamplerPlaybackPtr CompiledInstrument::playbackMapVelocities(std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch) {
 
     // std::sort (myvector.begin()+4, myvector.end(), myfunction);
     std::sort(entriesForPitch.begin(), entriesForPitch.end(), [](const CompiledRegionPtr a, const CompiledRegionPtr b) -> bool {
@@ -113,7 +113,7 @@ ISamplerPlaybackPtr CompiledInstrument::playbackMapVelocities(std::vector<Compil
     // void _addIndex(unsigned int index, unsigned int value);
        // vs->_addIndex(index, entriesForPitch[index]->lovel);
         const int sampleIndex = addSampleFile(entriesForPitch[index]->sampleFile);
-        ISamplerPlaybackPtr player = std::make_shared<SimpleVoicePlayer>(entriesForPitch[index], sampleIndex);
+        ISamplerPlaybackPtr player = std::make_shared<SimpleVoicePlayer>(entriesForPitch[index], sampleIndex, midiPitch);
         vs->addVelocityRange(entriesForPitch[index]->lovel, player);
     }
 

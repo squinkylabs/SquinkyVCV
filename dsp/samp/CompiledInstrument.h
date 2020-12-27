@@ -68,7 +68,7 @@ private:
     int addSampleFile(const std::string& s);
 
   //  const std::vector<CompiledRegionPtr>&
-    ISamplerPlaybackPtr playbackMapVelocities(std::vector<CompiledRegionPtr>& entriesForPitch);
+    ISamplerPlaybackPtr playbackMapVelocities(std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
 };
 
 

@@ -13,9 +13,8 @@ class VelSwitch : public ISamplerPlayback
 public:
     ISamplerPlaybackPtr mapVelToPlayer(unsigned int vel);
     void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
-
-    //void _addIndex(unsigned int index, unsigned int value, ISamplerPlaybackPtr player);
     void addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player);
+
 private:
 
     std::map<unsigned int, ISamplerPlaybackPtr> velToPlayerMap;
