@@ -14,15 +14,12 @@ class SRegion;
 class WaveLoader;
 class SGroup;
 
-//using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>; 
-//using SKeyValueList = std::vector<SKeyValuePairPtr>;
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
 using SRegionPtr = std::shared_ptr<SRegion>;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 using SGroupPtr = std::shared_ptr<SGroup>;
 
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
-
 
 class CompiledInstrument : public ISamplerPlayback {
 public:
@@ -69,6 +66,9 @@ private:
     /** Returns wave index
      */
     int addSampleFile(const std::string& s);
+
+  //  const std::vector<CompiledRegionPtr>&
+    ISamplerPlaybackPtr playbackMapVelocities(std::vector<CompiledRegionPtr>& entriesForPitch);
 };
 
 

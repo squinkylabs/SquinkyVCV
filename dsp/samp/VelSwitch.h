@@ -11,16 +11,50 @@
 class VelSwitch : public ISamplerPlayback
 {
 public:
-    unsigned int mapVelToIndex(unsigned int vel);
+    ISamplerPlaybackPtr mapVelToPlayer(unsigned int vel);
     void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
 
-    void _addIndex(unsigned int index, unsigned int value);
+    //void _addIndex(unsigned int index, unsigned int value, ISamplerPlaybackPtr player);
+    void addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player);
 private:
-    // velocity(range) to index
-    std::map<unsigned int, unsigned int> velIndexMap;
+
+    std::map<unsigned int, ISamplerPlaybackPtr> velToPlayerMap;
 };
 
-inline void VelSwitch::_addIndex(unsigned int index, unsigned int value)
+
+inline void VelSwitch::addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player)
+{
+    velToPlayerMap.insert({ velRangeStart, player });
+}
+
+inline void VelSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
+    ISamplerPlaybackPtr player = mapVelToPlayer(midiVelocity);
+    player->play(info, midiPitch, midiVelocity);
+}
+
+inline ISamplerPlaybackPtr VelSwitch::mapVelToPlayer(unsigned int vel) {
+    ISamplerPlaybackPtr ret;
+    auto it = velToPlayerMap.lower_bound(vel);
+    if (it == velToPlayerMap.end()) {
+        assert(false);                  // we should always have an init entry.
+        return 0;
+    }
+    unsigned int lb_key = it->first;
+    if (lb_key > vel) {
+        --it;
+        ret = it->second;
+    }
+    else if (lb_key == vel) {
+        ret = it->second;
+    }
+    else {
+        assert(false);
+    }
+    return ret;
+}
+
+#if 0
+inline void VelSwitch::_addIndex(unsigned int index, unsigned int value, ISamplerPlaybackPtr player)
 {
 
     velIndexMap.insert({value, index});
@@ -45,8 +79,6 @@ inline unsigned  VelSwitch::mapVelToIndex(unsigned  vel)
     }
     return ret;;
 }
+#endif
 
-inline void VelSwitch::play(VoicePlayInfo&, int midiPitch, int midiVelocity) {
-    assert(false);
 
-}

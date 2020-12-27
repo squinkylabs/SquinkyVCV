@@ -2,9 +2,12 @@
 #include "CompiledInstrument.h"
 #include "SInstrument.h"
 #include "CompiledRegion.h"
+#include "SamplerPlayback.h"
 #include "SParse.h"
+#include "VelSwitch.h"
 #include "WaveLoader.h"
 
+#include <algorithm>
 #include <assert.h>
 #include <cmath>
 #include <set>
@@ -65,7 +68,8 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
 
     // OK, now pitchVelList has all the data we need
     for (int pitch = 1; pitch < 128; ++pitch) {
-        const auto entriesForPitch = pitchVelList[pitch];
+
+        std::vector<CompiledRegionPtr>& entriesForPitch = pitchVelList[pitch];
         const int numEntries = int(entriesForPitch.size());
 
         if (numEntries == 0) {
@@ -76,11 +80,49 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
             pitchMap.addEntry(pitch, playback);
         }
         else {
-            assert(false);
+            // this is going to sort the entries
+            ISamplerPlaybackPtr player = playbackMapVelocities(entriesForPitch);
+            pitchMap.addEntry(pitch, player);
         }
     }
-   
 }
+
+
+ISamplerPlaybackPtr CompiledInstrument::playbackMapVelocities(std::vector<CompiledRegionPtr>& entriesForPitch) {
+
+    // std::sort (myvector.begin()+4, myvector.end(), myfunction);
+    std::sort(entriesForPitch.begin(), entriesForPitch.end(), [](const CompiledRegionPtr a, const CompiledRegionPtr b) -> bool {
+        bool less = false;
+        if (a->lovel < b->lovel) {
+            assert(a->hivel < b->lovel);    // not overlapping
+            less = true;
+        }
+        else {
+            assert(a->hivel > b->hivel);
+        }
+        return less;
+    });
+
+    printf("------\n");
+    for (auto x : entriesForPitch) {
+        printf("after sort %d,%d\n", x->lovel, x->hivel);
+    }
+
+    auto vs = std::make_shared<VelSwitch>();
+    for (int index = 0; index < entriesForPitch.size(); ++index) {
+    // void _addIndex(unsigned int index, unsigned int value);
+       // vs->_addIndex(index, entriesForPitch[index]->lovel);
+        const int sampleIndex = addSampleFile(entriesForPitch[index]->sampleFile);
+        ISamplerPlaybackPtr player = std::make_shared<SimpleVoicePlayer>(entriesForPitch[index], sampleIndex);
+        vs->addVelocityRange(entriesForPitch[index]->lovel, player);
+    }
+
+
+    return vs;
+}
+
+
+
 #if 0
 void CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);

@@ -43,7 +43,7 @@ static void testPlayInfo() {
     assertEQ(info.valid, false);
 }
 
-static void testPlayInfo(const char* patch) 
+static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) 
 {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -57,12 +57,14 @@ static void testPlayInfo(const char* patch)
     int minSampleIndex = 200;
     int maxSampleIndex = -200;
     for (int pitch =21; pitch <= 108; ++ pitch) {
-        info.valid = false;
-        cinst->play(info, pitch, 60);
-        assert(info.valid);
-        assert(info.canPlay());
-        minSampleIndex = std::min(minSampleIndex, info.sampleIndex);
-        maxSampleIndex = std::max(maxSampleIndex, info.sampleIndex);
+        for (auto vel : velRanges) {
+            info.valid = false;
+            cinst->play(info, pitch, vel);
+            assert(info.valid);
+            assert(info.canPlay());
+            minSampleIndex = std::min(minSampleIndex, info.sampleIndex);
+            maxSampleIndex = std::max(maxSampleIndex, info.sampleIndex);
+        }
     }
 
     cinst->play(info, 20, 60);
@@ -75,10 +77,10 @@ static void testPlayInfo(const char* patch)
 }
 
 static void testPlayInfoTinnyPiano() {
-    testPlayInfo(tinnyPiano);
+    testPlayInfo(tinnyPiano, { 64 });
 }
 static void testPlayInfoSmallPiano() {
-    testPlayInfo(smallPiano);
+    testPlayInfo(smallPiano, {1, 23, 44, 65, 80, 107});
 }
 
 static void testLoadWavesPiano()
