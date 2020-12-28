@@ -114,7 +114,9 @@ static void testSnareBasic()
 }
 void testx3()
 {
+    assert(parseCount == 0);
     testVelSwitch1();
     testSmallPianoVelswitch();
     testSnareBasic();
+    assert(parseCount == 0);
 }

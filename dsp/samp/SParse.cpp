@@ -8,6 +8,9 @@
 #include <fstream>
 #include <streambuf>
 
+// globals for mem leak detection
+int parseCount = 0;
+
 std::string SParse::goFile(const std::string& sPath, SInstrumentPtr inst) {
 #if 0
     FILE* fp = nullptr;

@@ -6,10 +6,13 @@
 #include <memory>
 #include <vector>
 
+extern int parseCount;
+
 class SKeyValuePair {
 public:
-    SKeyValuePair(const std::string& k ,const std::string& v) : key(k), value(v) {}
-    SKeyValuePair() = default;
+    SKeyValuePair(const std::string& k ,const std::string& v) : key(k), value(v) { ++parseCount; }
+    SKeyValuePair() { ++parseCount; }
+    ~SKeyValuePair() { --parseCount; }
     std::string key;
     std::string value;
 };
@@ -18,6 +21,8 @@ using SKeyValueList = std::vector<SKeyValuePairPtr>;
 
 class SRegion {
 public:
+    SRegion() { ++parseCount; }
+    ~SRegion() { --parseCount; }
     SKeyValueList values;
     SamplerSchema::KeysAndValuesPtr compiledValues;
     void _dump();

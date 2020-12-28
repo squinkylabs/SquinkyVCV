@@ -342,6 +342,7 @@ static void testparse_piano2()
 
 void testx()
 {
+    assert(parseCount == 0);
     testx0();
     testx1();
     testx2();
@@ -371,6 +372,6 @@ void testx()
     testParseTwoGroupsB();
     testparse_piano1();
    // testparse_piano2b();
-    printf("put back 2 piano!!!\n");
     testparse_piano2();
+    assert(parseCount == 0);
 }

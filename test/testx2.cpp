@@ -340,7 +340,7 @@ static void testCompileInst1()
 {
     printf("\n-- test comp inst 1\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    auto err = SParse::go("<global><region><region>lokey=60\nhikey=60\nsample=foo<region>", inst);
+    auto err = SParse::go("<global><region>lokey=50\nhikey=50\nsample=foo<region>lokey=60\nhikey=60\nsample=bar<region>lokey=70\nhikey=70\nsample=baz", inst);
     assert(err.empty());
 
     CompiledInstrumentPtr i = CompiledInstrument::make(inst);
@@ -351,6 +351,18 @@ static void testCompileInst1()
     i->play(info, 60, 60);
     assert(info.valid);  // this will fail until we implement a real compiler
     assertNE(info.sampleIndex, 0);
+}
+
+static void testCompileOverlap()
+{
+    printf("\n-- test comp overlap\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<global><region>lokey=0\nhikey=127\nsample=foo<region>lokey=60\nhikey=60\nsample=bar", inst);
+    assert(err.empty());
+
+    CompiledInstrumentPtr i = CompiledInstrument::make(inst);
+    int x = 5;
+
 }
 
 static void testTranspose1()
@@ -398,18 +410,14 @@ static void testCompiledRegion()
 {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     const char* str = R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200)foo";
-    // "<region>pitch_keycenter=24"
     auto err = SParse::go(str, inst);
 
     SGroupPtr group = inst->groups[0];
     SRegionPtr region = group->regions[0];
-   // inst->expandAllKV();
     CompiledInstrument::expandAllKV(inst);
 
     assert(inst->wasExpanded);
   
-
-  //  CompiledRegion cr(region);
     CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region);
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
@@ -421,6 +429,7 @@ static void testCompiledRegion()
 
 void testx2()
 {
+    assert(parseCount == 0);
     testWaveLoader0();
     testWaveLoader1();
     testPlayInfo();
@@ -446,6 +455,7 @@ void testx2()
     testCompiledRegion();
 
     testCompileInst1();
+    testCompileOverlap();
     testPlayInfoTinnyPiano();
     testPlayInfoSmallPiano();
     testLoadWavesPiano();
@@ -454,4 +464,5 @@ void testx2()
 
     testSampler();
     testSamplerRealSound();
+    assert(parseCount == 0);
 }

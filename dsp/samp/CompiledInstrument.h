@@ -50,6 +50,9 @@ private:
     // This needs to be ISamplerPlayerPtr, not VoicePlayInfoPtr 
     std::map<int, VoicePlayInfoPtr> pitchMap;
 #endif
+    // list[pitch][velocrangeIndex] -> compiledRegion
+    using PitchVelList = std::vector<std::vector<CompiledRegionPtr>>;
+    void addGroupToPitchList(PitchVelList& list, SGroupPtr group);
 
     /**
      * Track all the unique relative paths here
@@ -60,7 +63,7 @@ private:
     int nextIndex = 1;
 
     void compile(const SInstrumentPtr);
-    void compileSub(const SRegionPtr);
+    //void compileSub(const SRegionPtr);
     bool shouldIgnoreGroup(SGroupPtr);
 
     /** Returns wave index
