@@ -11,6 +11,7 @@ using DiscreteValue = SamplerSchema::DiscreteValue;
 // TODO: compare this to the spec
 static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::HI_KEY, OpcodeType::Int},
+    {Opcode::KEY, OpcodeType::Int},
     {Opcode::LO_KEY, OpcodeType::Int},
     {Opcode::HI_VEL, OpcodeType::Int},
     {Opcode::LO_VEL, OpcodeType::Int},
@@ -28,7 +29,11 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::OFFSET, OpcodeType::Int},
     {Opcode::POLYPHONY, OpcodeType::Int},
     {Opcode::PITCH_KEYTRACK, OpcodeType::Int},
-    {Opcode::AMP_VELTRACK, OpcodeType::Float}
+    {Opcode::AMP_VELTRACK, OpcodeType::Float},
+    {Opcode::LO_RAND, OpcodeType::Float},
+    {Opcode::HI_RAND, OpcodeType::Float},
+    {Opcode::SEQ_LENGTH, OpcodeType::Int},
+    {Opcode::SEQ_POSITION, OpcodeType::Int}
 };
 
 static std::map<std::string, Opcode> opcodes = {
@@ -36,6 +41,8 @@ static std::map<std::string, Opcode> opcodes = {
     {"lovel", Opcode::LO_VEL},
     {"hikey", Opcode::HI_KEY},
     {"lokey", Opcode::LO_KEY},
+    {"hirand", Opcode::HI_RAND},
+    {"lorand", Opcode::LO_RAND},
     {"pitch_keycenter", Opcode::PITCH_KEYCENTER},
     {"ampeg_release", Opcode::AMPEG_RELEASE},
     {"loop_mode", Opcode::LOOP_MODE},
@@ -51,36 +58,42 @@ static std::map<std::string, Opcode> opcodes = {
     {"offset", Opcode::OFFSET},
     {"polyphony", Opcode::POLYPHONY},
     {"pitch_keytrack", Opcode::PITCH_KEYTRACK},
-    {"amp_veltrack", Opcode::AMP_VELTRACK}
+    {"amp_veltrack", Opcode::AMP_VELTRACK},
+    {"key", Opcode::KEY},
+    {"seq_length", Opcode::SEQ_LENGTH},
+    {"seq_position", Opcode::SEQ_POSITION}
 };
 
 
 static std::set<std::string> unrecognized;
 
-// TODO: drive wil map like the others?
-DiscreteValue SamplerSchema::translated(const std::string& s) {
-    if (s == "loop_continuous")
-        return DiscreteValue::LOOP_CONTINUOUS;
-    if (s == "no_loop")
-        return DiscreteValue::NO_LOOP;
-    if (s == "attack")
-        return DiscreteValue::ATTACK;
-    if (s == "release")
-        return DiscreteValue::RELEASE;
+static std::map<std::string, DiscreteValue> discreteValues = {
+    {"loop_continuous", DiscreteValue::LOOP_CONTINUOUS},
+    {"loop_sustain", DiscreteValue::LOOP_SUSTAIN},
+    {"no_loop", DiscreteValue::NO_LOOP},
+    {"one_shot", DiscreteValue::ONE_SHOT},
+    {"attack", DiscreteValue::ATTACK},
+    {"release", DiscreteValue::RELEASE},
+};
 
-    
-    return DiscreteValue::NONE;
+DiscreteValue SamplerSchema::translated(const std::string& s) {
+    auto it = discreteValues.find(s);
+    if (it == discreteValues.end()) {
+        printf("isn't discrete: %s\n", s.c_str());
+        return DiscreteValue::NONE;
+    }
+    return it->second;
 }
 
 void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
     Opcode opcode = translate(input->key);
     if (opcode == Opcode::NONE) {
-        printf("could not translate opcode %s\n", input->key.c_str());
+        printf("could not translate opcode %s\n", input->key.c_str()); fflush(stdout);
         return;
     }
     auto typeIter = keyType.find(opcode);
     if (typeIter == keyType.end()) {
-        printf("could not find type for %s\n", input->key.c_str());
+        printf("could not find type for %s\n", input->key.c_str()); fflush(stdout);
         assert(false);
         return;
     }

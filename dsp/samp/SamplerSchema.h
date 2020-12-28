@@ -36,14 +36,22 @@ public:
         OFFSET,
         POLYPHONY,
         PITCH_KEYTRACK,
-        AMP_VELTRACK
+        AMP_VELTRACK,
+        KEY,
+        LO_RAND,
+        HI_RAND,
+        SEQ_LENGTH,
+        SEQ_POSITION
     };
 
     enum class DiscreteValue {
         LOOP_CONTINUOUS,
         NO_LOOP,
+        ONE_SHOT,
+        LOOP_SUSTAIN,
         ATTACK,         // trigger=attack
         RELEASE,        // trigger= release
+        
         NONE
     };
 

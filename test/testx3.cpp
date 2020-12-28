@@ -48,6 +48,7 @@ static void testVelSwitch1()
 }
 
 static char* smallPiano =  R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo"; 
+static char* snare =  R"foo(D:\samples\SalamanderDrumkit\snare.sfz)foo";
 
 static void testSmallPianoVelswitch() 
 {
@@ -98,14 +99,22 @@ static void testSmallPianoVelswitch()
     assertEQ(si107, si127);
 
     assertNE(si1, si44);
-
-
-
 }
 
+static void testSnareBasic()
+{
+    printf("\n------- testSnareBasic\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
 
+    auto err = SParse::goFile(snare, inst);
+    assert(err.empty());
+
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    VoicePlayInfo info;
+}
 void testx3()
 {
     testVelSwitch1();
     testSmallPianoVelswitch();
+    testSnareBasic();
 }
