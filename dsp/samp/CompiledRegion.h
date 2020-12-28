@@ -4,12 +4,23 @@
 #include <string>
 
 class SRegion;
+class SGroup;
+class CompiledRegion;
+class CompiledGroup;
 using SRegionPtr = std::shared_ptr<SRegion>;
+using SGroupPtr = std::shared_ptr<SGroup>;
+
+using CompiledRegionPtr = std::shared_ptr<CompiledRegion>;
+using CompiledGroupPtr = std::shared_ptr<CompiledGroup>;
+using CompiledGroupPtrWeak = std::weak_ptr<CompiledGroup>;
+
+extern int compileCount;
 
 class CompiledRegion
 {
 public:
-    CompiledRegion(SRegionPtr);
+    CompiledRegion(SRegionPtr, CompiledGroupPtr parent);
+    ~CompiledRegion() { compileCount--; }
 
     // Keys were defaulting to -1, -1, but for drums with no
     // keys at all they were skipped. Better default is "all keys".
@@ -25,6 +36,14 @@ public:
     std::string sampleFile;
     int lovel = 0;
     int hivel = 127;
+
+    CompiledGroupPtrWeak weakParent;
 };
 
-using CompiledRegionPtr = std::shared_ptr<CompiledRegion>;
+class CompiledGroup {
+public:
+    CompiledGroup(SGroupPtr);
+    ~CompiledGroup()  { compileCount--; }
+};
+
+

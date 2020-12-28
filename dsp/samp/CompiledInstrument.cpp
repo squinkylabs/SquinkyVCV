@@ -69,12 +69,15 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
 void CompiledInstrument::addGroupToPitchList(PitchVelList& pitchVelList, SGroupPtr group) {
   //
     const bool ignoreGroup = shouldIgnoreGroup(group);
+  
 #ifdef _LOG
     printf("comp group with %zd regions. ignore = %d\n", group->regions.size(), ignoreGroup);
     group->_dump();
 #endif
     
     if (!ignoreGroup) {
+        CompiledGroupPtr compiledGroup = std::make_shared<CompiledGroup>(group);
+        this->groups.push_back(compiledGroup);
         for (auto region : group->regions) {
 #ifdef _LOG
             printf("in region loop\n");
@@ -82,7 +85,7 @@ void CompiledInstrument::addGroupToPitchList(PitchVelList& pitchVelList, SGroupP
             printf("there are %lld values, %lld compiledValue\n", region->values.size(), region->compiledValues->_size() );
 #endif
 
-            CompiledRegionPtr regBase = std::make_shared<CompiledRegion>(region);
+            CompiledRegionPtr regBase = std::make_shared<CompiledRegion>(region, compiledGroup);
             const bool skipRegion = regBase->lokey < 0 || regBase->hikey < regBase->lokey;
             if (!skipRegion) {
                 // const int sampleIndex = addSampleFile(regBase->sampleFile);

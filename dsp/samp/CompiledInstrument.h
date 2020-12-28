@@ -41,6 +41,7 @@ public:
     static void expandAllKV(SInstrumentPtr);
 
 private:
+    std::vector<CompiledGroupPtr> groups;
 
 #if 1
     PitchSwitch pitchMap;
@@ -63,14 +64,12 @@ private:
     int nextIndex = 1;
 
     void compile(const SInstrumentPtr);
-    //void compileSub(const SRegionPtr);
     bool shouldIgnoreGroup(SGroupPtr);
 
     /** Returns wave index
      */
     int addSampleFile(const std::string& s);
 
-  //  const std::vector<CompiledRegionPtr>&
     ISamplerPlaybackPtr playbackMapVelocities(std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
 };
 

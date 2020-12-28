@@ -7,9 +7,12 @@
 #include <set>
 #include <functional>
 
+int compileCount = 0;
+
 using Opcode = SamplerSchema::Opcode;
-CompiledRegion::CompiledRegion(SRegionPtr region) 
+CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr parent) : weakParent(parent) 
 {
+    compileCount++;
     const SRegion& reg = *region;
     assert(reg.compiledValues);
 
@@ -43,4 +46,10 @@ CompiledRegion::CompiledRegion(SRegionPtr region)
     if (value) {
         hivel = value->numericInt;
     }
+}
+
+
+CompiledGroup::CompiledGroup(SGroupPtr group)
+{
+    compileCount++;
 }

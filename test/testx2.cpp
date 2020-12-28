@@ -418,7 +418,7 @@ static void testCompiledRegion()
 
     assert(inst->wasExpanded);
   
-    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region);
+    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr);
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
     assertEQ(cr->hivel, 22);
@@ -430,6 +430,7 @@ static void testCompiledRegion()
 void testx2()
 {
     assert(parseCount == 0);
+    assert(compileCount == 0);
     testWaveLoader0();
     testWaveLoader1();
     testPlayInfo();
@@ -465,4 +466,5 @@ void testx2()
     testSampler();
     testSamplerRealSound();
     assert(parseCount == 0);
+    assert(compileCount == 0);
 }
