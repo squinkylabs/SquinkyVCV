@@ -40,16 +40,9 @@ public:
      */
     static void expandAllKV(SInstrumentPtr);
 
-#if 1
     void getAllRegions(std::vector<CompiledRegionPtr>&);
-    void sortByVelocity(std::vector<CompiledRegionPtr>&);
-#else
-    enum Sort {
-        Velocity,
-        Pitch
-    };
-    void getSortedRegions(std::vector<CompiledRegionPtr>&, Sort);
-#endif
+    static void sortByVelocity(std::vector<CompiledRegionPtr>&);
+    static void sortByPitch(std::vector<CompiledRegionPtr>&);
 
     // test accessor
     const std::vector<CompiledGroupPtr>& _groups() { return groups; }
@@ -58,21 +51,6 @@ private:
     bool testMode = false;
 
     ISamplerPlaybackPtr player;
-
-
-#if 0 // old stuff
-#if 1
-    PitchSwitch pitchMap;
-#else
-    bool testMode = false;
-
-    // This needs to be ISamplerPlayerPtr, not VoicePlayInfoPtr 
-    std::map<int, VoicePlayInfoPtr> pitchMap;
-#endif
-    // list[pitch][velocrangeIndex] -> compiledRegion
-    using PitchVelList = std::vector<std::vector<CompiledRegionPtr>>;
-    void addGroupToPitchList(PitchVelList& list, SGroupPtr group);
-#endif
 
     /**
      * Track all the unique relative paths here
@@ -87,7 +65,9 @@ private:
     bool shouldIgnoreGroup(SGroupPtr);
     void buildCompiledTree(const SInstrumentPtr i);
 
-    ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr> inputRegions);
+    ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr> inputRegions, int depth);
+    ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr> inputRegions, int depth);
+    void addSinglePitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region);
 
     /** Returns wave index
      */

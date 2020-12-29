@@ -36,3 +36,5 @@ inline void PitchSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVeloci
           entry->play(info, midiPitch, midiVelocity);
       }
 }
+
+using PitchSwitchPtr = std::shared_ptr<PitchSwitch>;

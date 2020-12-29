@@ -32,7 +32,7 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
     // now we need to build the player tree
     std::vector<CompiledRegionPtr> regions;
     getAllRegions(regions);
-    player = buildPlayerVelLayers(regions);
+    player = buildPlayerVelLayers(regions, 0);
 }
 
 /** build up the tree using the original algorithm that worked for small piano
@@ -46,13 +46,13 @@ public:
     std::vector<CompiledRegionPtr> regions;
 };
 
-ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<CompiledRegionPtr> inputRegions)
+ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<CompiledRegionPtr> inputRegions, int depth)
 {
     std::vector<RegionBin> bins;
     
+    assert(depth < 3);
+    ++depth;
 
-  //  std::vector<CompiledRegionPtr> regions;
-  //  getSortedRegions(regions, Sort::Velocity);
     sortByVelocity(inputRegions);
 
     int currentBin = -1;
@@ -60,7 +60,6 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
     int velStart = -1;
     int velEnd = -1;
 
-   // for (bool allDone = false; !allDone; ) {
     for (int currentRegion = 0; currentRegion < inputRegions.size(); ++currentRegion) {
 
         CompiledRegionPtr reg = inputRegions[currentRegion];
@@ -83,22 +82,24 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
     }
 
     if (bins.empty()) {
-        // emit a null player
+        // emit a null player (pitch switch knows how)
         assert(inputRegions.empty());
-        assert(false);
+        return buildPlayerPitchSwitch(inputRegions, depth);
     }
     else if (bins.size() == 1) {
         assert(bins[0].regions.size() == inputRegions.size());
         if (bins[0].regions.size() == 1) {
-            // emit a simple player
-            assert(false);
+            // emit a simple player by calling pitch helper (who can emit singles
+            printf("single entry in single zone\n");
+            return buildPlayerPitchSwitch(bins[0].regions, depth);
         }
         else {
+            // single bin with multiple entries
             // emit a key switch
             // one vel zone with multiple regions
-            assert(false);
+            printf("multiple entry in single zone\n");
+            return buildPlayerPitchSwitch(bins[0].regions, depth);
         }
-
     }
     else {
         // emit a vel switch and recurse
@@ -108,6 +109,79 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
     assert(false);
     return nullptr;
 }
+
+ ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<CompiledRegionPtr> inputRegions, int depth)
+ {
+    assert(depth < 2);
+    ++depth;
+    sortByPitch(inputRegions);
+
+     // do trivial cases:
+    if (inputRegions.empty()) {
+         return std::make_shared<NullVoicePlayer>();
+    }
+    if (inputRegions.size() == 1) {
+        // CompiledRegionPtr reg, int sampleIndex, int midiPitch
+        printf("totally fake sample index and midi pitch");
+        return std::make_shared<SimpleVoicePlayer>(inputRegions[0], 1, 60);
+    }
+
+    PitchSwitchPtr playerToReturn = std::make_shared<PitchSwitch>();
+    std::vector<RegionBin> bins;
+    int currentBin = -1;
+    int currentRegion = 0;
+    int keyStart = -1;
+    int keyEnd = -1;
+
+    for (int currentRegion = 0; currentRegion < inputRegions.size(); ++currentRegion) {
+
+        CompiledRegionPtr reg = inputRegions[currentRegion];
+        // are we at a new bin?
+        if (reg->lokey != keyStart) {
+            bins.push_back(RegionBin());
+            currentBin++;
+            assert(bins.size() == currentBin + 1);
+            bins.back().loVal = reg->lokey;
+            bins.back().hiVal = reg->hikey;
+            bins.back().regions.push_back(inputRegions[currentRegion]);
+
+            keyStart = reg->lokey;
+            keyEnd = reg->hikey;
+        }
+        else {
+            // if vel regsions are not the same???
+            assert(bins.back().hiVal == inputRegions[currentRegion]->hikey);
+            bins.back().regions.push_back(inputRegions[currentRegion]);
+        }
+    }
+
+    for (auto bin : bins) {
+        // if this pitch bin only has one region, then we can emit it directly
+        if (bin.regions.size() == 1) {
+            addSinglePitchPlayers(playerToReturn,bin.regions[0]);
+        } else {
+            ISamplerPlaybackPtr velSwitch = buildPlayerVelLayers(bin.regions, depth);
+            assert(false);
+        }
+
+    }
+
+    return playerToReturn;
+ }
+
+void CompiledInstrument::addSinglePitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region)
+{
+    assert(region->lokey == region->hikey);
+    const int midiPitch = region->lokey;
+
+    //  SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex, int midiPitch) {
+    const int sampleIndex = addSampleFile(region->sampleFile);
+    ISamplerPlaybackPtr singlePlayer =  std::make_shared<SimpleVoicePlayer>(region, sampleIndex, midiPitch);
+    dest->addEntry(midiPitch, singlePlayer);
+ 
+}
+
+
 
 #if 0
 ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers()
@@ -167,6 +241,7 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in)
         }
      }
 }
+
 #if 1
 void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array)
  {
@@ -180,7 +255,6 @@ void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array)
 
 void CompiledInstrument::sortByVelocity(std::vector<CompiledRegionPtr>& array)
 {
-
     std::sort(array.begin(), array.end(), [](const CompiledRegionPtr a, const CompiledRegionPtr b) -> bool {
         bool less = false;
         if (a->lovel < b->lovel) {
@@ -188,7 +262,18 @@ void CompiledInstrument::sortByVelocity(std::vector<CompiledRegionPtr>& array)
         }
         return less;
     });
- }
+}
+
+void CompiledInstrument::sortByPitch(std::vector<CompiledRegionPtr>& array)
+{
+    std::sort(array.begin(), array.end(), [](const CompiledRegionPtr a, const CompiledRegionPtr b) -> bool {
+        bool less = false;
+        if (a->lokey < b->lokey) {
+            less = true;
+        }
+        return less;
+    });
+}
 
 #else
  void CompiledInstrument::getSortedRegions(std::vector<CompiledRegionPtr>& array, Sort sortOrder)

@@ -25,7 +25,7 @@ public:
 
     // Keys were defaulting to -1, -1, but for drums with no
     // keys at all they were skipped. Better default is "all keys".
-#if 0
+#if 1
     int lokey = 0;
     int hikey = 127;
 #else

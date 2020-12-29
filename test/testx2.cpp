@@ -530,8 +530,20 @@ static void testCompiledGroup2()
     testCompiledGroupSub(R"foo(<group>trigger=release)foo", true);
 }
 
-static void testCompileTree() {
-    const char* data = R"foo(<group><region><region><group><group>)foo";
+
+static void testCompileTreeOne() {
+    const char* data = R"foo(<group><region>)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    auto gps = ci->_groups();
+    assertEQ(gps.size(), 1);
+    assertEQ(gps[0]->regions.size(), 1);
+}
+
+static void testCompileTreeTwo() {
+    const char* data = R"foo(<group><region>key=4<region>key=5<group><group>)foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
@@ -606,7 +618,9 @@ void testx2()
     testCompiledGroup1();
     testCompiledGroup2();
 
-    testCompileTree();
+    // Let' put lots of very basic compilation tests here
+    testCompileTreeOne();
+    testCompileTreeTwo();
 
     testCompileSort();
 
