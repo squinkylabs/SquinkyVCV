@@ -24,8 +24,23 @@ using Value = SamplerSchema::Value;
 void CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);
     buildCompiledTree(in);
-      // now what?
+  
     printf("compile not finished yet\n");
+
+    // here we can prune the tree - removing regions that map to the same thing
+
+    // now we need to build the player tree
+    buildPlayerVelLayers();
+}
+
+/** build up the tree using the original algorithm that worked for small piano
+ * we don't need structure here, to flattened region list is find
+ */
+void CompiledInstrument::buildPlayerVelLayers()
+{
+    printf("build compiled instrument does nothign\n");
+    std::vector<CompiledRegionPtr> regions;
+    getSortedRegions(regions, Sort::Velocity);
 }
 
 void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in)
@@ -42,6 +57,32 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in)
      }
 }
 
+ void CompiledInstrument::getSortedRegions(std::vector<CompiledRegionPtr>& array, Sort sortOrder)
+ {
+     assert(array.empty());
+     for (auto group : groups) {
+         for (auto region : group->regions) {
+             array.push_back(region);
+        }
+     }
+
+     if (sortOrder == Sort::Velocity) {
+         std::sort(array.begin(), array.end(), [](const CompiledRegionPtr a, const CompiledRegionPtr b) -> bool {
+             bool less = false;
+             if (a->lovel < b->lovel) {
+                 less = true;
+             }
+             return less;
+         });
+     }
+     else {
+         assert(false);
+     }
+
+ }
+
+
+
 /**
  * new compile algorithm
  * 1) filter the regions, and generate a list of compiled regions, each one for a specific pitch
@@ -52,6 +93,7 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in)
  * x[pitch] is a vector of compiled regions for a pitch
  * 
  */
+#if 0
 void CompiledInstrument::compileOld(const SInstrumentPtr in) {
     assert(in->wasExpanded);
 
@@ -158,6 +200,7 @@ ISamplerPlaybackPtr CompiledInstrument::playbackMapVelocities(std::vector<Compil
 
     return vs;
 }
+#endif
 
 int CompiledInstrument::addSampleFile(const std::string& s) {
     int ret = 0;
@@ -191,8 +234,14 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPt
     return instOut;
 }
 
+
 void CompiledInstrument::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
-    pitchMap.play(info, midiPitch, midiVelocity);
+  //  pitchMap.play(info, midiPitch, midiVelocity);
+    if (!player) {
+        printf("ci can't play yet\n");
+        return;
+    }
+    player->play(info, midiPitch, midiVelocity);
 }
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootPath) 

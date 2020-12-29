@@ -26,8 +26,8 @@ public:
     static CompiledInstrumentPtr make(const SInstrumentPtr);
     void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
     void _setTestMode() {
-       // testMode = true;
-        pitchMap._setTestMode();
+      testMode = true;
+        //pitchMap._setTestMode();
     }
 
     /**
@@ -40,11 +40,23 @@ public:
      */
     static void expandAllKV(SInstrumentPtr);
 
+
+    enum Sort {
+        Velocity,
+        Pitch
+    };
+    void getSortedRegions(std::vector<CompiledRegionPtr>&, Sort);
+
     // test accessor
     const std::vector<CompiledGroupPtr>& _groups() { return groups; }
 private:
     std::vector<CompiledGroupPtr> groups;
+    bool testMode = false;
 
+    ISamplerPlaybackPtr player;
+
+
+#if 0 // old stuff
 #if 1
     PitchSwitch pitchMap;
 #else
@@ -56,6 +68,7 @@ private:
     // list[pitch][velocrangeIndex] -> compiledRegion
     using PitchVelList = std::vector<std::vector<CompiledRegionPtr>>;
     void addGroupToPitchList(PitchVelList& list, SGroupPtr group);
+#endif
 
     /**
      * Track all the unique relative paths here
@@ -69,6 +82,7 @@ private:
     void compileOld(const SInstrumentPtr);
     bool shouldIgnoreGroup(SGroupPtr);
     void buildCompiledTree(const SInstrumentPtr i);
+    void buildPlayerVelLayers();
 
     /** Returns wave index
      */

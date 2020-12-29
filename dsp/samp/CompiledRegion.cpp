@@ -25,6 +25,10 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr parent) : wea
     if (value) {
         hikey = value->numericInt;
     }
+    value = reg.compiledValues->get(Opcode::KEY);
+    if (value) {
+        hikey = lokey = value->numericInt;
+    }
 
     value = reg.compiledValues->get(Opcode::SAMPLE);
     if (value) {
@@ -46,6 +50,7 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr parent) : wea
     if (value) {
         hivel = value->numericInt;
     }
+
 }
 
 

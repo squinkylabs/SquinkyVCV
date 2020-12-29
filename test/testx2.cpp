@@ -336,6 +336,23 @@ static void testParseGlobalWitRegionKVCompiled()
     assertEQ(val->numericInt, 57);
 }
 
+static void testCompileInst0()
+{
+    printf("\n-- test comp inst 1\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<global><region>lokey=50 hikey=50", inst);
+    assert(err.empty());
+
+    CompiledInstrumentPtr i = CompiledInstrument::make(inst);
+
+    VoicePlayInfo info;
+    info.sampleIndex = 0;
+    assert(!info.valid);
+    i->play(info, 50, 60);
+    assert(info.valid);  // this will fail until we implement a real compiler
+    assertNE(info.sampleIndex, 0);
+}
+
 static void testCompileInst1()
 {
     printf("\n-- test comp inst 1\n");
@@ -415,9 +432,7 @@ static void testCompiledRegion()
     SGroupPtr group = inst->groups[0];
     SRegionPtr region = group->regions[0];
     CompiledInstrument::expandAllKV(inst);
-
     assert(inst->wasExpanded);
-  
     CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr);
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
@@ -427,6 +442,65 @@ static void testCompiledRegion()
     assertEQ(cr->sampleFile, "K18\\C7.pp.wav");
 }
 
+static void testCompiledRegionKey()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    const char* str = R"foo(<region>key=32)foo";
+    auto err = SParse::go(str, inst);
+
+    SGroupPtr group = inst->groups[0];
+    SRegionPtr region = group->regions[0];
+    CompiledInstrument::expandAllKV(inst);
+    assert(inst->wasExpanded);
+    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr);
+    assertEQ(cr->lokey, 32);
+    assertEQ(cr->hikey, 32);
+}
+
+static void testCompiledRegionVel()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    const char* str = R"foo(<region>hivel=12)foo";
+    auto err = SParse::go(str, inst);
+
+    SGroupPtr group = inst->groups[0];
+    SRegionPtr region = group->regions[0];
+    CompiledInstrument::expandAllKV(inst);
+    assert(inst->wasExpanded);
+    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr);
+    assertEQ(cr->lovel, 1);
+    assertEQ(cr->hivel, 12);
+}
+
+static void testCompiledRegionVel2()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    const char* str = R"foo(<region>lovel=71)foo";
+    auto err = SParse::go(str, inst);
+
+    SGroupPtr group = inst->groups[0];
+    SRegionPtr region = group->regions[0];
+    CompiledInstrument::expandAllKV(inst);
+    assert(inst->wasExpanded);
+    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr);
+    assertEQ(cr->lovel, 71);
+    assertEQ(cr->hivel, 127);
+}
+
+static void testCompiledRegionVel3()
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    const char* str = R"foo(<region>hivel=59 lovel=29)foo";
+    auto err = SParse::go(str, inst);
+
+    SGroupPtr group = inst->groups[0];
+    SRegionPtr region = group->regions[0];
+    CompiledInstrument::expandAllKV(inst);
+    assert(inst->wasExpanded);
+    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr);
+    assertEQ(cr->lovel, 29);
+    assertEQ(cr->hivel, 59);
+}
 static void testCompiledGroupSub(const char* data, bool shouldIgnore)
 {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -469,6 +543,31 @@ static void testCompileTree() {
     assertEQ(gps[2]->regions.empty(), true);
 }
 
+static void  testCompileSort() {
+
+  //   const char* data = R"foo(<region>key=12 hivel=10<region>key=12 lovel=11 hivel=50<region>key=12 lovel=51)foo";
+    const char* data = R"foo(<region>key=12 lovel=51<region>key=12 hivel=10<region>key=12 lovel=11 hivel=50)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    // void getSortedRegions(std::vector<CompiledRegionPtr>&, Sort);
+    std::vector<CompiledRegionPtr> regions;
+    ci->getSortedRegions(regions, CompiledInstrument::Sort::Velocity);
+
+    assertEQ(regions.size(), 3);
+    assertEQ(regions[0]->lovel, 1);
+    assertEQ(regions[0]->hivel, 10);
+
+    assertEQ(regions[1]->lovel, 11);
+    assertEQ(regions[1]->hivel, 50);
+
+    assertEQ(regions[2]->lovel, 51);
+    assertEQ(regions[2]->hivel, 127);
+
+    
+}
+
 void testx2()
 {
     assert(parseCount == 0);
@@ -496,12 +595,20 @@ void testx2()
     testParseGlobalWitRegionKVCompiled();
 
     testCompiledRegion();
+    testCompiledRegionKey();
+    testCompiledRegionVel();
+    testCompiledRegionVel2();
+    testCompiledRegionVel3();
+
     testCompiledGroup0();
     testCompiledGroup1();
     testCompiledGroup2();
 
     testCompileTree();
 
+    testCompileSort();
+
+    testCompileInst0();
 #if 0 // work up to these
     testCompileInst1();
     testCompileOverlap();

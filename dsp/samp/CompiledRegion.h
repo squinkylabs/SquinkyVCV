@@ -32,10 +32,10 @@ public:
     int lokey = -1;
     int hikey = -1;
 #endif
-    int onlykey = -1;           // can't lokey and hikey represent this just fine?
+   // int onlykey = -1;           // can't lokey and hikey represent this just fine?
     int keycenter = -1;
     std::string sampleFile;
-    int lovel = 0;
+    int lovel = 1;
     int hivel = 127;
 
     CompiledGroupPtrWeak weakParent;
