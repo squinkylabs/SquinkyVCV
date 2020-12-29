@@ -427,6 +427,48 @@ static void testCompiledRegion()
     assertEQ(cr->sampleFile, "K18\\C7.pp.wav");
 }
 
+static void testCompiledGroupSub(const char* data, bool shouldIgnore)
+{
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    SGroupPtr group = inst->groups[0];
+    CompiledInstrument::expandAllKV(inst);
+
+    assert(inst->wasExpanded);
+  
+    CompiledGroupPtr cr = std::make_shared<CompiledGroup>(group);
+    assertEQ(cr->shouldIgnore(), shouldIgnore);
+}
+
+static void testCompiledGroup0()
+{
+    testCompiledGroupSub(R"foo(<group>)foo", false);
+}
+
+static void testCompiledGroup1()
+{
+    testCompiledGroupSub(R"foo(<group>trigger=attack)foo", false);
+}
+
+static void testCompiledGroup2()
+{
+    testCompiledGroupSub(R"foo(<group>trigger=release)foo", true);
+}
+
+static void testCompileTree() {
+    const char* data = R"foo(<group><region><region><group><group>)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    auto gps = ci->_groups();
+    assertEQ(gps.size(), 3);
+    assertEQ(gps[0]->regions.size(), 2);
+    assertEQ(gps[1]->regions.empty(), true);
+    assertEQ(gps[2]->regions.empty(), true);
+}
+
 void testx2()
 {
     assert(parseCount == 0);
@@ -454,7 +496,13 @@ void testx2()
     testParseGlobalWitRegionKVCompiled();
 
     testCompiledRegion();
+    testCompiledGroup0();
+    testCompiledGroup1();
+    testCompiledGroup2();
 
+    testCompileTree();
+
+#if 0 // work up to these
     testCompileInst1();
     testCompileOverlap();
     testPlayInfoTinnyPiano();
@@ -467,4 +515,5 @@ void testx2()
     testSamplerRealSound();
     assert(parseCount == 0);
     assert(compileCount == 0);
+#endif
 }

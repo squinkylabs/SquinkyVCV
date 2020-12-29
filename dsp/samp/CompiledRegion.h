@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SamplerSchema.h"
 #include <memory>
 #include <string>
 
@@ -44,6 +45,15 @@ class CompiledGroup {
 public:
     CompiledGroup(SGroupPtr);
     ~CompiledGroup()  { compileCount--; }
+
+    bool shouldIgnore() const;
+    void addChild(CompiledRegionPtr child) { regions.push_back(child); }
+
+    std::vector<CompiledRegionPtr> regions;
+private:
+   
+
+    SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
 };
 
 

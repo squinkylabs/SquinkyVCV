@@ -52,4 +52,17 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr parent) : wea
 CompiledGroup::CompiledGroup(SGroupPtr group)
 {
     compileCount++;
+
+    auto value = group->compiledValues->get(Opcode::TRIGGER);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Discrete);
+        //ignore = (trigger != DiscreteValue::ATTACK);
+        trigger =  value->discrete;
+    }
+}
+
+bool CompiledGroup::shouldIgnore() const
+{
+    bool dontIgnore = trigger == SamplerSchema::DiscreteValue::NONE || trigger == SamplerSchema::DiscreteValue::ATTACK;
+    return !dontIgnore;
 }

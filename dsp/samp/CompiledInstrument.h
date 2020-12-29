@@ -40,6 +40,8 @@ public:
      */
     static void expandAllKV(SInstrumentPtr);
 
+    // test accessor
+    const std::vector<CompiledGroupPtr>& _groups() { return groups; }
 private:
     std::vector<CompiledGroupPtr> groups;
 
@@ -64,7 +66,9 @@ private:
     int nextIndex = 1;
 
     void compile(const SInstrumentPtr);
+    void compileOld(const SInstrumentPtr);
     bool shouldIgnoreGroup(SGroupPtr);
+    void buildCompiledTree(const SInstrumentPtr i);
 
     /** Returns wave index
      */

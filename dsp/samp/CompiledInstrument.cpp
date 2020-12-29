@@ -21,6 +21,27 @@ using Value = SamplerSchema::Value;
 
 // #define _LOG
 
+void CompiledInstrument::compile(const SInstrumentPtr in) {
+    assert(in->wasExpanded);
+    buildCompiledTree(in);
+      // now what?
+    printf("compile not finished yet\n");
+}
+
+void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in)
+{
+     for (auto group : in->groups) {
+        auto cGroup = std::make_shared<CompiledGroup>(group);
+        if (!cGroup->shouldIgnore()) {
+            this->groups.push_back(cGroup);
+            for (auto reg : group->regions) {
+                auto cReg = std::make_shared<CompiledRegion>(reg, cGroup);
+                cGroup->addChild(cReg);
+            }
+        }
+     }
+}
+
 /**
  * new compile algorithm
  * 1) filter the regions, and generate a list of compiled regions, each one for a specific pitch
@@ -31,7 +52,7 @@ using Value = SamplerSchema::Value;
  * x[pitch] is a vector of compiled regions for a pitch
  * 
  */
-void CompiledInstrument::compile(const SInstrumentPtr in) {
+void CompiledInstrument::compileOld(const SInstrumentPtr in) {
     assert(in->wasExpanded);
 
    // std::vector< std::vector<CompiledRegionPtr>> pitchVelList(128);
