@@ -87,4 +87,6 @@ inline unsigned  VelSwitch::mapVelToIndex(unsigned  vel)
 }
 #endif
 
+using VelSwitchPtr = std::shared_ptr<VelSwitch>;
+
 

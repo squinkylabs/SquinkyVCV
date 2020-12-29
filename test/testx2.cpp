@@ -553,7 +553,9 @@ static void  testCompileSort() {
     auto ci = CompiledInstrument::make(inst);
     // void getSortedRegions(std::vector<CompiledRegionPtr>&, Sort);
     std::vector<CompiledRegionPtr> regions;
-    ci->getSortedRegions(regions, CompiledInstrument::Sort::Velocity);
+   // ci->getSortedRegions(regions, CompiledInstrument::Sort::Velocity);
+    ci->getAllRegions(regions);
+    ci->sortByVelocity(regions);
 
     assertEQ(regions.size(), 3);
     assertEQ(regions[0]->lovel, 1);

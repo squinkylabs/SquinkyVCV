@@ -30,18 +30,129 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
     // here we can prune the tree - removing regions that map to the same thing
 
     // now we need to build the player tree
-    buildPlayerVelLayers();
+    std::vector<CompiledRegionPtr> regions;
+    getAllRegions(regions);
+    player = buildPlayerVelLayers(regions);
 }
 
 /** build up the tree using the original algorithm that worked for small piano
  * we don't need structure here, to flattened region list is find
  */
-void CompiledInstrument::buildPlayerVelLayers()
+
+class RegionBin {
+public:
+    int loVal = -1;
+    int hiVal = -1;
+    std::vector<CompiledRegionPtr> regions;
+};
+
+ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<CompiledRegionPtr> inputRegions)
 {
-    printf("build compiled instrument does nothign\n");
+    std::vector<RegionBin> bins;
+    
+
+  //  std::vector<CompiledRegionPtr> regions;
+  //  getSortedRegions(regions, Sort::Velocity);
+    sortByVelocity(inputRegions);
+
+    int currentBin = -1;
+    int currentRegion = 0;
+    int velStart = -1;
+    int velEnd = -1;
+
+   // for (bool allDone = false; !allDone; ) {
+    for (int currentRegion = 0; currentRegion < inputRegions.size(); ++currentRegion) {
+
+        CompiledRegionPtr reg = inputRegions[currentRegion];
+        // are we at a new bin?
+        if (reg->lovel != velStart) {
+           bins.push_back(RegionBin());
+           currentBin++;
+           assert(bins.size() == currentBin+1);
+           bins.back().loVal = reg->lovel;
+           bins.back().hiVal = reg->hivel;
+           bins.back().regions.push_back(inputRegions[currentRegion]);
+
+           velStart = reg->lovel;
+           velEnd = reg->hivel;
+        } else {
+            // if vel regsions are not the same, will have to do vel after pitch
+            assert( bins.back().hiVal == inputRegions[currentRegion]->hivel);
+            bins.back().regions.push_back(inputRegions[currentRegion]);
+        }       
+    }
+
+    if (bins.empty()) {
+        // emit a null player
+        assert(inputRegions.empty());
+        assert(false);
+    }
+    else if (bins.size() == 1) {
+        assert(bins[0].regions.size() == inputRegions.size());
+        if (bins[0].regions.size() == 1) {
+            // emit a simple player
+            assert(false);
+        }
+        else {
+            // emit a key switch
+            // one vel zone with multiple regions
+            assert(false);
+        }
+
+    }
+    else {
+        // emit a vel switch and recurse
+        assert(false);
+    }
+
+    assert(false);
+    return nullptr;
+}
+
+#if 0
+ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers()
+{
+    VelSwitchPtr pRet = std::make_shared<VelSwitch>();
+    printf("buildPlayerVelLayers does nothign\n");
     std::vector<CompiledRegionPtr> regions;
     getSortedRegions(regions, Sort::Velocity);
+    if (regions.empty()) {
+        printf("no regions in buildPlayerVelLayers (do we need a null player?\n");
+        return pRet;
+    }
+
+    if (regions.size() == 1) {
+        printf("only one region - don't know what to emit yet\n");          // can't handle this yet
+       // (CompiledRegionPtr reg, int sampleIndex, int midiPitch)
+        auto region = regions[0];
+        const int sampleIndex = addSampleFile(region->sampleFile);
+
+        printf("only one region - don't know what to emit yet - should divide these on pitch!!!\n");          // can't handle this yet
+        return std::make_shared<SimpleVoicePlayer>(region, sampleIndex, region->lokey);
+    }
+
+    int layerStart = 0;
+    int velStart = regions[layerStart]->lovel;
+    int velEnd = regions[layerStart]->hivel;
+    ++layerStart;
+
+    for (bool allDone = false; !allDone; ) {
+        for (bool binDone = false; !binDone; ) {
+            if (regions[layerStart]->lovel != velStart) {
+                binDone = true;
+                printf("done with bin, should emit\n");
+            }
+            ++layerStart;
+            if (layerStart >= regions.size()) {
+                binDone = true;
+                allDone = true;
+            }
+        }
+    }
+    printf("end of buildPlayerVelLayers, probably is somethign to emit\n");
+    return pRet;
 }
+#endif
 
 void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in)
 {
@@ -56,7 +167,30 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in)
         }
      }
 }
+#if 1
+void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array)
+ {
+     assert(array.empty());
+     for (auto group : groups) {
+         for (auto region : group->regions) {
+             array.push_back(region);
+        }
+     }
+ }
 
+void CompiledInstrument::sortByVelocity(std::vector<CompiledRegionPtr>& array)
+{
+
+    std::sort(array.begin(), array.end(), [](const CompiledRegionPtr a, const CompiledRegionPtr b) -> bool {
+        bool less = false;
+        if (a->lovel < b->lovel) {
+            less = true;
+        }
+        return less;
+    });
+ }
+
+#else
  void CompiledInstrument::getSortedRegions(std::vector<CompiledRegionPtr>& array, Sort sortOrder)
  {
      assert(array.empty());
@@ -78,8 +212,8 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in)
      else {
          assert(false);
      }
-
  }
+#endif
 
 
 

@@ -31,9 +31,14 @@ public:
 
 using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
 
+/**
+ * simple one voice player. It's just a thin wrapper around
+ * a structre that holds data for one voice.
+ * */
 class SimpleVoicePlayer : public ISamplerPlayback
 {
 public:
+    SimpleVoicePlayer() = delete;
     SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex, int midiPitch) {
         data->valid = true;
         data->sampleIndex = sampleIndex;
@@ -55,5 +60,18 @@ public:
 private:
     VoicePlayInfoPtr data = std::make_shared<VoicePlayInfo>();
 
+};
+
+/**
+ * PLayer that does nothing. Hopefully will not be used (often?)
+ * in the real world, but need it now to cover corner cases without
+ * crashing.
+ */
+class NullVoicePlayer :  public ISamplerPlayback
+{
+public:
+ void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override {
+        info.valid = false;
+    }
 };
 

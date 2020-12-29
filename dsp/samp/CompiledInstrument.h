@@ -40,12 +40,16 @@ public:
      */
     static void expandAllKV(SInstrumentPtr);
 
-
+#if 1
+    void getAllRegions(std::vector<CompiledRegionPtr>&);
+    void sortByVelocity(std::vector<CompiledRegionPtr>&);
+#else
     enum Sort {
         Velocity,
         Pitch
     };
     void getSortedRegions(std::vector<CompiledRegionPtr>&, Sort);
+#endif
 
     // test accessor
     const std::vector<CompiledGroupPtr>& _groups() { return groups; }
@@ -82,7 +86,8 @@ private:
     void compileOld(const SInstrumentPtr);
     bool shouldIgnoreGroup(SGroupPtr);
     void buildCompiledTree(const SInstrumentPtr i);
-    void buildPlayerVelLayers();
+
+    ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr> inputRegions);
 
     /** Returns wave index
      */
