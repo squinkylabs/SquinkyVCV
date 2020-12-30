@@ -10,7 +10,7 @@ static void testVelSwitch1()
 {
     VelSwitch v;
 
-    SRegionPtr sr = std::make_shared<SRegion>();
+    SRegionPtr sr = std::make_shared<SRegion>(1234);
     sr->compiledValues = SamplerSchema::compile(sr->values);
     CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr);
 
@@ -114,13 +114,13 @@ static void testSnareBasic()
 }
 void testx3()
 {
-#if 0   // work up to these
+ // work up to these
     assert(parseCount == 0);
     testVelSwitch1();
-    testSmallPianoVelswitch();
-    testSnareBasic();
+   // testSmallPianoVelswitch();
+   // testSnareBasic();
     
-#endif
+
     assert(parseCount == 0);
     assert(compileCount == 0);
 }

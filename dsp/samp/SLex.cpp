@@ -7,7 +7,13 @@ SLexPtr SLex::go(const std::string& s)
 {
     int count = 0;
     SLexPtr result = std::make_shared<SLex>();
+    
     for (const char& c : s) {
+      //  printf("c = %d \\n = %d\n", c, '\n');
+        if (c == '\n') {
+            printf("saw newline");
+            ++result->currentLine;
+        }
         bool ret = result->procNextChar(c);
         if (!ret) {
             return nullptr;
@@ -134,7 +140,7 @@ bool SLex::procNextTagChar(char c) {
     }
     if (c == '>') {
         validateName(curItem);
-        items.push_back(std::make_shared<SLexTag>(curItem));
+        items.push_back(std::make_shared<SLexTag>(curItem, currentLine));
         curItem.clear();
         inTag = false;
         return true;

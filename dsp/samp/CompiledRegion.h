@@ -39,6 +39,7 @@ public:
     int hivel = 127;
 
     CompiledGroupPtrWeak weakParent;
+    const int lineNumber;
 };
 
 class CompiledGroup {

@@ -374,11 +374,15 @@ static void testCompileOverlap()
 {
     printf("\n-- test comp overlap\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    auto err = SParse::go("<global><region>lokey=0\nhikey=127\nsample=foo<region>lokey=60\nhikey=60\nsample=bar", inst);
+    auto err = SParse::go(R"foo(<global>
+        <region>lokey=0 hikey=127 sample=foo
+        <region>lokey=60 hikey=60 sample=bar"7)foo",
+         inst);
     assert(err.empty());
 
     CompiledInstrumentPtr i = CompiledInstrument::make(inst);
     int x = 5;
+    assert(false);      // now assert that we picked the right one.
 
 }
 
@@ -608,7 +612,7 @@ void testx2()
     printf("fix testStreamXpose2\n");
     // testStreamXpose2();
 
-   
+
 
     testCIKeysAndValues();
     testParseGlobalAndRegionCompiled();
@@ -632,18 +636,21 @@ void testx2()
     testCompileSort();
 
     testCompileInst0();
-#if 0 // work up to these
+    //
+
     testCompileInst1();
-    testCompileOverlap();
+
+    // not imp yet
+   // testCompileOverlap();
+
     testPlayInfoTinnyPiano();
-    testPlayInfoSmallPiano();
+    //testPlayInfoSmallPiano();
     testLoadWavesPiano();
 
     testTranspose1();
 
     testSampler();
-    testSamplerRealSound();
+    //testSamplerRealSound();
     assert(parseCount == 0);
     assert(compileCount == 0);
-#endif
 }

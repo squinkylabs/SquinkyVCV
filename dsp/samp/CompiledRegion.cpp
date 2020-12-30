@@ -10,7 +10,7 @@
 int compileCount = 0;
 
 using Opcode = SamplerSchema::Opcode;
-CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr parent) : weakParent(parent) 
+CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr parent) : weakParent(parent), lineNumber(region->lineNumber)
 {
     compileCount++;
     const SRegion& reg = *region;

@@ -149,7 +149,7 @@ SParse::Result SParse::matchRegion(SRegionList& regions, SLexPtr lex) {
     lex->consume();
 
     // make a new region to hold this one, and put it into the group
-    SRegionPtr newRegion = std::make_shared<SRegion>();
+    SRegionPtr newRegion = std::make_shared<SRegion>(lex->line());
     regions.push_back(newRegion);
 
     std::string s = matchKeyValuePairs(newRegion->values, lex);

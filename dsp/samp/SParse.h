@@ -21,10 +21,11 @@ using SKeyValueList = std::vector<SKeyValuePairPtr>;
 
 class SRegion {
 public:
-    SRegion() { ++parseCount; }
+    SRegion(int line) : lineNumber(line) { ++parseCount; }
     ~SRegion() { --parseCount; }
     SKeyValueList values;
     SamplerSchema::KeysAndValuesPtr compiledValues;
+    const int lineNumber = 0;
     void _dump();
 };
 using SRegionPtr = std::shared_ptr<SRegion>; 

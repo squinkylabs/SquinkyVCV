@@ -19,8 +19,9 @@ public:
 
 class SLexTag : public SLexItem {
 public:
-    SLexTag(const std::string sName) : SLexItem(Type::Tag), tagName(sName) {}
+    SLexTag(const std::string sName, int line) : SLexItem(Type::Tag), tagName(sName), lineNumber(line) {}
     const std::string tagName;
+    const int lineNumber;
 };
 
 class SLexEqual : public SLexItem {
@@ -54,6 +55,8 @@ public:
         return currentIndex;
     }
     void validate() const;
+
+    int line() const { return currentLine; }
 private:
     // return true if no error
     bool procNextChar(char c);
@@ -69,6 +72,7 @@ private:
     std::string curItem;
 
     int currentIndex = 0;
+    int currentLine = 0;
 
     
     static void validateName(const std::string& );

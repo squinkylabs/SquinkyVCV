@@ -84,6 +84,7 @@ static void testxKVP2()
 
 static void testLexComment()
 {
+    printf("\n---- testLexComment\n");
     SLexPtr lex = SLex::go("// comment\n<global>");
     assert(lex);
     lex->validate();
@@ -91,8 +92,8 @@ static void testLexComment()
     assert(lex->items[0]->itemType == SLexItem::Type::Tag);
     SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
     assertEQ(pTag->tagName, "global");
+    assertEQ(pTag->lineNumber, 1);
 }
-
 
 static void testLexComment2()
 {
@@ -104,6 +105,42 @@ static void testLexComment2()
     SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
     assertEQ(pTag->tagName, "global");
 }
+
+static void testLexMultiLineCommon(const char * data)
+{
+    SLexPtr lex = SLex::go(data);
+    assert(lex);
+    lex->validate();
+    assertEQ(lex->items.size(), 3);
+
+    assert(lex->items[0]->itemType == SLexItem::Type::Tag);
+    SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
+    assertEQ(pTag->tagName, "one");
+    assertEQ(pTag->lineNumber, 0);
+
+    assert(lex->items[1]->itemType == SLexItem::Type::Tag);
+    pTag = static_cast<SLexTag*>(lex->items[1].get());
+    assertEQ(pTag->tagName, "two");
+    assertEQ(pTag->lineNumber, 1);
+
+    assert(lex->items[2]->itemType == SLexItem::Type::Tag);
+    pTag = static_cast<SLexTag*>(lex->items[2].get());
+    assertEQ(pTag->tagName, "three");
+    assertEQ(pTag->lineNumber, 2);
+}
+
+static void testLexMultiLine1()
+{
+    testLexMultiLineCommon("<one>\n<two>\n<three>");
+}
+
+static void testLexMultiLine2()
+{
+    testLexMultiLineCommon(R"(<one>
+    <two>
+    <three>)");
+}
+
 
 static void testLexGlobalWithData()
 {
@@ -290,45 +327,6 @@ static void testparse_piano1()
     assert(err.empty());
 }
 
-#if 0
-static void testparse_piano2b()
-{
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-
-    const char* pOrig = R"foo(
-//©2015-2016 Rudi Fiasco
-//rev.22.08.2016
-
-<global>
-pan=16
-
-//note on dampened
-
-<group> group=0 trigger=attack ampeg_release=0.5 volume=9
-<region> sample=K18\A0.pp.wav lovel=1 hivel=22 lokey=21 hikey=22 pitch_keycenter=21
-<region> sample=K18\A0.p.wav lovel=23 hivel=43 lokey=21 hikey=22 pitch_keycenter=21)foo";
-
-
-    const char* p2 = R"foo(<global>
-pan=16
-
-//note on dampened
-
-<group> group=0 trigger=attack ampeg_release=0.5 volume=9
-<region> sample=K18\A0.pp.wav lovel=1 hivel=22 lokey=21 hikey=22 pitch_keycenter=21
-<region> sample=K18\A0.p.wav lovel=23 hivel=43 lokey=21 hikey=22 pitch_keycenter=21)foo";
-
-    const char* p3 = R"foo(<group> group=0 trigger=attack ampeg_release=0.5 volume=9
-<region> sample=K18\A0.pp.wav lovel=1 hivel=22 lokey=21 hikey=22 pitch_keycenter=21
-<region> sample=K18\A0.p.wav lovel=23 hivel=43 lokey=21 hikey=22 pitch_keycenter=21)foo";
-
-    const char* p4 = R"foo(<group> group=0 trigger=attack)foo";
-    const char* p = "a=b c=d";
-    auto lex = SLex::go(p);
-    assert(lex);
-}
-#endif
-
 static void testparse_piano2()
 {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -337,8 +335,6 @@ static void testparse_piano2()
     auto err = SParse::goFile(p, inst);
     assert(err.empty());
 }
-
-
 
 void testx()
 {
@@ -351,6 +347,8 @@ void testx()
     testxKVP2();
     testLexComment();
     testLexComment2();
+    testLexMultiLine1();
+    testLexMultiLine2();
     testLexGlobalWithData();
     testLexTwoRegions();
     testLexTwoKeys();
