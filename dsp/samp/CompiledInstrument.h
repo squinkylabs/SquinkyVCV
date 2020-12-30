@@ -67,7 +67,7 @@ private:
 
     ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr> inputRegions, int depth);
     ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr> inputRegions, int depth);
-    void addSinglePitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region);
+    void addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region);
 
     /** Returns wave index
      */

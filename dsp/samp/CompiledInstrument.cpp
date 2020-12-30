@@ -103,11 +103,29 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
     }
     else {
         // emit a vel switch and recurse
-        assert(false);
+        VelSwitchPtr velSwitch = std::make_shared<VelSwitch>();
+        for (auto bin : bins) {
+
+            ISamplerPlaybackPtr pitchPlayer = buildPlayerPitchSwitch(bin.regions, depth);
+
+            //   void addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player);
+            velSwitch->addVelocityRange(bin.loVal, pitchPlayer);
+        }
+        return velSwitch;
     }
 
     assert(false);
     return nullptr;
+}
+
+void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region)
+{
+    for (int midiPitch = region->lokey; midiPitch <= region->hikey; ++midiPitch) {
+        //  SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex, int midiPitch) {
+        const int sampleIndex = addSampleFile(region->sampleFile);
+        ISamplerPlaybackPtr singlePlayer = std::make_shared<SimpleVoicePlayer>(region, sampleIndex, midiPitch);
+        dest->addEntry(midiPitch, singlePlayer);
+    }
 }
 
  ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<CompiledRegionPtr> inputRegions, int depth)
@@ -120,13 +138,18 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
     if (inputRegions.empty()) {
          return std::make_shared<NullVoicePlayer>();
     }
-    if (inputRegions.size() == 1) {
-        // CompiledRegionPtr reg, int sampleIndex, int midiPitch
-        printf("totally fake sample index and midi pitch");
-        return std::make_shared<SimpleVoicePlayer>(inputRegions[0], 1, 60);
-    }
 
     PitchSwitchPtr playerToReturn = std::make_shared<PitchSwitch>();
+
+    if (inputRegions.size() == 1) {
+        // CompiledRegionPtr reg, int sampleIndex, int midiPitch
+      //  printf("totally fake sample index and midi pitch");
+      //  return std::make_shared<SimpleVoicePlayer>(inputRegions[0], 1, 60);
+        addSingleRegionPitchPlayers(playerToReturn,inputRegions[0]);
+        return playerToReturn;
+    }
+
+    
     std::vector<RegionBin> bins;
     int currentBin = -1;
     int currentRegion = 0;
@@ -158,7 +181,7 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
     for (auto bin : bins) {
         // if this pitch bin only has one region, then we can emit it directly
         if (bin.regions.size() == 1) {
-            addSinglePitchPlayers(playerToReturn,bin.regions[0]);
+            addSingleRegionPitchPlayers(playerToReturn,bin.regions[0]);
         } else {
             ISamplerPlaybackPtr velSwitch = buildPlayerVelLayers(bin.regions, depth);
             assert(false);
@@ -169,17 +192,8 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
     return playerToReturn;
  }
 
-void CompiledInstrument::addSinglePitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region)
-{
-    assert(region->lokey == region->hikey);
-    const int midiPitch = region->lokey;
 
-    //  SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex, int midiPitch) {
-    const int sampleIndex = addSampleFile(region->sampleFile);
-    ISamplerPlaybackPtr singlePlayer =  std::make_shared<SimpleVoicePlayer>(region, sampleIndex, midiPitch);
-    dest->addEntry(midiPitch, singlePlayer);
- 
-}
+
 
 
 

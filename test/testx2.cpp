@@ -532,6 +532,7 @@ static void testCompiledGroup2()
 
 
 static void testCompileTreeOne() {
+    printf("\n----- testCompileTreeOne\n");
     const char* data = R"foo(<group><region>)foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
@@ -540,10 +541,19 @@ static void testCompileTreeOne() {
     auto gps = ci->_groups();
     assertEQ(gps.size(), 1);
     assertEQ(gps[0]->regions.size(), 1);
+
+    VoicePlayInfo info;
+    ci->play(info, 60, 60);
+    assert(info.valid);
 }
 
 static void testCompileTreeTwo() {
-    const char* data = R"foo(<group><region>key=4<region>key=5<group><group>)foo";
+    printf("\n----- testCompileTreeOne\n");
+    const char* data = R"foo(<group>
+        <region>key=4
+        <region>key=5
+        <group>
+        <group>)foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
@@ -555,17 +565,16 @@ static void testCompileTreeTwo() {
     assertEQ(gps[2]->regions.empty(), true);
 }
 
+// test sorting of regions.
+// Also tests comiling velocity layers
 static void  testCompileSort() {
 
-  //   const char* data = R"foo(<region>key=12 hivel=10<region>key=12 lovel=11 hivel=50<region>key=12 lovel=51)foo";
     const char* data = R"foo(<region>key=12 lovel=51<region>key=12 hivel=10<region>key=12 lovel=11 hivel=50)foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
     auto ci = CompiledInstrument::make(inst);
-    // void getSortedRegions(std::vector<CompiledRegionPtr>&, Sort);
     std::vector<CompiledRegionPtr> regions;
-   // ci->getSortedRegions(regions, CompiledInstrument::Sort::Velocity);
     ci->getAllRegions(regions);
     ci->sortByVelocity(regions);
 
@@ -578,8 +587,6 @@ static void  testCompileSort() {
 
     assertEQ(regions[2]->lovel, 51);
     assertEQ(regions[2]->hivel, 127);
-
-    
 }
 
 void testx2()
