@@ -9,9 +9,7 @@ SLexPtr SLex::go(const std::string& s)
     SLexPtr result = std::make_shared<SLex>();
     
     for (const char& c : s) {
-      //  printf("c = %d \\n = %d\n", c, '\n');
         if (c == '\n') {
-            printf("saw newline");
             ++result->currentLine;
         }
         bool ret = result->procNextChar(c);

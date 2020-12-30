@@ -23,6 +23,9 @@ public:
     CompiledRegion(SRegionPtr, CompiledGroupPtr parent);
     ~CompiledRegion() { compileCount--; }
 
+    bool overlapsPitch(const CompiledRegion&) const;
+    bool overlapsVelocity(const CompiledRegion&) const;
+
     // Keys were defaulting to -1, -1, but for drums with no
     // keys at all they were skipped. Better default is "all keys".
 #if 1

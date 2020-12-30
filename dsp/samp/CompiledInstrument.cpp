@@ -32,7 +32,41 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
     // now we need to build the player tree
     std::vector<CompiledRegionPtr> regions;
     getAllRegions(regions);
+    removeOverlaps(regions);
     player = buildPlayerVelLayers(regions, 0);
+}
+
+void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>&regions)
+{
+    if (regions.size() < 2) {
+        return;
+    }
+    using iterator = std::vector<CompiledRegionPtr>::iterator;
+    for (iterator it = regions.begin(); it != regions.end(); ) {
+        iterator itNext = it + 1;
+        if (itNext == regions.end()) {
+            return;
+        }
+        CompiledRegionPtr first = *it;
+        CompiledRegionPtr second = *itNext;
+        if (first->overlapsPitch(*second) && first->overlapsVelocity(*second)) {
+            // keep the region with the smallest pitch range
+            const int firstPitchRange = first->hikey - first->lokey;
+            const int secondPitchRange = second->hikey - second->lokey;
+            if (firstPitchRange <= secondPitchRange) {
+                // if we want to erase the second one, do that.
+                // it still points at first, but next iteration there will be a different next;
+                regions.erase(itNext);
+            } else {
+                // we erase the first one, leaving 
+                // it pointing at next.
+                // so we are set up to continue loop fine
+                it = regions.erase(it);
+            }
+        } else {
+            ++it;
+        }
+    }
 }
 
 /** build up the tree using the original algorithm that worked for small piano
@@ -142,14 +176,10 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
     PitchSwitchPtr playerToReturn = std::make_shared<PitchSwitch>();
 
     if (inputRegions.size() == 1) {
-        // CompiledRegionPtr reg, int sampleIndex, int midiPitch
-      //  printf("totally fake sample index and midi pitch");
-      //  return std::make_shared<SimpleVoicePlayer>(inputRegions[0], 1, 60);
         addSingleRegionPitchPlayers(playerToReturn,inputRegions[0]);
         return playerToReturn;
     }
 
-    
     std::vector<RegionBin> bins;
     int currentBin = -1;
     int currentRegion = 0;
@@ -190,11 +220,7 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
     }
 
     return playerToReturn;
- }
-
-
-
-
+}
 
 
 #if 0

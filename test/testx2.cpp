@@ -376,14 +376,21 @@ static void testCompileOverlap()
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(R"foo(<global>
         <region>lokey=0 hikey=127 sample=foo
-        <region>lokey=60 hikey=60 sample=bar"7)foo",
+        <region>lokey=60 hikey=60 pitch_keycenter=60 sample=bar)foo",
          inst);
     assert(err.empty());
 
-    CompiledInstrumentPtr i = CompiledInstrument::make(inst);
-    int x = 5;
-    assert(false);      // now assert that we picked the right one.
+    CompiledInstrumentPtr ci = CompiledInstrument::make(inst);
+    VoicePlayInfo info;
+    ci->play(info, 60, 2);
+    assert(info.valid);
+    assertNE(info.sampleIndex, 0);
+    assertEQ(info.needsTranspose, false);
 
+    ci->play(info, 61, 100);
+    assert(!info.valid);
+    ci->play(info, 59, 12);
+    assert(!info.valid);
 }
 
 static void testTranspose1()
@@ -569,6 +576,18 @@ static void testCompileTreeTwo() {
     assertEQ(gps[2]->regions.empty(), true);
 }
 
+static void  testCompileKey() {
+    const char* data = R"foo(<region>key=12)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    VoicePlayInfo info;
+    ci->play(info, 12, 60);
+    assert(info.valid);
+    assertEQ(info.needsTranspose, false);
+}
+
 // test sorting of regions.
 // Also tests comiling velocity layers
 static void  testCompileSort() {
@@ -612,8 +631,6 @@ void testx2()
     printf("fix testStreamXpose2\n");
     // testStreamXpose2();
 
-
-
     testCIKeysAndValues();
     testParseGlobalAndRegionCompiled();
     testParseGlobalWithKVAndRegionCompiled();
@@ -632,6 +649,7 @@ void testx2()
     // Let' put lots of very basic compilation tests here
     testCompileTreeOne();
     testCompileTreeTwo();
+    testCompileKey();
 
     testCompileSort();
 
@@ -641,7 +659,7 @@ void testx2()
     testCompileInst1();
 
     // not imp yet
-   // testCompileOverlap();
+    testCompileOverlap();
 
     testPlayInfoTinnyPiano();
     //testPlayInfoSmallPiano();

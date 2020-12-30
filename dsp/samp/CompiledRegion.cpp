@@ -28,6 +28,7 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr parent) : wea
     value = reg.compiledValues->get(Opcode::KEY);
     if (value) {
         hikey = lokey = value->numericInt;
+        keycenter = hikey;
     }
 
     value = reg.compiledValues->get(Opcode::SAMPLE);
@@ -50,9 +51,25 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr parent) : wea
     if (value) {
         hivel = value->numericInt;
     }
-
 }
 
+static bool overlapRange(int alo, int ahi, int blo, int bhi) {
+    assert(alo <= ahi);
+    assert(blo <= bhi);
+
+    return (blo >= alo && blo <= ahi) ||   // blo is in A
+        (bhi >= alo && bhi <= ahi);         // or bhi is in A
+
+}
+bool CompiledRegion::overlapsPitch(const CompiledRegion& that) const
+{
+    return overlapRange(this->lokey, this->hikey, that.lokey, that.hikey);
+}
+
+bool CompiledRegion::overlapsVelocity(const CompiledRegion& that) const 
+{
+    return overlapRange(this->lovel, this->hivel, that.lovel, that.hivel);
+}
 
 CompiledGroup::CompiledGroup(SGroupPtr group)
 {
