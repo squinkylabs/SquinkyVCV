@@ -94,6 +94,20 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
     int velStart = -1;
     int velEnd = -1;
 
+    for (auto it = inputRegions.begin(); it != inputRegions.end(); ++it ) {
+        auto reg1 = *it;
+        ++it;
+        if (it == inputRegions.end()) {
+            break;
+        }
+        auto reg2 = *it;
+        if ( reg1->overlapsVelocityButNotEqual(*reg2)) {
+            // unevel vel layers, must skip to pith
+            printf("vel layers not matched - will fall back to pitch division\n");
+            return buildPlayerPitchSwitch(inputRegions, depth);
+        }
+    }
+
     for (int currentRegion = 0; currentRegion < inputRegions.size(); ++currentRegion) {
 
         CompiledRegionPtr reg = inputRegions[currentRegion];
@@ -110,8 +124,15 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
            velEnd = reg->hivel;
         } else {
             // if vel regsions are not the same, will have to do vel after pitch
-            assert( bins.back().hiVal == inputRegions[currentRegion]->hivel);
-            bins.back().regions.push_back(inputRegions[currentRegion]);
+           // assert( bins.back().hiVal == inputRegions[currentRegion]->hivel);
+            if (bins.back().hiVal == inputRegions[currentRegion]->hivel) {
+                bins.back().regions.push_back(inputRegions[currentRegion]);
+            }
+            else {
+                printf("vel layers not matched - will fall back to pitch division\n");
+                assert(false);  // this is from the old way
+                return buildPlayerPitchSwitch(inputRegions, depth);
+            }
         }       
     }
 
@@ -131,8 +152,8 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
             // single bin with multiple entries
             // emit a key switch
             // one vel zone with multiple regions
-            printf("multiple entry in single zone\n");
-            return buildPlayerPitchSwitch(bins[0].regions, depth);
+            printf("multiple entry in single zone - retry pitch first\n");
+            return buildPlayerPitchSwitch(bins[0].regions, depth - 1);
         }
     }
     else {

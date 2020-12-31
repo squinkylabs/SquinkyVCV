@@ -666,7 +666,7 @@ static void testCompileMultiVel()
 
 static void testCompileMulPitchAndVelSimple()
 {
-     const char* data = R"foo(
+    const char* data = R"foo(
         <region>key=10 sample=a hivel=20  sample=a
         <region>key=10 sample=a lovel=21 hivel=90  sample=b
         <region>key=10 sample=a lovel=91  sample=c
@@ -741,9 +741,73 @@ static void testCompileMulPitchAndVelSimple()
     }
 }
 
-static void testCompileMulPitchAndVelComplex()
+
+static void testCompileMulPitchAndVelComplex1()
 {
+    printf("\n----- testCompileMulPitchAndVelComplex1\n");
+    const char* data = R"foo(
+        <region>key=10 sample=a hivel=20  sample=a
+        <region>key=20 sample=a lovel =10 hivel=24  sample=d
+       
+    )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    VoicePlayInfo info;
+    std::set<int> sampleIndicies;
+
+    ci->play(info, 10, 20);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+    ci->play(info, 20, 22);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
     assert(false);
+}
+
+static void testCompileMulPitchAndVelComplex2()
+{
+    const char* data = R"foo(
+        <region>key=10 sample=a hivel=20  sample=a
+        <region>key=10 sample=a lovel=21 hivel=90  sample=b
+        <region>key=10 sample=a lovel=95  sample=c
+
+        <region>key=20 sample=a hivel=24  sample=d
+        <region>key=20 sample=a lovel=25 hivel=33  sample=e
+        <region>key=20 sample=a lovel=91  sample=f
+
+        <region>key=30 sample=a hivel=20  sample=h
+        <region>key=30 sample=a lovel=34 hivel=90  sample=i
+        <region>key=30 sample=a lovel=111  sample=j
+    )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    VoicePlayInfo info;
+    std::set<int> sampleIndicies;
+
+    ci->play(info, 10, 20);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+    ci->play(info, 10, 27);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+    ci->play(info, 10, 91);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
 }
 
 // test sorting of regions.
@@ -811,7 +875,8 @@ void testx2()
     testCompileMultiPitch();
     testCompileMultiVel();
     testCompileMulPitchAndVelSimple();
-    testCompileMulPitchAndVelComplex();
+    testCompileMulPitchAndVelComplex1();
+    testCompileMulPitchAndVelComplex2();
 
     testCompileSort();
 

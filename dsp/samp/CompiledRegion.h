@@ -25,6 +25,8 @@ public:
 
     bool overlapsPitch(const CompiledRegion&) const;
     bool overlapsVelocity(const CompiledRegion&) const;
+    bool overlapsVelocityButNotEqual(const CompiledRegion&) const;
+    bool velocityRangeEqual(const CompiledRegion&) const;
 
     // Keys were defaulting to -1, -1, but for drums with no
     // keys at all they were skipped. Better default is "all keys".
