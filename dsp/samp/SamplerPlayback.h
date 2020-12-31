@@ -27,6 +27,13 @@ public:
     virtual ~ISamplerPlayback() = default;
     // TODO: should this return VoicePlayInfoPtr??
     virtual void play(VoicePlayInfo&, int midiPitch, int midiVelocity) = 0;
+    virtual void _dump(int depth) const = 0;
+protected:
+    static void indent(int depth) {
+        for (int i=0; i<depth; ++i) {
+            printf("  ");
+        }
+    }
 };
 
 using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
@@ -56,6 +63,10 @@ public:
     void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override {
         info = *data;
     }
+    void _dump(int depth) const override {
+        indent(depth);
+        printf("simple voice player si=%d\n", data->sampleIndex);
+    }
 
 private:
     VoicePlayInfoPtr data = std::make_shared<VoicePlayInfo>();
@@ -72,6 +83,10 @@ class NullVoicePlayer :  public ISamplerPlayback
 public:
  void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override {
         info.valid = false;
+    }
+    void _dump(int depth) const override {
+        indent(depth);
+        printf("NullVoicePlayer %p\n", this);
     }
 };
 

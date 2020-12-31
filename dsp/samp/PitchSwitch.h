@@ -10,6 +10,7 @@ class PitchSwitch : public ISamplerPlayback
 {
 public:
     void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
+    void _dump(int depth) const override;
     void _setTestMode() { testMode = true; }
     void addEntry(int pitch, ISamplerPlaybackPtr data) {
         assert(!pitchMap[pitch]);
@@ -35,6 +36,19 @@ inline void PitchSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVeloci
       if (entry) {
           entry->play(info, midiPitch, midiVelocity);
       }
+}
+
+inline void PitchSwitch::_dump(int depth) const {
+    indent(depth);
+    printf("begin pitch switch %p\n", this);
+    for (auto entry : pitchMap) {
+        if (entry) {
+            entry->_dump(depth + 1);
+        }
+    }
+
+    indent(depth);
+    printf("end pitch switch %p\n", this);
 }
 
 using PitchSwitchPtr = std::shared_ptr<PitchSwitch>;

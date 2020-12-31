@@ -13,11 +13,13 @@ class SInstrument;
 class SRegion;
 class WaveLoader;
 class SGroup;
+class VelSwitch;
 
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
 using SRegionPtr = std::shared_ptr<SRegion>;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 using SGroupPtr = std::shared_ptr<SGroup>;
+using VelSwitchPtr = std::shared_ptr<VelSwitch>;
 
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 
@@ -25,6 +27,7 @@ class CompiledInstrument : public ISamplerPlayback {
 public:
     static CompiledInstrumentPtr make(const SInstrumentPtr);
     void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
+    void _dump(int depth) const override;
     void _setTestMode() {
       testMode = true;
         //pitchMap._setTestMode();
@@ -68,15 +71,15 @@ private:
     bool shouldIgnoreGroup(SGroupPtr);
     void buildCompiledTree(const SInstrumentPtr i);
 
-    ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr> inputRegions, int depth);
-    ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr> inputRegions, int depth);
+    ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);
+    ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth);
     void addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region);
 
     /** Returns wave index
      */
     int addSampleFile(const std::string& s);
 
-    ISamplerPlaybackPtr playbackMapVelocities(std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
+    ISamplerPlaybackPtr playbackMapVelocities(const std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
 };
 
 

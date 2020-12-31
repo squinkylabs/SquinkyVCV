@@ -645,6 +645,7 @@ static void testCompileMultiPitch()
 
 static void testCompileMultiVel()
 {
+    printf("\n---- testCompileMultiVel\n");
     const char* data = R"foo(
         <region>key=10 sample=a hivel=20
         <region>key=10 sample=a lovel=21 hivel=90
@@ -655,6 +656,7 @@ static void testCompileMultiVel()
     auto err = SParse::go(data, inst);
 
     auto ci = CompiledInstrument::make(inst);
+    ci->_dump(0);
     VoicePlayInfo info;
     ci->play(info, 11, 60);
     assert(!info.valid);
@@ -768,11 +770,12 @@ static void testCompileMulPitchAndVelComplex1()
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    assert(false);
+    assertEQ(sampleIndicies.size(), 2);
 }
 
 static void testCompileMulPitchAndVelComplex2()
 {
+    printf("\n----- testCompileMulPitchAndVelComplex2\n");
     const char* data = R"foo(
         <region>key=10 sample=a hivel=20  sample=a
         <region>key=10 sample=a lovel=21 hivel=90  sample=b

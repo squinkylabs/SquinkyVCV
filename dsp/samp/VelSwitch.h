@@ -13,6 +13,7 @@ class VelSwitch : public ISamplerPlayback
 public:
     ISamplerPlaybackPtr mapVelToPlayer(unsigned int vel);
     void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
+    void _dump(int depth) const override;
     void addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player);
 
 private:
@@ -24,7 +25,7 @@ private:
 
 inline void VelSwitch::addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player)
 {
-    printf("in addVelocityRange(%d)\n", velRangeStart);
+   // printf("in addVelocityRange(%d)\n", velRangeStart);
     velToPlayerMap.insert({ velRangeStart, player });
     if (velRangeStart == 1) {
         addedOne = true;
@@ -37,7 +38,7 @@ inline void VelSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVelocity
 }
 
 inline ISamplerPlaybackPtr VelSwitch::mapVelToPlayer(unsigned int vel) {
-    printf("in mapVelToPlayer(%d)\n", vel);
+   // printf("in mapVelToPlayer(%d)\n", vel);
    
     assert(vel > 0);
     assert(addedOne);
@@ -66,6 +67,19 @@ inline ISamplerPlaybackPtr VelSwitch::mapVelToPlayer(unsigned int vel) {
         assert(false);
     }
     return ret;
+}
+
+inline void VelSwitch::_dump(int depth) const {
+
+    indent(depth);
+    printf("begin vel switch ent=%d this=%p\n", int(velToPlayerMap.size()), this);
+    for (auto entry : velToPlayerMap) {
+        printf("entry at vel %d:\n", entry.first);
+        entry.second->_dump(depth+1);
+    }
+
+    indent(depth);
+    printf("end vel switch %p\n", this);
 }
 
 

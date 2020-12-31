@@ -25,14 +25,12 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);
     buildCompiledTree(in);
   
-    printf("compile not finished yet\n");
-
     // here we can prune the tree - removing regions that map to the same thing
-
-    // now we need to build the player tree
     std::vector<CompiledRegionPtr> regions;
     getAllRegions(regions);
     removeOverlaps(regions);
+
+     // now we need to build the player tree
     player = buildPlayerVelLayers(regions, 0);
 }
 
@@ -80,9 +78,22 @@ public:
     std::vector<CompiledRegionPtr> regions;
 };
 
-ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<CompiledRegionPtr> inputRegions, int depth)
+ static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions)
+ {
+     int x = 0;
+     for (auto reg : inputRegions) {
+         printf("    reg[%d] pitch=%d,%d vel=%d,%d\n", x, reg->lokey, reg->hikey, reg->lovel, reg->hivel);
+         ++x;
+     }
+ }
+
+ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth)
 {
     std::vector<RegionBin> bins;
+#ifdef _LOG
+    printf("enter buildPlayerVelLayers depth = %d numRegsions = %d\n", depth, int(inputRegions.size()));
+    dumpRegions(inputRegions);
+#endif
     
     assert(depth < 3);
     ++depth;
@@ -104,7 +115,7 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
         if ( reg1->overlapsVelocityButNotEqual(*reg2)) {
             // unevel vel layers, must skip to pith
             printf("vel layers not matched - will fall back to pitch division\n");
-            return buildPlayerPitchSwitch(inputRegions, depth);
+            return buildPlayerPitchSwitch(inputRegions, depth - 1);
         }
     }
 
@@ -183,9 +194,13 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
     }
 }
 
- ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<CompiledRegionPtr> inputRegions, int depth)
+ ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth)
  {
-    assert(depth < 2);
+#ifdef _LOG
+    printf("enter buildPlayerPitchSwitch depth = %d numRegsions = %d\n", depth, int(inputRegions.size()));
+    dumpRegions(inputRegions);
+#endif
+    assert(depth < 3);
     ++depth;
     sortByPitch(inputRegions);
 
@@ -232,9 +247,18 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
     for (auto bin : bins) {
         // if this pitch bin only has one region, then we can emit it directly
         if (bin.regions.size() == 1) {
-            addSingleRegionPitchPlayers(playerToReturn,bin.regions[0]);
+            addSingleRegionPitchPlayers(playerToReturn, bin.regions[0]);
         } else {
+            // here we are binning by pitch, but a pitch bin has more than one region.
+            // our only hope is to split on pitch.
+            { // debug stuff
+                CompiledRegionPtr r0 = bin.regions[0];
+                CompiledRegionPtr r1 = bin.regions[1];
+            }
             ISamplerPlaybackPtr velSwitch = buildPlayerVelLayers(bin.regions, depth);
+            // now we need to map this be switch to every pitch that it covers.
+            // make this work
+            //addVelSwitchToCoverPitchRegions(velSwitch, bin.regions);
             assert(false);
         }
 
@@ -243,6 +267,19 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
     return playerToReturn;
 }
 
+
+void CompiledInstrument::_dump(int depth) const
+{
+    indent(depth);
+    if (player) {
+        printf("Compiled Instrument dump follows:\n\n");
+        player->_dump(depth);
+        indent(depth);
+        printf("End compiled instrument dump\n\n");
+    } else {
+        printf("Compiled Instrument has nothing to dump\n");
+    }
+}
 
 #if 0
 ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers()
