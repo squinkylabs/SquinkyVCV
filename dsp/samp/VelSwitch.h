@@ -18,12 +18,17 @@ public:
 private:
 
     std::map<unsigned int, ISamplerPlaybackPtr> velToPlayerMap;
+    bool addedOne = false;
 };
 
 
 inline void VelSwitch::addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player)
 {
+    printf("in addVelocityRange(%d)\n", velRangeStart);
     velToPlayerMap.insert({ velRangeStart, player });
+    if (velRangeStart == 1) {
+        addedOne = true;
+    }
 }
 
 inline void VelSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
@@ -32,6 +37,10 @@ inline void VelSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVelocity
 }
 
 inline ISamplerPlaybackPtr VelSwitch::mapVelToPlayer(unsigned int vel) {
+    printf("in mapVelToPlayer(%d)\n", vel);
+   
+    assert(vel > 0);
+    assert(addedOne);
     ISamplerPlaybackPtr ret;
     auto it = velToPlayerMap.lower_bound(vel);
     if (it == velToPlayerMap.end()) {
@@ -59,33 +68,6 @@ inline ISamplerPlaybackPtr VelSwitch::mapVelToPlayer(unsigned int vel) {
     return ret;
 }
 
-#if 0
-inline void VelSwitch::_addIndex(unsigned int index, unsigned int value, ISamplerPlaybackPtr player)
-{
-
-    velIndexMap.insert({value, index});
-}
-
-inline unsigned  VelSwitch::mapVelToIndex(unsigned  vel)
-{
-    unsigned ret = 0;
-    auto it = velIndexMap.lower_bound(vel);
-    if (it == velIndexMap.end()) {
-        assert(false);                  // we should always have an init entry.
-        return 0;
-    }
-    unsigned int lb_key = it->first;
-    if (lb_key > vel) {
-        --it;
-        ret = it->second;
-    } else if (lb_key == vel) {
-        ret = it->second;
-    } else {
-        assert(false);
-    }
-    return ret;;
-}
-#endif
 
 using VelSwitchPtr = std::shared_ptr<VelSwitch>;
 

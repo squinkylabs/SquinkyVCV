@@ -588,6 +588,90 @@ static void  testCompileKey() {
     assertEQ(info.needsTranspose, false);
 }
 
+static void testCompileMultiPitch()
+{
+    const char* data = R"foo(
+        <region>lokey=10 hikey=12 sample=a pitch_keycenter=11
+        <region>lokey=13 hikey=15 sample=b pitch_keycenter=14
+        <region>lokey=16 hikey=20 sample=c pitch_keycenter=18
+    )foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    VoicePlayInfo info;
+
+    ci->play(info, 9, 60);
+    assert(!info.valid);
+    ci->play(info, 21, 60);
+    assert(!info.valid);
+    ci->play(info, 0, 60);
+    assert(!info.valid);
+    ci->play(info, 127, 60);
+    assert(!info.valid);
+
+    ci->play(info, 11, 60);
+    assert(info.valid);
+    assertEQ(info.needsTranspose, false);
+    
+    //  checking sample index is checking something that just happens to be true
+    // If this breaks the test should be fixed.
+    assertEQ(info.sampleIndex, 1);     
+
+    ci->play(info, 12, 60);
+    assert(info.valid);
+    assertEQ(info.needsTranspose, true);
+    assertGT(info.transposeAmt, 1);
+
+     ci->play(info, 10, 60);
+    assert(info.valid);
+    assertEQ(info.needsTranspose, true);
+    assertLT(info.transposeAmt, 1);
+
+
+    ci->play(info, 13, 60);
+    assert(info.valid);
+    assertEQ(info.needsTranspose, true);
+    assertEQ(info.sampleIndex, 2);
+   
+    ci->play(info, 20, 60);
+    assert(info.valid);
+    assertEQ(info.needsTranspose, true);
+    assertGT(info.transposeAmt, 1);
+    assertEQ(info.sampleIndex, 3);
+}
+
+static void testCompileMultiVel()
+{
+    const char* data = R"foo(
+        <region>key=10 sample=a hivel=20
+        <region>key=10 sample=a lovel=21 hivel=90
+        <region>key=10 sample=a lovel=91
+    )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    VoicePlayInfo info;
+    ci->play(info, 11, 60);
+    assert(!info.valid);
+
+    ci->play(info, 10, 1);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 1);
+}
+
+static void testCompileMulPitchAndVelSimple()
+{
+    assert(false);
+}
+
+static void testCompileMulPitchAndVelComplex()
+{
+    assert(false);
+}
+
 // test sorting of regions.
 // Also tests comiling velocity layers
 static void  testCompileSort() {
@@ -650,15 +734,15 @@ void testx2()
     testCompileTreeOne();
     testCompileTreeTwo();
     testCompileKey();
+    testCompileMultiPitch();
+    testCompileMultiVel();
+    testCompileMulPitchAndVelSimple();
+    testCompileMulPitchAndVelComplex();
 
     testCompileSort();
 
     testCompileInst0();
-    //
-
     testCompileInst1();
-
-    // not imp yet
     testCompileOverlap();
 
     testPlayInfoTinnyPiano();

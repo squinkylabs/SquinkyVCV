@@ -87,7 +87,6 @@ static void testSmallPianoVelswitch()
      cinst->play(info, 64, 127);
     const int si127 = info.sampleIndex;
 
-
     assertEQ(si1, si22);
     assertNE(si23, si22);
 
@@ -117,10 +116,10 @@ void testx3()
  // work up to these
     assert(parseCount == 0);
     testVelSwitch1();
-   // testSmallPianoVelswitch();
+
+    //testSmallPianoVelswitch();
    // testSnareBasic();
     
-
     assert(parseCount == 0);
     assert(compileCount == 0);
 }
