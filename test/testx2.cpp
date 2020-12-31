@@ -8,6 +8,8 @@
 #include "Streamer.h"
 #include "WaveLoader.h"
 
+#include <set>
+
 //#include "SParse.h"
 
 static char* tinnyPiano =  R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo"; 
@@ -664,7 +666,79 @@ static void testCompileMultiVel()
 
 static void testCompileMulPitchAndVelSimple()
 {
-    assert(false);
+     const char* data = R"foo(
+        <region>key=10 sample=a hivel=20  sample=a
+        <region>key=10 sample=a lovel=21 hivel=90  sample=b
+        <region>key=10 sample=a lovel=91  sample=c
+
+        <region>key=20 sample=a hivel=20  sample=d
+        <region>key=20 sample=a lovel=21 hivel=90  sample=e
+        <region>key=20 sample=a lovel=91  sample=f
+
+        <region>key=30 sample=a hivel=20  sample=h
+        <region>key=30 sample=a lovel=21 hivel=90  sample=i
+        <region>key=30 sample=a lovel=91  sample=j
+    )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    VoicePlayInfo info;
+
+    std::set<int> sampleIndicies;
+
+    ci->play(info, 10, 1);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+    ci->play(info, 10, 21);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+    ci->play(info, 10, 91);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+      ci->play(info, 20, 1);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+    ci->play(info, 20, 21);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+    ci->play(info, 20, 91);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+    ci->play(info, 30, 1);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+    ci->play(info, 30, 21);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+    ci->play(info, 30, 91);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    sampleIndicies.insert(info.sampleIndex);
+
+
+    assertEQ(sampleIndicies.size(), 9);
+    for (auto x : sampleIndicies) {
+        assert(x >= 1);
+        assert(x <= 9);
+    }
 }
 
 static void testCompileMulPitchAndVelComplex()
