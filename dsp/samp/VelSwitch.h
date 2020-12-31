@@ -74,6 +74,7 @@ inline void VelSwitch::_dump(int depth) const {
     indent(depth);
     printf("begin vel switch ent=%d this=%p\n", int(velToPlayerMap.size()), this);
     for (auto entry : velToPlayerMap) {
+        indent(depth + 1);
         printf("entry at vel %d:\n", entry.first);
         entry.second->_dump(depth+1);
     }

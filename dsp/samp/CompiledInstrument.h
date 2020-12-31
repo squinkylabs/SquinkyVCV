@@ -74,6 +74,11 @@ private:
     ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);
     ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth);
     void addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region);
+    /** add the passed player, which happens to be a vel switch,
+     * to the passed destination play. Add it at every pitch where
+     * it should be in the patch map.
+     */
+    void addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, ISamplerPlaybackPtr velSwitch, const std::vector<CompiledRegionPtr>& regions);
 
     /** Returns wave index
      */

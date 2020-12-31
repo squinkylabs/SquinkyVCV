@@ -61,6 +61,7 @@ public:
         }
     }
     void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override {
+        assert(midiVelocity > 0 && midiVelocity <= 127);
         info = *data;
     }
     void _dump(int depth) const override {

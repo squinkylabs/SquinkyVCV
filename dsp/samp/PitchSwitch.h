@@ -41,12 +41,14 @@ inline void PitchSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVeloci
 inline void PitchSwitch::_dump(int depth) const {
     indent(depth);
     printf("begin pitch switch %p\n", this);
-    for (auto entry : pitchMap) {
+    for (int pitch = 0; pitch < 128; ++pitch) {
+        auto entry = pitchMap[pitch];
         if (entry) {
+            indent(depth+1);
+            printf("pitch entry[%d]\n", pitch);
             entry->_dump(depth + 1);
         }
     }
-
     indent(depth);
     printf("end pitch switch %p\n", this);
 }

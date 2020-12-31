@@ -75,9 +75,15 @@ bool CompiledRegion::overlapsVelocityButNotEqual(const CompiledRegion& that) con
 {
     return overlapsVelocity(that) && !velocityRangeEqual(that);
 }
+
 bool CompiledRegion::velocityRangeEqual(const CompiledRegion& that) const
 {
     return (this->lovel == that.lovel) && (this->hivel == that.hivel);
+}
+
+bool CompiledRegion::pitchRangeEqual(const CompiledRegion& that) const
+{
+    return (this->lokey == that.lokey) && (this->hikey == that.hikey);
 }
 
 CompiledGroup::CompiledGroup(SGroupPtr group)

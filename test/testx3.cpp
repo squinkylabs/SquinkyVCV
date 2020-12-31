@@ -20,30 +20,30 @@ static void testVelSwitch1()
     ISamplerPlaybackPtr p2 = std::make_shared<SimpleVoicePlayer>(r0, 102, 0);
     ISamplerPlaybackPtr p3 = std::make_shared<SimpleVoicePlayer>(r0, 103, 0);
 
-    v.addVelocityRange(0, p0);          // index zero starts at vel 0
-    v.addVelocityRange(1, p1);
+    v.addVelocityRange(1, p0);          // index 1 starts at vel 1 (0 illegal
+    v.addVelocityRange(2, p1);
     v.addVelocityRange(99, p2);
     v.addVelocityRange(100, p3);
 
     VoicePlayInfo info;
-    ISamplerPlaybackPtr test = v.mapVelToPlayer(0);
-    test->play(info, 0, 0);
+    ISamplerPlaybackPtr test = v.mapVelToPlayer(1);
+    test->play(info, 0, 1);
     assertEQ(info.sampleIndex, 100);
 
-    test = v.mapVelToPlayer(1);
-    test->play(info, 0, 0);
+    test = v.mapVelToPlayer(2);
+    test->play(info, 0, 1);
     assertEQ(info.sampleIndex, 101);
 
     test = v.mapVelToPlayer(99);
-    test->play(info, 0, 0);
+    test->play(info, 0, 1);
     assertEQ(info.sampleIndex, 102);
 
     test = v.mapVelToPlayer(100);
-    test->play(info, 0, 0);
+    test->play(info, 0, 1);
     assertEQ(info.sampleIndex, 103);
 
     test = v.mapVelToPlayer(101);
-    test->play(info, 0, 0);
+    test->play(info, 0, 1);
     assertEQ(info.sampleIndex, 103);
 }
 

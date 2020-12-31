@@ -796,6 +796,7 @@ static void testCompileMulPitchAndVelComplex2()
     auto ci = CompiledInstrument::make(inst);
     VoicePlayInfo info;
     std::set<int> sampleIndicies;
+    ci->_dump(0);
 
     ci->play(info, 10, 20);
     assert(info.valid);
