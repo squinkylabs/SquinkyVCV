@@ -82,6 +82,7 @@ static void testPlayInfoTinnyPiano() {
     testPlayInfo(tinnyPiano, { 64 });
 }
 static void testPlayInfoSmallPiano() {
+    printf("\n----- testPlayInfoSmallPiano\n");
     testPlayInfo(smallPiano, {1, 23, 44, 65, 80, 107});
 }
 
@@ -889,7 +890,7 @@ void testx2()
     testCompileOverlap();
 
     testPlayInfoTinnyPiano();
-    //testPlayInfoSmallPiano();
+    testPlayInfoSmallPiano();
     testLoadWavesPiano();
 
     testTranspose1();

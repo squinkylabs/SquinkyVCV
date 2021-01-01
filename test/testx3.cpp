@@ -8,7 +8,7 @@
 
 static void testVelSwitch1()
 {
-    VelSwitch v;
+    VelSwitch v(1234);
 
     SRegionPtr sr = std::make_shared<SRegion>(1234);
     sr->compiledValues = SamplerSchema::compile(sr->values);

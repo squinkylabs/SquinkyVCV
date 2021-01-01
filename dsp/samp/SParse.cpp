@@ -145,11 +145,15 @@ SParse::Result SParse::matchRegion(SRegionList& regions, SLexPtr lex) {
         return result;
     }
 
+    SLexItem* item = tok.get();
+    SLexTag* tag = static_cast<SLexTag*>(item);
+
     // consume the <region> tag
     lex->consume();
 
     // make a new region to hold this one, and put it into the group
-    SRegionPtr newRegion = std::make_shared<SRegion>(lex->line());
+   
+    SRegionPtr newRegion = std::make_shared<SRegion>(tag->lineNumber);
     regions.push_back(newRegion);
 
     std::string s = matchKeyValuePairs(newRegion->values, lex);

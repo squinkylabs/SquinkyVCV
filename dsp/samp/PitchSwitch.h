@@ -13,12 +13,16 @@ public:
     void _dump(int depth) const override;
     void _setTestMode() { testMode = true; }
     void addEntry(int pitch, ISamplerPlaybackPtr data) {
-        assert(!pitchMap[pitch]);
+        auto test = pitchMap[pitch];
+        assert(!test);
         pitchMap[pitch] = data;
     }
+    PitchSwitch(int line) : lineNumber(line) {}
+
 private:
     bool testMode = false;
     std::vector<ISamplerPlaybackPtr> pitchMap = std::vector<ISamplerPlaybackPtr>(128);
+    const int lineNumber;
 };
 
 inline void PitchSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVelocity)

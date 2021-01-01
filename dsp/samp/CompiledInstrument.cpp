@@ -36,6 +36,7 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
 
 void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>&regions)
 {
+    printf("enter remove overlaps\n");
     if (regions.size() < 2) {
         return;
     }
@@ -47,15 +48,19 @@ void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>&regions)
         }
         CompiledRegionPtr first = *it;
         CompiledRegionPtr second = *itNext;
+        printf("overlap comparing line %d with %d\n", first->lineNumber, second->lineNumber);
+        printf(" pitch=%d,%d, vel=%d,%d\n", first->lokey, first->hikey, first->lovel, first->hivel);
         if (first->overlapsPitch(*second) && first->overlapsVelocity(*second)) {
             // keep the region with the smallest pitch range
             const int firstPitchRange = first->hikey - first->lokey;
             const int secondPitchRange = second->hikey - second->lokey;
             if (firstPitchRange <= secondPitchRange) {
+                printf("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
                 // if we want to erase the second one, do that.
                 // it still points at first, but next iteration there will be a different next;
                 regions.erase(itNext);
             } else {
+                printf("about to(b) erase regsion from %d\n", first->lineNumber);
                 // we erase the first one, leaving 
                 // it pointing at next.
                 // so we are set up to continue loop fine
@@ -65,6 +70,7 @@ void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>&regions)
             ++it;
         }
     }
+
 }
 
 /** build up the tree using the original algorithm that worked for small piano
@@ -169,7 +175,7 @@ public:
     }
     else {
         // emit a vel switch and recurse
-        VelSwitchPtr velSwitch = std::make_shared<VelSwitch>();
+        VelSwitchPtr velSwitch = std::make_shared<VelSwitch>(bins[0].regions[0]->lineNumber);
         for (auto bin : bins) {
 
             ISamplerPlaybackPtr pitchPlayer = buildPlayerPitchSwitch(bin.regions, depth);
@@ -231,7 +237,7 @@ void CompiledInstrument::addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, IS
          return std::make_shared<NullVoicePlayer>();
     }
 
-    PitchSwitchPtr playerToReturn = std::make_shared<PitchSwitch>();
+    PitchSwitchPtr playerToReturn = std::make_shared<PitchSwitch>(inputRegions[0]->lineNumber);
 
     if (inputRegions.size() == 1) {
         addSingleRegionPitchPlayers(playerToReturn,inputRegions[0]);

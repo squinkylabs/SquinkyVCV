@@ -46,7 +46,7 @@ class SimpleVoicePlayer : public ISamplerPlayback
 {
 public:
     SimpleVoicePlayer() = delete;
-    SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex, int midiPitch) {
+    SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex, int midiPitch) : lineNumber(reg->lineNumber) {
         data->valid = true;
         data->sampleIndex = sampleIndex;
 
@@ -71,6 +71,7 @@ public:
 
 private:
     VoicePlayInfoPtr data = std::make_shared<VoicePlayInfo>();
+    const int lineNumber;           // in the source file
 
 };
 

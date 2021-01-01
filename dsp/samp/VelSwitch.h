@@ -16,10 +16,12 @@ public:
     void _dump(int depth) const override;
     void addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player);
 
+    VelSwitch(int line) : lineNumber(line) {}
 private:
 
     std::map<unsigned int, ISamplerPlaybackPtr> velToPlayerMap;
     bool addedOne = false;
+    const int lineNumber;
 };
 
 

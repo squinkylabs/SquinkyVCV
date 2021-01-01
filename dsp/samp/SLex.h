@@ -56,7 +56,6 @@ public:
     }
     void validate() const;
 
-    int line() const { return currentLine; }
 private:
     // return true if no error
     bool procNextChar(char c);
