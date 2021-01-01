@@ -1,17 +1,15 @@
 
+#include <asserts.h>
+
 #include "CompiledInstrument.h"
 #include "SInstrument.h"
 #include "SParse.h"
 #include "VelSwitch.h"
 
-#include <asserts.h>
-
 extern void testPlayInfoTinnyPiano();
 extern void testPlayInfoSmallPiano();
 
-
-static void testVelSwitch1()
-{
+static void testVelSwitch1() {
     VelSwitch v(1234);
 
     SRegionPtr sr = std::make_shared<SRegion>(1234);
@@ -24,7 +22,7 @@ static void testVelSwitch1()
     ISamplerPlaybackPtr p2 = std::make_shared<SimpleVoicePlayer>(r0, 102, 0);
     ISamplerPlaybackPtr p3 = std::make_shared<SimpleVoicePlayer>(r0, 103, 0);
 
-    v.addVelocityRange(1, p0);          // index 1 starts at vel 1 (0 illegal
+    v.addVelocityRange(1, p0);  // index 1 starts at vel 1 (0 illegal
     v.addVelocityRange(2, p1);
     v.addVelocityRange(99, p2);
     v.addVelocityRange(100, p3);
@@ -51,18 +49,16 @@ static void testVelSwitch1()
     assertEQ(info.sampleIndex, 103);
 }
 
-static CompiledRegionPtr makeTestRegion(bool usePitch, const std::string& minVal, const std::string& maxVal)
-{
+static CompiledRegionPtr makeTestRegion(bool usePitch, const std::string& minVal, const std::string& maxVal) {
     SRegionPtr sr = std::make_shared<SRegion>(1234);
-   
+
     SKeyValuePairPtr kv;
     if (usePitch) {
         kv = std::make_shared<SKeyValuePair>("lokey", minVal);
         sr->values.push_back(kv);
         kv = std::make_shared<SKeyValuePair>("hikey", maxVal);
         sr->values.push_back(kv);
-    }
-    else {
+    } else {
         kv = std::make_shared<SKeyValuePair>("lovel", minVal);
         sr->values.push_back(kv);
         kv = std::make_shared<SKeyValuePair>("hivel", maxVal);
@@ -73,8 +69,7 @@ static CompiledRegionPtr makeTestRegion(bool usePitch, const std::string& minVal
     return r0;
 }
 
-static void testOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, bool shouldOverlap)
-{
+static void testOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, bool shouldOverlap) {
     assert(mina <= maxa);
     auto regionA = makeTestRegion(testPitch, std::to_string(mina), std::to_string(maxa));
     auto regionB = makeTestRegion(testPitch, std::to_string(minb), std::to_string(maxb));
@@ -82,8 +77,7 @@ static void testOverlapSub(bool testPitch, int mina, int maxa, int minb, int max
     assertEQ(overlap, shouldOverlap);
 }
 
-static void testOverlap(bool testPitch)
-{
+static void testOverlap(bool testPitch) {
     // negative tests
     testOverlapSub(testPitch, 10, 20, 30, 40, false);
     testOverlapSub(testPitch, 50, 60, 30, 40, false);
@@ -105,17 +99,15 @@ static void testOverlap(bool testPitch)
     // assert(false);
 }
 
-static void testOverlap()
-{
+static void testOverlap() {
     testOverlap(true);
     testOverlap(false);
 }
 
-static char* smallPiano =  R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo"; 
-static char* snare =  R"foo(D:\samples\SalamanderDrumkit\snare.sfz)foo";
+static char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo";
+static char* snare = R"foo(D:\samples\SalamanderDrumkit\snare.sfz)foo";
 
-static void testSmallPianoVelswitch() 
-{
+static void testSmallPianoVelswitch() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     auto err = SParse::goFile(smallPiano, inst);
@@ -124,7 +116,7 @@ static void testSmallPianoVelswitch()
     CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     VoicePlayInfo info;
     cinst->play(info, 60, 60);
-    assert(info.valid); 
+    assert(info.valid);
 
     //  {1, 23, 44, 65, 80, 107});
     cinst->play(info, 64, 1);
@@ -148,7 +140,7 @@ static void testSmallPianoVelswitch()
     cinst->play(info, 64, 107);
     const int si107 = info.sampleIndex;
 
-     cinst->play(info, 64, 127);
+    cinst->play(info, 64, 127);
     const int si127 = info.sampleIndex;
 
     assertEQ(si1, si22);
@@ -164,8 +156,7 @@ static void testSmallPianoVelswitch()
     assertNE(si1, si44);
 }
 
-static void testSnareBasic()
-{
+static void testSnareBasic() {
     printf("\n------- testSnareBasic\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -175,21 +166,20 @@ static void testSnareBasic()
     CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     VoicePlayInfo info;
 }
-void testx3()
-{
- // work up to these
+void testx3() {
+    // work up to these
     assert(parseCount == 0);
     testVelSwitch1();
     testOverlap();
 
     //testSmallPianoVelswitch();
 
-    // Note: this tests are in testx2. Just moved here for logical 
+    // Note: this tests are in testx2. Just moved here for logical
     // sequencing reasons.
     testPlayInfoTinnyPiano();
     testPlayInfoSmallPiano();
-   // testSnareBasic();
-    
+    // testSnareBasic();
+
     assert(parseCount == 0);
     assert(compileCount == 0);
 }

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "SParse.h"
 #include <memory>
+
+#include "SParse.h"
 
 #if 0
 class SVoicePlayInfo {
@@ -23,7 +24,6 @@ public:
     look through all the regions until we find one that plays. use that
 */
 
-
 /**
  * An entire instrument.
  * Note that this is used by parser, but it also
@@ -38,8 +38,7 @@ public:
     void _setTestMode() {
         testMode = true;
     }
-    #endif
-
+#endif
 
     //---------- part used by parse
     SGlobal global;
@@ -48,8 +47,8 @@ public:
     SGroupList groups;
 
     bool wasExpanded = false;
+
 private:
-   // bool testMode = false;
- 
+    // bool testMode = false;
 };
 using SInstrumentPtr = std::shared_ptr<SInstrument>;

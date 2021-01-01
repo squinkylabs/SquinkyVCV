@@ -1,9 +1,10 @@
 #pragma once
 
-#include "CompiledRegion.h"
-
 #include <assert.h>
+
 #include <cmath>
+
+#include "CompiledRegion.h"
 
 /**
  * When a patch is asked to "play", it serves up one of these.
@@ -21,16 +22,16 @@ public:
 };
 using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
 
-
 class ISamplerPlayback {
 public:
     virtual ~ISamplerPlayback() = default;
     // TODO: should this return VoicePlayInfoPtr??
     virtual void play(VoicePlayInfo&, int midiPitch, int midiVelocity) = 0;
     virtual void _dump(int depth) const = 0;
+
 protected:
     static void indent(int depth) {
-        for (int i=0; i<depth; ++i) {
+        for (int i = 0; i < depth; ++i) {
             printf("  ");
         }
     }
@@ -42,8 +43,7 @@ using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
  * simple one voice player. It's just a thin wrapper around
  * a structre that holds data for one voice.
  * */
-class SimpleVoicePlayer : public ISamplerPlayback
-{
+class SimpleVoicePlayer : public ISamplerPlayback {
 public:
     SimpleVoicePlayer() = delete;
     SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex, int midiPitch) : lineNumber(reg->lineNumber) {
@@ -71,8 +71,7 @@ public:
 
 private:
     VoicePlayInfoPtr data = std::make_shared<VoicePlayInfo>();
-    const int lineNumber;           // in the source file
-
+    const int lineNumber;  // in the source file
 };
 
 /**
@@ -80,10 +79,9 @@ private:
  * in the real world, but need it now to cover corner cases without
  * crashing.
  */
-class NullVoicePlayer :  public ISamplerPlayback
-{
+class NullVoicePlayer : public ISamplerPlayback {
 public:
- void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override {
+    void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override {
         info.valid = false;
     }
     void _dump(int depth) const override {
@@ -91,4 +89,3 @@ public:
         printf("NullVoicePlayer %p\n", this);
     }
 };
-

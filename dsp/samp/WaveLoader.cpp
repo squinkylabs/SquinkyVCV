@@ -1,6 +1,7 @@
 
 
 #include "WaveLoader.h"
+
 #include <assert.h>
 
 #define DR_WAV_IMPLEMENTATION
@@ -54,8 +55,7 @@ void WaveLoader::load(const std::string& fileName) {
 }
 #endif
 
-void WaveLoader::clear()
-{
+void WaveLoader::clear() {
     finalInfo.clear();
 }
 
@@ -64,23 +64,20 @@ WaveLoader::WaveInfoPtr WaveLoader::getInfo(int index) const {
     if (index < 1 || index > int(finalInfo.size())) {
         return nullptr;
     }
-    return finalInfo[index-1];
-
+    return finalInfo[index - 1];
 }
 
 WaveLoader::WaveInfo::WaveInfo(const std::string& path) : fileName(path) {
     //initmycb();
 }
 
-void WaveLoader::addNextSample(const std::string& fileName)
-{
+void WaveLoader::addNextSample(const std::string& fileName) {
     assert(!didLoad);
     printf("adding %s\n", fileName.c_str());
     filesToLoad.push_back(fileName);
 }
 
-void WaveLoader::load()
-{
+void WaveLoader::load() {
     printf("waveLoader::load %lld\n", filesToLoad.size());
     assert(!didLoad);
     didLoad = true;
@@ -101,14 +98,15 @@ void WaveLoader::WaveInfo::load() {
         printf("error opening wave\n");
         return;
     }
-    printf("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels); fflush(stdout);
+    printf("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
+    fflush(stdout);
     data = pSampleData;
     valid = true;
 }
 
 WaveLoader::WaveInfo::~WaveInfo() {
     if (data) {
-          drwav_free(data, nullptr);
-          data = nullptr;
+        drwav_free(data, nullptr);
+        data = nullptr;
     }
 }

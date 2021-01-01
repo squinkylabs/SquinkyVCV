@@ -3,11 +3,10 @@
 #include "SLex.h"
 
 #include <assert.h>
-SLexPtr SLex::go(const std::string& s) 
-{
+SLexPtr SLex::go(const std::string& s) {
     int count = 0;
     SLexPtr result = std::make_shared<SLex>();
-    
+
     for (const char& c : s) {
         if (c == '\n') {
             ++result->currentLine;
@@ -19,30 +18,27 @@ SLexPtr SLex::go(const std::string& s)
         ++count;
     }
     bool ret = result->procEnd();
-    return ret ? result : nullptr;;
+    return ret ? result : nullptr;
+    ;
 }
 
 void SLex::validateName(const std::string& name) {
-      for (char const &c: name) {
-          assert(!isspace(c));
-      }
+    for (char const& c : name) {
+        assert(!isspace(c));
+    }
 }
 
 void SLex::validate() const {
     for (auto item : items) {
-        switch(item->itemType) {
-            case SLexItem::Type::Tag:
-            {
+        switch (item->itemType) {
+            case SLexItem::Type::Tag: {
                 SLexTag* tag = static_cast<SLexTag*>(item.get());
                 validateName(tag->tagName);
-            }
-                break;
-            case SLexItem::Type::Identifier:
-            {
+            } break;
+            case SLexItem::Type::Identifier: {
                 SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
                 validateName(id->idName);
-            }
-                break;
+            } break;
             case SLexItem::Type::Equal:
                 break;
             default:
@@ -50,26 +46,22 @@ void SLex::validate() const {
         }
     }
 }
-        
+
 void SLex::_dump() const {
     printf("dump lexer, there are %d tokens\n", (int)items.size());
     for (int i = 0; i < int(items.size()); ++i) {
-   // for (auto item : items) {
+        // for (auto item : items) {
         auto item = items[i];
         printf("tok[%d] ", i);
-        switch(item->itemType) {
-        case SLexItem::Type::Tag:
-                {
-                    SLexTag* tag = static_cast<SLexTag*>(item.get());
-                    printf("tag=%s\n", tag->tagName.c_str());
-                }
-                break;
-            case SLexItem::Type::Identifier:
-                {
-                    SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
-                    printf("id=%s\n", id->idName.c_str());
-                }
-                break;
+        switch (item->itemType) {
+            case SLexItem::Type::Tag: {
+                SLexTag* tag = static_cast<SLexTag*>(item.get());
+                printf("tag=%s\n", tag->tagName.c_str());
+            } break;
+            case SLexItem::Type::Identifier: {
+                SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
+                printf("id=%s\n", id->idName.c_str());
+            } break;
             case SLexItem::Type::Equal:
                 printf("Equal\n");
                 break;
@@ -102,7 +94,7 @@ bool SLex::procNextCommentChar(char c) {
 
 bool SLex::procFreshChar(char c) {
     if (isspace(c)) {
-        return true;            // eat whitespace
+        return true;  // eat whitespace
     }
     if (c == '<') {
         inTag = true;
@@ -115,7 +107,7 @@ bool SLex::procFreshChar(char c) {
     }
 
     if (c == '/') {
-        inComment= true;
+        inComment = true;
         return true;
     }
 
@@ -128,12 +120,12 @@ bool SLex::procFreshChar(char c) {
 }
 
 bool SLex::procNextTagChar(char c) {
-   // printf("nextteag=%c\n", c);
+    // printf("nextteag=%c\n", c);
     if (isspace(c)) {
-        return false;       // can't have white space in the middle of a tag
+        return false;  // can't have white space in the middle of a tag
     }
     if (c == '<') {
-       // printf("nested tag\n");
+        // printf("nested tag\n");
         return false;
     }
     if (c == '>') {
@@ -144,8 +136,8 @@ bool SLex::procNextTagChar(char c) {
         return true;
     }
 
-    curItem += c;           // do we care about line feeds?
-   // printf("141, curItem = %s\n", curItem.c_str());
+    curItem += c;  // do we care about line feeds?
+                   // printf("141, curItem = %s\n", curItem.c_str());
     validateName(curItem);
     return true;
 }

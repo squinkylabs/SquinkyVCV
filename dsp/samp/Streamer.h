@@ -3,8 +3,7 @@
 
 #include "SimdBlocks.h"
 
-class Streamer
-{
+class Streamer {
 public:
     void setSample(int chan, float* data, int frames);
     void setTranspose(int chan, bool doTranspoe, float amount);
@@ -13,8 +12,8 @@ public:
 
     // TODO: float 4?
     float_4 step();
-public:
 
+public:
     class ChannelData {
     public:
         float* data = nullptr;

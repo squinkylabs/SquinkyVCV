@@ -1,17 +1,19 @@
 
 #include "CompiledInstrument.h"
-#include "SInstrument.h"
-#include "CompiledRegion.h"
-#include "SamplerPlayback.h"
-#include "SParse.h"
-#include "VelSwitch.h"
-#include "WaveLoader.h"
+
+#include <assert.h>
 
 #include <algorithm>
-#include <assert.h>
 #include <cmath>
 #include <set>
 #include <string>
+
+#include "CompiledRegion.h"
+#include "SInstrument.h"
+#include "SParse.h"
+#include "SamplerPlayback.h"
+#include "VelSwitch.h"
+#include "WaveLoader.h"
 
 using Opcode = SamplerSchema::Opcode;
 using OpcodeType = SamplerSchema::OpcodeType;
@@ -24,24 +26,23 @@ using Value = SamplerSchema::Value;
 void CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);
     buildCompiledTree(in);
-  
+
     // here we can prune the tree - removing regions that map to the same thing
     std::vector<CompiledRegionPtr> regions;
     getAllRegions(regions);
     removeOverlaps(regions);
 
-     // now we need to build the player tree
+    // now we need to build the player tree
     player = buildPlayerVelLayers(regions, 0);
 }
 
-void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>&regions)
-{
-   // printf("enter remove overlaps\n");
+void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions) {
+    // printf("enter remove overlaps\n");
     if (regions.size() < 2) {
         return;
     }
     using iterator = std::vector<CompiledRegionPtr>::iterator;
-    for (iterator it = regions.begin(); it != regions.end(); ) {
+    for (iterator it = regions.begin(); it != regions.end();) {
         iterator itNext = it + 1;
         if (itNext == regions.end()) {
             return;
@@ -65,7 +66,7 @@ void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>&regions)
                 regions.erase(itNext);
             } else {
                 //printf("about to(b) erase regsion from %d\n", first->lineNumber);
-                // we erase the first one, leaving 
+                // we erase the first one, leaving
                 // it pointing at next.
                 // so we are set up to continue loop fine
                 it = regions.erase(it);
@@ -74,7 +75,6 @@ void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>&regions)
             ++it;
         }
     }
-
 }
 
 /** build up the tree using the original algorithm that worked for small piano
@@ -88,23 +88,21 @@ public:
     std::vector<CompiledRegionPtr> regions;
 };
 
- static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions)
- {
-     int x = 0;
-     for (auto reg : inputRegions) {
-         printf("    reg[%d] pitch=%d,%d vel=%d,%d\n", x, reg->lokey, reg->hikey, reg->lovel, reg->hivel);
-         ++x;
-     }
- }
+static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions) {
+    int x = 0;
+    for (auto reg : inputRegions) {
+        printf("    reg[%d] pitch=%d,%d vel=%d,%d\n", x, reg->lokey, reg->hikey, reg->lovel, reg->hivel);
+        ++x;
+    }
+}
 
- ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth)
-{
+ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth) {
     std::vector<RegionBin> bins;
 #ifdef _LOG
     printf("enter buildPlayerVelLayers depth = %d numRegsions = %d\n", depth, int(inputRegions.size()));
     dumpRegions(inputRegions);
 #endif
-    
+
     assert(depth < 3);
     ++depth;
 
@@ -115,14 +113,14 @@ public:
     int velStart = -1;
     int velEnd = -1;
 
-    for (auto it = inputRegions.begin(); it != inputRegions.end(); ++it ) {
+    for (auto it = inputRegions.begin(); it != inputRegions.end(); ++it) {
         auto reg1 = *it;
         ++it;
         if (it == inputRegions.end()) {
             break;
         }
         auto reg2 = *it;
-        if ( reg1->overlapsVelocityButNotEqual(*reg2)) {
+        if (reg1->overlapsVelocityButNotEqual(*reg2)) {
             // unevel vel layers, must skip to pith
             printf("vel layers not matched - will fall back to pitch division\n");
             return buildPlayerPitchSwitch(inputRegions, depth - 1);
@@ -130,58 +128,52 @@ public:
     }
 
     for (int currentRegion = 0; currentRegion < inputRegions.size(); ++currentRegion) {
-
         CompiledRegionPtr reg = inputRegions[currentRegion];
         // are we at a new bin?
         if (reg->lovel != velStart) {
-           bins.push_back(RegionBin());
-           currentBin++;
-           assert(bins.size() == currentBin+1);
-           bins.back().loVal = reg->lovel;
-           bins.back().hiVal = reg->hivel;
-           bins.back().regions.push_back(inputRegions[currentRegion]);
+            bins.push_back(RegionBin());
+            currentBin++;
+            assert(bins.size() == currentBin + 1);
+            bins.back().loVal = reg->lovel;
+            bins.back().hiVal = reg->hivel;
+            bins.back().regions.push_back(inputRegions[currentRegion]);
 
-           velStart = reg->lovel;
-           velEnd = reg->hivel;
+            velStart = reg->lovel;
+            velEnd = reg->hivel;
         } else {
             // if vel regsions are not the same, will have to do vel after pitch
-           // assert( bins.back().hiVal == inputRegions[currentRegion]->hivel);
+            // assert( bins.back().hiVal == inputRegions[currentRegion]->hivel);
             if (bins.back().hiVal == inputRegions[currentRegion]->hivel) {
                 bins.back().regions.push_back(inputRegions[currentRegion]);
-            }
-            else {
+            } else {
                 printf("vel layers not matched - will fall back to pitch division\n");
                 assert(false);  // this is from the old way
                 return buildPlayerPitchSwitch(inputRegions, depth);
             }
-        }       
+        }
     }
 
     if (bins.empty()) {
         // emit a null player (pitch switch knows how)
         assert(inputRegions.empty());
         return buildPlayerPitchSwitch(inputRegions, depth);
-    }
-    else if (bins.size() == 1) {
+    } else if (bins.size() == 1) {
         assert(bins[0].regions.size() == inputRegions.size());
         if (bins[0].regions.size() == 1) {
             // emit a simple player by calling pitch helper (who can emit singles
             printf("single entry in single zone\n");
             return buildPlayerPitchSwitch(bins[0].regions, depth);
-        }
-        else {
+        } else {
             // single bin with multiple entries
             // emit a key switch
             // one vel zone with multiple regions
             printf("multiple entry in single zone - retry pitch first\n");
             return buildPlayerPitchSwitch(bins[0].regions, depth - 1);
         }
-    }
-    else {
+    } else {
         // emit a vel switch and recurse
         VelSwitchPtr velSwitch = std::make_shared<VelSwitch>(bins[0].regions[0]->lineNumber);
         for (auto bin : bins) {
-
             ISamplerPlaybackPtr pitchPlayer = buildPlayerPitchSwitch(bin.regions, depth);
 
             //   void addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player);
@@ -194,8 +186,7 @@ public:
     return nullptr;
 }
 
-void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region)
-{
+void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region) {
     for (int midiPitch = region->lokey; midiPitch <= region->hikey; ++midiPitch) {
         //  SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex, int midiPitch) {
         const int sampleIndex = addSampleFile(region->sampleFile);
@@ -204,8 +195,7 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
     }
 }
 
-void CompiledInstrument::addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, ISamplerPlaybackPtr velSwitch, const std::vector<CompiledRegionPtr>& regions)
-{
+void CompiledInstrument::addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, ISamplerPlaybackPtr velSwitch, const std::vector<CompiledRegionPtr>& regions) {
     assert(regions.size() >= 2);
     // I'm pretty sure that this gets called with all pitch regions mapping to the same pitch
     using RegionIterator = std::vector<CompiledRegionPtr>::const_iterator;
@@ -223,11 +213,9 @@ void CompiledInstrument::addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, IS
     for (int midiPitch = r->lokey; midiPitch <= r->hikey; ++midiPitch) {
         dest->addEntry(midiPitch, velSwitch);
     }
-   
 }
 
- ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth)
- {
+ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth) {
 #ifdef _LOG
     printf("enter buildPlayerPitchSwitch depth = %d numRegsions = %d\n", depth, int(inputRegions.size()));
     dumpRegions(inputRegions);
@@ -236,15 +224,15 @@ void CompiledInstrument::addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, IS
     ++depth;
     sortByPitch(inputRegions);
 
-     // do trivial cases:
+    // do trivial cases:
     if (inputRegions.empty()) {
-         return std::make_shared<NullVoicePlayer>();
+        return std::make_shared<NullVoicePlayer>();
     }
 
     PitchSwitchPtr playerToReturn = std::make_shared<PitchSwitch>(inputRegions[0]->lineNumber);
 
     if (inputRegions.size() == 1) {
-        addSingleRegionPitchPlayers(playerToReturn,inputRegions[0]);
+        addSingleRegionPitchPlayers(playerToReturn, inputRegions[0]);
         return playerToReturn;
     }
 
@@ -255,7 +243,6 @@ void CompiledInstrument::addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, IS
     int keyEnd = -1;
 
     for (int currentRegion = 0; currentRegion < inputRegions.size(); ++currentRegion) {
-
         CompiledRegionPtr reg = inputRegions[currentRegion];
         // are we at a new bin?
         if (reg->lokey != keyStart) {
@@ -268,8 +255,7 @@ void CompiledInstrument::addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, IS
 
             keyStart = reg->lokey;
             keyEnd = reg->hikey;
-        }
-        else {
+        } else {
             // if vel regsions are not the same???
             assert(bins.back().hiVal == inputRegions[currentRegion]->hikey);
             bins.back().regions.push_back(inputRegions[currentRegion]);
@@ -283,7 +269,7 @@ void CompiledInstrument::addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, IS
         } else {
             // here we are binning by pitch, but a pitch bin has more than one region.
             // our only hope is to split on pitch.
-            { // debug stuff
+            {  // debug stuff
                 CompiledRegionPtr r0 = bin.regions[0];
                 CompiledRegionPtr r1 = bin.regions[1];
             }
@@ -297,9 +283,7 @@ void CompiledInstrument::addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, IS
     return playerToReturn;
 }
 
-
-void CompiledInstrument::_dump(int depth) const
-{
+void CompiledInstrument::_dump(int depth) const {
     indent(depth);
     if (player) {
         printf("Compiled Instrument dump follows:\n\n");
@@ -311,9 +295,8 @@ void CompiledInstrument::_dump(int depth) const
     }
 }
 
-void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in)
-{
-     for (auto group : in->groups) {
+void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
+    for (auto group : in->groups) {
         auto cGroup = std::make_shared<CompiledGroup>(group);
         if (!cGroup->shouldIgnore()) {
             this->groups.push_back(cGroup);
@@ -322,21 +305,19 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in)
                 cGroup->addChild(cReg);
             }
         }
-     }
+    }
 }
 
-void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array)
- {
-     assert(array.empty());
-     for (auto group : groups) {
-         for (auto region : group->regions) {
-             array.push_back(region);
+void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array) {
+    assert(array.empty());
+    for (auto group : groups) {
+        for (auto region : group->regions) {
+            array.push_back(region);
         }
-     }
- }
+    }
+}
 
-void CompiledInstrument::sortByVelocity(std::vector<CompiledRegionPtr>& array)
-{
+void CompiledInstrument::sortByVelocity(std::vector<CompiledRegionPtr>& array) {
     std::sort(array.begin(), array.end(), [](const CompiledRegionPtr a, const CompiledRegionPtr b) -> bool {
         bool less = false;
         if (a->lovel < b->lovel) {
@@ -346,8 +327,7 @@ void CompiledInstrument::sortByVelocity(std::vector<CompiledRegionPtr>& array)
     });
 }
 
-void CompiledInstrument::sortByPitch(std::vector<CompiledRegionPtr>& array)
-{
+void CompiledInstrument::sortByPitch(std::vector<CompiledRegionPtr>& array) {
     std::sort(array.begin(), array.end(), [](const CompiledRegionPtr a, const CompiledRegionPtr b) -> bool {
         bool less = false;
         if (a->lokey < b->lokey) {
@@ -380,17 +360,16 @@ bool CompiledInstrument::shouldIgnoreGroup(SGroupPtr group) {
     return ignore;
 }
 
-CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPtr inst)
-{
+CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPtr inst) {
     assert(!inst->wasExpanded);
     expandAllKV(inst);
-    CompiledInstrumentPtr instOut = std::make_shared< CompiledInstrument>();
+    CompiledInstrumentPtr instOut = std::make_shared<CompiledInstrument>();
     instOut->compile(inst);
     return instOut;
 }
 
 void CompiledInstrument::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
-  //  pitchMap.play(info, midiPitch, midiVelocity);
+    //  pitchMap.play(info, midiPitch, midiVelocity);
     if (!player) {
         printf("ci can't play yet\n");
         return;
@@ -398,8 +377,7 @@ void CompiledInstrument::play(VoicePlayInfo& info, int midiPitch, int midiVeloci
     player->play(info, midiPitch, midiVelocity);
 }
 
-void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootPath) 
-{
+void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootPath) {
     std::vector<std::string> tempPaths;
     assert(!rootPath.empty());
 
@@ -409,14 +387,13 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootP
     // index is 1..
     for (auto pathEntry : relativeFilePaths) {
         std::string path = pathEntry.first;
-     
+
         int waveIndex = pathEntry.second;
         //printf("in setWaves, entry has %s index = %d\n", path.c_str(), waveIndex);
-       // tempPaths.resize(waveIndex);
+        // tempPaths.resize(waveIndex);
         assert(waveIndex > 0);
         assert(!path.empty());
         tempPaths[waveIndex - 1] = path;
-     
     }
 #if 0
     printf("after fill, size of temp = %zd, started with %zd\n", tempPaths.size(), relativeFilePaths.size());

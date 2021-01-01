@@ -35,12 +35,10 @@ public:
     const std::string idName;
 };
 
-
 using SLexItemPtr = std::shared_ptr<SLexItem>;
 
-class SLex
-{
-public: 
+class SLex {
+public:
     static SLexPtr go(const std::string& s);
     std::vector<SLexItemPtr> items;
     SLexItemPtr next() {
@@ -73,9 +71,5 @@ private:
     int currentIndex = 0;
     int currentLine = 0;
 
-    
-    static void validateName(const std::string& );
-
-   
+    static void validateName(const std::string&);
 };
-

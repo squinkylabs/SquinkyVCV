@@ -1,13 +1,13 @@
 #pragma once
 
-#include "SamplerPlayback.h"
 #include <assert.h>
+
+#include "SamplerPlayback.h"
 
 /**
  * a node in the instrument tree that can branch based on pitch
  */
-class PitchSwitch : public ISamplerPlayback
-{
+class PitchSwitch : public ISamplerPlayback {
 public:
     void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
     void _dump(int depth) const override;
@@ -25,21 +25,20 @@ private:
     const int lineNumber;
 };
 
-inline void PitchSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVelocity)
-{
-      if (testMode) {
-         info.sampleIndex = 1;
-         info.needsTranspose = false;
-         info.transposeAmt = 1;
-         info.valid = true;
-         return;
-      }
+inline void PitchSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
+    if (testMode) {
+        info.sampleIndex = 1;
+        info.needsTranspose = false;
+        info.transposeAmt = 1;
+        info.valid = true;
+        return;
+    }
 
-      info.valid = false;
-      const ISamplerPlaybackPtr entry = pitchMap[midiPitch];
-      if (entry) {
-          entry->play(info, midiPitch, midiVelocity);
-      }
+    info.valid = false;
+    const ISamplerPlaybackPtr entry = pitchMap[midiPitch];
+    if (entry) {
+        entry->play(info, midiPitch, midiVelocity);
+    }
 }
 
 inline void PitchSwitch::_dump(int depth) const {
@@ -48,7 +47,7 @@ inline void PitchSwitch::_dump(int depth) const {
     for (int pitch = 0; pitch < 128; ++pitch) {
         auto entry = pitchMap[pitch];
         if (entry) {
-            indent(depth+1);
+            indent(depth + 1);
             printf("pitch entry[%d]\n", pitch);
             entry->_dump(depth + 1);
         }

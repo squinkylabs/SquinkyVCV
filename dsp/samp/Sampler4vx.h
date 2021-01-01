@@ -1,22 +1,20 @@
 #pragma once
 
-#include "SimdBlocks.h"
 #include <memory>
 
-namespace ci {
-    class CompiledInstrument;
-    using CompiledInstrumentPtr = std::shared_ptr<CompiledInstrument>;
-}
+#include "SimdBlocks.h"
+
+
+class CompiledInstrument;
+using CompiledInstrumentPtr = std::shared_ptr<CompiledInstrument>;
 
 class WaveLoader;
 class SInstrument;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 
+#include "Streamer.h"
 
-#include"Streamer.h"
-
-class Sampler4vx
-{
+class Sampler4vx {
 public:
     void note_on(int channel, int midiPitch, int midiVelocity);
     void note_off(int channel);
@@ -29,6 +27,7 @@ public:
      */
     void setNumVoices(int voices);
     float_4 step();
+
 private:
     CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;

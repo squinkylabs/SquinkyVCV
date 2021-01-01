@@ -1,15 +1,15 @@
 #pragma once
 
-#include "SamplerPlayback.h"
 #include <map>
+
+#include "SamplerPlayback.h"
 
 /**
  * Node in the instrument tree that represents a switch on velocity
  * Implements ISamplerPlayback by lookup up velocity an a map, and branching to sub-nodes
  * under that.
  */
-class VelSwitch : public ISamplerPlayback
-{
+class VelSwitch : public ISamplerPlayback {
 public:
     ISamplerPlaybackPtr mapVelToPlayer(unsigned int vel);
     void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
@@ -17,18 +17,16 @@ public:
     void addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player);
 
     VelSwitch(int line) : lineNumber(line) {}
-private:
 
+private:
     std::map<unsigned int, ISamplerPlaybackPtr> velToPlayerMap;
     bool addedOne = false;
     const int lineNumber;
 };
 
-
-inline void VelSwitch::addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player)
-{
-   // printf("in addVelocityRange(%d)\n", velRangeStart);
-    velToPlayerMap.insert({ velRangeStart, player });
+inline void VelSwitch::addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player) {
+    // printf("in addVelocityRange(%d)\n", velRangeStart);
+    velToPlayerMap.insert({velRangeStart, player});
     if (velRangeStart == 1) {
         addedOne = true;
     }
@@ -40,8 +38,8 @@ inline void VelSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVelocity
 }
 
 inline ISamplerPlaybackPtr VelSwitch::mapVelToPlayer(unsigned int vel) {
-   // printf("in mapVelToPlayer(%d)\n", vel);
-   
+    // printf("in mapVelToPlayer(%d)\n", vel);
+
     assert(vel > 0);
     assert(addedOne);
     ISamplerPlaybackPtr ret;
@@ -51,20 +49,18 @@ inline ISamplerPlaybackPtr VelSwitch::mapVelToPlayer(unsigned int vel) {
             assert(false);
             return nullptr;
         }
-        
+
         it--;
-        // printf("in mapVelToPlayer vel=%d, went off end of map prev index=%d\n", vel, it->first); fflush(stdout);  
+        // printf("in mapVelToPlayer vel=%d, went off end of map prev index=%d\n", vel, it->first); fflush(stdout);
         return it->second;
     }
     unsigned int lb_key = it->first;
     if (lb_key > vel) {
         --it;
         ret = it->second;
-    }
-    else if (lb_key == vel) {
+    } else if (lb_key == vel) {
         ret = it->second;
-    }
-    else {
+    } else {
         // printf("in mapVelToPlayer vel=%d, lb_key =%d\n", vel, lb_key); fflush(stdout);
         assert(false);
     }
@@ -72,20 +68,16 @@ inline ISamplerPlaybackPtr VelSwitch::mapVelToPlayer(unsigned int vel) {
 }
 
 inline void VelSwitch::_dump(int depth) const {
-
     indent(depth);
     printf("begin vel switch ent=%d this=%p\n", int(velToPlayerMap.size()), this);
     for (auto entry : velToPlayerMap) {
         indent(depth + 1);
         printf("entry at vel %d:\n", entry.first);
-        entry.second->_dump(depth+1);
+        entry.second->_dump(depth + 1);
     }
 
     indent(depth);
     printf("end vel switch %p\n", this);
 }
 
-
 using VelSwitchPtr = std::shared_ptr<VelSwitch>;
-
-

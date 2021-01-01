@@ -6,13 +6,11 @@
 #include <vector>
 
 class SKeyValuePair;
-using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>; 
+using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>;
 using SKeyValueList = std::vector<SKeyValuePairPtr>;
 
-class SamplerSchema
-{
+class SamplerSchema {
 public:
-
     /** left hand side of an SFZ opcode.
      */
     enum class Opcode {
@@ -49,9 +47,9 @@ public:
         NO_LOOP,
         ONE_SHOT,
         LOOP_SUSTAIN,
-        ATTACK,         // trigger=attack
-        RELEASE,        // trigger= release
-        
+        ATTACK,   // trigger=attack
+        RELEASE,  // trigger= release
+
         NONE
     };
 
@@ -80,8 +78,7 @@ public:
     /**
      * hold the compiled form of a collection of group attributes.
      */
-    class KeysAndValues
-    {
+    class KeysAndValues {
     public:
         size_t _size() const {
             return data.size();
@@ -96,8 +93,8 @@ public:
                 return nullptr;
             }
             return it->second;
-
         }
+
     private:
         // the int key is really an Opcode
         std::map<Opcode, ValuePtr> data;
@@ -107,7 +104,8 @@ public:
     // doesn't really belong here, but better there than some places...
     static KeysAndValuesPtr compile(const SKeyValueList&);
     static Opcode translate(const std::string& s);
+
 private:
     static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input);
-    static  DiscreteValue translated(const std::string& s) ;
+    static DiscreteValue translated(const std::string& s);
 };

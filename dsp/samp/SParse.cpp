@@ -1,12 +1,14 @@
 
-#include "SInstrument.h"
 #include "SParse.h"
-#include "SLex.h"
 
 #include <assert.h>
-#include <string>
+
 #include <fstream>
 #include <streambuf>
+#include <string>
+
+#include "SInstrument.h"
+#include "SLex.h"
 
 // globals for mem leak detection
 int parseCount = 0;
@@ -25,7 +27,7 @@ std::string SParse::goFile(const std::string& sPath, SInstrumentPtr inst) {
         return nullptr;
     }
     std::string str((std::istreambuf_iterator<char>(t)),
-                 std::istreambuf_iterator<char>());
+                    std::istreambuf_iterator<char>());
     if (str.empty()) {
         return nullptr;
     }
@@ -33,7 +35,6 @@ std::string SParse::goFile(const std::string& sPath, SInstrumentPtr inst) {
 }
 
 std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
-
     SLexPtr lex = SLex::go(s);
     if (!lex) {
         printf("lexer failed\n");
@@ -64,10 +65,10 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
 std::string SParse::matchGroupsOrRegions(SGroupList& groups, SLexPtr lex) {
     auto token = lex->next();
     if (!token) {
-        return "";          // nothing left to match
+        return "";  // nothing left to match
     }
     if (getTagName(token) == "region") {
-          // OK, the first thing is a region. To let's put it in a group, and continue
+        // OK, the first thing is a region. To let's put it in a group, and continue
         SGroupPtr fakeGroup = std::make_shared<SGroup>();
         groups.push_back(fakeGroup);
         auto resultString = matchRegions(fakeGroup->regions, lex);
@@ -78,14 +79,14 @@ std::string SParse::matchGroupsOrRegions(SGroupList& groups, SLexPtr lex) {
         return matchGroups(groups, lex);
     }
     if (getTagName(token) == "group") {
-         return matchGroups(groups, lex);
+        return matchGroups(groups, lex);
     }
-   
+
     return "";
 }
 
 std::string SParse::matchGroups(SGroupList& groups, SLexPtr lex) {
-     for (bool done = false; !done; ) {
+    for (bool done = false; !done;) {
         auto result = matchGroup(groups, lex);
         if (result.res == Result::error) {
             return result.errorMessage;
@@ -96,7 +97,7 @@ std::string SParse::matchGroups(SGroupList& groups, SLexPtr lex) {
 }
 
 std::string SParse::matchRegions(SRegionList& regions, SLexPtr lex) {
-    for (bool done = false; !done; ) {
+    for (bool done = false; !done;) {
         auto result = matchRegion(regions, lex);
         if (result.res == Result::error) {
             return result.errorMessage;
@@ -123,7 +124,7 @@ SParse::Result SParse::matchGroup(SGroupList& groups, SLexPtr lex) {
 
     // add all the key-values that belong to the group
     std::string s = matchKeyValuePairs(newGroup->values, lex);
-   
+
     if (!s.empty()) {
         result.res = Result::Res::error;
         result.errorMessage = s;
@@ -152,18 +153,17 @@ SParse::Result SParse::matchRegion(SRegionList& regions, SLexPtr lex) {
     lex->consume();
 
     // make a new region to hold this one, and put it into the group
-   
+
     SRegionPtr newRegion = std::make_shared<SRegion>(tag->lineNumber);
     regions.push_back(newRegion);
 
     std::string s = matchKeyValuePairs(newRegion->values, lex);
-   
+
     if (!s.empty()) {
         result.res = Result::Res::error;
         result.errorMessage = s;
     }
     return result;
-
 }
 
 std::string SParse::matchGlobal(SGlobal& g, SLexPtr lex) {
@@ -173,19 +173,19 @@ std::string SParse::matchGlobal(SGlobal& g, SLexPtr lex) {
         lex->consume();
         sError = matchKeyValuePairs(g.values, lex);
     }
-  
+
     return sError;
 }
 
 std::string SParse::matchKeyValuePairs(SKeyValueList& values, SLexPtr lex) {
-    for (bool done=false; !done; ) {
+    for (bool done = false; !done;) {
         auto result = matchKeyValuePair(values, lex);
         if (result.res == Result::error) {
             return result.errorMessage;
         }
         done = result.res == Result::no_match;
     }
-    
+
     return "";
 }
 
@@ -199,7 +199,7 @@ SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
         return result;
     }
 
-    SLexIdentifier* pid =  static_cast<SLexIdentifier *>(keyToken.get());
+    SLexIdentifier* pid = static_cast<SLexIdentifier*>(keyToken.get());
     SKeyValuePairPtr thePair = std::make_shared<SKeyValuePair>();
     thePair->key = pid->idName;
     lex->consume();
@@ -219,13 +219,12 @@ SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
         return result;
     }
     lex->consume();
-    pid =  static_cast<SLexIdentifier *>(keyToken.get());
+    pid = static_cast<SLexIdentifier*>(keyToken.get());
     thePair->value = pid->idName;
 
     values.push_back(thePair);
     return result;
 }
-
 
 std::string SParse::getTagName(SLexItemPtr item) {
     // maybe shouldn't call this with null ptr??
@@ -235,7 +234,7 @@ std::string SParse::getTagName(SLexItemPtr item) {
     if (item->itemType != SLexItem::Type::Tag) {
         return "";
     }
-    SLexTag* tag = static_cast<SLexTag *>(item.get());
+    SLexTag* tag = static_cast<SLexTag*>(item.get());
     return tag->tagName;
 }
 

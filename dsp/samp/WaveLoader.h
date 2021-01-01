@@ -4,12 +4,11 @@
 #include <string>
 #include <vector>
 
-class WaveLoader
-{
+class WaveLoader {
 public:
     class WaveInfo {
     public:
-       WaveInfo(const std::string& fileName);
+        WaveInfo(const std::string& fileName);
         ~WaveInfo();
         void load();
 
@@ -30,6 +29,7 @@ public:
      * Index is one based. 
      */
     WaveInfoPtr getInfo(int index) const;
+
 private:
     std::vector<std::string> filesToLoad;
     std::vector<WaveInfoPtr> finalInfo;

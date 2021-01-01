@@ -1,9 +1,9 @@
 #pragma once
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
-#include <map>
 
 #include "PitchSwitch.h"
 #include "SamplerPlayback.h"
@@ -29,7 +29,7 @@ public:
     void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
     void _dump(int depth) const override;
     void _setTestMode() {
-      testMode = true;
+        testMode = true;
         //pitchMap._setTestMode();
     }
 
@@ -43,15 +43,15 @@ public:
      */
     static void expandAllKV(SInstrumentPtr);
 
-
     void getAllRegions(std::vector<CompiledRegionPtr>&);
     void removeOverlaps(std::vector<CompiledRegionPtr>&);
-    
+
     static void sortByVelocity(std::vector<CompiledRegionPtr>&);
     static void sortByPitch(std::vector<CompiledRegionPtr>&);
 
     // test accessor
     const std::vector<CompiledGroupPtr>& _groups() { return groups; }
+
 private:
     std::vector<CompiledGroupPtr> groups;
     bool testMode = false;
@@ -63,7 +63,7 @@ private:
      * key = file path
      * value = index (wave id);
      */
-    std::map<std::string, int> relativeFilePaths;    
+    std::map<std::string, int> relativeFilePaths;
     int nextIndex = 1;
 
     void compile(const SInstrumentPtr);
@@ -86,6 +86,5 @@ private:
 
     ISamplerPlaybackPtr playbackMapVelocities(const std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
 };
-
 
 //KeysAndValuesPtr compile(const SKeyValueList&);

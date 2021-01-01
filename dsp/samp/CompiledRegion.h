@@ -1,8 +1,9 @@
 #pragma once
 
-#include "SamplerSchema.h"
 #include <memory>
 #include <string>
+
+#include "SamplerSchema.h"
 
 class SRegion;
 class SGroup;
@@ -17,8 +18,7 @@ using CompiledGroupPtrWeak = std::weak_ptr<CompiledGroup>;
 
 extern int compileCount;
 
-class CompiledRegion
-{
+class CompiledRegion {
 public:
     CompiledRegion(SRegionPtr, CompiledGroupPtr parent);
     ~CompiledRegion() { compileCount--; }
@@ -29,7 +29,6 @@ public:
     bool velocityRangeEqual(const CompiledRegion&) const;
     bool pitchRangeEqual(const CompiledRegion&) const;
 
-
     // Keys were defaulting to -1, -1, but for drums with no
     // keys at all they were skipped. Better default is "all keys".
 #if 1
@@ -39,7 +38,7 @@ public:
     int lokey = -1;
     int hikey = -1;
 #endif
-   // int onlykey = -1;           // can't lokey and hikey represent this just fine?
+    // int onlykey = -1;           // can't lokey and hikey represent this just fine?
     int keycenter = -1;
     std::string sampleFile;
     int lovel = 1;
@@ -52,16 +51,13 @@ public:
 class CompiledGroup {
 public:
     CompiledGroup(SGroupPtr);
-    ~CompiledGroup()  { compileCount--; }
+    ~CompiledGroup() { compileCount--; }
 
     bool shouldIgnore() const;
     void addChild(CompiledRegionPtr child) { regions.push_back(child); }
 
     std::vector<CompiledRegionPtr> regions;
-private:
-   
 
+private:
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
 };
-
-

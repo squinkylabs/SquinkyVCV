@@ -1,8 +1,10 @@
 #include "SamplerSchema.h"
-#include "SParse.h"
 
 #include <assert.h>
+
 #include <set>
+
+#include "SParse.h"
 
 using Opcode = SamplerSchema::Opcode;
 using OpcodeType = SamplerSchema::OpcodeType;
@@ -33,8 +35,7 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::LO_RAND, OpcodeType::Float},
     {Opcode::HI_RAND, OpcodeType::Float},
     {Opcode::SEQ_LENGTH, OpcodeType::Int},
-    {Opcode::SEQ_POSITION, OpcodeType::Int}
-};
+    {Opcode::SEQ_POSITION, OpcodeType::Int}};
 
 static std::map<std::string, Opcode> opcodes = {
     {"hivel", Opcode::HI_VEL},
@@ -61,9 +62,7 @@ static std::map<std::string, Opcode> opcodes = {
     {"amp_veltrack", Opcode::AMP_VELTRACK},
     {"key", Opcode::KEY},
     {"seq_length", Opcode::SEQ_LENGTH},
-    {"seq_position", Opcode::SEQ_POSITION}
-};
-
+    {"seq_position", Opcode::SEQ_POSITION}};
 
 static std::set<std::string> unrecognized;
 
@@ -88,12 +87,14 @@ DiscreteValue SamplerSchema::translated(const std::string& s) {
 void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
     Opcode opcode = translate(input->key);
     if (opcode == Opcode::NONE) {
-        printf("could not translate opcode %s\n", input->key.c_str()); fflush(stdout);
+        printf("could not translate opcode %s\n", input->key.c_str());
+        fflush(stdout);
         return;
     }
     auto typeIter = keyType.find(opcode);
     if (typeIter == keyType.end()) {
-        printf("could not find type for %s\n", input->key.c_str()); fflush(stdout);
+        printf("could not find type for %s\n", input->key.c_str());
+        fflush(stdout);
         assert(false);
         return;
     }
@@ -107,8 +108,7 @@ void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePa
             try {
                 int x = std::stoi(input->value);
                 vp->numericInt = x;
-            }
-            catch (std::exception&) {
+            } catch (std::exception&) {
                 isValid = false;
                 printf("could not convert %s to number. key=%s\n", input->value.c_str(), input->key.c_str());
                 return;
@@ -118,8 +118,7 @@ void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePa
             try {
                 float x = std::stof(input->value);
                 vp->numericFloat = x;
-            }
-            catch (std::exception&) {
+            } catch (std::exception&) {
                 isValid = false;
                 printf("could not convert %s to number. key=%s\n", input->value.c_str(), input->key.c_str());
                 return;
@@ -128,24 +127,20 @@ void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePa
         case OpcodeType::String:
             vp->string = input->value;
             break;
-        case OpcodeType::Discrete:
-        {
+        case OpcodeType::Discrete: {
             DiscreteValue dv = translated(input->value);
             assert(dv != DiscreteValue::NONE);
             vp->discrete = dv;
-        }
-            break;
+        } break;
         default:
             assert(false);
     }
     if (isValid) {
         results->add(opcode, vp);
     }
-
 }
 
 SamplerSchema::KeysAndValuesPtr SamplerSchema::compile(const SKeyValueList& inputs) {
-
     SamplerSchema::KeysAndValuesPtr results = std::make_shared<SamplerSchema::KeysAndValues>();
     for (auto input : inputs) {
         compile(results, input);
@@ -158,15 +153,12 @@ SamplerSchema::Opcode SamplerSchema::translate(const std::string& s) {
     if (entry == opcodes.end()) {
         auto find2 = unrecognized.find(s);
         if (find2 == unrecognized.end()) {
-            unrecognized.insert({ s });
+            unrecognized.insert({s});
             printf("!! unrecognized opcode %s\n", s.c_str());
         }
 
         return Opcode::NONE;
-    }
-    else {
+    } else {
         return entry->second;
     }
 }
-
-
