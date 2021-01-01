@@ -78,10 +78,11 @@ static void testPlayInfo(const char* patch, const std::vector<int>& velRanges)
     assert(maxSampleIndex > 4);
 }
 
-static void testPlayInfoTinnyPiano() {
+void testPlayInfoTinnyPiano() {
     testPlayInfo(tinnyPiano, { 64 });
 }
-static void testPlayInfoSmallPiano() {
+
+void testPlayInfoSmallPiano() {
     printf("\n----- testPlayInfoSmallPiano\n");
     testPlayInfo(smallPiano, {1, 23, 44, 65, 80, 107});
 }
@@ -889,8 +890,7 @@ void testx2()
     testCompileInst1();
     testCompileOverlap();
 
-    testPlayInfoTinnyPiano();
-    testPlayInfoSmallPiano();
+  
     testLoadWavesPiano();
 
     testTranspose1();

@@ -59,8 +59,27 @@ static bool overlapRange(int alo, int ahi, int blo, int bhi) {
 
     return (blo >= alo && blo <= ahi) ||   // blo is in A
         (bhi >= alo && bhi <= ahi);         // or bhi is in A
-
 }
+
+
+/*
+overlap comparing line 220 with 319
+  first pitch=107,108, vel=107,127
+  second pitch=0,127, vel=1,127
+  overlap pitch = 0, overlap vel = 1
+
+  alo 107
+  ahi = 108
+  blo = 0
+  bhi = 127;
+
+  first clause fails, since blo is < alo
+
+   (bhi >= alo && bhi <= ahi); 
+    1: true, bhi > alo
+    1
+  */
+
 bool CompiledRegion::overlapsPitch(const CompiledRegion& that) const
 {
     return overlapRange(this->lokey, this->hikey, that.lokey, that.hikey);

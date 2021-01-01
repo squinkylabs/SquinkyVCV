@@ -6,6 +6,10 @@
 
 #include <asserts.h>
 
+extern void testPlayInfoTinnyPiano();
+extern void testPlayInfoSmallPiano();
+
+
 static void testVelSwitch1()
 {
     VelSwitch v(1234);
@@ -45,6 +49,44 @@ static void testVelSwitch1()
     test = v.mapVelToPlayer(101);
     test->play(info, 0, 1);
     assertEQ(info.sampleIndex, 103);
+}
+
+static CompiledRegionPtr makeTestRegion(const std::string& minPitch, const std::string& maxPitch)
+{
+    SRegionPtr sr = std::make_shared<SRegion>(1234);
+    
+    SKeyValuePairPtr kv = std::make_shared<SKeyValuePair>("lokey", minPitch);
+    sr->values.push_back(kv);
+    kv = std::make_shared<SKeyValuePair>("hikey", maxPitch);
+    sr->values.push_back(kv);
+    sr->compiledValues = SamplerSchema::compile(sr->values);
+    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr);
+    return r0;
+}
+
+static void testOverlapSub(int mina, int maxa, int minb, int maxb, bool shouldOverlap)
+{
+    assert(mina <= maxa);
+    auto regionA = makeTestRegion(std::to_string(mina), std::to_string(maxa));
+    auto regionB = makeTestRegion(std::to_string(minb), std::to_string(maxb));
+    bool overlap = regionA->overlapsPitch(*regionB);
+    assertEQ(overlap, shouldOverlap);
+}
+
+static void testOverlap()
+{
+    // negative tests
+    testOverlapSub(10, 20, 30, 40, false);
+    testOverlapSub(50, 60, 30, 40, false);
+    testOverlapSub(1, 1, 2, 2, false);
+    testOverlapSub(1, 40, 41, 127, false);
+    testOverlapSub(2, 2, 1, 1, false);
+    testOverlapSub(41, 50, 1, 40, false);
+
+    // positive
+    testOverlapSub(10, 20, 15, 25, true);
+
+    assert(false);
 }
 
 static char* smallPiano =  R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo"; 
@@ -116,8 +158,14 @@ void testx3()
  // work up to these
     assert(parseCount == 0);
     testVelSwitch1();
+    testOverlap();
 
     //testSmallPianoVelswitch();
+
+    // Note: this tests are in testx2. Just moved here for logical 
+    // sequencing reasons.
+    testPlayInfoTinnyPiano();
+    testPlayInfoSmallPiano();
    // testSnareBasic();
     
     assert(parseCount == 0);
