@@ -51,42 +51,64 @@ static void testVelSwitch1()
     assertEQ(info.sampleIndex, 103);
 }
 
-static CompiledRegionPtr makeTestRegion(const std::string& minPitch, const std::string& maxPitch)
+static CompiledRegionPtr makeTestRegion(bool usePitch, const std::string& minVal, const std::string& maxVal)
 {
     SRegionPtr sr = std::make_shared<SRegion>(1234);
-    
-    SKeyValuePairPtr kv = std::make_shared<SKeyValuePair>("lokey", minPitch);
-    sr->values.push_back(kv);
-    kv = std::make_shared<SKeyValuePair>("hikey", maxPitch);
-    sr->values.push_back(kv);
+   
+    SKeyValuePairPtr kv;
+    if (usePitch) {
+        kv = std::make_shared<SKeyValuePair>("lokey", minVal);
+        sr->values.push_back(kv);
+        kv = std::make_shared<SKeyValuePair>("hikey", maxVal);
+        sr->values.push_back(kv);
+    }
+    else {
+        kv = std::make_shared<SKeyValuePair>("lovel", minVal);
+        sr->values.push_back(kv);
+        kv = std::make_shared<SKeyValuePair>("hivel", maxVal);
+        sr->values.push_back(kv);
+    }
     sr->compiledValues = SamplerSchema::compile(sr->values);
     CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr);
     return r0;
 }
 
-static void testOverlapSub(int mina, int maxa, int minb, int maxb, bool shouldOverlap)
+static void testOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, bool shouldOverlap)
 {
     assert(mina <= maxa);
-    auto regionA = makeTestRegion(std::to_string(mina), std::to_string(maxa));
-    auto regionB = makeTestRegion(std::to_string(minb), std::to_string(maxb));
-    bool overlap = regionA->overlapsPitch(*regionB);
+    auto regionA = makeTestRegion(testPitch, std::to_string(mina), std::to_string(maxa));
+    auto regionB = makeTestRegion(testPitch, std::to_string(minb), std::to_string(maxb));
+    bool overlap = testPitch ? regionA->overlapsPitch(*regionB) : regionA->overlapsVelocity(*regionB);
     assertEQ(overlap, shouldOverlap);
+}
+
+static void testOverlap(bool testPitch)
+{
+    // negative tests
+    testOverlapSub(testPitch, 10, 20, 30, 40, false);
+    testOverlapSub(testPitch, 50, 60, 30, 40, false);
+    testOverlapSub(testPitch, 1, 1, 2, 2, false);
+    testOverlapSub(testPitch, 1, 40, 41, 127, false);
+    testOverlapSub(testPitch, 2, 2, 1, 1, false);
+    testOverlapSub(testPitch, 41, 50, 1, 40, false);
+    testOverlapSub(testPitch, 1, 1, 127, 127, false);
+    testOverlapSub(testPitch, 127, 127, 1, 1, false);
+
+    // positive
+    testOverlapSub(testPitch, 10, 20, 15, 25, true);
+    testOverlapSub(testPitch, 15, 25, 10, 20, true);
+    testOverlapSub(testPitch, 12, 12, 12, 12, true);
+    testOverlapSub(testPitch, 10, 50, 50, 60, true);
+    testOverlapSub(testPitch, 50, 60, 10, 50, true);
+    testOverlapSub(testPitch, 10, 50, 1, 100, true);
+
+    // assert(false);
 }
 
 static void testOverlap()
 {
-    // negative tests
-    testOverlapSub(10, 20, 30, 40, false);
-    testOverlapSub(50, 60, 30, 40, false);
-    testOverlapSub(1, 1, 2, 2, false);
-    testOverlapSub(1, 40, 41, 127, false);
-    testOverlapSub(2, 2, 1, 1, false);
-    testOverlapSub(41, 50, 1, 40, false);
-
-    // positive
-    testOverlapSub(10, 20, 15, 25, true);
-
-    assert(false);
+    testOverlap(true);
+    testOverlap(false);
 }
 
 static char* smallPiano =  R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo"; 
