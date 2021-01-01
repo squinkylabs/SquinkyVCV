@@ -56,29 +56,14 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr parent) : wea
 static bool overlapRange(int alo, int ahi, int blo, int bhi) {
     assert(alo <= ahi);
     assert(blo <= bhi);
-
+#if 0 // original version
     return (blo >= alo && blo <= ahi) ||   // blo is in A
         (bhi >= alo && bhi <= ahi);         // or bhi is in A
+#else
+    return (blo <= ahi && bhi >= alo) ||
+        (alo <= bhi && ahi >= blo);
+#endif
 }
-
-
-/*
-overlap comparing line 220 with 319
-  first pitch=107,108, vel=107,127
-  second pitch=0,127, vel=1,127
-  overlap pitch = 0, overlap vel = 1
-
-  alo 107
-  ahi = 108
-  blo = 0
-  bhi = 127;
-
-  first clause fails, since blo is < alo
-
-   (bhi >= alo && bhi <= ahi); 
-    1: true, bhi > alo
-    1
-  */
 
 bool CompiledRegion::overlapsPitch(const CompiledRegion& that) const
 {

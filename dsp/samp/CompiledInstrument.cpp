@@ -34,16 +34,9 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
     player = buildPlayerVelLayers(regions, 0);
 }
 
-
-/* why does this case not match?
-
-overlap comparing line 220 with 319
-  first pitch=107,108, vel=107,127
-  second pitch=0,127, vel=1,127
-  */
 void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>&regions)
 {
-    printf("enter remove overlaps\n");
+   // printf("enter remove overlaps\n");
     if (regions.size() < 2) {
         return;
     }
@@ -55,21 +48,23 @@ void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>&regions)
         }
         CompiledRegionPtr first = *it;
         CompiledRegionPtr second = *itNext;
+#if 0
         printf("overlap comparing line %d with %d\n", first->lineNumber, second->lineNumber);
         printf("  first pitch=%d,%d, vel=%d,%d\n", first->lokey, first->hikey, first->lovel, first->hivel);
         printf("  second pitch=%d,%d, vel=%d,%d\n", second->lokey, second->hikey, second->lovel, second->hivel);
         printf("  overlap pitch = %d, overlap vel = %d\n", first->overlapsPitch(*second), first->overlapsVelocity(*second));
+#endif
         if (first->overlapsPitch(*second) && first->overlapsVelocity(*second)) {
             // keep the region with the smallest pitch range
             const int firstPitchRange = first->hikey - first->lokey;
             const int secondPitchRange = second->hikey - second->lokey;
             if (firstPitchRange <= secondPitchRange) {
-                printf("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
+                //printf("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
                 // if we want to erase the second one, do that.
                 // it still points at first, but next iteration there will be a different next;
                 regions.erase(itNext);
             } else {
-                printf("about to(b) erase regsion from %d\n", first->lineNumber);
+                //printf("about to(b) erase regsion from %d\n", first->lineNumber);
                 // we erase the first one, leaving 
                 // it pointing at next.
                 // so we are set up to continue loop fine
