@@ -20,8 +20,15 @@ extern int compileCount;
 
 class CompiledRegion {
 public:
-    CompiledRegion(SRegionPtr, CompiledGroupPtr parent);
-    ~CompiledRegion() { compileCount--; }
+    CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
+    virtual ~CompiledRegion() { compileCount--; }
+
+    enum class Type {
+        Base,
+        RoundRobbin,
+        Random
+    };
+    virtual Type type() const { return Type::Base; }
 
     bool overlapsPitch(const CompiledRegion&) const;
     bool overlapsVelocity(const CompiledRegion&) const;
@@ -44,8 +51,27 @@ public:
     int lovel = 1;
     int hivel = 127;
 
+    // assume no valid random data
+    float lorand = -1;
+    float hirand = -1;
+
     CompiledGroupPtrWeak weakParent;
     const int lineNumber;
+
+private:
+    static void findValue (int& returnValue, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+    static void findValue (float&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+    static void findValue (std::string&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+};
+
+class CompiledRoundRobbinRegion : public CompiledRegion {
+public:
+    Type type() const override;
+};
+
+class CompiledRandomRegion : public CompiledRegion {
+public:
+    Type type() const override;
 };
 
 class CompiledGroup {
@@ -57,6 +83,10 @@ public:
     void addChild(CompiledRegionPtr child) { regions.push_back(child); }
 
     std::vector<CompiledRegionPtr> regions;
+
+    CompiledRegion::Type type() const;
+
+    int sequence_length = 0;
 
 private:
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;

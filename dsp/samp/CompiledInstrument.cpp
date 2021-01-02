@@ -22,6 +22,7 @@ using ValuePtr = SamplerSchema::ValuePtr;
 using Value = SamplerSchema::Value;
 
 // #define _LOG
+#define _LOGOV
 
 void CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);
@@ -37,7 +38,9 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
 }
 
 void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions) {
-    // printf("enter remove overlaps\n");
+#ifdef _LOGOV
+    printf("enter remove overlaps\n");
+#endif
     if (regions.size() < 2) {
         return;
     }
@@ -49,7 +52,7 @@ void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions)
         }
         CompiledRegionPtr first = *it;
         CompiledRegionPtr second = *itNext;
-#if 0
+#ifdef _LOGOV
         printf("overlap comparing line %d with %d\n", first->lineNumber, second->lineNumber);
         printf("  first pitch=%d,%d, vel=%d,%d\n", first->lokey, first->hikey, first->lovel, first->hivel);
         printf("  second pitch=%d,%d, vel=%d,%d\n", second->lokey, second->hikey, second->lovel, second->hivel);
@@ -60,12 +63,16 @@ void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions)
             const int firstPitchRange = first->hikey - first->lokey;
             const int secondPitchRange = second->hikey - second->lokey;
             if (firstPitchRange <= secondPitchRange) {
-                //printf("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
+#ifdef _LOGOV
+                printf("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
+#endif
                 // if we want to erase the second one, do that.
                 // it still points at first, but next iteration there will be a different next;
                 regions.erase(itNext);
             } else {
-                //printf("about to(b) erase regsion from %d\n", first->lineNumber);
+#ifdef _LOGOV
+                printf("about to(b) erase regsion from %d\n", first->lineNumber);
+#endif
                 // we erase the first one, leaving
                 // it pointing at next.
                 // so we are set up to continue loop fine
@@ -190,6 +197,7 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
     for (int midiPitch = region->lokey; midiPitch <= region->hikey; ++midiPitch) {
         //  SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex, int midiPitch) {
         const int sampleIndex = addSampleFile(region->sampleFile);
+        assert(region->type() == CompiledRegion::Type::Base);
         ISamplerPlaybackPtr singlePlayer = std::make_shared<SimpleVoicePlayer>(region, sampleIndex, midiPitch);
         dest->addEntry(midiPitch, singlePlayer);
     }
@@ -301,9 +309,12 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
         if (!cGroup->shouldIgnore()) {
             this->groups.push_back(cGroup);
             for (auto reg : group->regions) {
-                auto cReg = std::make_shared<CompiledRegion>(reg, cGroup);
+                auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
                 cGroup->addChild(cReg);
             }
+            // we that the tree is build, ask the group it it's special
+            CompiledRegion::Type type = cGroup->type();
+            assert(type == CompiledRegion::Type::Base);  // if it's not base, we need to make a new sub-tree here
         }
     }
 }

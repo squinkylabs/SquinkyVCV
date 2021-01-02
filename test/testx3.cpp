@@ -14,7 +14,7 @@ static void testVelSwitch1() {
 
     SRegionPtr sr = std::make_shared<SRegion>(1234);
     sr->compiledValues = SamplerSchema::compile(sr->values);
-    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr);
+    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, nullptr);
 
     // Need to make some "test" sample playback ptrs. just need to be able to recognize them later
     ISamplerPlaybackPtr p0 = std::make_shared<SimpleVoicePlayer>(r0, 100, 0);
@@ -65,7 +65,7 @@ static CompiledRegionPtr makeTestRegion(bool usePitch, const std::string& minVal
         sr->values.push_back(kv);
     }
     sr->compiledValues = SamplerSchema::compile(sr->values);
-    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr);
+    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, nullptr);
     return r0;
 }
 
