@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "SamplerSchema.h"
 
@@ -9,12 +10,16 @@ class SRegion;
 class SGroup;
 class CompiledRegion;
 class CompiledGroup;
+class VoicePlayInfo;
+class ISamplerPlayback;
 using SRegionPtr = std::shared_ptr<SRegion>;
 using SGroupPtr = std::shared_ptr<SGroup>;
 
 using CompiledRegionPtr = std::shared_ptr<CompiledRegion>;
 using CompiledGroupPtr = std::shared_ptr<CompiledGroup>;
 using CompiledGroupPtrWeak = std::weak_ptr<CompiledGroup>;
+using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
+using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
 
 extern int compileCount;
 
@@ -56,7 +61,10 @@ public:
     float hirand = -1;
 
     CompiledGroupPtrWeak weakParent;
-    const int lineNumber;
+    int lineNumber;
+protected:
+    CompiledRegion(CompiledRegionPtr);
+    CompiledRegion& operator = (const CompiledRegion&) = default;
 
 private:
     static void findValue (int& returnValue, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
@@ -64,14 +72,24 @@ private:
     static void findValue (std::string&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
 };
 
-class CompiledRoundRobbinRegion : public CompiledRegion {
+class CompiledMultiRegion : public CompiledRegion {
 public:
-    Type type() const override;
+    CompiledMultiRegion(CompiledRegionPtr prototype);
+    virtual void addVoice(VoicePlayInfoPtr) = 0;
+protected:
+    ISamplerPlaybackPtr player;
 };
 
-class CompiledRandomRegion : public CompiledRegion {
+class CompiledRoundRobbinRegion : public CompiledMultiRegion {
 public:
-    Type type() const override;
+    CompiledRoundRobbinRegion(CompiledRegionPtr prototype);
+    void addVoice(VoicePlayInfoPtr) override;
+};
+
+class CompiledRandomRegion : public CompiledMultiRegion {
+public:
+    CompiledRandomRegion(CompiledRegionPtr prototype);
+    void addVoice(VoicePlayInfoPtr) override;
 };
 
 class CompiledGroup {
@@ -81,13 +99,9 @@ public:
 
     bool shouldIgnore() const;
     void addChild(CompiledRegionPtr child) { regions.push_back(child); }
-
     std::vector<CompiledRegionPtr> regions;
-
     CompiledRegion::Type type() const;
-
     int sequence_length = 0;
-
 private:
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
 };

@@ -121,6 +121,33 @@ bool CompiledRegion::pitchRangeEqual(const CompiledRegion& that) const {
     return (this->lokey == that.lokey) && (this->hikey == that.hikey);
 }
 
+CompiledRegion::CompiledRegion(CompiledRegionPtr prototype) {
+    *this = *prototype;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+
+CompiledMultiRegion::CompiledMultiRegion(CompiledRegionPtr prototype) : CompiledRegion(prototype) {
+
+}
+
+CompiledRoundRobbinRegion::CompiledRoundRobbinRegion(CompiledRegionPtr prototype) : CompiledMultiRegion(prototype) {
+};
+
+void CompiledRoundRobbinRegion::addVoice(VoicePlayInfoPtr) {
+    assert(false);
+}
+
+CompiledRandomRegion::CompiledRandomRegion(CompiledRegionPtr prototype) : CompiledMultiRegion(prototype) {
+}
+
+void CompiledRandomRegion::addVoice(VoicePlayInfoPtr) {
+    assert(false);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
 CompiledGroup::CompiledGroup(SGroupPtr group) {
     compileCount++;
 

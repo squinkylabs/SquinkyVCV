@@ -303,6 +303,38 @@ void CompiledInstrument::_dump(int depth) const {
     }
 }
 
+static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr cGroup) {
+    
+    assert(cGroup->regions.size());
+    // First, make the new "mega region"
+    CompiledRegionPtr prototype = cGroup->regions[0];
+    std::shared_ptr<CompiledMultiRegion> multi;
+    switch (type) {
+        case CompiledRegion::Type::Random:
+            multi = std::make_shared<CompiledRandomRegion>(prototype);
+            break;
+        case CompiledRegion::Type::RoundRobbin:
+            multi = std::make_shared<CompiledRoundRobbinRegion>(prototype);
+            break;
+        default:
+            assert(false);
+    }
+
+    // Add all the data from the individual regions
+    for (auto region : cGroup->regions) {
+        // Oh, we need to do this later, when we have pitch info?
+        // Or just do it smarter?
+        printf("still need to add data to multi region\n");
+       // VoicePlayInfoPtr info = std::make_shared<VoicePlayInfo>(region);
+    }
+    // now get rid of all the regions that were in our group
+    cGroup->regions.clear();
+
+    // And substitute this new multi region
+    cGroup->addChild(multi);
+    multi->weakParent = cGroup;
+}
+
 void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
     for (auto group : in->groups) {
         auto cGroup = std::make_shared<CompiledGroup>(group);
@@ -313,12 +345,33 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
                 cGroup->addChild(cReg);
             }
             // we that the tree is build, ask the group it it's special
-            CompiledRegion::Type type = cGroup->type();
+            const CompiledRegion::Type type = cGroup->type();
+            switch (type) {
+                case CompiledRegion::Type::Base:
+                    // nothing to do - tree is good
+                    break;
+                case CompiledRegion::Type::Random:
+                case CompiledRegion::Type::RoundRobbin: {
+                    //  cGroup->regions.clear();
+                    //  CompiledRegionPtr newRegion = std::make_shared < CompiledRoundRobbinRegion>();
+                    //  cGroup->regions.push_back(newRegion);
+                    remakeTreeForMultiRegion(type, cGroup);
+                } break;
+                default:
+                    assert(false);
+            }
             assert(type == CompiledRegion::Type::Base);  // if it's not base, we need to make a new sub-tree here
         }
     }
 }
 
+/*
+cGroup->regions.clear();
+//   CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
+// we don't have all that stuff we need to make a new CompiledRegion
+CompiledRegionPtr newRegion = std::make_shared<CompiledRandomRegion>();
+cGroup->regions.push_back(newRegion);
+*/
 void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array) {
     assert(array.empty());
     for (auto group : groups) {
