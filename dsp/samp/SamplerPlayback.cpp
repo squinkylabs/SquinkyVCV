@@ -4,6 +4,7 @@
 VoicePlayInfo::VoicePlayInfo(CompiledRegionPtr region, int midiPitch, int sampleIndex) {
     this->valid = true;
     this->sampleIndex = sampleIndex;
+    assert(false);      // this won't work
 
     const int semiOffset = midiPitch - region->keycenter;
     if (semiOffset == 0) {

@@ -23,6 +23,11 @@ using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
 
 extern int compileCount;
 
+/**
+ * All the data that we care about, pulled out of the SRegion we parsed.
+ * These live throughout the duration of a compile, and are the basic structures
+ * that drive all the generation of players.
+ */
 class CompiledRegion {
 public:
     CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
@@ -72,6 +77,10 @@ private:
     static void findValue (std::string&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
 };
 
+/**
+ * We need multi-regions when we run into a group that defines multiple regions
+ * that get picked at runtime.
+ */
 class CompiledMultiRegion : public CompiledRegion {
 public:
     CompiledMultiRegion(CompiledRegionPtr prototype);
@@ -84,14 +93,19 @@ class CompiledRoundRobbinRegion : public CompiledMultiRegion {
 public:
     CompiledRoundRobbinRegion(CompiledRegionPtr prototype);
     void addVoice(VoicePlayInfoPtr) override;
+    virtual Type type() const { return Type::RoundRobbin; }
 };
 
 class CompiledRandomRegion : public CompiledMultiRegion {
 public:
     CompiledRandomRegion(CompiledRegionPtr prototype);
     void addVoice(VoicePlayInfoPtr) override;
+      virtual Type type() const { return Type::Random; }
 };
 
+/**
+ * Every Compiled Region had a compiled group as a parent
+ */
 class CompiledGroup {
 public:
     CompiledGroup(SGroupPtr);

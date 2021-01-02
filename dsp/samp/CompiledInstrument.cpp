@@ -304,9 +304,9 @@ void CompiledInstrument::_dump(int depth) const {
 }
 
 static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr cGroup) {
-    
     assert(cGroup->regions.size());
     // First, make the new "mega region"
+    // Take all the "normal" properties from the first region ("the prototype")
     CompiledRegionPtr prototype = cGroup->regions[0];
     std::shared_ptr<CompiledMultiRegion> multi;
     switch (type) {
@@ -318,6 +318,13 @@ static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
             break;
         default:
             assert(false);
+    }
+
+    // validate assumptions about the schema
+    for (auto region : cGroup->regions) {
+        assert(region->lokey == prototype->lokey);
+        assert(region->lokey == prototype->lokey);
+
     }
 
     // Add all the data from the individual regions
@@ -360,7 +367,6 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
                 default:
                     assert(false);
             }
-            assert(type == CompiledRegion::Type::Base);  // if it's not base, we need to make a new sub-tree here
         }
     }
 }
