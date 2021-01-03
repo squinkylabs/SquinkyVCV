@@ -11,7 +11,7 @@
 int compileCount = 0;
 
 void CompiledRegion::findValue(int& intValue, SamplerSchema::Opcode opcode, const SGroup& parent, const SRegion& reg) {
-
+    assert(&parent);
     auto value = reg.compiledValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Int);
@@ -66,6 +66,7 @@ void findValue(std::string&, SamplerSchema::Opcode) {}
 
 using Opcode = SamplerSchema::Opcode;
 CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParent, SGroupPtr parsedParent) : weakParent(compiledParent), lineNumber(region->lineNumber) {
+    assert(parsedParent);
     compileCount++;
     const SRegion& reg = *region;
     assert(reg.compiledValues);
@@ -133,7 +134,7 @@ CompiledMultiRegion::CompiledMultiRegion(CompiledGroupPtr parent) : CompiledRegi
     }
 }
 
-CompiledRoundRobbinRegion::CompiledRoundRobbinRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {
+CompiledRoundRobinRegion::CompiledRoundRobinRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {
 };
 
 CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {
@@ -169,7 +170,7 @@ bool CompiledGroup::shouldIgnore() const {
 CompiledRegion::Type CompiledGroup::type() const {
     CompiledRegion::Type theType = CompiledRegion::Type::Base;
     if (this->sequence_length > 0) {
-        theType = CompiledRegion::Type::RoundRobbin;
+        theType = CompiledRegion::Type::RoundRobin;
     }
     else {
         bool isProbabilty = !regions.empty();   // assume if any regions we are a probability group
@@ -182,6 +183,7 @@ CompiledRegion::Type CompiledGroup::type() const {
         }
         if (isProbabilty) {
             theType = CompiledRegion::Type::Random;
+            assert(regions.size() > 1);
         }
     }
     return theType;

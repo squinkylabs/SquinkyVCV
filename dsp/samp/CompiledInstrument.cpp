@@ -195,11 +195,30 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<Compile
 
 void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region) {
     for (int midiPitch = region->lokey; midiPitch <= region->hikey; ++midiPitch) {
-        //  SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex, int midiPitch) {
-        const int sampleIndex = addSampleFile(region->sampleFile);
-        assert(region->type() == CompiledRegion::Type::Base);
-        ISamplerPlaybackPtr singlePlayer = std::make_shared<SimpleVoicePlayer>(region, sampleIndex, midiPitch);
-        dest->addEntry(midiPitch, singlePlayer);
+        switch (region->type()) {
+            case CompiledRegion::Type::Base: {
+                const int sampleIndex = addSampleFile(region->sampleFile);
+                assert(region->type() == CompiledRegion::Type::Base);
+                ISamplerPlaybackPtr singlePlayer = std::make_shared<SimpleVoicePlayer>(region, sampleIndex, midiPitch);
+                dest->addEntry(midiPitch, singlePlayer);
+            } break;
+            case CompiledRegion::Type::Random: {
+                CompiledMultiRegionPtr multiRegion = std::dynamic_pointer_cast<CompiledMultiRegion>(region);
+                RandomVoicePlayerPtr multiPlayer = std::make_shared<RandomVoicePlayer>();
+                for (auto region : multiRegion->getRegions()) {
+                    const int sampleIndex = addSampleFile(region->sampleFile);
+                    multiPlayer->addEntry(region, sampleIndex, midiPitch);
+                }
+                dest->addEntry(midiPitch, multiPlayer);
+            } break;
+            case CompiledRegion::Type::RoundRobin: {
+                ISamplerPlaybackPtr multiPlayer = std::make_shared<RoundRobinVoicePlayer>();
+                printf("finish me = add regions\n");
+            } break;
+            default:
+
+                assert(false);
+        }
     }
 }
 
@@ -312,8 +331,8 @@ static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
         case CompiledRegion::Type::Random:
             multi = std::make_shared<CompiledRandomRegion>(cGroup);
             break;
-        case CompiledRegion::Type::RoundRobbin:
-            multi = std::make_shared<CompiledRoundRobbinRegion>(cGroup);
+        case CompiledRegion::Type::RoundRobin:
+            multi = std::make_shared<CompiledRoundRobinRegion>(cGroup);
             break;
         default:
             assert(false);
@@ -352,7 +371,7 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
                     // nothing to do - tree is good
                     break;
                 case CompiledRegion::Type::Random:
-                case CompiledRegion::Type::RoundRobbin: {
+                case CompiledRegion::Type::RoundRobin: {
                     //  cGroup->regions.clear();
                     //  CompiledRegionPtr newRegion = std::make_shared < CompiledRoundRobbinRegion>();
                     //  cGroup->regions.push_back(newRegion);

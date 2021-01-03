@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <map>
 #include <memory>
 #include <string>
@@ -88,6 +89,7 @@ public:
         }
 
         ValuePtr get(Opcode o) {
+            assert(this);
             auto it = data.find(o);
             if (it == data.end()) {
                 return nullptr;

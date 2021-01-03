@@ -35,7 +35,7 @@ public:
 
     enum class Type {
         Base,
-        RoundRobbin,
+        RoundRobin,
         Random
     };
     virtual Type type() const { return Type::Base; }
@@ -84,26 +84,22 @@ private:
 class CompiledMultiRegion : public CompiledRegion {
 public:
     CompiledMultiRegion(CompiledGroupPtr parent);
-  //  virtual void addVoice(VoicePlayInfoPtr) = 0;
-    
+    const std::vector<CompiledRegionPtr>& getRegions() { return originalRegions; }
 protected:
     std::vector<CompiledRegionPtr> originalRegions;
-
-    // make player later, when we need it
-   // ISamplerPlaybackPtr player;
 };
 
-class CompiledRoundRobbinRegion : public CompiledMultiRegion {
+using CompiledMultiRegionPtr = std::shared_ptr<CompiledMultiRegion>;
+
+class CompiledRoundRobinRegion : public CompiledMultiRegion {
 public:
-    CompiledRoundRobbinRegion(CompiledGroupPtr parent);
-  //  void addVoice(VoicePlayInfoPtr) override;
-    virtual Type type() const { return Type::RoundRobbin; }
+    CompiledRoundRobinRegion(CompiledGroupPtr parent);
+    virtual Type type() const { return Type::RoundRobin; }
 };
 
 class CompiledRandomRegion : public CompiledMultiRegion {
 public:
     CompiledRandomRegion(CompiledGroupPtr parent);
-  //  void addVoice(VoicePlayInfoPtr) override;
     virtual Type type() const { return Type::Random; }
 };
 

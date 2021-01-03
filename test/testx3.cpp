@@ -13,8 +13,12 @@ static void testVelSwitch1() {
     VelSwitch v(1234);
 
     SRegionPtr sr = std::make_shared<SRegion>(1234);
+    SGroupPtr gp = std::make_shared<SGroup>();
+    gp->regions.push_back(sr);
+
+    gp->compiledValues = SamplerSchema::compile(gp->values);
     sr->compiledValues = SamplerSchema::compile(sr->values);
-    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, nullptr);
+    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
 
     // Need to make some "test" sample playback ptrs. just need to be able to recognize them later
     ISamplerPlaybackPtr p0 = std::make_shared<SimpleVoicePlayer>(r0, 100, 0);
@@ -49,8 +53,13 @@ static void testVelSwitch1() {
     assertEQ(info.sampleIndex, 103);
 }
 
-static CompiledRegionPtr makeTestRegion(bool usePitch, const std::string& minVal, const std::string& maxVal) {
+
+// Note that making a region out of the context of an insturment is now quite involved.
+// We may need a test halper for this if we plan on doing it much.
+
+static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::string& minVal, const std::string& maxVal) {
     SRegionPtr sr = std::make_shared<SRegion>(1234);
+    gp->regions.push_back(sr);
 
     SKeyValuePairPtr kv;
     if (usePitch) {
@@ -65,14 +74,16 @@ static CompiledRegionPtr makeTestRegion(bool usePitch, const std::string& minVal
         sr->values.push_back(kv);
     }
     sr->compiledValues = SamplerSchema::compile(sr->values);
-    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, nullptr);
+    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
     return r0;
 }
 
 static void testOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, bool shouldOverlap) {
     assert(mina <= maxa);
-    auto regionA = makeTestRegion(testPitch, std::to_string(mina), std::to_string(maxa));
-    auto regionB = makeTestRegion(testPitch, std::to_string(minb), std::to_string(maxb));
+    SGroupPtr gp = std::make_shared<SGroup>();
+    gp->compiledValues = SamplerSchema::compile(gp->values);
+    auto regionA = makeTestRegion(gp, testPitch, std::to_string(mina), std::to_string(maxa));
+    auto regionB = makeTestRegion(gp, testPitch, std::to_string(minb), std::to_string(maxb));
     bool overlap = testPitch ? regionA->overlapsPitch(*regionB) : regionA->overlapsVelocity(*regionB);
     assertEQ(overlap, shouldOverlap);
 }
@@ -166,9 +177,11 @@ static void testSnareBasic() {
     CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     VoicePlayInfo info;
 }
+
 void testx3() {
     // work up to these
     assert(parseCount == 0);
+
     testVelSwitch1();
     testOverlap();
 

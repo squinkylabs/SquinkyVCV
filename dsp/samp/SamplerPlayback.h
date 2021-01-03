@@ -4,6 +4,7 @@
 
 #include <cmath>
 
+#include "RandomRange.h"
 #include "CompiledRegion.h"
 
 /**
@@ -97,24 +98,28 @@ public:
     }
 };
 
-class MultiVoicePlayer  {
-protected:
-    std::vector<VoicePlayInfoPtr> variations;
 
+class RandomVoicePlayer : public ISamplerPlayback {
+public:
+    RandomVoicePlayer() : rand(0) {}
+    void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override;
+    void _dump(int depth) const override;
+    void addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch);
+private:
+    std::vector<VoicePlayInfoPtr> entries;
+   // std::map<float, int> probabilityRanges;
+   // AudioMath::RandomUniformFunc randomFunc = AudioMath::random();
+   RandomRange<float> rand;
 };
 
-class RandomVoicePlayer : public ISamplerPlayback, MultiVoicePlayer {
+using RandomVoicePlayerPtr = std::shared_ptr<RandomVoicePlayer>;
+
+class RoundRobinVoicePlayer : public ISamplerPlayback {
 public:
     void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override;
-    void _dump(int depth);
+    void _dump(int depth) const override;
 private:
    
 };
 
-class RoundRobbinVoicePlayer : public ISamplerPlayback, MultiVoicePlayer {
-public:
-    void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override;
-    void _dump(int depth);
-private:
-   
-};
+using RoundRobinVoicePlayerPtr = std::shared_ptr<RoundRobinVoicePlayer>;

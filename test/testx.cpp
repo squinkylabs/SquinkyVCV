@@ -1,11 +1,13 @@
 
 
 #include "pugixml.hpp"
+#include "RandomRange.h"
 #include "SInstrument.h"
 #include "SLex.h"
 #include "SParse.h"
 
 #include "asserts.h"
+#include <set>
 
 static void testx0()
 {
@@ -336,6 +338,36 @@ static void testparse_piano2()
     assert(err.empty());
 }
 
+static void testRandomRange0()
+{
+    RandomRange<float> r(0);
+    r.addRange(.33f);
+    r.addRange(.66f);
+    assertEQ(r._lookup(0), 0);
+    assertEQ(r._lookup(.2f), 0);
+    assertEQ(r._lookup(.32f), 0);
+    assertEQ(r._lookup(.34f), 1);
+    assertEQ(r._lookup(.659f), 1);
+    assertEQ(r._lookup(.661f), 2);
+    assertEQ(r._lookup(.9f), 2);
+    assertEQ(r._lookup(10.f), 2);
+}
+
+static void testRandomRange1()
+{
+    RandomRange<float> r(0);
+    r.addRange(.3f);
+    r.addRange(.4f);
+
+    std::set<int> test;
+    for (int i=0; i<50; ++i) {
+        int x = r.get();
+        test.insert(x);
+    }
+    assertEQ(test.size(), 3);
+
+}
+
 void testx()
 {
     assert(parseCount == 0);
@@ -371,5 +403,7 @@ void testx()
     testparse_piano1();
    // testparse_piano2b();
     testparse_piano2();
+    testRandomRange0();
+    testRandomRange1();
     assert(parseCount == 0);
 }
