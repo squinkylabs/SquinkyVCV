@@ -83,24 +83,28 @@ private:
  */
 class CompiledMultiRegion : public CompiledRegion {
 public:
-    CompiledMultiRegion(CompiledRegionPtr prototype);
-    virtual void addVoice(VoicePlayInfoPtr) = 0;
+    CompiledMultiRegion(CompiledGroupPtr parent);
+  //  virtual void addVoice(VoicePlayInfoPtr) = 0;
+    
 protected:
-    ISamplerPlaybackPtr player;
+    std::vector<CompiledRegionPtr> originalRegions;
+
+    // make player later, when we need it
+   // ISamplerPlaybackPtr player;
 };
 
 class CompiledRoundRobbinRegion : public CompiledMultiRegion {
 public:
-    CompiledRoundRobbinRegion(CompiledRegionPtr prototype);
-    void addVoice(VoicePlayInfoPtr) override;
+    CompiledRoundRobbinRegion(CompiledGroupPtr parent);
+  //  void addVoice(VoicePlayInfoPtr) override;
     virtual Type type() const { return Type::RoundRobbin; }
 };
 
 class CompiledRandomRegion : public CompiledMultiRegion {
 public:
-    CompiledRandomRegion(CompiledRegionPtr prototype);
-    void addVoice(VoicePlayInfoPtr) override;
-      virtual Type type() const { return Type::Random; }
+    CompiledRandomRegion(CompiledGroupPtr parent);
+  //  void addVoice(VoicePlayInfoPtr) override;
+    virtual Type type() const { return Type::Random; }
 };
 
 /**

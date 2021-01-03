@@ -307,33 +307,27 @@ static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
     assert(cGroup->regions.size());
     // First, make the new "mega region"
     // Take all the "normal" properties from the first region ("the prototype")
-    CompiledRegionPtr prototype = cGroup->regions[0];
     std::shared_ptr<CompiledMultiRegion> multi;
     switch (type) {
         case CompiledRegion::Type::Random:
-            multi = std::make_shared<CompiledRandomRegion>(prototype);
+            multi = std::make_shared<CompiledRandomRegion>(cGroup);
             break;
         case CompiledRegion::Type::RoundRobbin:
-            multi = std::make_shared<CompiledRoundRobbinRegion>(prototype);
+            multi = std::make_shared<CompiledRoundRobbinRegion>(cGroup);
             break;
         default:
             assert(false);
     }
 
     // validate assumptions about the schema
+    CompiledRegionPtr prototype = cGroup->regions[0];
     for (auto region : cGroup->regions) {
         assert(region->lokey == prototype->lokey);
-        assert(region->lokey == prototype->lokey);
-
+        assert(region->hikey == prototype->hikey);
+        assert(region->lovel == prototype->lovel);
+        assert(region->hivel == prototype->hivel);
     }
 
-    // Add all the data from the individual regions
-    for (auto region : cGroup->regions) {
-        // Oh, we need to do this later, when we have pitch info?
-        // Or just do it smarter?
-        printf("still need to add data to multi region\n");
-       // VoicePlayInfoPtr info = std::make_shared<VoicePlayInfo>(region);
-    }
     // now get rid of all the regions that were in our group
     cGroup->regions.clear();
 

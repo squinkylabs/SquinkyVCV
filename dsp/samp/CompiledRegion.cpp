@@ -127,23 +127,19 @@ CompiledRegion::CompiledRegion(CompiledRegionPtr prototype) {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-CompiledMultiRegion::CompiledMultiRegion(CompiledRegionPtr prototype) : CompiledRegion(prototype) {
-
+CompiledMultiRegion::CompiledMultiRegion(CompiledGroupPtr parent) : CompiledRegion(parent->regions[0]) {
+    for (auto region : parent->regions) {
+        originalRegions.push_back(region);
+    }
 }
 
-CompiledRoundRobbinRegion::CompiledRoundRobbinRegion(CompiledRegionPtr prototype) : CompiledMultiRegion(prototype) {
+CompiledRoundRobbinRegion::CompiledRoundRobbinRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {
 };
 
-void CompiledRoundRobbinRegion::addVoice(VoicePlayInfoPtr) {
-    assert(false);
+CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {
 }
 
-CompiledRandomRegion::CompiledRandomRegion(CompiledRegionPtr prototype) : CompiledMultiRegion(prototype) {
-}
 
-void CompiledRandomRegion::addVoice(VoicePlayInfoPtr) {
-    assert(false);
-}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
