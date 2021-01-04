@@ -185,13 +185,13 @@ void testx3() {
     testVelSwitch1();
     testOverlap();
 
-    //testSmallPianoVelswitch();
+    testSmallPianoVelswitch();
 
     // Note: this tests are in testx2. Just moved here for logical
     // sequencing reasons.
     testPlayInfoTinnyPiano();
     testPlayInfoSmallPiano();
-    // testSnareBasic();
+    testSnareBasic();
 
     assert(parseCount == 0);
     assert(compileCount == 0);
