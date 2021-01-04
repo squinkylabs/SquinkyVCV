@@ -322,7 +322,9 @@ void CompiledInstrument::_dump(int depth) const {
     }
 }
 
+// assertEQ(compileCount, 0);
 static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr cGroup) {
+    printf("start of remake tree cc=%d\n", compileCount);
     assert(cGroup->regions.size());
     // First, make the new "mega region"
     // Take all the "normal" properties from the first region ("the prototype")
@@ -347,14 +349,19 @@ static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
         assert(region->hivel == prototype->hivel);
     }
 
+   printf("remake tree 354  cc=%d\n", compileCount);
+   printf("group has %d chldren\n", int(cGroup->regions.size()));
     // now get rid of all the regions that were in our group
     cGroup->regions.clear();
+    assert(cGroup->regions.empty());
+     printf("remake tree 358  cc=%d\n", compileCount);
 
     // And substitute this new multi region
     cGroup->addChild(multi);
     multi->weakParent = cGroup;
 }
 
+#if 1  // original way
 void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
     for (auto group : in->groups) {
         auto cGroup = std::make_shared<CompiledGroup>(group);
@@ -365,6 +372,7 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
                 cGroup->addChild(cReg);
             }
             // we that the tree is build, ask the group it it's special
+
             const CompiledRegion::Type type = cGroup->type();
             switch (type) {
                 case CompiledRegion::Type::Base:
@@ -383,14 +391,8 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
         }
     }
 }
+#endif
 
-/*
-cGroup->regions.clear();
-//   CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
-// we don't have all that stuff we need to make a new CompiledRegion
-CompiledRegionPtr newRegion = std::make_shared<CompiledRandomRegion>();
-cGroup->regions.push_back(newRegion);
-*/
 void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array) {
     assert(array.empty());
     for (auto group : groups) {
@@ -432,6 +434,7 @@ int CompiledInstrument::addSampleFile(const std::string& s) {
     return ret;
 }
 
+#if 0  // unused
 bool CompiledInstrument::shouldIgnoreGroup(SGroupPtr group) {
     bool ignore = false;
     auto value = group->compiledValues->get(Opcode::TRIGGER);
@@ -442,6 +445,7 @@ bool CompiledInstrument::shouldIgnoreGroup(SGroupPtr group) {
     }
     return ignore;
 }
+#endif
 
 CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPtr inst) {
     assert(!inst->wasExpanded);

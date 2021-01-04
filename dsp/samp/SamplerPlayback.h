@@ -116,6 +116,7 @@ using RandomVoicePlayerPtr = std::shared_ptr<RandomVoicePlayer>;
 
 class RoundRobinVoicePlayer : public ISamplerPlayback {
 public:
+    RoundRobinVoicePlayer() = default;      // just for debugging
     void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override;
     void _dump(int depth) const override;
 private:

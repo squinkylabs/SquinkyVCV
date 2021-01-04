@@ -123,6 +123,7 @@ bool CompiledRegion::pitchRangeEqual(const CompiledRegion& that) const {
 }
 
 CompiledRegion::CompiledRegion(CompiledRegionPtr prototype) {
+    compileCount++;
     *this = *prototype;
 }
 

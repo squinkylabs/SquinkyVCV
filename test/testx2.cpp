@@ -858,12 +858,14 @@ static void testCompileSimpleDrum() {
     VoicePlayInfo info;
 
     std::set<int> waves;
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 40; ++i) {
         ci->play(info, 40, 110);
+
         assert(info.valid);
         assert(info.sampleIndex > 0);
         waves.insert(info.sampleIndex);
     }
+
     assertEQ(waves.size(), 3);
 }
 
@@ -935,8 +937,9 @@ void testx2() {
     testCompileMulPitchAndVelComplex1();
     testCompileMulPitchAndVelComplex2();
     testGroupInherit();
-    printf("turn drum test back on\n ");
-    //testCompileSimpleDrum();
+    assertEQ(compileCount, 0);
+    testCompileSimpleDrum();
+    assertEQ(compileCount, 0);
 
     testCompileSort();
 

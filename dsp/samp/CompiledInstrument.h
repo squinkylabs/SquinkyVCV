@@ -68,7 +68,6 @@ private:
 
     void compile(const SInstrumentPtr);
     void compileOld(const SInstrumentPtr);
-    bool shouldIgnoreGroup(SGroupPtr);
     void buildCompiledTree(const SInstrumentPtr i);
 
     ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);
