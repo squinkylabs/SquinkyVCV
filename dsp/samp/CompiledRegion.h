@@ -65,6 +65,8 @@ public:
     float lorand = -1;
     float hirand = -1;
 
+    int seq_position = -1;
+
     CompiledGroupPtrWeak weakParent;
     int lineNumber;
 protected:

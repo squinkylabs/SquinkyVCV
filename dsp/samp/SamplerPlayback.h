@@ -107,19 +107,28 @@ public:
     void addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch);
 private:
     std::vector<VoicePlayInfoPtr> entries;
-   // std::map<float, int> probabilityRanges;
-   // AudioMath::RandomUniformFunc randomFunc = AudioMath::random();
-   RandomRange<float> rand;
+    RandomRange<float> rand;
 };
 
 using RandomVoicePlayerPtr = std::shared_ptr<RandomVoicePlayer>;
 
 class RoundRobinVoicePlayer : public ISamplerPlayback {
 public:
-    RoundRobinVoicePlayer() = default;      // just for debugging
+    // let's add seq_position so we can play in the right order
+    class RRPlayInfo : public VoicePlayInfo {
+    public:
+        RRPlayInfo(const VoicePlayInfo&);
+        int seq_position = 0;
+    };
+    using RRPlayInfoPtr = std::shared_ptr<RRPlayInfo>;
     void play(VoicePlayInfo& info, int midiPitch, int midiVelocity) override;
     void _dump(int depth) const override;
+    void addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch);
+    void finalize();
 private:
+    std::vector<RRPlayInfoPtr> entries;
+    int currentEntry = 0;
+    int numEntries = 0;
    
 };
 

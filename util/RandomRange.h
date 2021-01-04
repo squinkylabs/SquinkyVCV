@@ -1,9 +1,10 @@
 #pragma once
 
-#include "AudioMath.h"
 #include <assert.h>
+
 #include <map>
 
+#include "AudioMath.h"
 
 template <typename Tkey>
 class RandomRange {
@@ -32,34 +33,36 @@ private:
 template <typename Tkey>
 inline int RandomRange<Tkey>::get() {
     auto r = rand();
-    printf("generated random f %f\n", r);
+   // printf("generated random f %f\n", r);
     return _lookup(r);
 }
 
 template <typename Tkey>
 inline void RandomRange<Tkey>::addRange(Tkey key) {
-    printf("add range %f\n", key);
-    theMap.insert({ key, nextIndex });
+   // printf("add range %f\n", key);
+    theMap.insert({key, nextIndex});
     ++nextIndex;
     assert(key >= lastKey);
     lastKey = key;
+#if 0
     printf("after add to range\n");
     for (auto it : theMap) {
         printf("  entry %f, %d\n", it.first, it.second);
     }
+#endif
 }
 
 template <typename Tkey>
 inline RandomRange<Tkey>::RandomRange(Tkey lowValue) {
-    addRange(lowValue);      // start first range as lowValue
+    addRange(lowValue);  // start first range as lowValue
 }
 
 template <typename Tkey>
 inline int RandomRange<Tkey>::_lookup(Tkey key) {
     auto it = theMap.lower_bound(key);
     int ret = 0;
-   
-    printf("map size = %d\n", int(theMap.size()));
+
+    // printf("map size = %d\n", int(theMap.size()));
     if (it == theMap.end()) {
         if (theMap.empty()) {
             assert(false);

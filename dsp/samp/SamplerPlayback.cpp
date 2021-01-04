@@ -1,4 +1,5 @@
 
+
 #include "SamplerPlayback.h"
 
 VoicePlayInfo::VoicePlayInfo(CompiledRegionPtr region, int midiPitch, int sampleIndex) {
@@ -25,7 +26,7 @@ void RandomVoicePlayer::play(VoicePlayInfo& info, int midiPitch, int midiVelocit
     const int index = rand.get();
     assert(index < entries.size());
     info = *entries[index];
-    printf("in play ran index=%d\n", index);
+    //printf("in play ran index=%d\n", index);
     assert(info.valid);
 }
 
@@ -41,12 +42,46 @@ void RandomVoicePlayer::addEntry(CompiledRegionPtr region, int sampleIndex, int 
     rand.addRange(region->hirand);
 }
 
+RoundRobinVoicePlayer::RRPlayInfo::RRPlayInfo(const VoicePlayInfo& info)
+{
+    VoicePlayInfo* vpi = this;  // up-cast
+    *vpi = info;
+}
+
 void RoundRobinVoicePlayer::_dump(int depth) const {
     indent(depth);
     printf("Round Robin Voice Payer (tbd)");
 }
 
 void RoundRobinVoicePlayer::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
-    assert(false);
+    if (currentEntry >= numEntries) {
+        currentEntry = 0;
+    }
+    info = *entries[currentEntry];
+    ++currentEntry;
+}
+
+void RoundRobinVoicePlayer::addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch) {
+
+    VoicePlayInfoPtr info = std::make_shared<VoicePlayInfo>(region, midiPitch, sampleIndex);
+    RRPlayInfoPtr rr_info = std::make_shared<RRPlayInfo>(*info);
+    rr_info->seq_position = region->seq_position;
+    entries.push_back(rr_info);
+    numEntries = int(entries.size());
+    // we could sort of seq_position here...
+
+  // sortBySeqPosition(entries);
+}
+
+void RoundRobinVoicePlayer::finalize()
+{
+    std::sort(entries.begin(), entries.end(), [](const RRPlayInfoPtr a, const RRPlayInfoPtr b) -> bool {
+        bool less = false;
+        if (a->seq_position < b->seq_position) {
+            less = true;
+        }
+        return less;
+    });
+
 }
 

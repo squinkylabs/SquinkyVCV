@@ -525,6 +525,33 @@ static void testCompiledRegionsRand() {
     assertEQ(cr->lorand, .29f);
 }
 
+static void testCompiledRegionSeqIndex1() {
+    printf("\n---- si 1\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    const char* str = R"foo(<region>seq_position=11)foo";
+    auto err = SParse::go(str, inst);
+
+    SGroupPtr group = inst->groups[0];
+    SRegionPtr region = group->regions[0];
+    CompiledInstrument::expandAllKV(inst);
+    assert(inst->wasExpanded);
+    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+    assertEQ(cr->seq_position, 11);
+}
+
+static void testCompiledRegionSeqIndex2() {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    // this may not even be lega;?
+    const char* str = R"foo(<group>seq_position=11<region>)foo";
+    auto err = SParse::go(str, inst);
+
+    SGroupPtr group = inst->groups[0];
+    SRegionPtr region = group->regions[0];
+    CompiledInstrument::expandAllKV(inst);
+    assert(inst->wasExpanded);
+    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+    assertEQ(cr->seq_position, 11);
+}
 static void testCompiledGroupSub(const char* data, bool shouldIgnore) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
@@ -869,6 +896,28 @@ static void testCompileSimpleDrum() {
     }
 
     assertEQ(waves.size(), 3);
+
+    waves.clear();
+    assertEQ(waves.size(), 0);
+    ci->play(info, 41, 64);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    waves.insert(info.sampleIndex);
+
+    ci->play(info, 41, 64);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    waves.insert(info.sampleIndex);
+
+    ci->play(info, 41, 64);
+    assert(info.valid);
+    assertGE(info.sampleIndex, 1);
+    waves.insert(info.sampleIndex);
+
+    // three should play all of them
+    assertEQ(waves.size(), 3);
+
+ 
 }
 
 // test sorting of regions.
@@ -924,6 +973,9 @@ void testx2() {
     testCompiledRegionVel2();
     testCompiledRegionVel3();
     testCompiledRegionsRand();
+    testCompiledRegionSeqIndex1();
+    testCompiledRegionSeqIndex2();
+
 
     testCompiledGroup0();
     testCompiledGroup1();

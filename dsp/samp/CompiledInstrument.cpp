@@ -212,8 +212,14 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
                 dest->addEntry(midiPitch, multiPlayer);
             } break;
             case CompiledRegion::Type::RoundRobin: {
-                ISamplerPlaybackPtr multiPlayer = std::make_shared<RoundRobinVoicePlayer>();
-                printf("finish me = add regions\n");
+                CompiledMultiRegionPtr multiRegion = std::dynamic_pointer_cast<CompiledMultiRegion>(region);
+                RoundRobinVoicePlayerPtr multiPlayer = std::make_shared<RoundRobinVoicePlayer>();
+                for (auto region : multiRegion->getRegions()) {
+                    const int sampleIndex = addSampleFile(region->sampleFile);
+                    multiPlayer->addEntry(region, sampleIndex, midiPitch);
+                }
+                multiPlayer->finalize();
+                dest->addEntry(midiPitch, multiPlayer);
             } break;
             default:
 

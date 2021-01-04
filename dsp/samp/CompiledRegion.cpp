@@ -81,6 +81,7 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
         lokey = hikey = keycenter = key;
     }
    
+    findValue(seq_position, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
     findValue(sampleFile,  SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
     findValue(keycenter,  SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
     findValue(lovel,  SamplerSchema::Opcode::LO_VEL, *parsedParent, reg);
