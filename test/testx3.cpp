@@ -176,6 +176,7 @@ static void testSnareBasic() {
 
     CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     VoicePlayInfo info;
+    cinst->_dump(0);
 }
 
 void testx3() {

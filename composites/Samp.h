@@ -124,8 +124,12 @@ inline void Samp<TBase>::setupSamplesDummy()
   //  const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
 
     // small piano, with vel keyswitch
-    static const char* p =  R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo"; 
-    static const char* pRoot =  R"foo(D:\samples\K18-Upright-Piano\)foo"; 
+    //static const char* p =  R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo"; 
+    //static const char* pRoot =  R"foo(D:\samples\K18-Upright-Piano\)foo"; 
+
+    // snare drum
+    static const char* p =  R"foo(D:\samples\SalamanderDrumkit\snare.sfz)foo"; 
+    static const char* pRoot =  R"foo(D:\samples\SalamanderDrumkit\)foo"; 
     auto err = SParse::goFile(p, inst);
     assert(err.empty());
 

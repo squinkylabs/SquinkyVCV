@@ -22,7 +22,7 @@ using ValuePtr = SamplerSchema::ValuePtr;
 using Value = SamplerSchema::Value;
 
 // #define _LOG
-#define _LOGOV
+// #define _LOGOV
 
 void CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);
@@ -328,9 +328,7 @@ void CompiledInstrument::_dump(int depth) const {
     }
 }
 
-// assertEQ(compileCount, 0);
 static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr cGroup) {
-    printf("start of remake tree cc=%d\n", compileCount);
     assert(cGroup->regions.size());
     // First, make the new "mega region"
     // Take all the "normal" properties from the first region ("the prototype")
@@ -355,12 +353,9 @@ static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
         assert(region->hivel == prototype->hivel);
     }
 
-   printf("remake tree 354  cc=%d\n", compileCount);
-   printf("group has %d chldren\n", int(cGroup->regions.size()));
     // now get rid of all the regions that were in our group
     cGroup->regions.clear();
     assert(cGroup->regions.empty());
-     printf("remake tree 358  cc=%d\n", compileCount);
 
     // And substitute this new multi region
     cGroup->addChild(multi);
