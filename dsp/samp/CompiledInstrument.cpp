@@ -456,13 +456,13 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPt
     return instOut;
 }
 
-void CompiledInstrument::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
+void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
     //  pitchMap.play(info, midiPitch, midiVelocity);
     if (!player) {
         printf("ci can't play yet\n");
         return;
     }
-    player->play(info, midiPitch, midiVelocity);
+    player->play(info, params);
 }
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootPath) {

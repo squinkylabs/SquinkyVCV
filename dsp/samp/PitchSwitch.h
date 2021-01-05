@@ -9,7 +9,7 @@
  */
 class PitchSwitch : public ISamplerPlayback {
 public:
-    void play(VoicePlayInfo&, int midiPitch, int midiVelocity) override;
+    void play(VoicePlayInfo&, const VoicePlayParameter&) override;
     void _dump(int depth) const override;
     void _setTestMode() { testMode = true; }
     void addEntry(int pitch, ISamplerPlaybackPtr data) {
@@ -25,7 +25,7 @@ private:
     const int lineNumber;
 };
 
-inline void PitchSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
+inline void PitchSwitch::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
     if (testMode) {
         info.sampleIndex = 1;
         info.needsTranspose = false;
@@ -35,9 +35,9 @@ inline void PitchSwitch::play(VoicePlayInfo& info, int midiPitch, int midiVeloci
     }
 
     info.valid = false;
-    const ISamplerPlaybackPtr entry = pitchMap[midiPitch];
+    const ISamplerPlaybackPtr entry = pitchMap[params.midiPitch];
     if (entry) {
-        entry->play(info, midiPitch, midiVelocity);
+        entry->play(info, params);
     }
 }
 

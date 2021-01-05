@@ -17,19 +17,24 @@ VoicePlayInfo::VoicePlayInfo(CompiledRegionPtr region, int midiPitch, int sample
     }
 }
 
+void SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
+    cachedInfoToPlayInfo(info, params, data);
+}
+
 void RandomVoicePlayer::_dump(int depth) const {
     indent(depth);
     printf("Random Voice Player (tbd)\n");
 }
 
-void RandomVoicePlayer::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
+void RandomVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
     const int index = rand.get();
     assert(index < entries.size());
-    info = *entries[index];
+
+    cachedInfoToPlayInfo(info, params, *entries[index]);
+    //info = *entries[index];
     //printf("in play ran index=%d\n", index);
     assert(info.valid);
 }
-
 
 void RandomVoicePlayer::addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch) {
     int index = int(entries.size());
@@ -37,15 +42,14 @@ void RandomVoicePlayer::addEntry(CompiledRegionPtr region, int sampleIndex, int 
         assert(region->lorand == 0);
         ++index;
     }
-    VoicePlayInfoPtr info = std::make_shared<VoicePlayInfo>(region, midiPitch, sampleIndex);
+    //   VoicePlayInfoPtr info = std::make_shared<VoicePlayInfo>(region, midiPitch, sampleIndex);
+    //    std::vector<CachedSamplerPlaybackInfoPtr> entries;
+    CachedSamplerPlaybackInfoPtr info = std::make_shared<CachedSamplerPlaybackInfo>(region, midiPitch, sampleIndex);
     entries.push_back(info);
     rand.addRange(region->hirand);
 }
 
-RoundRobinVoicePlayer::RRPlayInfo::RRPlayInfo(const VoicePlayInfo& info)
-{
-    VoicePlayInfo* vpi = this;  // up-cast
-    *vpi = info;
+RoundRobinVoicePlayer::RRPlayInfo::RRPlayInfo(const CachedSamplerPlaybackInfo& info) : CachedSamplerPlaybackInfo(info) {
 }
 
 void RoundRobinVoicePlayer::_dump(int depth) const {
@@ -53,28 +57,24 @@ void RoundRobinVoicePlayer::_dump(int depth) const {
     printf("Round Robin Voice Payer (tbd)");
 }
 
-void RoundRobinVoicePlayer::play(VoicePlayInfo& info, int midiPitch, int midiVelocity) {
+void RoundRobinVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
     if (currentEntry >= numEntries) {
         currentEntry = 0;
     }
-    info = *entries[currentEntry];
+    cachedInfoToPlayInfo(info, params, *entries[currentEntry]);
     ++currentEntry;
 }
 
+//   RRPlayInfo(const CachedSamplerPlaybackInfo&);
 void RoundRobinVoicePlayer::addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch) {
-
-    VoicePlayInfoPtr info = std::make_shared<VoicePlayInfo>(region, midiPitch, sampleIndex);
+    CachedSamplerPlaybackInfoPtr info = std::make_shared<CachedSamplerPlaybackInfo>(region, midiPitch, sampleIndex);
     RRPlayInfoPtr rr_info = std::make_shared<RRPlayInfo>(*info);
     rr_info->seq_position = region->seq_position;
     entries.push_back(rr_info);
     numEntries = int(entries.size());
-    // we could sort of seq_position here...
-
-  // sortBySeqPosition(entries);
 }
 
-void RoundRobinVoicePlayer::finalize()
-{
+void RoundRobinVoicePlayer::finalize() {
     std::sort(entries.begin(), entries.end(), [](const RRPlayInfoPtr a, const RRPlayInfoPtr b) -> bool {
         bool less = false;
         if (a->seq_position < b->seq_position) {
@@ -82,6 +82,4 @@ void RoundRobinVoicePlayer::finalize()
         }
         return less;
     });
-
 }
-

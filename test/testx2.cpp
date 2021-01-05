@@ -51,14 +51,19 @@ static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) {
 
     CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     VoicePlayInfo info;
-    cinst->play(info, 60, 60);
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 60;
+    cinst->play(info, params);
     assert(info.valid);
     int minSampleIndex = 200;
     int maxSampleIndex = -200;
     for (int pitch = 21; pitch <= 108; ++pitch) {
         for (auto vel : velRanges) {
             info.valid = false;
-            cinst->play(info, pitch, vel);
+            params.midiPitch = pitch;
+            params.midiVelocity = vel;
+            cinst->play(info, params);
             assert(info.valid);
             assert(info.canPlay());
             minSampleIndex = std::min(minSampleIndex, info.sampleIndex);
@@ -66,9 +71,14 @@ static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) {
         }
     }
 
-    cinst->play(info, 20, 60);
+   // VoicePlayParameter params;
+    params.midiPitch = 20;
+    params.midiVelocity = 60;
+    cinst->play(info, params);
     assert(!info.valid);
-    cinst->play(info, 109, 60);
+
+    params.midiPitch = 109;
+    cinst->play(info, params);
     assert(!info.valid);
 
     assert(minSampleIndex == 1);
@@ -335,9 +345,12 @@ static void testCompileInst0() {
     CompiledInstrumentPtr i = CompiledInstrument::make(inst);
 
     VoicePlayInfo info;
+    VoicePlayParameter params;
     info.sampleIndex = 0;
     assert(!info.valid);
-    i->play(info, 50, 60);
+    params.midiPitch = 50;
+    params.midiVelocity = 60;
+    i->play(info, params);
     assert(info.valid);  // this will fail until we implement a real compiler
     assertNE(info.sampleIndex, 0);
 }
@@ -353,7 +366,10 @@ static void testCompileInst1() {
     VoicePlayInfo info;
     info.sampleIndex = 0;
     assert(!info.valid);
-    i->play(info, 60, 60);
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 60;
+    i->play(info, params);
     assert(info.valid);  // this will fail until we implement a real compiler
     assertNE(info.sampleIndex, 0);
 }
@@ -369,14 +385,22 @@ static void testCompileOverlap() {
 
     CompiledInstrumentPtr ci = CompiledInstrument::make(inst);
     VoicePlayInfo info;
-    ci->play(info, 60, 2);
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 2;
+
+    ci->play(info, params);
     assert(info.valid);
     assertNE(info.sampleIndex, 0);
     assertEQ(info.needsTranspose, false);
 
-    ci->play(info, 61, 100);
+    params.midiPitch = 61;
+    params.midiVelocity = 100;
+    ci->play(info, params);
     assert(!info.valid);
-    ci->play(info, 59, 12);
+    params.midiPitch = 59;
+    params.midiVelocity = 12;
+    ci->play(info, params);
     assert(!info.valid);
 }
 
@@ -392,7 +416,11 @@ static void testTranspose1() {
     // figure the expected transpose for pitch 26
     int semiOffset = -1;
     float pitchMul = float(std::pow(2, semiOffset / 12.0));
-    cinst->play(info, 26, 64);
+
+    VoicePlayParameter params;
+    params.midiPitch = 26;
+    params.midiVelocity = 64;
+    cinst->play(info, params);
     assert(info.valid);
     assert(info.needsTranspose);
     assertEQ(info.transposeAmt, pitchMul);
@@ -589,7 +617,10 @@ static void testCompileTreeOne() {
     assertEQ(gps[0]->regions.size(), 1);
 
     VoicePlayInfo info;
-    ci->play(info, 60, 60);
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 60;
+    ci->play(info, params);
     assert(info.valid);
 }
 
@@ -618,7 +649,10 @@ static void testCompileKey() {
 
     auto ci = CompiledInstrument::make(inst);
     VoicePlayInfo info;
-    ci->play(info, 12, 60);
+    VoicePlayParameter params;
+    params.midiPitch = 12;
+    params.midiVelocity = 60;
+    ci->play(info, params);
     assert(info.valid);
     assertEQ(info.needsTranspose, false);
 }
@@ -635,16 +669,30 @@ static void testCompileMultiPitch() {
     auto ci = CompiledInstrument::make(inst);
     VoicePlayInfo info;
 
-    ci->play(info, 9, 60);
-    assert(!info.valid);
-    ci->play(info, 21, 60);
-    assert(!info.valid);
-    ci->play(info, 0, 60);
-    assert(!info.valid);
-    ci->play(info, 127, 60);
+    VoicePlayParameter params;
+    params.midiPitch = 9;
+    params.midiVelocity = 60;
+    ci->play(info, params);
     assert(!info.valid);
 
-    ci->play(info, 11, 60);
+    params.midiPitch = 21;
+    params.midiVelocity = 60;
+    ci->play(info, params);
+    assert(!info.valid);
+
+    params.midiPitch = 0;
+    params.midiVelocity = 60;
+    ci->play(info, params);
+    assert(!info.valid);
+
+    params.midiPitch = 127;
+    params.midiVelocity = 60;
+    ci->play(info, params);
+    assert(!info.valid);
+
+    params.midiPitch = 11;
+    params.midiVelocity = 60;
+    ci->play(info, params);
     assert(info.valid);
     assertEQ(info.needsTranspose, false);
 
@@ -652,22 +700,30 @@ static void testCompileMultiPitch() {
     // If this breaks the test should be fixed.
     assertEQ(info.sampleIndex, 1);
 
-    ci->play(info, 12, 60);
+    params.midiPitch = 12;
+    params.midiVelocity = 60;
+    ci->play(info, params);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
     assertGT(info.transposeAmt, 1);
 
-    ci->play(info, 10, 60);
+    params.midiPitch = 10;
+    params.midiVelocity = 60;
+    ci->play(info, params);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
     assertLT(info.transposeAmt, 1);
 
-    ci->play(info, 13, 60);
+    params.midiPitch = 13;
+    params.midiVelocity = 60;
+    ci->play(info, params);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
     assertEQ(info.sampleIndex, 2);
 
-    ci->play(info, 20, 60);
+    params.midiPitch = 20;
+    params.midiVelocity = 60;
+    ci->play(info, params);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
     assertGT(info.transposeAmt, 1);
@@ -688,10 +744,15 @@ static void testCompileMultiVel() {
     auto ci = CompiledInstrument::make(inst);
     ci->_dump(0);
     VoicePlayInfo info;
-    ci->play(info, 11, 60);
+    VoicePlayParameter params;
+    params.midiPitch = 11;
+    params.midiVelocity = 60;
+    ci->play(info, params);
     assert(!info.valid);
 
-    ci->play(info, 10, 1);
+    params.midiPitch = 10;
+    params.midiVelocity = 1;
+    ci->play(info, params);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 }
@@ -719,47 +780,67 @@ static void testCompileMulPitchAndVelSimple() {
 
     std::set<int> sampleIndicies;
 
-    ci->play(info, 10, 1);
+    VoicePlayParameter params;
+    params.midiPitch = 10;
+    params.midiVelocity = 1;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    ci->play(info, 10, 21);
+    params.midiPitch = 10;
+    params.midiVelocity = 21;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    ci->play(info, 10, 91);
+    params.midiPitch = 10;
+    params.midiVelocity = 91;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    ci->play(info, 20, 1);
+    params.midiPitch = 20;
+    params.midiVelocity = 1;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    ci->play(info, 20, 21);
+    params.midiPitch = 20;
+    params.midiVelocity = 21;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    ci->play(info, 20, 91);
+    params.midiPitch = 20;
+    params.midiVelocity = 91;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    ci->play(info, 30, 1);
+    params.midiPitch = 30;
+    params.midiVelocity = 1;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    ci->play(info, 30, 21);
+
+    params.midiPitch = 30;
+    params.midiVelocity = 21;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    ci->play(info, 30, 91);
+    params.midiPitch = 30;
+    params.midiVelocity = 91;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
@@ -786,12 +867,17 @@ static void testCompileMulPitchAndVelComplex1() {
     VoicePlayInfo info;
     std::set<int> sampleIndicies;
 
-    ci->play(info, 10, 20);
+    VoicePlayParameter params;
+    params.midiPitch = 10;
+    params.midiVelocity = 20;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    ci->play(info, 20, 22);
+    params.midiPitch = 20;
+    params.midiVelocity = 22;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
@@ -823,17 +909,24 @@ static void testCompileMulPitchAndVelComplex2() {
     std::set<int> sampleIndicies;
     ci->_dump(0);
 
-    ci->play(info, 10, 20);
+    VoicePlayParameter params;
+    params.midiPitch = 10;
+    params.midiVelocity = 20;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    ci->play(info, 10, 27);
+    params.midiPitch = 10;
+    params.midiVelocity = 27;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-    ci->play(info, 10, 91);
+    params.midiPitch = 10;
+    params.midiVelocity = 91;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
@@ -852,10 +945,15 @@ static void testGroupInherit() {
     auto ci = CompiledInstrument::make(inst);
     ci->_dump(0);
     VoicePlayInfo info;
-    ci->play(info, 40, 120);
+    VoicePlayParameter params;
+    params.midiPitch = 40;
+    params.midiVelocity = 120;
+    ci->play(info, params);
     assert(info.valid);
 
-    ci->play(info, 41, 120);
+    params.midiPitch = 41;
+    params.midiVelocity = 120;
+    ci->play(info, params);
     assert(!info.valid);
 
     // This doesn't work, becuase we don't have exclusive velocity zones.
@@ -888,10 +986,15 @@ static void testCompileSimpleDrum() {
 
     std::set<int> waves;
     for (int i = 0; i < 40; ++i) {
-        ci->play(info, 40, 110);
+
+        VoicePlayParameter params;
+        params.midiPitch = 40;
+        params.midiVelocity = 110;
+        ci->play(info, params);
 
         assert(info.valid);
         assert(info.sampleIndex > 0);
+        printf("sample index = %d\n", info.sampleIndex);
         waves.insert(info.sampleIndex);
     }
 
@@ -899,17 +1002,21 @@ static void testCompileSimpleDrum() {
 
     waves.clear();
     assertEQ(waves.size(), 0);
-    ci->play(info, 41, 64);
+
+    VoicePlayParameter params;
+    params.midiPitch = 41;
+    params.midiVelocity = 64;
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     waves.insert(info.sampleIndex);
 
-    ci->play(info, 41, 64);
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     waves.insert(info.sampleIndex);
 
-    ci->play(info, 41, 64);
+    ci->play(info, params);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     waves.insert(info.sampleIndex);

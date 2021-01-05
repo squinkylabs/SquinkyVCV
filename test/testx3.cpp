@@ -33,23 +33,28 @@ static void testVelSwitch1() {
 
     VoicePlayInfo info;
     ISamplerPlaybackPtr test = v.mapVelToPlayer(1);
-    test->play(info, 0, 1);
+    VoicePlayParameter params;
+    params.midiPitch = 0;
+    params.midiVelocity = 1;
+
+  
+    test->play(info, params);
     assertEQ(info.sampleIndex, 100);
 
     test = v.mapVelToPlayer(2);
-    test->play(info, 0, 1);
+    test->play(info, params);
     assertEQ(info.sampleIndex, 101);
 
     test = v.mapVelToPlayer(99);
-    test->play(info, 0, 1);
+    test->play(info, params);
     assertEQ(info.sampleIndex, 102);
 
     test = v.mapVelToPlayer(100);
-    test->play(info, 0, 1);
+    test->play(info, params);
     assertEQ(info.sampleIndex, 103);
 
     test = v.mapVelToPlayer(101);
-    test->play(info, 0, 1);
+    test->play(info, params);
     assertEQ(info.sampleIndex, 103);
 }
 
@@ -126,32 +131,44 @@ static void testSmallPianoVelswitch() {
 
     CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     VoicePlayInfo info;
-    cinst->play(info, 60, 60);
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 60;
+    cinst->play(info, params);
     assert(info.valid);
 
-    //  {1, 23, 44, 65, 80, 107});
-    cinst->play(info, 64, 1);
+
+    params.midiPitch = 64;
+    params.midiVelocity = 1;
+    cinst->play(info, params);
     const int si1 = info.sampleIndex;
 
-    cinst->play(info, 64, 22);
+    params.midiVelocity = 22;
+    cinst->play(info, params);
     const int si22 = info.sampleIndex;
 
-    cinst->play(info, 64, 23);
+    params.midiVelocity = 23;
+    cinst->play(info, params);
     const int si23 = info.sampleIndex;
 
-    cinst->play(info, 64, 30);
+    params.midiVelocity = 30;
+    cinst->play(info, params);
     const int si30 = info.sampleIndex;
 
-    cinst->play(info, 64, 43);
+    params.midiVelocity = 43;
+    cinst->play(info, params);
     const int si43 = info.sampleIndex;
 
-    cinst->play(info, 64, 44);
+    params.midiVelocity = 44;
+    cinst->play(info, params);
     const int si44 = info.sampleIndex;
 
-    cinst->play(info, 64, 107);
+    params.midiVelocity = 107;
+    cinst->play(info, params);
     const int si107 = info.sampleIndex;
 
-    cinst->play(info, 64, 127);
+    params.midiVelocity = 127;
+    cinst->play(info, params);
     const int si127 = info.sampleIndex;
 
     assertEQ(si1, si22);

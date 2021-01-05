@@ -19,7 +19,10 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity) {
         return;
     }
     VoicePlayInfo patchInfo;
-    patch->play(patchInfo, midiPitch, midiVelocity);
+    VoicePlayParameter params;
+    params.midiPitch = midiPitch;
+    params.midiVelocity = midiVelocity;
+    patch->play(patchInfo, params);
     if (!patchInfo.valid) {
         printf("could not get play info pitch %d vel%d\n", midiPitch, midiVelocity); fflush(stdout);
         return;
