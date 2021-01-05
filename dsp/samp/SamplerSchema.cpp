@@ -85,6 +85,7 @@ DiscreteValue SamplerSchema::translated(const std::string& s) {
 }
 
 void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
+    //printf("translating opcode: %s\n", input->key.c_str());
     Opcode opcode = translate(input->key);
     if (opcode == Opcode::NONE) {
         printf("could not translate opcode %s\n", input->key.c_str());

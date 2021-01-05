@@ -66,6 +66,7 @@ public:
     float hirand = -1;
 
     int seq_position = -1;
+    float amp_veltrack = 100;
 
     CompiledGroupPtrWeak weakParent;
     int lineNumber;

@@ -71,7 +71,7 @@ static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) {
         }
     }
 
-   // VoicePlayParameter params;
+    // VoicePlayParameter params;
     params.midiPitch = 20;
     params.midiVelocity = 60;
     cinst->play(info, params);
@@ -830,7 +830,6 @@ static void testCompileMulPitchAndVelSimple() {
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
-
     params.midiPitch = 30;
     params.midiVelocity = 21;
     ci->play(info, params);
@@ -883,6 +882,65 @@ static void testCompileMulPitchAndVelComplex1() {
     sampleIndicies.insert(info.sampleIndex);
 
     assertEQ(sampleIndicies.size(), 2);
+}
+
+static void testCompileAmpVel() {
+    printf("\n----- static void testCompileAmpVel() \n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    const char* data = R"foo(
+        <group>amp_veltrack=50
+        <region>key=55<region>key=30 amp_veltrack=100
+        <region>key=40 amp_veltrack=0
+        <region>key=10
+        <group>
+        <region>key=20
+        )foo";
+    auto err = SParse::go(data, inst);
+    assert(err.empty());
+    auto ci = CompiledInstrument::make(inst);
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+
+    // velrack = 100
+    params.midiPitch = 30;
+    params.midiVelocity = 127;
+    ci->play(info, params);
+    assert(info.valid);
+    assertEQ(info.gain, 1);
+
+    params.midiVelocity = 64;
+    ci->play(info, params);
+    assert(info.valid);
+    assertClose(info.gain, .25f, .01f);
+
+    // veltrack = 0
+    params.midiPitch = 40;
+    params.midiVelocity = 127;
+    ci->play(info, params);
+    assert(info.valid);
+    assertEQ(info.gain, 1);
+
+    params.midiVelocity = 1;
+    ci->play(info, params);
+    assert(info.valid);
+    assertEQ(info.gain, 1);
+
+    // default. veltrack should be 100
+    params.midiPitch = 20;
+    params.midiVelocity = 64;
+    ci->play(info, params);
+    assert(info.valid);
+    assertClose(info.gain, .25f, .01f);
+
+    // veltrack 50, inherited
+    params.midiPitch = 10;
+    params.midiVelocity = 64;
+    ci->play(info, params);
+    assert(info.valid);
+    assertClose(info.gain, .56, .01f);     //number gotten from known-good.
+                                            //but at least it's > .25 and < 1
+
 }
 
 static void testCompileMulPitchAndVelComplex2() {
@@ -986,7 +1044,6 @@ static void testCompileSimpleDrum() {
 
     std::set<int> waves;
     for (int i = 0; i < 40; ++i) {
-
         VoicePlayParameter params;
         params.midiPitch = 40;
         params.midiVelocity = 110;
@@ -1023,8 +1080,6 @@ static void testCompileSimpleDrum() {
 
     // three should play all of them
     assertEQ(waves.size(), 3);
-
- 
 }
 
 // test sorting of regions.
@@ -1065,7 +1120,7 @@ void testx2() {
     testStreamRetrigger();
     testStreamXpose1();
 
-   // printf("fix testStreamXpose2\n");
+    // printf("fix testStreamXpose2\n");
     //testStreamXpose2();
 
     testCIKeysAndValues();
@@ -1082,7 +1137,7 @@ void testx2() {
     testCompiledRegionsRand();
     testCompiledRegionSeqIndex1();
     testCompiledRegionSeqIndex2();
-
+    testCompileAmpVel();
 
     testCompiledGroup0();
     testCompiledGroup1();

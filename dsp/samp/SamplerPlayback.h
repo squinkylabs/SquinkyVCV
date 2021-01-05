@@ -71,24 +71,41 @@ public:
             needsTranspose = true;
             transposeAmt = pitchMul;
         }
+        amp_veltrack = reg->amp_veltrack;
     }
 
+    // properties that get served up unchanged
     bool needsTranspose = false;
     float transposeAmt = 1;
     const int sampleIndex;
+
+    // properties that participate in calculatons
+    float amp_veltrack = 100;
 };
 
 using CachedSamplerPlaybackInfoPtr = std::shared_ptr<CachedSamplerPlaybackInfo>;
 
+// TODO: move tis into a class??
 inline void cachedInfoToPlayInfo(VoicePlayInfo& playInfo, const VoicePlayParameter& params, const CachedSamplerPlaybackInfo& cachedInfo) {
     assert(params.midiVelocity > 0 && params.midiVelocity <= 127);
     playInfo.sampleIndex = cachedInfo.sampleIndex;
     playInfo.needsTranspose = cachedInfo.needsTranspose;
     playInfo.transposeAmt = cachedInfo.transposeAmt;
     playInfo.valid = true;
-    auto temp = float(params.midiVelocity) / 127.f;
-    temp *= temp;
-    playInfo.gain = temp;
+
+    // compute gain
+    {
+        // first do the veltrack adjustment to the raw velocity
+        const float v = float(params.midiVelocity);
+        const float t = cachedInfo.amp_veltrack;
+        const float x = (v * t / 100.f) + (100.f - t) * (127.f / 100.f);
+
+        // then taper it
+        auto temp = float(x) / 127.f;
+        temp *= temp;
+        playInfo.gain = temp;
+        // printf("doing vel comp veloc=%d, track=%f x=%f, gain=%f\n", params.midiVelocity, t, x, playInfo.gain);
+    }
 }
 
 class SimpleVoicePlayer : public ISamplerPlayback {
