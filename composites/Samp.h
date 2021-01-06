@@ -8,6 +8,7 @@
 #include "CompiledInstrument.h"
 #include "Divider.h"
 #include "IComposite.h"
+#include "SimdBlocks.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
 #include "SqPort.h"
@@ -85,6 +86,8 @@ private:
     Divider divn;
     int numChannels_m = 1;
 
+    bool lastGate = false;  // just for test now
+
     void stepn();
 
     void setupSamplesDummy();
@@ -96,8 +99,8 @@ inline void Samp<TBase>::init() {
         this->stepn();
     });
 
-    for (int i = 0; i < 16; ++i) {
-        lastGate[i] = false;
+    for (int i = 0; i < 4; ++i) {
+        lastGate4[i] = float_4(0);
     }
     setupSamplesDummy();
 }
@@ -149,6 +152,36 @@ inline void Samp<TBase>::stepn() {
     // printf("just set to %d channels\n", numChannels_m); fflush(stdout);
 }
 
+
+
+
+#if 0 // mono version  works
+template <class TBase>
+inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
+    divn.step();
+
+    bool gate = TBase::inputs[GATE_INPUT].getVoltage(0) > 1;
+    if (gate != lastGate) {
+        printf("gate = %d\n", gate); fflush(stdout);
+        if (gate) {
+            const float pitchCV = TBase::inputs[PITCH_INPUT].getVoltage(0);
+            const int midiPitch = 60 + int(std::floor(pitchCV * 12));
+
+            // printf("raw vel input = %f\n", TBase::inputs[VELOCITY_INPUT].getVoltage(channel));
+            const int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].getVoltage(0) * 12.7f);
+            playback[0].note_on(0, midiPitch, midiVelocity);
+        } else {
+            playback[0].note_off(0);
+        }
+        lastGate = gate;
+    }
+    float_4 output4 = playback[0].step(gate, args.sampleTime);
+    float output = output4[0];
+    TBase::outputs[AUDIO_OUTPUT].setVoltage(output);
+}
+#endif
+
+#if 1  // real, poly version, messed up
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     divn.step();
@@ -157,12 +190,13 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     if (numBanks * 4 < numChannels_m) {
         numBanks++;
     }
-
+    assert(numBanks < 4);
     for (int bank = 0; bank < numBanks; ++bank) {
         Port& p = TBase::inputs[GATE_INPUT];
         float_4 g = p.getVoltageSimd<float_4>(bank * 4);
-        float_4 gate4 = (g > float_4(1));
-        simd_assertMask(gate4);
+       // float_4 gate4 = (g > float_4(1));
+        float_4 gate4 = SimdBlocks::ifelse( (g > float_4(1)), float_4(1), float_4(0));
+       // simd_assertMask(gate4);
 
         float_4 lgate4 = lastGate4[bank];
         // if (gate4 != lastGate4[bank]) {
@@ -171,7 +205,9 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         for (int iSub = 0; iSub < 4; ++iSub) {
             if (gate4[iSub] != lgate4[iSub]) {
                 if (gate4[iSub]) {
-                     const int channel = iSub + bank * 4;
+                    printf("new gate on %d:%d gatevalue=%f\n", bank, iSub, gate4[iSub]); fflush(stdout);
+                    assert(bank < 4);
+                    const int channel = iSub + bank * 4;
                     const float pitchCV = TBase::inputs[PITCH_INPUT].getVoltage(channel);
                     const int midiPitch = 60 + int(std::floor(pitchCV * 12));
 
@@ -181,16 +217,16 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                     // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
                 } else {
                     playback[bank].note_off(iSub);
+                     printf("new gate off %d:%d value = %f\n", bank, iSub, gate4[iSub]); fflush(stdout);
                 }
-
             }
-            lastGate4[bank] = gate4;
-
-            auto output = playback[bank].step(gate4, args.sampleTime);
-            TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
         }
+        auto output = playback[bank].step(gate4, args.sampleTime);
+        TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
+        lastGate4[bank] = gate4;
     }
 }
+#endif
 
 #if 0
 template <class TBase>
@@ -236,20 +272,20 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
 }
 #endif
 
-    template <class TBase>
-    int SampDescription<TBase>::getNumParams() {
-        return Samp<TBase>::NUM_PARAMS;
-    }
+template <class TBase>
+int SampDescription<TBase>::getNumParams() {
+    return Samp<TBase>::NUM_PARAMS;
+}
 
-    template <class TBase>
-    inline IComposite::Config SampDescription<TBase>::getParam(int i) {
-        Config ret(0, 1, 0, "");
-        switch (i) {
-            case Samp<TBase>::TEST_PARAM:
-                ret = {-1.0f, 1.0f, 0, "Test"};
-                break;
-            default:
-                assert(false);
-        }
-        return ret;
+template <class TBase>
+inline IComposite::Config SampDescription<TBase>::getParam(int i) {
+    Config ret(0, 1, 0, "");
+    switch (i) {
+        case Samp<TBase>::TEST_PARAM:
+            ret = {-1.0f, 1.0f, 0, "Test"};
+            break;
+        default:
+            assert(false);
     }
+    return ret;
+}

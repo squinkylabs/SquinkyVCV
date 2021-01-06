@@ -14,6 +14,7 @@ using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 
 #include "Streamer.h"
 
+
 class Sampler4vx {
 public:
     void note_on(int channel, int midiPitch, int midiVelocity);
@@ -32,8 +33,10 @@ private:
     CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;
     Streamer player;
+#ifdef _USEADSR
     ADSR4 adsr;
     float_4 R = float_4(.001f);
+#endif
 
 
     void tryInit();

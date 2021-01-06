@@ -98,7 +98,7 @@ using CompiledMultiRegionPtr = std::shared_ptr<CompiledMultiRegion>;
 class CompiledRoundRobinRegion : public CompiledMultiRegion {
 public:
     CompiledRoundRobinRegion(CompiledGroupPtr parent);
-    virtual Type type() const { return Type::RoundRobin; }
+    Type type() const override { return Type::RoundRobin; }
 };
 
 class CompiledRandomRegion : public CompiledMultiRegion {
