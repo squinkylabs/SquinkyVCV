@@ -24,7 +24,8 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity) {
     params.midiVelocity = midiVelocity;
     patch->play(patchInfo, params);
     if (!patchInfo.valid) {
-        printf("could not get play info pitch %d vel%d\n", midiPitch, midiVelocity); fflush(stdout);
+        printf("could not get play info pitch %d vel%d\n", midiPitch, midiVelocity);
+        fflush(stdout);
         return;
     }
 
@@ -46,8 +47,10 @@ void Sampler4vx::note_off(int channel) {
 void Sampler4vx::setNumVoices(int voices) {
 }
 
-float_4 Sampler4vx::step() {
+float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
     if (patch && waves) {
+        // float_4 step(const float_4& gates, float sampleTime);
+        float_4 envelopes = adsr.step(gates, sampleTime);
         return player.step();
     } else {
         return 0;

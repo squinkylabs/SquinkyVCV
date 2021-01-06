@@ -2,8 +2,8 @@
 
 #include <memory>
 
+#include "ADSR4.h"
 #include "SimdBlocks.h"
-
 
 class CompiledInstrument;
 using CompiledInstrumentPtr = std::shared_ptr<CompiledInstrument>;
@@ -26,12 +26,13 @@ public:
      * zero to 4
      */
     void setNumVoices(int voices);
-    float_4 step();
+    float_4 step(const float_4& gates, float sampleTime);
 
 private:
     CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;
     Streamer player;
+    ADSR4 adsr;
 
     void tryInit();
 };

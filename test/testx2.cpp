@@ -230,7 +230,9 @@ static void testSampler() {
     const int midiPitch = 60;
     const int midiVel = 60;
     s.note_on(channel, midiPitch, midiVel);
-    float_4 x = s.step();
+
+
+    float_4 x = s.step(0, 1.f / 44100.f);
     assert(x[0] == 0);
 }
 
@@ -257,10 +259,10 @@ static void testSamplerRealSound() {
     const int midiPitch = 60;
     const int midiVel = 60;
     s.note_on(channel, midiPitch, midiVel);
-    float_4 x = s.step();
+    float_4 x = s.step(0, 1.f / 44100.f);
     assert(x[0] == 0);
 
-    x = s.step();
+    x = s.step(0, 1.f / 44100.f);
     assert(x[0] != 0);
 }
 
