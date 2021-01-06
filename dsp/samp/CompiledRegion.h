@@ -104,7 +104,7 @@ public:
 class CompiledRandomRegion : public CompiledMultiRegion {
 public:
     CompiledRandomRegion(CompiledGroupPtr parent);
-    virtual Type type() const { return Type::Random; }
+    Type type() const override { return Type::Random; }
 };
 
 /**

@@ -12,6 +12,7 @@ float_4 Streamer::step() {
     for (int channel = 0; channel < 4; ++channel) {
         ChannelData& cd = channels[channel];
         float f = cd.transposeEnabled ? stepTranspose(cd) : stepNoTranspose(cd);
+        f *= cd.gain;
         ret[channel] = f;
     }
     return ret;
@@ -61,6 +62,11 @@ bool Streamer::canPlay(int channel) {
     assert(channel < 4);
     const ChannelData& cd = channels[channel];
     return bool(cd.data && cd.arePlaying);
+}
+
+void Streamer::setGain(int channel, float gain) {
+    ChannelData& cd = channels[channel];
+    cd.gain = gain;
 }
 
 void Streamer::setSample(int channel, float* d, int f) {

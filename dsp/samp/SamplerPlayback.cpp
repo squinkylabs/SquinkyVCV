@@ -28,7 +28,7 @@ void RandomVoicePlayer::_dump(int depth) const {
 
 void RandomVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
     const int index = rand.get();
-    assert(index < entries.size());
+    assert(index < int(entries.size()));
 
     cachedInfoToPlayInfo(info, params, *entries[index]);
     //info = *entries[index];

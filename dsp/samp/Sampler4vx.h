@@ -14,7 +14,7 @@ using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 
 #include "Streamer.h"
 
-
+#define _USEADSR
 class Sampler4vx {
 public:
     void note_on(int channel, int midiPitch, int midiVelocity);

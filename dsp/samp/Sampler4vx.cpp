@@ -40,6 +40,7 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity) {
     assert(waveInfo->numChannels == 1);
     player.setSample(channel, waveInfo->data, int(waveInfo->totalFrameCount));
     player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
+    player.setGain(channel, patchInfo.gain);
 
     // this is a little messed up - the adsr should really have independent
     // settings for each channel. OK for now, though.
@@ -63,6 +64,11 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
     if (patch && waves) {
         // float_4 step(const float_4& gates, float sampleTime);
 #ifdef _USEADSR
+        if (!isMask(gates)) {
+            printf("adsr needs real simd mask for gates\n"); fflush(stdout);
+            return 0;
+        }
+ 
         float_4 envelopes = adsr.step(gates, sampleTime);
         float_4 samples = player.step();
         //printf("eg0 = %f samp0 = %f\n", envelopes[0], samples[0]);

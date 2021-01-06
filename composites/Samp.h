@@ -192,9 +192,13 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     }
     assert(numBanks < 4);
     for (int bank = 0; bank < numBanks; ++bank) {
+
+        // prepare 4 gates. note that ADSR / Sampler4vx must see simd mask (0 or nan)
+        // but our logic needs to see numbers (we use 1 and 0).
         Port& p = TBase::inputs[GATE_INPUT];
         float_4 g = p.getVoltageSimd<float_4>(bank * 4);
-        float_4 gate4 = SimdBlocks::ifelse( (g > float_4(1)), float_4(1), float_4(0));;
+        float_4 gmask = (g > float_4(1));
+        float_4 gate4 = SimdBlocks::ifelse( gmask, float_4(1), float_4(0));;
 
         float_4 lgate4 = lastGate4[bank];
 
@@ -208,7 +212,10 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                     const int midiPitch = 60 + int(std::floor(pitchCV * 12));
 
                     // printf("raw vel input = %f\n", TBase::inputs[VELOCITY_INPUT].getVoltage(channel));
-                    const int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].getVoltage(channel) * 12.7f);
+                    int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].getVoltage(channel) * 12.7f);
+                    if (midiVelocity < 1) {
+                        midiVelocity = 1;
+                    }
                     playback[bank].note_on(iSub, midiPitch, midiVelocity);
                     // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
                 } else {
@@ -217,7 +224,7 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                 }
             }
         }
-        auto output = playback[bank].step(gate4, args.sampleTime);
+        auto output = playback[bank].step(gmask, args.sampleTime);
         TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
         lastGate4[bank] = gate4;
     }
