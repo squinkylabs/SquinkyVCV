@@ -11,6 +11,10 @@ void Sampler4vx::setPatch(CompiledInstrumentPtr inst) {
 
 void Sampler4vx::setLoader(WaveLoaderPtr loader) {
     waves = loader;
+    adsr.setA(.1f, 1);
+    adsr.setD(.1f, 1);
+    adsr.setS(1);
+    adsr.setR(.1f, 1);
 }
 
 void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity) {
@@ -34,9 +38,13 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity) {
     assert(waveInfo->numChannels == 1);
     player.setSample(channel, waveInfo->data, int(waveInfo->totalFrameCount));
     player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
-    printf("note_on ch=%d, pitch-%d, vel=%d sample=%d\n", channel, midiPitch, midiVelocity, patchInfo.sampleIndex);
-    fflush(stdout);
-    // printf("just set player trans(%d, %f)\n", patchInfo.needsTranspose, patchInfo.transposeAmt); fflush(stdout);
+
+    // this is a little messed up - the adsr should really have independent
+    // settings for each channel. OK for now, though.
+    R[channel] = patchInfo.ampeg_release;
+    adsr.setR(R[channel], 1);
+
+    printf("note_on ch=%d, pitch-%d, vel=%d sample=%d\n", channel, midiPitch, midiVelocity, patchInfo.sampleIndex);  fflush(stdout);
 }
 
 void Sampler4vx::note_off(int channel) {
@@ -51,7 +59,7 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
     if (patch && waves) {
         // float_4 step(const float_4& gates, float sampleTime);
         float_4 envelopes = adsr.step(gates, sampleTime);
-        return player.step();
+        return envelopes * player.step();
     } else {
         return 0;
     }

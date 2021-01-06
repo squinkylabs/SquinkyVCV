@@ -20,6 +20,7 @@ public:
     bool needsTranspose = false;
     float transposeAmt = 1;
     float gain = 1;             // assume full volume
+    float ampeg_release = .001f;
 
     bool canPlay() const {
         return valid && (sampleIndex > 0);
@@ -72,14 +73,16 @@ public:
             transposeAmt = pitchMul;
         }
         amp_veltrack = reg->amp_veltrack;
+        ampeg_release = reg->ampeg_release;
     }
 
     // properties that get served up unchanged
     bool needsTranspose = false;
     float transposeAmt = 1;
     const int sampleIndex;
+    float ampeg_release = .001f;
 
-    // properties that participate in calculatons
+    // properties that participate in calculations
     float amp_veltrack = 100;
 };
 
@@ -91,6 +94,7 @@ inline void cachedInfoToPlayInfo(VoicePlayInfo& playInfo, const VoicePlayParamet
     playInfo.sampleIndex = cachedInfo.sampleIndex;
     playInfo.needsTranspose = cachedInfo.needsTranspose;
     playInfo.transposeAmt = cachedInfo.transposeAmt;
+    playInfo.ampeg_release = cachedInfo.ampeg_release;
     playInfo.valid = true;
 
     // compute gain
@@ -104,6 +108,7 @@ inline void cachedInfoToPlayInfo(VoicePlayInfo& playInfo, const VoicePlayParamet
         auto temp = float(x) / 127.f;
         temp *= temp;
         playInfo.gain = temp;
+      
         // printf("doing vel comp veloc=%d, track=%f x=%f, gain=%f\n", params.midiVelocity, t, x, playInfo.gain);
     }
 }

@@ -886,6 +886,45 @@ static void testCompileMulPitchAndVelComplex1() {
     assertEQ(sampleIndicies.size(), 2);
 }
 
+static void  testCompileAmpegRelease() {
+    printf("\n----- static void testCompileAmpegRelease() \n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    const char* data = R"foo(
+        <group>ampeg_release=50
+        <region>key=55
+        <region>key=30 ampeg_release=10
+        <region>key=40 ampeg_release=0
+        <group>
+        <region>key=20
+        )foo";
+    auto err = SParse::go(data, inst);
+    assert(err.empty());
+    auto ci = CompiledInstrument::make(inst);
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 55;
+    params.midiVelocity = 127;
+
+    // inherited
+    ci->play(info, params);
+    assert(info.valid);
+    assertEQ(info.ampeg_release, 50);
+
+    // set directly
+    params.midiPitch = 30;
+    ci->play(info, params);
+    assert(info.valid);
+    assertEQ(info.ampeg_release, 10);
+
+    // default
+    params.midiPitch = 20;
+    ci->play(info, params);
+    assert(info.valid);
+    assertEQ(info.ampeg_release, .001f);
+ 
+}
+
 static void testCompileAmpVel() {
     printf("\n----- static void testCompileAmpVel() \n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -1140,6 +1179,7 @@ void testx2() {
     testCompiledRegionSeqIndex1();
     testCompiledRegionSeqIndex2();
     testCompileAmpVel();
+    testCompileAmpegRelease();
 
     testCompiledGroup0();
     testCompiledGroup1();

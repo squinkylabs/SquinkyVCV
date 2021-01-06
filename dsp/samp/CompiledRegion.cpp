@@ -91,6 +91,7 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     findValue(hirand, SamplerSchema::Opcode::HI_RAND, *parsedParent, reg);
 
     findValue(amp_veltrack, SamplerSchema::Opcode::AMP_VELTRACK, *parsedParent, reg);
+    findValue(ampeg_release, SamplerSchema::Opcode::AMPEG_RELEASE, *parsedParent, reg);
 }
 
 static bool overlapRange(int alo, int ahi, int blo, int bhi) {

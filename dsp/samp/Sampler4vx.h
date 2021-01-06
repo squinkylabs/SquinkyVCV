@@ -33,6 +33,8 @@ private:
     WaveLoaderPtr waves;
     Streamer player;
     ADSR4 adsr;
+    float_4 R = float_4(.001f);
+
 
     void tryInit();
 };
