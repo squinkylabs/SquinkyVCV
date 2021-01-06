@@ -9,24 +9,13 @@
 float_4 Streamer::step() {
     float_4 ret;
 
-    #if 0   // try mono
     for (int channel = 0; channel < 4; ++channel) {
         ChannelData& cd = channels[channel];
         float f = cd.transposeEnabled ? stepTranspose(cd) : stepNoTranspose(cd);
         ret[channel] = f;
     }
-    #else
-        ChannelData& cd = channels[0];
-        float f = cd.transposeEnabled ? stepTranspose(cd) : stepNoTranspose(cd);
-        //ret[channel] = f;
-        ret = float_4(f);
-    #endif
     return ret;
 }
-
-#ifdef _TRACK_MAX
-static float maxSamp = 0;
-#endif
 
 float Streamer::stepTranspose(ChannelData& cd) {
     float ret = 0;
@@ -42,15 +31,8 @@ float Streamer::stepTranspose(ChannelData& cd) {
     if (!CubicInterpolator<float>::canInterpolate(cd.curFloatSampleOffset, cd.frames)) {
         cd.arePlaying = false;
     }
-#ifdef _TRACK_MAX
-    if (std::abs(ret) > maxSamp) {
-        printf(" trans new max = %f\n", ret); fflush(stdout);
-        maxSamp = std::abs(ret);
-    }
-#endif
-    //  printf("streamer trans returning s=%f vol=%f\n", ret, cd.vol);
-    return ret;
-    // return ret * cd.vol;
+
+    return ret * cd.vol;
 }
 
 float Streamer::stepNoTranspose(ChannelData& cd) {
@@ -66,21 +48,12 @@ float Streamer::stepNoTranspose(ChannelData& cd) {
     if (cd.curIntegerSampleOffset >= cd.frames) {
         cd.arePlaying = false;
     }
-#ifdef _TRACK_MAX
-    if (std::abs(ret) > maxSamp) {
-        printf("no trans new max = %f\n", ret);
-        fflush(stdout);
-        maxSamp = std::abs(ret);
-    }
-#endif
-    // printf("streamer no trans returning s=%f vol=%f\n", ret, cd.vol);
-    return ret;
-    // return ret * cd.vol;
+
+    return ret * cd.vol;
 }
 
 void Streamer::mute(int channel) {
     assert(channel < 4);
-    printf("player just mutes channel %d\n", channel);
     channels[channel].vol = 0;
 }
 

@@ -181,7 +181,7 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
 }
 #endif
 
-#if 1  // real, poly version, messed up
+#if 1  // real, poly version, fixed
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     divn.step();
@@ -194,18 +194,14 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     for (int bank = 0; bank < numBanks; ++bank) {
         Port& p = TBase::inputs[GATE_INPUT];
         float_4 g = p.getVoltageSimd<float_4>(bank * 4);
-       // float_4 gate4 = (g > float_4(1));
-        float_4 gate4 = SimdBlocks::ifelse( (g > float_4(1)), float_4(1), float_4(0));
-       // simd_assertMask(gate4);
+        float_4 gate4 = SimdBlocks::ifelse( (g > float_4(1)), float_4(1), float_4(0));;
 
         float_4 lgate4 = lastGate4[bank];
-        // if (gate4 != lastGate4[bank]) {
-        //     assert(false);
-        // }
+
         for (int iSub = 0; iSub < 4; ++iSub) {
             if (gate4[iSub] != lgate4[iSub]) {
                 if (gate4[iSub]) {
-                    printf("new gate on %d:%d gatevalue=%f\n", bank, iSub, gate4[iSub]); fflush(stdout);
+                    // printf("new gate on %d:%d gatevalue=%f\n", bank, iSub, gate4[iSub]); fflush(stdout);
                     assert(bank < 4);
                     const int channel = iSub + bank * 4;
                     const float pitchCV = TBase::inputs[PITCH_INPUT].getVoltage(channel);
@@ -217,7 +213,7 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                     // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
                 } else {
                     playback[bank].note_off(iSub);
-                     printf("new gate off %d:%d value = %f\n", bank, iSub, gate4[iSub]); fflush(stdout);
+                    // printf("new gate off %d:%d value = %f\n", bank, iSub, gate4[iSub]); fflush(stdout);
                 }
             }
         }
