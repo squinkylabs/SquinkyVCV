@@ -22,6 +22,9 @@ public:
     void setD(float, float mult);
     void setS(float);
     void setR(float, float mult);
+
+    // set relese to a specific time
+    void setR_L(float seconds);
 #else
     void setParams(float a, float d, float s, float r);
 #endif
@@ -52,6 +55,7 @@ private:
     //bool snap = false;
 
     void setLambda(float_4& output, float input, float mult);
+    void setLambda_L(float_4& output, float input);
 };
 
 inline float_4 ADSR4::step(const float_4& gates, float sampleTime) {
@@ -88,6 +92,13 @@ inline void ADSR4::setLambda(float_4& output, float input, float mult) {
     // printf("set lambda input=%f, output=%f\n", input, output[0]); fflush(stdout);
 }
 
+
+// this isn't exact - but close enough?
+inline void ADSR4::setLambda_L(float_4& output, float inputSec) {
+     output = 100 * rack::simd::pow(100.f, -inputSec) ;
+}
+
+
 inline void ADSR4::setA(float t, float mult) {
     setLambda(attackLambda, t, mult);
 }
@@ -105,18 +116,7 @@ inline void ADSR4::setR(float t, float mult) {
     setLambda(releaseLambda, t, mult);
 }
 
-#if 0
-inline  void ADSR4::setParams(float a, float d, float s, float r)
-{
-#if 0
-    printf("setParams a=%f, d=%f, s=%f r=%f\n", a, d, s, r);
-    fflush(stdout);
-#endif
-    setLambda(attackLambda, a);
-    setLambda(decayLambda, d);
-    setLambda(releaseLambda, r);
-
-    float_4 x = rack::simd::clamp(s, 0.f, 1.f);
-    sustain = x;
+inline void ADSR4::setR_L(float tSec) {
+        setLambda_L(releaseLambda, tSec);
 }
-#endif
+

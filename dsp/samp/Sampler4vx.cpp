@@ -46,7 +46,8 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity) {
     // settings for each channel. OK for now, though.
 #ifdef _USEADSR
     R[channel] = patchInfo.ampeg_release;
-    adsr.setR(R[channel], 1);
+    //adsr.setR(R[channel], 1);
+    adsr.setR_L(R[channel]);
 #endif
 
     // printf("note_on ch=%d, pitch-%d, vel=%d sample=%d\n", channel, midiPitch, midiVelocity, patchInfo.sampleIndex);  fflush(stdout);
