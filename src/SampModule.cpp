@@ -5,6 +5,8 @@
 #include "WidgetComposite.h"
 
 #ifdef _SAMP
+#include <osdialog.h>
+
 #include "Samp.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
@@ -24,6 +26,10 @@ public:
     void onSampleRateChange() override;
 
     std::shared_ptr<Comp> samp;
+
+    void setNewSamples(const std::string& s) {
+        samp->setNewSamples(s);
+    }
 
 private:
 };
@@ -49,9 +55,23 @@ void SampModule::process(const ProcessArgs& args) {
 // module widget
 ////////////////////
 
+static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/booty-shifter.md";
+
 struct SampWidget : ModuleWidget {
-    SampWidget(SampModule*);
-    DECLARE_MANUAL("Samp Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/booty-shifter.md");
+    SampWidget(SampModule* m);
+    //  DECLARE_MANUAL("Samp Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/booty-shifter.md");
+    void appendContextMenu(Menu* theMenu) override {
+        ::rack::ui::MenuLabel* spacerLabel = new ::rack::ui::MenuLabel();
+        theMenu->addChild(spacerLabel);
+        ManualMenuItem* manual = new ManualMenuItem("Samp manual", helpUrl);
+        theMenu->addChild(manual);
+
+        SqMenuItem* sfile = new SqMenuItem(
+            []() { return false; },
+            [this]() { this->loadSamplerFile(); });
+        sfile->text = "Load Sample file";
+        theMenu->addChild(sfile);
+    }
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK) {
         Label* label = new Label();
@@ -61,8 +81,40 @@ struct SampWidget : ModuleWidget {
         addChild(label);
         return label;
     }
+    void loadSamplerFile();
     void addJacks(SampModule* module, std::shared_ptr<IComposite> icomp);
+
+    SampModule* _module;
 };
+
+void SampWidget::loadSamplerFile() {
+    static const char SMF_FILTERS[] = "Standard Sfz file (.sfz):sfz";
+    osdialog_filters* filters = osdialog_filters_parse(SMF_FILTERS);
+    std::string filename;
+
+    // std::string dir = _module->sequencer->context->settings()->getMidiFilePath();
+    std::string dir = "";
+    DEFER({
+        osdialog_filters_free(filters);
+    });
+
+    char* pathC = osdialog_file(OSDIALOG_OPEN, dir.c_str(), filename.c_str(), filters);
+
+    if (!pathC) {
+        // Fail silently
+        return;
+    }
+    DEFER({
+        std::free(pathC);
+    });
+    printf("got %s\n", pathC);
+    fflush(stdout);
+
+    FATAL("finish file load");
+    if (pathC) {
+        _module->setNewSamples(pathC);
+    }
+}
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
     float jacksY = 340;
@@ -111,6 +163,7 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
 
 SampWidget::SampWidget(SampModule* module) {
     setModule(module);
+    _module = module;
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
     addLabel(Vec(100, 50), "Sssssss");

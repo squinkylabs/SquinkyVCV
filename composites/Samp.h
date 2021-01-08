@@ -8,9 +8,9 @@
 #include "CompiledInstrument.h"
 #include "Divider.h"
 #include "IComposite.h"
-#include "SimdBlocks.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
+#include "SimdBlocks.h"
 #include "SqPort.h"
 #include "WaveLoader.h"
 
@@ -71,6 +71,7 @@ public:
         return std::make_shared<SampDescription<TBase>>();
     }
 
+    void setNewSamples(const std::string& s);
     /**
      * Main processing entry point. Called every sample
      */
@@ -103,6 +104,28 @@ inline void Samp<TBase>::init() {
         lastGate4[i] = float_4(0);
     }
     setupSamplesDummy();
+}
+
+template <class TBase>
+inline void Samp<TBase>::setNewSamples(const std::string& s) {
+#ifdef ARCH_WIN
+    auto separator = '\\';
+#else
+    auto separator = '/';
+#endif
+
+    auto pos = s.rfind(separator);
+    if (pos == std::string::npos) {
+        printf("failed to parse path: %s\n", s.c_str());
+        fflush(stdout);
+        return;
+    }
+
+    std::string path = s.substr(0, pos) + separator;
+    std::string fname = s.substr(pos + 1);
+    printf("path = %s\n", path.c_str());
+    printf("name = %s\n", fname.c_str());
+    fflush(stdout);
 }
 
 template <class TBase>
@@ -152,10 +175,7 @@ inline void Samp<TBase>::stepn() {
     // printf("just set to %d channels\n", numChannels_m); fflush(stdout);
 }
 
-
-
-
-#if 0 // mono version  works
+#if 0  // mono version  works
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     divn.step();
@@ -192,13 +212,13 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     }
     assert(numBanks < 4);
     for (int bank = 0; bank < numBanks; ++bank) {
-
         // prepare 4 gates. note that ADSR / Sampler4vx must see simd mask (0 or nan)
         // but our logic needs to see numbers (we use 1 and 0).
         Port& p = TBase::inputs[GATE_INPUT];
         float_4 g = p.getVoltageSimd<float_4>(bank * 4);
         float_4 gmask = (g > float_4(1));
-        float_4 gate4 = SimdBlocks::ifelse( gmask, float_4(1), float_4(0));;
+        float_4 gate4 = SimdBlocks::ifelse(gmask, float_4(1), float_4(0));
+        ;
 
         float_4 lgate4 = lastGate4[bank];
 
