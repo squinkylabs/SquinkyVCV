@@ -56,7 +56,7 @@ static void testADSR_lin()
         float r = measureRelease(x, true);
         printf("r(%f) = %f seconds ratio = %f\n", x, r, r / x);
     }
-    assert(false);
+
 }
 
 

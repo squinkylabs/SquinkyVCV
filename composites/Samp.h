@@ -81,7 +81,13 @@ public:
         return std::make_shared<SampDescription<TBase>>();
     }
 
-    void setNewSamples(const std::string& s);
+    void setNewSamples(const std::string& s) {
+        patchRequest = s;
+    }
+
+    bool _sampleLoaded() {
+        return false;
+    }
     /**
      * Main processing entry point. Called every sample
      */
@@ -98,19 +104,22 @@ private:
     int numChannels_m = 1;
 
     std::unique_ptr<ThreadClient> thread;
+    std::string patchRequest;
 
     bool lastGate = false;  // just for test now
 
-    void stepn();
+    void step_n();
 
     void setupSamplesDummy();
     void commonConstruct();
+    void servicePendingPatchRequest();
+    void servicePatchLoader();
 };
 
 template <class TBase>
 inline void Samp<TBase>::init() {
     divn.setup(32, [this]() {
-        this->stepn();
+        this->step_n();
     });
 
     for (int i = 0; i < 4; ++i) {
@@ -119,6 +128,9 @@ inline void Samp<TBase>::init() {
     setupSamplesDummy();
 }
 
+
+
+#if 0
 template <class TBase>
 inline void Samp<TBase>::setNewSamples(const std::string& s) {
 #ifdef ARCH_WIN
@@ -140,6 +152,7 @@ inline void Samp<TBase>::setNewSamples(const std::string& s) {
     printf("name = %s\n", fname.c_str());
     fflush(stdout);
 }
+#endif
 
 template <class TBase>
 inline void Samp<TBase>::setupSamplesDummy() {
@@ -180,12 +193,15 @@ inline void Samp<TBase>::setupSamplesDummy() {
 }
 
 template <class TBase>
-inline void Samp<TBase>::stepn() {
+inline void Samp<TBase>::step_n() {
     SqInput& inPort = TBase::inputs[PITCH_INPUT];
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
     numChannels_m = inPort.channels;
     outPort.setChannels(numChannels_m);
     // printf("just set to %d channels\n", numChannels_m); fflush(stdout);
+
+    servicePendingPatchRequest();
+    servicePatchLoader();
 }
 
 template <class TBase>
@@ -254,12 +270,27 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
     return ret;
 }
 
+
 class SampMessage : public ThreadMessage {
+public:
+    // set by the composite
+    std::string patchPath;
+    std::string basePath;
+
+
+    // returned to the composite
+    SInstrumentPtr instrument;
+    WaveLoaderPtr waves;
+
 };
 
 class SampServer : public ThreadServer {
 public:
     SampServer(std::shared_ptr<ThreadSharedState> state) : ThreadServer(state) {
+    }
+
+    void handleMessage(ThreadMessage*) override {
+        assert(false);
     }
 };
 
@@ -271,4 +302,15 @@ void Samp<TBase>::commonConstruct() {
 
     std::unique_ptr<ThreadClient> client(new ThreadClient(threadState, std::move(server)));
     this->thread = std::move(client);
+}
+
+
+template <class TBase>
+void Samp<TBase>::servicePendingPatchRequest() {
+    assert(patchRequest.empty());
+}
+
+template <class TBase>
+void Samp<TBase>::servicePatchLoader() {
+    
 }
