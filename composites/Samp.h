@@ -8,10 +8,14 @@
 #include "CompiledInstrument.h"
 #include "Divider.h"
 #include "IComposite.h"
+#include "ManagedPool.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
 #include "SimdBlocks.h"
 #include "SqPort.h"
+#include "ThreadClient.h"
+#include "ThreadServer.h"
+#include "ThreadSharedState.h"
 #include "WaveLoader.h"
 
 namespace rack {
@@ -32,8 +36,14 @@ template <class TBase>
 class Samp : public TBase {
 public:
     Samp(Module* module) : TBase(module) {
+        commonConstruct();
     }
     Samp() : TBase() {
+        commonConstruct();
+    }
+    virtual ~Samp()
+    {
+        thread.reset();     // kill the threads before deleting other things
     }
 
     /**
@@ -87,11 +97,14 @@ private:
     Divider divn;
     int numChannels_m = 1;
 
+    std::unique_ptr<ThreadClient> thread;
+
     bool lastGate = false;  // just for test now
 
     void stepn();
 
     void setupSamplesDummy();
+    void commonConstruct();
 };
 
 template <class TBase>
@@ -175,33 +188,6 @@ inline void Samp<TBase>::stepn() {
     // printf("just set to %d channels\n", numChannels_m); fflush(stdout);
 }
 
-#if 0  // mono version  works
-template <class TBase>
-inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
-    divn.step();
-
-    bool gate = TBase::inputs[GATE_INPUT].getVoltage(0) > 1;
-    if (gate != lastGate) {
-        printf("gate = %d\n", gate); fflush(stdout);
-        if (gate) {
-            const float pitchCV = TBase::inputs[PITCH_INPUT].getVoltage(0);
-            const int midiPitch = 60 + int(std::floor(pitchCV * 12));
-
-            // printf("raw vel input = %f\n", TBase::inputs[VELOCITY_INPUT].getVoltage(channel));
-            const int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].getVoltage(0) * 12.7f);
-            playback[0].note_on(0, midiPitch, midiVelocity);
-        } else {
-            playback[0].note_off(0);
-        }
-        lastGate = gate;
-    }
-    float_4 output4 = playback[0].step(gate, args.sampleTime);
-    float output = output4[0];
-    TBase::outputs[AUDIO_OUTPUT].setVoltage(output);
-}
-#endif
-
-#if 1  // real, poly version, fixed
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     divn.step();
@@ -249,51 +235,6 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         lastGate4[bank] = gate4;
     }
 }
-#endif
-
-#if 0
-template <class TBase>
-inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
-    divn.step();
-
-    int numBanks = numChannels_m / 4;
-    if (numBanks * 4 < numChannels_m) {
-        numBanks++;
-    }
-
-    for (int bank = 0; bank < numBanks; ++bank) {
-        for (int iSub = 0; iSub < 4; ++iSub) {
-            const int channel = iSub + bank * 4;
-
-            float_4 gate4 = 0;
-            Port& p = TBase::inputs[GATE_INPUT];
-            float_4 g = p.getVoltageSimd<float_4>(bank * 4);
-            gate4 = (g > float_4(1));
-            simd_assertMask(gate4);
-
-           // const bool gate = TBase::inputs[GATE_INPUT].getVoltage(channel) > 1;
-            if (gate_4 != lastGate4)
-           // if (gate != lastGate[channel]) {
-                if (gate) {
-                    const float pitchCV = TBase::inputs[PITCH_INPUT].getVoltage(channel);
-                    const int midiPitch = 60 + int(std::floor(pitchCV * 12));
-
-                    // printf("raw vel input = %f\n", TBase::inputs[VELOCITY_INPUT].getVoltage(channel));
-                    const int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].getVoltage(channel) * 12.7f);
-                    playback[bank].note_on(iSub, midiPitch, midiVelocity);
-                    // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
-                } else {
-                    playback[bank].note_off(iSub);
-                }
-                lastGate[channel] = gate;
-            }
-        }
-
-        auto output = playback[bank].step();
-        TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
-    }
-}
-#endif
 
 template <class TBase>
 int SampDescription<TBase>::getNumParams() {
@@ -311,4 +252,23 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
             assert(false);
     }
     return ret;
+}
+
+class SampMessage : public ThreadMessage {
+};
+
+class SampServer : public ThreadServer {
+public:
+    SampServer(std::shared_ptr<ThreadSharedState> state) : ThreadServer(state) {
+    }
+};
+
+template <class TBase>
+void Samp<TBase>::commonConstruct() {
+    //  crossFader.enableMakeupGain(true);
+    std::shared_ptr<ThreadSharedState> threadState = std::make_shared<ThreadSharedState>();
+    std::unique_ptr<ThreadServer> server(new SampServer(threadState));
+
+    std::unique_ptr<ThreadClient> client(new ThreadClient(threadState, std::move(server)));
+    this->thread = std::move(client);
 }
