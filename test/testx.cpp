@@ -7,7 +7,6 @@
 #include "SLex.h"
 #include "SParse.h"
 #include "SqLog.h"
-
 #include "asserts.h"
 #include "pugixml.hpp"
 
@@ -222,9 +221,12 @@ static void testLexSpaces() {
     assertEQ(fname->idName, "a b c");
 }
 
-static void testLexSpaces2() {
-    SQWARN("staring test lex spaces 2");
-    auto lex = SLex::go("\nsample=abc x=y");
+/**
+ * tests lexing of things like "sample=foo a=b"
+ * test string is expected to have a sample- and x=y
+ */
+static void testLexSpaces2Sub(const std::string& testString, const std::string& expectedFileName) {
+    auto lex = SLex::go(testString);
     assert(lex);
     lex->validate();
     SLexIdentifier* lastid = static_cast<SLexIdentifier*>(lex->items.back().get());
@@ -236,8 +238,31 @@ static void testLexSpaces2() {
     assertEQ(xident->idName, "x");
 
     SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items[num - 4].get());
-    assertEQ(fname->idName, "abc");
+    assertEQ(fname->idName, expectedFileName);
 }
+
+static void testLexSpaces2a() {
+    SQWARN("staring test lex spaces 2");
+    testLexSpaces2Sub("sample=abc x=y", "abc");
+}
+
+static void testLexSpaces2b() {
+    SQWARN("staring test lex spaces 2b");
+    testLexSpaces2Sub("sample=abc  x=y", "abc");
+}
+
+static void testLexSpaces2c() {
+    SQWARN("staring test lex spaces 2b");
+    testLexSpaces2Sub("sample=a b c    x=y", "a b c");
+}
+
+static void testLexSpaces2() {
+    testLexSpaces2a();
+    testLexSpaces2b();
+    testLexSpaces2c();
+}
+
+
 
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();

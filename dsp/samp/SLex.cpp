@@ -190,7 +190,6 @@ bool SLex::proxNextIdentifierChar(char c) {
     }
     assert(inIdentifier);
     curItem += c;
-    //printf("175, curItem = %s\n", curItem.c_str());
     validateName(curItem);
     return true;
 }
@@ -200,15 +199,23 @@ bool SLex::procEqualsSignInIdentifier() {
         // If we get an equals sign in the middle of a sample file name, then we need to adjust.
         // for things other than sample we don't accept spaces, so there is no issue.
 
-        
+        // The last space is going to the the character right before the next identifier.
         auto lastSpacePos = curItem.rfind(' ');
         if (lastSpacePos == std::string::npos) {
             SQWARN("equals sign found in identifier at line %d", currentLine);
             return false;       // error
         }
         // todo: multiple spaces
-        std::string fileName = curItem.substr(0, lastSpacePos);
+       // std::string fileName = curItem.substr(0, lastSpacePos);
+
         std::string nextId = curItem.substr(lastSpacePos+1);
+        auto filenameEndIndex = lastSpacePos;
+        auto searchIndex = lastSpacePos;
+        while( searchIndex >= 0 && curItem.at(searchIndex) == ' ') {
+            filenameEndIndex = searchIndex;
+            searchIndex--;
+        }
+        std::string fileName = curItem.substr(0, filenameEndIndex);
 
         addCompletedItem(std::make_shared<SLexIdentifier>(fileName, currentLine), true);
         addCompletedItem(std::make_shared<SLexIdentifier>(nextId, currentLine), true);
@@ -231,7 +238,7 @@ void SLex::addCompletedItem(SLexItemPtr item, bool clearCurItem) {
     if (item->itemType == SLexItem::Type::Identifier) { 
         SLexIdentifier* ident = static_cast<SLexIdentifier*>(item.get());
         lastIdentifier = ident->idName;
-        printf("just pushed new id : >%s<\n", lastIdentifier.c_str());
+        // printf("just pushed new id : >%s<\n", lastIdentifier.c_str());
     }
 }
 

@@ -44,15 +44,15 @@ extern int _mdb;        // MIDI reverence count
 #else
 
 #define assertEQEx(actual, expected, msg) if (actual != expected) { \
-    std::cout << "assertEq failed " << msg << " actual value =" << \
-    actual << " expected=" << expected << std::endl << std::flush; \
+    std::cout << "assertEq failed " << msg << " actual value =>" << \
+    actual << "< expected=>" << expected << "<" << std::endl << std::flush; \
     assert(false); }
 
 #define assertEQ(actual, expected) assertEQEx(actual, expected, "")
 
 #define assertNEEx(actual, expected, msg) if (actual == expected) { \
-    std::cout << "assertNE failed " << msg << " did not expect " << \
-    actual << " to be == to " << expected << std::endl << std::flush; \
+    std::cout << "assertNE failed " << msg << " did not expect >" << \
+    actual << "< to be == to >" << expected << "<" << std::endl << std::flush; \
     assert(false); }
 
 #define assertNE(actual, expected) assertNEEx(actual, expected, "")
