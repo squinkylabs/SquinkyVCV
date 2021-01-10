@@ -161,29 +161,6 @@ inline void Samp<TBase>::init() {
     //  setupSamplesDummy();
 }
 
-#if 0
-template <class TBase>
-inline void Samp<TBase>::setNewSamples(const std::string& s) {
-#ifdef ARCH_WIN
-    auto separator = '\\';
-#else
-    auto separator = '/';
-#endif
-
-    auto pos = s.rfind(separator);
-    if (pos == std::string::npos) {
-        printf("failed to parse path: %s\n", s.c_str());
-        fflush(stdout);
-        return;
-    }
-
-    std::string path = s.substr(0, pos) + separator;
-    std::string fname = s.substr(pos + 1);
-    printf("path = %s\n", path.c_str());
-    printf("name = %s\n", fname.c_str());
-    fflush(stdout);
-}
-#endif
 
 // Called when a patch has come back from thread server
 template <class TBase>
@@ -201,46 +178,6 @@ inline void Samp<TBase>::setNewPatch() {
     }
     _isSampleLoaded = true;
 }
-
-#if 0
-template <class TBase>
-inline void Samp<TBase>::setupSamplesDummy() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-
-    // tinny piano
-    // const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
-    //  const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
-
-    // small piano, with vel keyswitch
-    static const char* p = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo";
-    static const char* pRoot = R"foo(D:\samples\K18-Upright-Piano\)foo";
-
-    // snare drum
-    // static const char* p =  R"foo(D:\samples\SalamanderDrumkit\snare.sfz)foo";
-    // static const char* pRoot =  R"foo(D:\samples\SalamanderDrumkit\)foo";
-    auto err = SParse::goFile(p, inst);
-    assert(err.empty());
-
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
-    waves = std::make_shared<WaveLoader>();
-
-    cinst->setWaves(waves, pRoot);
-    for (int i = 0; i < 4; ++i) {
-        playback[i].setPatch(cinst);
-    }
-
-    fprintf(stderr, "about load waves\n");
-    waves->load();
-    fprintf(stderr, "loaded waves\n");
-    WaveLoader::WaveInfoPtr info = waves->getInfo(1);
-    assert(info->valid);
-
-    for (int i = 0; i < 4; ++i) {
-        playback[i].setLoader(waves);
-        playback[i].setNumVoices(4);
-    }
-}
-#endif
 
 template <class TBase>
 inline void Samp<TBase>::step_n() {
@@ -272,8 +209,6 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         float_4 g = p.getVoltageSimd<float_4>(bank * 4);
         float_4 gmask = (g > float_4(1));
         float_4 gate4 = SimdBlocks::ifelse(gmask, float_4(1), float_4(0));
-        ;
-
         float_4 lgate4 = lastGate4[bank];
 
         for (int iSub = 0; iSub < 4; ++iSub) {
@@ -332,8 +267,7 @@ public:
     void handleMessage(ThreadMessage* msg) override {
         assert(msg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(msg);
-        SQINFO("server got a message!\n");
-        fflush(stdout);
+        // SQINFO("server got a message!\n");
         parsePath(smsg);
 
         SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -341,7 +275,6 @@ public:
         // now load it, and then return it.
         auto err = SParse::goFile(fullPath.c_str(), inst);
         if (!err.empty()) {
-            // fprintf(stderr, "parsing error in sfz: %s\n", err.c_str());
             SQWARN("parsing error in sfz: %s\n", err.c_str());
             sendMessageToClient(msg);
             return;
@@ -353,16 +286,16 @@ public:
 
         cinst->setWaves(waves, samplePath);
 
-        SQINFO("about to load waves\n");
+       // SQINFO("about to load waves\n");
         // TODO: need a way for wave loader to return error/
         waves->load();
-        SQINFO("loaded waves\n");
+       // SQINFO("loaded waves\n");
         WaveLoader::WaveInfoPtr info = waves->getInfo(1);
         assert(info->valid);
 
         smsg->instrument = cinst;
         smsg->waves = waves;
-        SQINFO("loader thread returning happy");
+       // SQINFO("loader thread returning happy");
 
         sendMessageToClient(msg);
     }
@@ -384,45 +317,8 @@ private:
         }
 
         samplePath = fullPath.substr(0, pos) + WaveLoader::nativeSeparator();
-       // std::string fname = fullPath.substr(pos + 1);
-
         SQINFO("sample base path %s", samplePath.c_str());
-        // debugging
-       // printf("path = %s\n", samplePath.c_str());
-      //  printf("name = %s\n", fname.c_str());
-      //  fflush(stdout);
     }
-#if 0
-    void parsePath(SampMessage* msg) {
-        // TODO: paths should work on both platforms
-#ifdef ARCH_WIN
-        const auto separator = '\\';
-        const auto foreignSeparator = '/';
-#else
-        const auto separator = '/';
-        const auto foreignSeparator = '\\';
-#endif
-        fullPath = msg->pathToSfz;
-        printf("before: %s\n", fullPath.c_str());
-        std::replace(fullPath.begin(), fullPath.end(), foreignSeparator, separator);  // replace all 'x' to 'y'
-        printf("after: %s\n", fullPath.c_str());
-
-        auto pos = fullPath.rfind(separator);
-        if (pos == std::string::npos) {
-            SQWARN("failed to parse path to samples: %s\n", fullPath.c_str());
-            fflush(stdout);
-            return;
-        }
-
-        samplePath = fullPath.substr(0, pos) + separator;
-        std::string fname = fullPath.substr(pos + 1);
-
-        // debugging
-        printf("path = %s\n", samplePath.c_str());
-        printf("name = %s\n", fname.c_str());
-        fflush(stdout);
-    }
-#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -455,10 +351,8 @@ void Samp<TBase>::servicePendingPatchRequest() {
 
     bool sent = thread->sendMessage(msg);
     if (sent) {
-        // isRequestPending = true;
-        printf("comp sent message to server\n");
-        fflush(stdout);
     } else {
+        WARN("Unable to sent message to server.");
         messagePool.push(msg);
     }
 }
@@ -469,8 +363,6 @@ void Samp<TBase>::serviceMessagesReturnedToComposite() {
     if (newMsg) {
         assert(newMsg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(newMsg);
-        SQINFO("got loaded patch back from thread, inst=%p, wave=%p", bool(smsg->instrument), bool(smsg->waves));
-
         if (currentPatchMessage) {
             messagePool.push(currentPatchMessage);
         }
@@ -480,9 +372,3 @@ void Samp<TBase>::serviceMessagesReturnedToComposite() {
     }
 }
 
-#if 0
-template <class TBase>
-void Samp<TBase>::servicePatchLoader() {
-    
-}
-#endif

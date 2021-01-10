@@ -66,10 +66,11 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
         // float_4 step(const float_4& gates, float sampleTime);
 #ifdef _USEADSR
         if (!isMask(gates)) {
-            printf("adsr needs real simd mask for gates\n"); fflush(stdout);
+            printf("adsr needs real simd mask for gates\n");
+            fflush(stdout);
             return 0;
         }
- 
+
         float_4 envelopes = adsr.step(gates, sampleTime);
         float_4 samples = player.step();
         //printf("eg0 = %f samp0 = %f\n", envelopes[0], samples[0]);

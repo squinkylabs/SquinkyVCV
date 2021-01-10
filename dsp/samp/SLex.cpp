@@ -1,9 +1,10 @@
 
 
 #include "SLex.h"
-#include "SqLog.h"
 
 #include <assert.h>
+
+#include "SqLog.h"
 SLexPtr SLex::go(const std::string& s) {
     int count = 0;
     SLexPtr result = std::make_shared<SLex>();
@@ -24,13 +25,13 @@ SLexPtr SLex::go(const std::string& s) {
 }
 
 void SLex::validateName(const std::string& name) {
-    // TODO: now that file names can have spaces, we can't do this.
-    // maybe we should check in the parser or compiler, where we know what's what?
-    #if 0
+// TODO: now that file names can have spaces, we can't do this.
+// maybe we should check in the parser or compiler, where we know what's what?
+#if 0
     for (char const& c : name) {
         assert(!isspace(c));
     }
-    #endif
+#endif
 }
 
 void SLex::validate() const {
@@ -162,7 +163,7 @@ bool SLex::procEnd() {
 }
 
 bool SLex::proxNextIdentifierChar(char c) {
-   // printf("proc next ident char = >%c<\n", c);
+    // printf("proc next ident char = >%c<\n", c);
 #if 0
     printf("itesm size =%d\n", int(items.size()));
     if (items.size() >= 2) {
@@ -203,15 +204,15 @@ bool SLex::procEqualsSignInIdentifier() {
         auto lastSpacePos = curItem.rfind(' ');
         if (lastSpacePos == std::string::npos) {
             SQWARN("equals sign found in identifier at line %d", currentLine);
-            return false;       // error
+            return false;  // error
         }
         // todo: multiple spaces
-       // std::string fileName = curItem.substr(0, lastSpacePos);
+        // std::string fileName = curItem.substr(0, lastSpacePos);
 
-        std::string nextId = curItem.substr(lastSpacePos+1);
+        std::string nextId = curItem.substr(lastSpacePos + 1);
         auto filenameEndIndex = lastSpacePos;
         auto searchIndex = lastSpacePos;
-        while( searchIndex >= 0 && curItem.at(searchIndex) == ' ') {
+        while (searchIndex >= 0 && curItem.at(searchIndex) == ' ') {
             filenameEndIndex = searchIndex;
             searchIndex--;
         }
@@ -235,7 +236,7 @@ void SLex::addCompletedItem(SLexItemPtr item, bool clearCurItem) {
     if (clearCurItem) {
         curItem.clear();
     }
-    if (item->itemType == SLexItem::Type::Identifier) { 
+    if (item->itemType == SLexItem::Type::Identifier) {
         SLexIdentifier* ident = static_cast<SLexIdentifier*>(item.get());
         lastIdentifier = ident->idName;
         // printf("just pushed new id : >%s<\n", lastIdentifier.c_str());

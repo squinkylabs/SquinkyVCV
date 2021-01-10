@@ -58,7 +58,6 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
         if (type == SLexItem::Type::Identifier) {
             SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
             printf("id name is %s\n", id->idName.c_str());
-
         }
         return "extra tokens";
     }
@@ -214,7 +213,6 @@ SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
 
     keyToken = lex->next();
     if (keyToken->itemType != SLexItem::Type::Equal) {
-
         result.errorMessage = "= in kvp missing equal sign at file line# " + keyToken->lineNumberAsString();
         result.res = Result::error;
         return result;

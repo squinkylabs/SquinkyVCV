@@ -38,6 +38,5 @@ private:
     float_4 R = float_4(.001f);
 #endif
 
-
     void tryInit();
 };

@@ -21,7 +21,6 @@ public:
     };
     using WaveInfoPtr = std::shared_ptr<WaveInfo>;
 
-
     void addNextSample(const std::string& fileName);
     void load();
 

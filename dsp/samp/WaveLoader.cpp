@@ -1,5 +1,5 @@
 
-
+#include "SqLog.h"
 #include "WaveLoader.h"
 
 #include <assert.h>
@@ -29,7 +29,7 @@ void WaveLoader::addNextSample(const std::string& fileName) {
 
     auto x = fileName.find(foreignSeparator());
     assert(x == std::string::npos);
-    
+
     filesToLoad.push_back(fileName);
 }
 
@@ -42,12 +42,12 @@ void WaveLoader::load() {
         waveInfo->load();
 
         finalInfo.push_back(waveInfo);
-        printf("adding one\n");
+        //printf("adding one\n");
     }
 }
 
 void WaveLoader::WaveInfo::load() {
-    printf("loading: %s\n", fileName.c_str());
+    // printf("loading: %s\n", fileName.c_str());
 
     auto x = fileName.find(foreignSeparator());
     assert(x == std::string::npos);
@@ -55,19 +55,17 @@ void WaveLoader::WaveInfo::load() {
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
-        printf("error opening wave\n");
+        SQWARN("error opening wave\n");
         return;
     }
-    printf("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
-    fflush(stdout);
+    SQINFO("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
     data = pSampleData;
     valid = true;
 }
 
 char WaveLoader::nativeSeparator() {
 #ifdef ARCH_WIN
-        return '\\';
-       
+    return '\\';
 #else
     return '/';
 #endif
@@ -77,12 +75,12 @@ char WaveLoader::foreignSeparator() {
 #ifdef ARCH_WIN
     return '/';
 #else
-    return  '\\';
+    return '\\';
 #endif
 }
 
 void WaveLoader::makeAllSeparatorsNative(std::string& s) {
-  std::replace(s.begin(), s.end(), foreignSeparator(), nativeSeparator());
+    std::replace(s.begin(), s.end(), foreignSeparator(), nativeSeparator());
 }
 
 WaveLoader::WaveInfo::~WaveInfo() {
@@ -91,4 +89,3 @@ WaveLoader::WaveInfo::~WaveInfo() {
         data = nullptr;
     }
 }
-
