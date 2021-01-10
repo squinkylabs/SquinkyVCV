@@ -19,6 +19,10 @@
 #include "ThreadSharedState.h"
 #include "WaveLoader.h"
 
+#if defined(_MSC_VER)
+//   #define ARCH_WIN
+#endif
+
 namespace rack {
 namespace engine {
 struct Module;
@@ -181,11 +185,12 @@ inline void Samp<TBase>::setNewSamples(const std::string& s) {
 }
 #endif
 
+// Called when a patch has come back from thread server
 template <class TBase>
 inline void Samp<TBase>::setNewPatch() {
     assert(currentPatchMessage);
-    if (!currentPatchMessage->instrument || currentPatchMessage->waves) {
-        printf("host skipping bad patch\n");
+    if (!currentPatchMessage->instrument || !currentPatchMessage->waves) {
+        SQWARN("Patch Loader could not load path");
         _isSampleLoaded = false;
         return;
     }
@@ -327,7 +332,7 @@ public:
     void handleMessage(ThreadMessage* msg) override {
         assert(msg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(msg);
-        printf("server got a message!\n");
+        SQINFO("server got a message!\n");
         fflush(stdout);
         parsePath(smsg);
 
@@ -348,44 +353,76 @@ public:
 
         cinst->setWaves(waves, samplePath);
 
-        fprintf(stderr, "about load waves\n");
+        SQINFO("about to load waves\n");
         // TODO: need a way for wave loader to return error/
         waves->load();
-        fprintf(stderr, "loaded waves\n");
+        SQINFO("loaded waves\n");
         WaveLoader::WaveInfoPtr info = waves->getInfo(1);
         assert(info->valid);
 
         smsg->instrument = cinst;
         smsg->waves = waves;
+        SQINFO("loader thread returning happy");
 
         sendMessageToClient(msg);
     }
 
 private:
     std::string samplePath;
-    std::string fileName;
+   // std::string fileName;
     std::string fullPath;
+
+    void parsePath(SampMessage* msg) {
+        fullPath = msg->pathToSfz;
+        WaveLoader::makeAllSeparatorsNative(fullPath);
+
+        const auto pos = fullPath.rfind(WaveLoader::nativeSeparator());
+        if (pos == std::string::npos) {
+            SQWARN("failed to parse path to samples: %s\n", fullPath.c_str());
+            fflush(stdout);
+            return;
+        }
+
+        samplePath = fullPath.substr(0, pos) + WaveLoader::nativeSeparator();
+       // std::string fname = fullPath.substr(pos + 1);
+
+        SQINFO("sample base path %s", samplePath.c_str());
+        // debugging
+       // printf("path = %s\n", samplePath.c_str());
+      //  printf("name = %s\n", fname.c_str());
+      //  fflush(stdout);
+    }
+#if 0
     void parsePath(SampMessage* msg) {
         // TODO: paths should work on both platforms
 #ifdef ARCH_WIN
-        auto separator = '\\';
+        const auto separator = '\\';
+        const auto foreignSeparator = '/';
 #else
-        auto separator = '/';
+        const auto separator = '/';
+        const auto foreignSeparator = '\\';
 #endif
         fullPath = msg->pathToSfz;
+        printf("before: %s\n", fullPath.c_str());
+        std::replace(fullPath.begin(), fullPath.end(), foreignSeparator, separator);  // replace all 'x' to 'y'
+        printf("after: %s\n", fullPath.c_str());
+
         auto pos = fullPath.rfind(separator);
         if (pos == std::string::npos) {
-            printf("failed to parse path: %s\n", fullPath.c_str());
+            SQWARN("failed to parse path to samples: %s\n", fullPath.c_str());
             fflush(stdout);
             return;
         }
 
         samplePath = fullPath.substr(0, pos) + separator;
         std::string fname = fullPath.substr(pos + 1);
+
+        // debugging
         printf("path = %s\n", samplePath.c_str());
         printf("name = %s\n", fname.c_str());
         fflush(stdout);
     }
+#endif
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -432,11 +469,13 @@ void Samp<TBase>::serviceMessagesReturnedToComposite() {
     if (newMsg) {
         assert(newMsg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(newMsg);
+        SQINFO("got loaded patch back from thread, inst=%p, wave=%p", bool(smsg->instrument), bool(smsg->waves));
 
         if (currentPatchMessage) {
             messagePool.push(currentPatchMessage);
         }
         currentPatchMessage = smsg;
+        
         setNewPatch();
     }
 }

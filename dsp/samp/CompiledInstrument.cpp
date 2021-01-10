@@ -493,6 +493,7 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootP
 
     for (auto path : tempPaths) {
         assert(!path.empty());
+        WaveLoader::makeAllSeparatorsNative(path);
         loader->addNextSample(rootPath + path);
     }
 }

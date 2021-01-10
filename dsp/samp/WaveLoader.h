@@ -21,7 +21,7 @@ public:
     };
     using WaveInfoPtr = std::shared_ptr<WaveInfo>;
 
-    //void load(const std::string& fileName);
+
     void addNextSample(const std::string& fileName);
     void load();
 
@@ -29,6 +29,10 @@ public:
      * Index is one based. 
      */
     WaveInfoPtr getInfo(int index) const;
+
+    static char nativeSeparator();
+    static char foreignSeparator();
+    static void makeAllSeparatorsNative(std::string& s);
 
 private:
     std::vector<std::string> filesToLoad;
