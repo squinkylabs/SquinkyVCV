@@ -13,25 +13,27 @@ public:
         Identifier,
         Equal
     };
-    SLexItem(Type t) : itemType(t) {}
+    SLexItem(Type t, int line) : itemType(t), lineNumber(line) {}
     const Type itemType;
+    const int lineNumber;
+    std::string lineNumberAsString() const;
 };
 
 class SLexTag : public SLexItem {
 public:
-    SLexTag(const std::string sName, int line) : SLexItem(Type::Tag), tagName(sName), lineNumber(line) {}
+    SLexTag(const std::string sName, int line) : SLexItem(Type::Tag, line), tagName(sName) {}
     const std::string tagName;
-    const int lineNumber;
 };
 
 class SLexEqual : public SLexItem {
 public:
-    SLexEqual() : SLexItem(Type::Equal) {}
+    SLexEqual(int line) : SLexItem(Type::Equal, line) {}
 };
 
 class SLexIdentifier : public SLexItem {
 public:
-    SLexIdentifier(const std::string sName) : SLexItem(Type::Identifier), idName(sName) {}
+    SLexIdentifier(const SLexIdentifier&) = delete;
+    SLexIdentifier(const std::string sName, int line) : SLexItem(Type::Identifier, line), idName(sName) {}
     const std::string idName;
 };
 

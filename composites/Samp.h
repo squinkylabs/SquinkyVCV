@@ -12,6 +12,7 @@
 #include "SInstrument.h"
 #include "Sampler4vx.h"
 #include "SimdBlocks.h"
+#include "SqLog.h"
 #include "SqPort.h"
 #include "ThreadClient.h"
 #include "ThreadServer.h"
@@ -24,6 +25,22 @@ struct Module;
 }
 }  // namespace rack
 using Module = ::rack::engine::Module;
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class SampMessage : public ThreadMessage {
+public:
+    SampMessage() : ThreadMessage(Type::SAMP) {
+    }
+
+    std::string pathToSfz;
+
+    // returned to the composite
+    CompiledInstrumentPtr instrument;
+    WaveLoaderPtr waves;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <class TBase>
 class SampDescription : public IComposite {
@@ -41,9 +58,9 @@ public:
     Samp() : TBase() {
         commonConstruct();
     }
-    virtual ~Samp()
-    {
-        thread.reset();     // kill the threads before deleting other things
+
+    virtual ~Samp() {
+        thread.reset();  // kill the threads before deleting other things
     }
 
     /**
@@ -86,7 +103,7 @@ public:
     }
 
     bool _sampleLoaded() {
-        return false;
+        return _isSampleLoaded;
     }
     /**
      * Main processing entry point. Called every sample
@@ -96,8 +113,9 @@ public:
 
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
-    SInstrumentPtr instrument;
-    WaveLoaderPtr waves;
+                             // SInstrumentPtr instrument;
+                             // WaveLoaderPtr waves;
+    SampMessage* currentPatchMessage = nullptr;
 
     float_4 lastGate4[4];
     Divider divn;
@@ -105,15 +123,26 @@ private:
 
     std::unique_ptr<ThreadClient> thread;
     std::string patchRequest;
+    bool _isSampleLoaded = false;
 
     bool lastGate = false;  // just for test now
 
+    /**
+     * Messages moved between thread, messagePool, and crossFader
+     * as new noise slopes are requested in response to CV/knob changes.
+     */
+    ManagedPool<SampMessage, 2> messagePool;
+
     void step_n();
 
-    void setupSamplesDummy();
+    // void setupSamplesDummy();
     void commonConstruct();
     void servicePendingPatchRequest();
-    void servicePatchLoader();
+    void serviceMessagesReturnedToComposite();
+    void setNewPatch();
+
+    // server thread stuff
+    // void servicePatchLoader();
 };
 
 template <class TBase>
@@ -125,10 +154,8 @@ inline void Samp<TBase>::init() {
     for (int i = 0; i < 4; ++i) {
         lastGate4[i] = float_4(0);
     }
-    setupSamplesDummy();
+    //  setupSamplesDummy();
 }
-
-
 
 #if 0
 template <class TBase>
@@ -154,6 +181,23 @@ inline void Samp<TBase>::setNewSamples(const std::string& s) {
 }
 #endif
 
+template <class TBase>
+inline void Samp<TBase>::setNewPatch() {
+    assert(currentPatchMessage);
+    if (!currentPatchMessage->instrument || currentPatchMessage->waves) {
+        printf("host skipping bad patch\n");
+        _isSampleLoaded = false;
+        return;
+    }
+    for (int i = 0; i < 4; ++i) {
+        playback[i].setPatch(currentPatchMessage->instrument);
+        playback[i].setLoader(currentPatchMessage->waves);
+        playback[i].setNumVoices(4);
+    }
+    _isSampleLoaded = true;
+}
+
+#if 0
 template <class TBase>
 inline void Samp<TBase>::setupSamplesDummy() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -191,6 +235,7 @@ inline void Samp<TBase>::setupSamplesDummy() {
         playback[i].setNumVoices(4);
     }
 }
+#endif
 
 template <class TBase>
 inline void Samp<TBase>::step_n() {
@@ -201,7 +246,9 @@ inline void Samp<TBase>::step_n() {
     // printf("just set to %d channels\n", numChannels_m); fflush(stdout);
 
     servicePendingPatchRequest();
-    servicePatchLoader();
+    serviceMessagesReturnedToComposite();
+
+    currentPatchMessage = nullptr;
 }
 
 template <class TBase>
@@ -270,29 +317,78 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
     return ret;
 }
 
-
-class SampMessage : public ThreadMessage {
-public:
-    // set by the composite
-    std::string patchPath;
-    std::string basePath;
-
-
-    // returned to the composite
-    SInstrumentPtr instrument;
-    WaveLoaderPtr waves;
-
-};
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class SampServer : public ThreadServer {
 public:
     SampServer(std::shared_ptr<ThreadSharedState> state) : ThreadServer(state) {
     }
 
-    void handleMessage(ThreadMessage*) override {
-        assert(false);
+    void handleMessage(ThreadMessage* msg) override {
+        assert(msg->type == ThreadMessage::Type::SAMP);
+        SampMessage* smsg = static_cast<SampMessage*>(msg);
+        printf("server got a message!\n");
+        fflush(stdout);
+        parsePath(smsg);
+
+        SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+        // now load it, and then return it.
+        auto err = SParse::goFile(fullPath.c_str(), inst);
+        if (!err.empty()) {
+            // fprintf(stderr, "parsing error in sfz: %s\n", err.c_str());
+            SQWARN("parsing error in sfz: %s\n", err.c_str());
+            sendMessageToClient(msg);
+            return;
+        }
+
+        // TODO: need a way for compiler to return error;
+        CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+        WaveLoaderPtr waves = std::make_shared<WaveLoader>();
+
+        cinst->setWaves(waves, samplePath);
+
+        fprintf(stderr, "about load waves\n");
+        // TODO: need a way for wave loader to return error/
+        waves->load();
+        fprintf(stderr, "loaded waves\n");
+        WaveLoader::WaveInfoPtr info = waves->getInfo(1);
+        assert(info->valid);
+
+        smsg->instrument = cinst;
+        smsg->waves = waves;
+
+        sendMessageToClient(msg);
+    }
+
+private:
+    std::string samplePath;
+    std::string fileName;
+    std::string fullPath;
+    void parsePath(SampMessage* msg) {
+        // TODO: paths should work on both platforms
+#ifdef ARCH_WIN
+        auto separator = '\\';
+#else
+        auto separator = '/';
+#endif
+        fullPath = msg->pathToSfz;
+        auto pos = fullPath.rfind(separator);
+        if (pos == std::string::npos) {
+            printf("failed to parse path: %s\n", fullPath.c_str());
+            fflush(stdout);
+            return;
+        }
+
+        samplePath = fullPath.substr(0, pos) + separator;
+        std::string fname = fullPath.substr(pos + 1);
+        printf("path = %s\n", samplePath.c_str());
+        printf("name = %s\n", fname.c_str());
+        fflush(stdout);
     }
 };
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <class TBase>
 void Samp<TBase>::commonConstruct() {
@@ -304,13 +400,50 @@ void Samp<TBase>::commonConstruct() {
     this->thread = std::move(client);
 }
 
-
 template <class TBase>
 void Samp<TBase>::servicePendingPatchRequest() {
-    assert(patchRequest.empty());
+    if (patchRequest.empty()) {
+        return;
+    }
+
+    if (messagePool.empty()) {
+        assert(false);
+        return;
+    }
+
+    // OK, we are ready to send a message!
+    SampMessage* msg = messagePool.pop();
+    msg->pathToSfz = this->patchRequest;
+    patchRequest.clear();
+
+    bool sent = thread->sendMessage(msg);
+    if (sent) {
+        // isRequestPending = true;
+        printf("comp sent message to server\n");
+        fflush(stdout);
+    } else {
+        messagePool.push(msg);
+    }
+}
+template <class TBase>
+void Samp<TBase>::serviceMessagesReturnedToComposite() {
+    // see if any messages came back for us
+    ThreadMessage* newMsg = thread->getMessage();
+    if (newMsg) {
+        assert(newMsg->type == ThreadMessage::Type::SAMP);
+        SampMessage* smsg = static_cast<SampMessage*>(newMsg);
+
+        if (currentPatchMessage) {
+            messagePool.push(currentPatchMessage);
+        }
+        currentPatchMessage = smsg;
+        setNewPatch();
+    }
 }
 
+#if 0
 template <class TBase>
 void Samp<TBase>::servicePatchLoader() {
     
 }
+#endif

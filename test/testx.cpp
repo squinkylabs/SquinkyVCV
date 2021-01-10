@@ -6,6 +6,8 @@
 #include "SInstrument.h"
 #include "SLex.h"
 #include "SParse.h"
+#include "SqLog.h"
+
 #include "asserts.h"
 #include "pugixml.hpp"
 
@@ -211,6 +213,15 @@ static void testLex5() {
     assertEQ(tag->tagName, "group");
 }
 
+static void testLexSpaces() {
+    SQWARN("staring test lex spaces");
+    auto lex = SLex::go("\n<region>x=y sample=a b c");
+    assert(lex);
+    lex->validate();
+    SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
+    assertEQ(fname->idName, "a b c");
+}
+
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -354,7 +365,6 @@ static void testRandomRange1() {
 extern int compileCount;
 
 void testx() {
-
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
     testx0();
@@ -375,6 +385,7 @@ void testx() {
     testLexMangledId();
     testLex4();
     testLex5();
+    testLexSpaces();
 
     testparse1();
     testparse2();

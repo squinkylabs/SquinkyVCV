@@ -102,7 +102,7 @@ bool SLex::procFreshChar(char c) {
     }
 
     if (c == '=') {
-        items.push_back(std::make_shared<SLexEqual>());
+        items.push_back(std::make_shared<SLexEqual>(currentLine));
         return true;
     }
 
@@ -145,7 +145,7 @@ bool SLex::procNextTagChar(char c) {
 bool SLex::procEnd() {
     if (inIdentifier) {
         validateName(curItem);
-        items.push_back(std::make_shared<SLexIdentifier>(curItem));
+        items.push_back(std::make_shared<SLexIdentifier>(curItem, currentLine));
         curItem.clear();
         return true;
     }
@@ -160,7 +160,7 @@ bool SLex::procEnd() {
 bool SLex::proxNextIdentifierChar(char c) {
     // terminate identifier on these, but proc them
     if (c == '<' || c == '<' || c == '=') {
-        items.push_back(std::make_shared<SLexIdentifier>(curItem));
+        items.push_back(std::make_shared<SLexIdentifier>(curItem, currentLine));
         curItem.clear();
         inIdentifier = false;
         return procFreshChar(c);
@@ -168,7 +168,7 @@ bool SLex::proxNextIdentifierChar(char c) {
 
     // terminate on these, but don't proc
     if (isspace(c)) {
-        items.push_back(std::make_shared<SLexIdentifier>(curItem));
+        items.push_back(std::make_shared<SLexIdentifier>(curItem, currentLine));
         curItem.clear();
         inIdentifier = false;
         return true;
@@ -179,3 +179,9 @@ bool SLex::proxNextIdentifierChar(char c) {
     validateName(curItem);
     return true;
 }
+
+  std::string SLexItem::lineNumberAsString() const {
+       char buf[100];
+       sprintf_s(buf, "%d", lineNumber);
+       return buf;
+  }

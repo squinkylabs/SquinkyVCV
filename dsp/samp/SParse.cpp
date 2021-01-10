@@ -206,7 +206,8 @@ SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
 
     keyToken = lex->next();
     if (keyToken->itemType != SLexItem::Type::Equal) {
-        result.errorMessage = "= in kvp missing =";
+
+        result.errorMessage = "= in kvp missing equal sign at file line# " + keyToken->lineNumberAsString();
         result.res = Result::error;
         return result;
     }

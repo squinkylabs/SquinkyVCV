@@ -47,7 +47,6 @@ SOURCES += $(wildcard src/third-party/*.cpp)
 SOURCES += $(wildcard src/seq/*.cpp)
 SOURCES += $(wildcard src/kbd/*.cpp)
 
-
 # include res and presets folder
 DISTRIBUTABLES += $(wildcard LICENSE*) res presets
 

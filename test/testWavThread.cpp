@@ -10,15 +10,14 @@
 
 static void test1()
 {
-    // std::this_thread::sleep_for(std::chrono::seconds(20));
-  //  std::chrono::steady_clock
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
     Samp<TestComposite> s;
     TestComposite::ProcessArgs args;
 
     s.init();
 
-    s.setNewSamples("");
+    const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
+    s.setNewSamples(p);
     while (true) {
         if (s._sampleLoaded()) {
             return;
@@ -28,7 +27,7 @@ static void test1()
 
         std::chrono::duration<double> time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1);
         double second = time_span.count();
-        assertLE(second, 2);
+        assertLE(second, 10);
 
         s.process(args);
     }
