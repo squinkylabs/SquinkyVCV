@@ -215,11 +215,28 @@ static void testLex5() {
 
 static void testLexSpaces() {
     SQWARN("staring test lex spaces");
-    auto lex = SLex::go("\n<region>x=y sample=a b c");
+    auto lex = SLex::go("\nsample=a b c");
     assert(lex);
     lex->validate();
     SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
     assertEQ(fname->idName, "a b c");
+}
+
+static void testLexSpaces2() {
+    SQWARN("staring test lex spaces 2");
+    auto lex = SLex::go("\nsample=abc x=y");
+    assert(lex);
+    lex->validate();
+    SLexIdentifier* lastid = static_cast<SLexIdentifier*>(lex->items.back().get());
+    assertEQ(lastid->idName, "y");
+    const auto num = lex->items.size();
+    assert(lex->items[num - 2]->itemType == SLexItem::Type::Equal);
+    assert(lex->items[num - 3]->itemType == SLexItem::Type::Identifier);
+    SLexIdentifier* xident = static_cast<SLexIdentifier*>(lex->items[num - 3].get());
+    assertEQ(xident->idName, "x");
+
+    SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items[num - 4].get());
+    assertEQ(fname->idName, "abc");
 }
 
 static void testparse1() {
@@ -367,6 +384,10 @@ extern int compileCount;
 void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
+
+    // just for now
+    testLexSpaces2();
+
     testx0();
     testx1();
     testx2();
@@ -386,6 +407,7 @@ void testx() {
     testLex4();
     testLex5();
     testLexSpaces();
+    testLexSpaces2();
 
     testparse1();
     testparse2();

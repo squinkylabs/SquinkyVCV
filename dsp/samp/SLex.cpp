@@ -1,6 +1,7 @@
 
 
 #include "SLex.h"
+#include "SqLog.h"
 
 #include <assert.h>
 SLexPtr SLex::go(const std::string& s) {
@@ -23,9 +24,13 @@ SLexPtr SLex::go(const std::string& s) {
 }
 
 void SLex::validateName(const std::string& name) {
+    // TODO: now that file names can have spaces, we can't do this.
+    // maybe we should check in the parser or compiler, where we know what's what?
+    #if 0
     for (char const& c : name) {
         assert(!isspace(c));
     }
+    #endif
 }
 
 void SLex::validate() const {
@@ -88,11 +93,11 @@ bool SLex::procNextCommentChar(char c) {
     if (c == 10 || c == 13) {
         inComment = false;
     }
-
     return true;
 }
 
 bool SLex::procFreshChar(char c) {
+    // printf("proc fresh char>%c<\n", c);
     if (isspace(c)) {
         return true;  // eat whitespace
     }
@@ -102,7 +107,7 @@ bool SLex::procFreshChar(char c) {
     }
 
     if (c == '=') {
-        items.push_back(std::make_shared<SLexEqual>(currentLine));
+        addCompletedItem(std::make_shared<SLexEqual>(currentLine), false);
         return true;
     }
 
@@ -130,8 +135,7 @@ bool SLex::procNextTagChar(char c) {
     }
     if (c == '>') {
         validateName(curItem);
-        items.push_back(std::make_shared<SLexTag>(curItem, currentLine));
-        curItem.clear();
+        addCompletedItem(std::make_shared<SLexTag>(curItem, currentLine), true);
         inTag = false;
         return true;
     }
@@ -145,31 +149,42 @@ bool SLex::procNextTagChar(char c) {
 bool SLex::procEnd() {
     if (inIdentifier) {
         validateName(curItem);
-        items.push_back(std::make_shared<SLexIdentifier>(curItem, currentLine));
-        curItem.clear();
+        addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
         return true;
     }
 
     if (inTag) {
-        //printf("final tag unterminated\n");
+        //printf("final tag unterminated\n");terminatingSpace
         return false;
     }
 
     return true;
 }
+
 bool SLex::proxNextIdentifierChar(char c) {
+   // printf("proc next ident char = >%c<\n", c);
+#if 0
+    printf("itesm size =%d\n", int(items.size()));
+    if (items.size() >= 2) {
+        printf("back type = %d\n", items.back()->itemType);
+        printf("before that %d\n", items[items.size() - 2]->itemType);
+    }
+#endif
+    if (c == '=') {
+        return procEqualsSignInIdentifier();
+    }
     // terminate identifier on these, but proc them
+    // TODO, should the middle one be '>'? is that just an error?
     if (c == '<' || c == '<' || c == '=') {
-        items.push_back(std::make_shared<SLexIdentifier>(curItem, currentLine));
-        curItem.clear();
+        addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
         inIdentifier = false;
         return procFreshChar(c);
     }
 
+    const bool terminatingSpace = isspace(c) && (lastIdentifier != "sample");
     // terminate on these, but don't proc
-    if (isspace(c)) {
-        items.push_back(std::make_shared<SLexIdentifier>(curItem, currentLine));
-        curItem.clear();
+    if (terminatingSpace) {
+        addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
         inIdentifier = false;
         return true;
     }
@@ -180,8 +195,48 @@ bool SLex::proxNextIdentifierChar(char c) {
     return true;
 }
 
-  std::string SLexItem::lineNumberAsString() const {
-       char buf[100];
-       sprintf_s(buf, "%d", lineNumber);
-       return buf;
-  }
+bool SLex::procEqualsSignInIdentifier() {
+    if (lastIdentifier == "sample") {
+        // If we get an equals sign in the middle of a sample file name, then we need to adjust.
+        // for things other than sample we don't accept spaces, so there is no issue.
+
+        
+        auto lastSpacePos = curItem.rfind(' ');
+        if (lastSpacePos == std::string::npos) {
+            SQWARN("equals sign found in identifier at line %d", currentLine);
+            return false;       // error
+        }
+        // todo: multiple spaces
+        std::string fileName = curItem.substr(0, lastSpacePos);
+        std::string nextId = curItem.substr(lastSpacePos+1);
+
+        addCompletedItem(std::make_shared<SLexIdentifier>(fileName, currentLine), true);
+        addCompletedItem(std::make_shared<SLexIdentifier>(nextId, currentLine), true);
+        inIdentifier = false;
+        return procFreshChar('=');
+    } else {
+        // if it's not a sample file, then process normally. Just finish identifier
+        // and go on with the equals sign/
+        addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
+        inIdentifier = false;
+        return procFreshChar('=');
+    }
+}
+
+void SLex::addCompletedItem(SLexItemPtr item, bool clearCurItem) {
+    items.push_back(item);
+    if (clearCurItem) {
+        curItem.clear();
+    }
+    if (item->itemType == SLexItem::Type::Identifier) { 
+        SLexIdentifier* ident = static_cast<SLexIdentifier*>(item.get());
+        lastIdentifier = ident->idName;
+        printf("just pushed new id : >%s<\n", lastIdentifier.c_str());
+    }
+}
+
+std::string SLexItem::lineNumberAsString() const {
+    char buf[100];
+    sprintf_s(buf, "%d", lineNumber);
+    return buf;
+}

@@ -51,7 +51,15 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
         return sError;
     }
     if (lex->next() != nullptr) {
-        printf("extra tok index %d\n", lex->_index());
+        auto item = lex->next();
+        auto type = item->itemType;
+        auto lineNumber = item->lineNumber;
+        printf("extra tok line number %d type = %d index=%d\n", int(lineNumber), type, lex->_index());
+        if (type == SLexItem::Type::Identifier) {
+            SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
+            printf("id name is %s\n", id->idName.c_str());
+
+        }
         return "extra tokens";
     }
     if (inst->groups.empty()) {

@@ -64,11 +64,15 @@ private:
     bool procNextCommentChar(char c);
     bool procEnd();
     bool proxNextIdentifierChar(char c);
+    bool procEqualsSignInIdentifier();
+
+    void addCompletedItem(SLexItemPtr, bool clearCurItem);
 
     bool inComment = false;
     bool inTag = false;
     bool inIdentifier = false;
     std::string curItem;
+    std::string lastIdentifier;
 
     int currentIndex = 0;
     int currentLine = 0;
