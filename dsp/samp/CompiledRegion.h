@@ -70,7 +70,7 @@ public:
     float ampeg_release = .001f;
 
     CompiledGroupPtrWeak weakParent;
-    int lineNumber;
+    int lineNumber = -1;;
 protected:
     CompiledRegion(CompiledRegionPtr);
     CompiledRegion& operator = (const CompiledRegion&) = default;

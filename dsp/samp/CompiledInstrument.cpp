@@ -31,24 +31,26 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
     // here we can prune the tree - removing regions that map to the same thing
     std::vector<CompiledRegionPtr> regions;
     getAllRegions(regions);
-    removeOverlaps(regions);
+    int x = removeOverlaps(regions);
+    printf("overlapts removed %d\n", x);
 
     // now we need to build the player tree
     player = buildPlayerVelLayers(regions, 0);
 }
 
-void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions) {
+int CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions) {
 #ifdef _LOGOV
     printf("enter remove overlaps\n");
 #endif
+    int removed = 0;
     if (regions.size() < 2) {
-        return;
+        return removed;
     }
     using iterator = std::vector<CompiledRegionPtr>::iterator;
     for (iterator it = regions.begin(); it != regions.end();) {
         iterator itNext = it + 1;
         if (itNext == regions.end()) {
-            return;
+            return removed;
         }
         CompiledRegionPtr first = *it;
         CompiledRegionPtr second = *itNext;
@@ -69,9 +71,10 @@ void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions)
                 // if we want to erase the second one, do that.
                 // it still points at first, but next iteration there will be a different next;
                 regions.erase(itNext);
+                ++removed;
             } else {
 #ifdef _LOGOV
-                printf("about to(b) erase regsion from %d\n", first->lineNumber);
+                printf("about to(b) erase region from %d\n", first->lineNumber);
 #endif
                 // we erase the first one, leaving
                 // it pointing at next.
@@ -80,8 +83,12 @@ void CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions)
             }
         } else {
             ++it;
+#ifdef _LOGOV
+            printf("not removing\n");
+#endif
         }
     }
+    return removed;
 }
 
 /** build up the tree using the original algorithm that worked for small piano
@@ -98,7 +105,7 @@ public:
 static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions) {
     int x = 0;
     for (auto reg : inputRegions) {
-        printf("    reg[%d] pitch=%d,%d vel=%d,%d\n", x, reg->lokey, reg->hikey, reg->lovel, reg->hivel);
+        printf("    reg[%d] #%d pitch=%d,%d vel=%d,%d\n", x, reg->lineNumber, reg->lokey, reg->hikey, reg->lovel, reg->hivel);
         ++x;
     }
 }

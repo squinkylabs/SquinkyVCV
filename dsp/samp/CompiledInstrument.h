@@ -44,7 +44,7 @@ public:
     static void expandAllKV(SInstrumentPtr);
 
     void getAllRegions(std::vector<CompiledRegionPtr>&);
-    void removeOverlaps(std::vector<CompiledRegionPtr>&);
+    int removeOverlaps(std::vector<CompiledRegionPtr>&);
 
     static void sortByVelocity(std::vector<CompiledRegionPtr>&);
     static void sortByPitch(std::vector<CompiledRegionPtr>&);
