@@ -177,7 +177,7 @@ bool SLex::proxNextIdentifierChar(char c) {
     }
     // terminate identifier on these, but proc them
     // TODO, should the middle one be '>'? is that just an error?
-    if (c == '<' || c == '<' || c == '=') {
+    if (c == '<' || c == '<' || c == '=' || c == '\n') {
         addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
         inIdentifier = false;
         return procFreshChar(c);

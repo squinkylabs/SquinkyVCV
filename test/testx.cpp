@@ -260,6 +260,7 @@ static void testLexSpaces2d() {
     SQWARN("staring test lex spaces 2D");
     const char* pAllDrum = R"foo(sample=a
 //comm
+    x = y
 )foo";
     testLexSpaces2Sub(pAllDrum, "a");
 }
@@ -270,6 +271,7 @@ static void testLexSpaces2() {
     testLexSpaces2d();
 }
 
+#if 0
 // get rid of this test. covered in case d
 static void testAllDrum()
 {
@@ -286,6 +288,7 @@ static void testAllDrum()
     assertEQ(ident->idName, "a");
     assert(false);
 }
+#endif
 
 
 
@@ -434,9 +437,6 @@ extern int compileCount;
 void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
-
-   
-    testAllDrum();
 
     testx0();
     testx1();
