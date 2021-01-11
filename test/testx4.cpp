@@ -43,17 +43,35 @@ static void testRandomPlayerTwoEntry() {
 
     VoicePlayInfo info;
     VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 100;
     RandomVoicePlayerPtr player = std::make_shared<RandomVoicePlayer>();
+
     player->addEntry(cr1, 100, 60);
     player->addEntry(cr2, 101, 60);
-    for (int i = 0; i < 10; ++i) {
+    int ct100 = 0;
+    int ct101 = 0;
+
+    for (int i = 0; i < 100; ++i) {
         player->play(info, params);
         assert(info.valid);
-        assertEQ(info.sampleIndex, 1);
+        switch (info.sampleIndex) {
+        case 100:
+            ct100++;
+            break;
+        case 101:
+            ct101++;
+            break;
+        default:
+            assert(false);
+        }
     }
+    assertClose(ct100, 20, 10);
+    assertClose(ct101, 80, 10);
 }
 
 void testx4() {
     testRandomPlayerEmpty();
     testRandomPlayerOneEntry();
+    testRandomPlayerTwoEntry();
 }
