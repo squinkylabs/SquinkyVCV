@@ -21,8 +21,8 @@ using DiscreteValue = SamplerSchema::DiscreteValue;
 using ValuePtr = SamplerSchema::ValuePtr;
 using Value = SamplerSchema::Value;
 
-// #define _LOG
-// #define _LOGOV
+#define _LOG
+#define _LOGOV
 
 void CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);
@@ -46,6 +46,7 @@ int CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions) 
     if (regions.size() < 2) {
         return removed;
     }
+    sortByPitchAndVelocity(regions);
     using iterator = std::vector<CompiledRegionPtr>::iterator;
     for (iterator it = regions.begin(); it != regions.end();) {
         iterator itNext = it + 1;
@@ -212,8 +213,14 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
             case CompiledRegion::Type::Random: {
                 CompiledMultiRegionPtr multiRegion = std::dynamic_pointer_cast<CompiledMultiRegion>(region);
                 RandomVoicePlayerPtr multiPlayer = std::make_shared<RandomVoicePlayer>();
+#ifdef _LOG
+                printf("addSingleRegionPitchPlayers making Random from region #%d number in rotaion is %d\n", region->lineNumber, (int) multiRegion->getRegions().size());
+#endif
                 for (auto region : multiRegion->getRegions()) {
                     const int sampleIndex = addSampleFile(region->sampleFile);
+#ifdef _LOG
+                    printf("  adding sub-region p=%f,%f\n", region->lorand, region->hirand);
+#endif
                     multiPlayer->addEntry(region, sampleIndex, midiPitch);
                 }
                 dest->addEntry(midiPitch, multiPlayer);
@@ -425,6 +432,18 @@ void CompiledInstrument::sortByPitch(std::vector<CompiledRegionPtr>& array) {
         bool less = false;
         if (a->lokey < b->lokey) {
             less = true;
+        }
+        return less;
+    });
+}
+
+void CompiledInstrument::sortByPitchAndVelocity(std::vector<CompiledRegionPtr>& array) {
+    std::sort(array.begin(), array.end(), [](const CompiledRegionPtr a, const CompiledRegionPtr b) -> bool {
+        bool less = false;
+        if (a->lokey < b->lokey) {
+            less = true;
+        } else if (a->lokey == b->lokey) {
+            less = (a->lovel < b->lovel);
         }
         return less;
     });

@@ -107,6 +107,7 @@ extern void testOscSmoother();
 extern void testx();
 extern void testx2();
 extern void testx3();
+extern void testx4();
 extern void testADSR();
 extern void testWavThread();
 
@@ -183,9 +184,10 @@ if (runShaperGen) {
        
         return 0;
     }
-    
+      
     testx();
     testx2();
+    testx4();
     testx3();
     testADSR();
     testWavThread();

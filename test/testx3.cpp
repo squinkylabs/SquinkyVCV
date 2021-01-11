@@ -213,6 +213,7 @@ static void testAllSal() {
     cinst->_dump(0);
 }
 void testx3() {
+    testAllSal();
     // work up to these
     assert(parseCount == 0);
 

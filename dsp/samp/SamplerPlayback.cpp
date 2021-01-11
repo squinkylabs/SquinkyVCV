@@ -1,6 +1,7 @@
 
 
 #include "SamplerPlayback.h"
+#include "SqLog.h"
 
 VoicePlayInfo::VoicePlayInfo(CompiledRegionPtr region, int midiPitch, int sampleIndex) {
     this->valid = true;
@@ -27,12 +28,19 @@ void RandomVoicePlayer::_dump(int depth) const {
 }
 
 void RandomVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
-    const int index = rand.get();
-    assert(index < int(entries.size()));
+    if (entries.empty()) {
+        SQWARN("RandomPlayer has no entries");
+        info.valid = false;
+        return;
+    }
+
+    int index = rand.get();
+    if (index >= int(entries.size())) {
+        SQWARN("RandomPlayer index out of bounds");
+        index = int(entries.size()) - 1;
+    }
 
     cachedInfoToPlayInfo(info, params, *entries[index]);
-    //info = *entries[index];
-    //printf("in play ran index=%d\n", index);
     assert(info.valid);
 }
 

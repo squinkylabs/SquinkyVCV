@@ -5,6 +5,7 @@
 #include "CubicInterpolator.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
+#include "samplerTests.h"
 #include "SamplerSchema.h"
 #include "Streamer.h"
 #include "WaveLoader.h"
@@ -450,15 +451,7 @@ static void testCubicInterp() {
 }
 
 static void testCompiledRegion() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    const char* str = R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200)foo";
-    auto err = SParse::go(str, inst);
-
-    SGroupPtr group = inst->groups[0];
-    SRegionPtr region = group->regions[0];
-    CompiledInstrument::expandAllKV(inst);
-    assert(inst->wasExpanded);
-    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+    CompiledRegionPtr cr = st::makeRegion( R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200)foo");
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
     assertEQ(cr->hivel, 22);
@@ -468,15 +461,7 @@ static void testCompiledRegion() {
 }
 
 static void testCompiledRegionInherit() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    const char* str = R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo";
-    auto err = SParse::go(str, inst);
-
-    SGroupPtr group = inst->groups[0];
-    SRegionPtr region = group->regions[0];
-    CompiledInstrument::expandAllKV(inst);
-    assert(inst->wasExpanded);
-    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+    CompiledRegionPtr cr = st::makeRegion(  R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo");
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
     assertEQ(cr->hivel, 22);
@@ -486,100 +471,42 @@ static void testCompiledRegionInherit() {
 }
 
 static void testCompiledRegionKey() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    const char* str = R"foo(<region>key=32)foo";
-    auto err = SParse::go(str, inst);
-
-    SGroupPtr group = inst->groups[0];
-    SRegionPtr region = group->regions[0];
-    CompiledInstrument::expandAllKV(inst);
-    assert(inst->wasExpanded);
-    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+    CompiledRegionPtr cr = st::makeRegion(  R"foo(<region>key=32)foo");
     assertEQ(cr->lokey, 32);
     assertEQ(cr->hikey, 32);
 }
 
 static void testCompiledRegionVel() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    const char* str = R"foo(<region>hivel=12)foo";
-    auto err = SParse::go(str, inst);
-
-    SGroupPtr group = inst->groups[0];
-    SRegionPtr region = group->regions[0];
-    CompiledInstrument::expandAllKV(inst);
-    assert(inst->wasExpanded);
-    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hivel=12)foo");
     assertEQ(cr->lovel, 1);
     assertEQ(cr->hivel, 12);
 }
 
 static void testCompiledRegionVel2() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    const char* str = R"foo(<region>lovel=71)foo";
-    auto err = SParse::go(str, inst);
-
-    SGroupPtr group = inst->groups[0];
-    SRegionPtr region = group->regions[0];
-    CompiledInstrument::expandAllKV(inst);
-    assert(inst->wasExpanded);
-    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+    CompiledRegionPtr cr = st::makeRegion( R"foo(<region>lovel=71)foo");
     assertEQ(cr->lovel, 71);
     assertEQ(cr->hivel, 127);
 }
 
 static void testCompiledRegionVel3() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    const char* str = R"foo(<region>hivel=59 lovel=29)foo";
-    auto err = SParse::go(str, inst);
-
-    SGroupPtr group = inst->groups[0];
-    SRegionPtr region = group->regions[0];
-    CompiledInstrument::expandAllKV(inst);
-    assert(inst->wasExpanded);
-    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+    CompiledRegionPtr cr = st::makeRegion( R"foo(<region>hivel=59 lovel=29)foo");
     assertEQ(cr->lovel, 29);
     assertEQ(cr->hivel, 59);
 }
 
 static void testCompiledRegionsRand() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    const char* str = R"foo(<region>hirand=.7 lorand=.29)foo";
-    auto err = SParse::go(str, inst);
-
-    SGroupPtr group = inst->groups[0];
-    SRegionPtr region = group->regions[0];
-    CompiledInstrument::expandAllKV(inst);
-    assert(inst->wasExpanded);
-    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hirand=.7 lorand=.29)foo");
     assertEQ(cr->hirand, .7f);
     assertEQ(cr->lorand, .29f);
 }
 
 static void testCompiledRegionSeqIndex1() {
-    printf("\n---- si 1\n");
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    const char* str = R"foo(<region>seq_position=11)foo";
-    auto err = SParse::go(str, inst);
-
-    SGroupPtr group = inst->groups[0];
-    SRegionPtr region = group->regions[0];
-    CompiledInstrument::expandAllKV(inst);
-    assert(inst->wasExpanded);
-    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>seq_position=11)foo");
     assertEQ(cr->seq_position, 11);
 }
 
 static void testCompiledRegionSeqIndex2() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    // this may not even be lega;?
-    const char* str = R"foo(<group>seq_position=11<region>)foo";
-    auto err = SParse::go(str, inst);
-
-    SGroupPtr group = inst->groups[0];
-    SRegionPtr region = group->regions[0];
-    CompiledInstrument::expandAllKV(inst);
-    assert(inst->wasExpanded);
-    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<group>seq_position=11<region>)foo");
     assertEQ(cr->seq_position, 11);
 }
 static void testCompiledGroupSub(const char* data, bool shouldIgnore) {

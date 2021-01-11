@@ -678,6 +678,9 @@
     <ClCompile Include="..\..\util\SqLog.cpp">
       <Filter>Source Files\dsp\utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testx4.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -1159,6 +1162,9 @@
     </ClInclude>
     <ClInclude Include="..\..\dsp\samp\VelSwitch.h">
       <Filter>Header Files\dsp\samp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\test\samplerTests.h">
+      <Filter>Header Files\test</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

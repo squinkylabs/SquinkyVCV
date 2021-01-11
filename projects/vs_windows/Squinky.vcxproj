@@ -193,6 +193,7 @@
     <ClCompile Include="..\..\test\testWVCO.cpp" />
     <ClCompile Include="..\..\test\testx.cpp" />
     <ClCompile Include="..\..\test\testx2.cpp" />
+    <ClCompile Include="..\..\test\testx4.cpp" />
     <ClCompile Include="..\..\util\SqLog.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -347,6 +348,7 @@
     <ClInclude Include="..\..\test\ExtremeTester.h" />
     <ClInclude Include="..\..\test\MeasureTime.h" />
     <ClInclude Include="..\..\test\MLockTest.h" />
+    <ClInclude Include="..\..\test\samplerTests.h" />
     <ClInclude Include="..\..\test\SqTime.h" />
     <ClInclude Include="..\..\test\TestAuditionHost.h" />
     <ClInclude Include="..\..\test\TestGenearators.h" />

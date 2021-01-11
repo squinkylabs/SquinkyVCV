@@ -48,6 +48,7 @@ public:
 
     static void sortByVelocity(std::vector<CompiledRegionPtr>&);
     static void sortByPitch(std::vector<CompiledRegionPtr>&);
+    static void sortByPitchAndVelocity(std::vector<CompiledRegionPtr>&);
 
     // test accessor
     const std::vector<CompiledGroupPtr>& _groups() { return groups; }
