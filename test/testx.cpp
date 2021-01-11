@@ -256,10 +256,35 @@ static void testLexSpaces2c() {
     testLexSpaces2Sub("sample=a b c    x=y", "a b c");
 }
 
+static void testLexSpaces2d() {
+    SQWARN("staring test lex spaces 2D");
+    const char* pAllDrum = R"foo(sample=a
+//comm
+)foo";
+    testLexSpaces2Sub(pAllDrum, "a");
+}
 static void testLexSpaces2() {
     testLexSpaces2a();
     testLexSpaces2b();
     testLexSpaces2c();
+    testLexSpaces2d();
+}
+
+// get rid of this test. covered in case d
+static void testAllDrum()
+{
+    const char* pAllDrum = R"foo(sample=a
+//comm
+)foo";
+
+    SQINFO("test is %s", pAllDrum);
+    auto lex = SLex::go(pAllDrum);
+    assert(lex);
+    lex->_dump();
+
+    SLexIdentifier* ident = static_cast<SLexIdentifier*>(lex->items.back().get());
+    assertEQ(ident->idName, "a");
+    assert(false);
 }
 
 
@@ -410,8 +435,8 @@ void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
 
-    // just for now
-    testLexSpaces2();
+   
+    testAllDrum();
 
     testx0();
     testx1();

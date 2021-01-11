@@ -1,5 +1,6 @@
 
 #include "SParse.h"
+#include "SqLog.h"
 
 #include <assert.h>
 
@@ -40,7 +41,8 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
         printf("lexer failed\n");
         return "";
     }
-    // lex->_dump();
+    SQINFO("temp dump entire lex");
+    lex->_dump();
 
     std::string sError = matchGlobal(inst->global, lex);
     if (!sError.empty()) {
@@ -221,7 +223,7 @@ SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
 
     keyToken = lex->next();
     if (keyToken->itemType != SLexItem::Type::Identifier) {
-        result.errorMessage = "value in kvp not id";
+        result.errorMessage = "value in kvp is not id. key=" + thePair->key + " line# " + keyToken->lineNumberAsString();
         result.res = Result::error;
         return result;
     }

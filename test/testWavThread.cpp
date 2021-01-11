@@ -1,4 +1,5 @@
 
+#include "SqLog.h"
 #include "Samp.h"
 
 #include "TestComposite.h"
@@ -8,14 +9,18 @@
 #include <ratio>
 #include <chrono>
 
+// can't get it to compile in MS
+#ifdef __PLUGIN
 static void test1()
 {
+
     std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+
     Samp<TestComposite> s;
     TestComposite::ProcessArgs args;
 
     s.init();
-
+  
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
     s.setNewSamples(p);
     while (true) {
@@ -32,9 +37,13 @@ static void test1()
         s.process(args);
     }
     assert(false);
+
 }
+#endif
 
 void testWavThread()
 {
+#ifdef __PLUGIN
     test1();
+#endif
 }

@@ -5,8 +5,10 @@
 #include <cstdio>
 
 namespace SqLog {
+
 #ifdef __PLUGIN
 
+x y z
 #include "logger.hpp"
 
 void log(Level level, const char* filename, int line, const char* format, ...) {

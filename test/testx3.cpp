@@ -3,7 +3,9 @@
 
 #include "CompiledInstrument.h"
 #include "SInstrument.h"
+#include "SLex.h"
 #include "SParse.h"
+#include "SqLog.h"
 #include "VelSwitch.h"
 
 extern void testPlayInfoTinnyPiano();
@@ -122,6 +124,7 @@ static void testOverlap() {
 
 static char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo";
 static char* snare = R"foo(D:\samples\SalamanderDrumkit\snare.sfz)foo";
+static char* allSal = R"foo(D:\samples\SalamanderDrumkit\all.sfz)foo";
 
 static void testSmallPianoVelswitch() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -196,6 +199,19 @@ static void testSnareBasic() {
     cinst->_dump(0);
 }
 
+static void testAllSal() {
+    SQINFO("\n------- testAllSal");
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::goFile(allSal, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    VoicePlayInfo info;
+    cinst->_dump(0);
+}
 void testx3() {
     // work up to these
     assert(parseCount == 0);
@@ -210,6 +226,7 @@ void testx3() {
     testPlayInfoTinnyPiano();
     testPlayInfoSmallPiano();
     testSnareBasic();
+    testAllSal();
 
     assert(parseCount == 0);
     assert(compileCount == 0);

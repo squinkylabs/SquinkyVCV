@@ -55,7 +55,7 @@ void WaveLoader::WaveInfo::load() {
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
-        SQWARN("error opening wave\n");
+        SQWARN("error opening wave");
         return;
     }
     SQINFO("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);

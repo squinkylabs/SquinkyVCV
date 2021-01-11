@@ -58,7 +58,7 @@ void SLex::_dump() const {
     for (int i = 0; i < int(items.size()); ++i) {
         // for (auto item : items) {
         auto item = items[i];
-        printf("tok[%d] ", i);
+        printf("tok[%d] #%d ", i, item->lineNumber);
         switch (item->itemType) {
             case SLexItem::Type::Tag: {
                 SLexTag* tag = static_cast<SLexTag*>(item.get());
@@ -75,6 +75,7 @@ void SLex::_dump() const {
                 assert(false);
         }
     }
+    fflush(stdout);
 }
 
 bool SLex::procNextChar(char c) {

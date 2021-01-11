@@ -5,6 +5,8 @@
 
 #include <memory>
 
+#include "SqPort.h"
+
 #include "CompiledInstrument.h"
 #include "Divider.h"
 #include "IComposite.h"
@@ -13,7 +15,7 @@
 #include "Sampler4vx.h"
 #include "SimdBlocks.h"
 #include "SqLog.h"
-#include "SqPort.h"
+
 #include "ThreadClient.h"
 #include "ThreadServer.h"
 #include "ThreadSharedState.h"
