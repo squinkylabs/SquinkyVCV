@@ -223,6 +223,7 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
 #endif
                     multiPlayer->addEntry(region, sampleIndex, midiPitch);
                 }
+                multiPlayer->finalize();
                 dest->addEntry(midiPitch, multiPlayer);
             } break;
             case CompiledRegion::Type::RoundRobin: {

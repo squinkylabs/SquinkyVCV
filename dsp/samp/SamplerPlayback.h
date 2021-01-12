@@ -132,43 +132,6 @@ private:
     const int lineNumber;  // in the source file
 };
 
-#if 0
-class SimpleVoicePlayer : public ISamplerPlayback {
-public:
-    SimpleVoicePlayer() = delete;
-    SimpleVoicePlayer(CompiledRegionPtr reg, int sampleIndex, int midiPitch) : lineNumber(reg->lineNumber) {
-        data->valid = true;
-        data->sampleIndex = sampleIndex;
-
-        printf("recode 58 the new way\n");
-        //assert(false);      // re code this the new easy way
-        const int semiOffset = midiPitch - reg->keycenter;
-        if (semiOffset == 0) {
-            data->needsTranspose = false;
-            data->transposeAmt = 1;
-        } else {
-            const float pitchMul = float(std::pow(2, semiOffset / 12.0));
-            data->needsTranspose = true;
-            data->transposeAmt = pitchMul;
-        }
-    }
-    void play(VoicePlayInfo& info, const VoicePlayParameter& params) override {
-        assert(params.midiVelocity > 0 && params.midiVelocity <= 127);
-        info = *data;
-        assert(false); // what about amp vel?
-    }
-    void _dump(int depth) const override {
-        indent(depth);
-        printf("simple voice player si=%d\n", data->sampleIndex);
-    }
-
-private:
-    VoicePlayInfoPtr data = std::make_shared<VoicePlayInfo>();
-    const int lineNumber;  // in the source file
-};
-#endif
-
-
 /**
  * PLayer that does nothing. Hopefully will not be used (often?)
  * in the real world, but need it now to cover corner cases without
@@ -192,9 +155,18 @@ public:
     void play(VoicePlayInfo& info, const VoicePlayParameter&) override;
     void _dump(int depth) const override;
     void addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch);
+    void finalize();
 private:
     std::vector<CachedSamplerPlaybackInfoPtr> entries;
     RandomRange<float> rand;
+
+    class TempHolder {
+    public:
+        CachedSamplerPlaybackInfoPtr info;
+        float hirand = 0;
+    };
+    std::vector<TempHolder> tempEntries;
+    bool finalized = false;
 };
 
 using RandomVoicePlayerPtr = std::shared_ptr<RandomVoicePlayer>;

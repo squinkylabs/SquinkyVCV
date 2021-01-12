@@ -1,6 +1,7 @@
 
 
 #include "SamplerPlayback.h"
+
 #include "SqLog.h"
 
 VoicePlayInfo::VoicePlayInfo(CompiledRegionPtr region, int midiPitch, int sampleIndex) {
@@ -28,6 +29,7 @@ void RandomVoicePlayer::_dump(int depth) const {
 }
 
 void RandomVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
+    assert(finalized);
     if (entries.empty()) {
         SQWARN("RandomPlayer has no entries");
         info.valid = false;
@@ -44,6 +46,59 @@ void RandomVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& para
     assert(info.valid);
 }
 
+#define _NEWW
+
+#ifdef _NEWW
+void RandomVoicePlayer::addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch) {
+    TempHolder holder;
+    holder.info = std::make_shared<CachedSamplerPlaybackInfo>(region, midiPitch, sampleIndex);
+    holder.hirand = region->hirand;
+    tempEntries.push_back(holder);
+}
+
+void RandomVoicePlayer::finalize() {
+    assert(!finalized);
+    finalized = true;
+    if (tempEntries.empty()) {
+        SQWARN("random group with no entries");
+        return;
+    }
+
+    // first sort temp entries by hirand
+    std::sort(tempEntries.begin(), tempEntries.end(), [](const TempHolder& a, const TempHolder& b) -> bool {
+        bool less = false;
+        if (a.hirand < b.hirand) {
+            less = true;
+        }
+        return less;
+    });
+
+    // make it all valid
+    float largest = tempEntries.back().hirand;
+    if (largest > 1) {
+        SQWARN("correct error in probabilities %f", largest);
+
+        // If the probabilities are whack, just make them all the same.
+        // This happens if there is a typo in the SFZ file.
+        const float avg = 1.f / tempEntries.size();
+        for (auto ent : tempEntries) {
+            ent.hirand = avg;
+        }
+    }
+
+    // then add them
+    for (auto ent : tempEntries) {
+        entries.push_back(ent.info);
+        rand.addRange(ent.hirand);
+         printf("rand add range entries=%d hirane=%f\n", (int) entries.size(), ent.hirand);
+    }
+}
+#else
+
+void RandomVoicePlayer::finalize() {
+    finalized = true;
+}
+
 void RandomVoicePlayer::addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch) {
     int index = int(entries.size());
     if (index == 0) {
@@ -55,7 +110,9 @@ void RandomVoicePlayer::addEntry(CompiledRegionPtr region, int sampleIndex, int 
     CachedSamplerPlaybackInfoPtr info = std::make_shared<CachedSamplerPlaybackInfo>(region, midiPitch, sampleIndex);
     entries.push_back(info);
     rand.addRange(region->hirand);
+    printf("rand add range entries=%d hirane=%f\n", (int) entries.size(), region->hirand);
 }
+#endif
 
 RoundRobinVoicePlayer::RRPlayInfo::RRPlayInfo(const CachedSamplerPlaybackInfo& info) : CachedSamplerPlaybackInfo(info) {
 }

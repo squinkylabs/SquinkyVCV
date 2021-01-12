@@ -184,10 +184,11 @@ if (runShaperGen) {
        
         return 0;
     }
-      
+  
+    testx4();
     testx();
     testx2();
-    testx4();
+  
     testx3();
     testADSR();
     testWavThread();
