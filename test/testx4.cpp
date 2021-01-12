@@ -1,7 +1,7 @@
 
+#include "SqLog.h"
 #include "asserts.h"
 #include "samplerTests.h"
-#include "SqLog.h"
 
 static void testRandomPlayerEmpty() {
     VoicePlayInfo info;
@@ -39,7 +39,6 @@ static void testRandomPlayerOneEntry() {
 }
 
 static void testRandomPlayerTwoEntrySub(const char* reg1, const char* reg2, bool flipped) {
- 
     CompiledRegionPtr cr1 = st::makeRegion(reg1);
     CompiledRegionPtr cr2 = st::makeRegion(reg2);
 
@@ -72,8 +71,7 @@ static void testRandomPlayerTwoEntrySub(const char* reg1, const char* reg2, bool
     if (!flipped) {
         assertClose(ct100, 20, 10);
         assertClose(ct101, 80, 10);
-    }
-    else {
+    } else {
         assertClose(ct101, 20, 10);
         assertClose(ct100, 80, 10);
     }
@@ -83,7 +81,7 @@ static void testRandomPlayerTwoEntry() {
     SQINFO("testRandomPlayerTwoEntry");
     testRandomPlayerTwoEntrySub(R"foo(<region>sample=a lorand=0 hirand=.2)foo",
                                 R"foo(<region>sample=a lorand=.2 hirand=1)foo",
-        false);
+                                false);
 }
 
 static void testRandomPlayerTwoEntryB() {
