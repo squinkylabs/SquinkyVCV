@@ -21,8 +21,8 @@ using DiscreteValue = SamplerSchema::DiscreteValue;
 using ValuePtr = SamplerSchema::ValuePtr;
 using Value = SamplerSchema::Value;
 
-#define _LOG
-#define _LOGOV
+//#define _LOG
+//#define _LOGOV
 
 void CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);

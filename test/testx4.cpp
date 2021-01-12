@@ -91,9 +91,47 @@ static void testRandomPlayerTwoEntryB() {
         R"foo(<region>sample=a lorand=0 hirand=.2)foo",
         true);
 }
+
+static void testRandomPlayerBadData() {
+    SQINFO("test bad data");
+    CompiledRegionPtr cr1 = st::makeRegion(R"foo(<region>sample=a lorand=.2 hirand=100)foo");
+    CompiledRegionPtr cr2 = st::makeRegion(R"foo(<region>sample=a lorand=.2 hirand=1)foo");
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 100;
+    RandomVoicePlayerPtr player = std::make_shared<RandomVoicePlayer>();
+
+    player->addEntry(cr1, 100, 60);
+    player->addEntry(cr2, 101, 60);
+    player->finalize();
+    int ct100 = 0;
+    int ct101 = 0;
+
+    for (int i = 0; i < 100; ++i) {
+        player->play(info, params);
+        assert(info.valid);
+        switch (info.sampleIndex) {
+            case 100:
+                ct100++;
+                break;
+            case 101:
+                ct101++;
+                break;
+            default:
+                assert(false);
+        }
+    }
+    // on bad data we ignore probabilities
+    assertClose(ct101, 50, 10);
+    assertClose(ct100, 50, 10); 
+}
+
 void testx4() {
     testRandomPlayerEmpty();
     testRandomPlayerOneEntry();
     testRandomPlayerTwoEntry();
     testRandomPlayerTwoEntryB();
+    testRandomPlayerBadData();
 }

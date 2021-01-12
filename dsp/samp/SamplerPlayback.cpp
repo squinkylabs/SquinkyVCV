@@ -80,9 +80,13 @@ void RandomVoicePlayer::finalize() {
 
         // If the probabilities are whack, just make them all the same.
         // This happens if there is a typo in the SFZ file.
+
         const float avg = 1.f / tempEntries.size();
-        for (auto ent : tempEntries) {
-            ent.hirand = avg;
+        float nextValue = avg;
+       // for (TempHolder& ent : tempEntries) {
+        for (int i=0; i<tempEntries.size(); ++i) {
+            tempEntries[i].hirand = nextValue;
+            nextValue += avg;
         }
     }
 
