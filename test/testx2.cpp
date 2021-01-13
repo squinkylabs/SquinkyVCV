@@ -671,7 +671,7 @@ static void testCompileMultiVel() {
     auto err = SParse::go(data, inst);
 
     auto ci = CompiledInstrument::make(inst);
-    ci->_dump(0);
+    // ci->_dump(0);
     VoicePlayInfo info;
     VoicePlayParameter params;
     params.midiPitch = 11;
@@ -933,7 +933,7 @@ static void testCompileMulPitchAndVelComplex2() {
     auto ci = CompiledInstrument::make(inst);
     VoicePlayInfo info;
     std::set<int> sampleIndicies;
-    ci->_dump(0);
+    // ci->_dump(0);
 
     VoicePlayParameter params;
     params.midiPitch = 10;
@@ -969,7 +969,7 @@ static void testGroupInherit() {
     auto err = SParse::go(data, inst);
 
     auto ci = CompiledInstrument::make(inst);
-    ci->_dump(0);
+    // ci->_dump(0);
     VoicePlayInfo info;
     VoicePlayParameter params;
     params.midiPitch = 40;
@@ -1007,7 +1007,7 @@ static void testCompileSimpleDrum() {
     auto err = SParse::go(data, inst);
 
     auto ci = CompiledInstrument::make(inst);
-    ci->_dump(0);
+    // ci->_dump(0);
     VoicePlayInfo info;
 
     std::set<int> waves;

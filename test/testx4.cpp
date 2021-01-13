@@ -128,10 +128,47 @@ static void testRandomPlayerBadData() {
     assertClose(ct100, 50, 10); 
 }
 
+
+static void testRRPlayerCrazyPos() {
+    CompiledRegionPtr cr1 = st::makeRegion(R"foo(<region>sample=a seq_position=200)foo");
+    CompiledRegionPtr cr2 = st::makeRegion(R"foo(<region>sample=b  seq_position=10)foo");
+    CompiledRegionPtr cr3 = st::makeRegion(R"foo(<region>sample=c  seq_position=2000)foo");
+
+     VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 100;
+    RoundRobinVoicePlayerPtr player = std::make_shared<RoundRobinVoicePlayer>();
+
+    player->addEntry(cr1, 101, 60);
+    player->addEntry(cr2, 102, 60);
+    player->addEntry(cr3, 103, 60);
+    player->finalize();
+
+    player->play(info, params);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 102);        // b is lowest seq
+
+    player->play(info, params);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 101);        // a is second lowest seq
+
+    player->play(info, params);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 103);        //c is highest
+
+    player->play(info, params);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 102);        // b is lowest seq
+
+}
+
 void testx4() {
     testRandomPlayerEmpty();
     testRandomPlayerOneEntry();
     testRandomPlayerTwoEntry();
     testRandomPlayerTwoEntryB();
     testRandomPlayerBadData();
+
+    testRRPlayerCrazyPos();
 }

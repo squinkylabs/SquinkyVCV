@@ -271,27 +271,6 @@ static void testLexSpaces2() {
     testLexSpaces2d();
 }
 
-#if 0
-// get rid of this test. covered in case d
-static void testAllDrum()
-{
-    const char* pAllDrum = R"foo(sample=a
-//comm
-)foo";
-
-    SQINFO("test is %s", pAllDrum);
-    auto lex = SLex::go(pAllDrum);
-    assert(lex);
-    lex->_dump();
-
-    SLexIdentifier* ident = static_cast<SLexIdentifier*>(lex->items.back().get());
-    assertEQ(ident->idName, "a");
-    assert(false);
-}
-#endif
-
-
-
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -304,7 +283,7 @@ static void testparse2() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>pitch_keycenter=24", inst);
     assert(err.empty());
-    ;
+  
     assertEQ(inst->groups.size(), 1);
     SGroupPtr group = inst->groups[0];
     assert(group->values.empty());

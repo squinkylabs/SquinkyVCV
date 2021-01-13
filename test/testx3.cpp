@@ -196,7 +196,7 @@ static void testSnareBasic() {
 
     CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     VoicePlayInfo info;
-    cinst->_dump(0);
+    // cinst->_dump(0);
 }
 
 static void testAllSal() {
@@ -210,7 +210,7 @@ static void testAllSal() {
 
     CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     VoicePlayInfo info;
-    cinst->_dump(0);
+    // cinst->_dump(0);
 }
 void testx3() {
     testAllSal();

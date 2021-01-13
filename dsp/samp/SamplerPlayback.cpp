@@ -94,7 +94,6 @@ void RandomVoicePlayer::finalize() {
     for (auto ent : tempEntries) {
         entries.push_back(ent.info);
         rand.addRange(ent.hirand);
-         printf("rand add range entries=%d hirane=%f\n", (int) entries.size(), ent.hirand);
     }
 }
 #else
@@ -151,4 +150,5 @@ void RoundRobinVoicePlayer::finalize() {
         }
         return less;
     });
+    currentEntry = int(entries.size()) + 1;
 }
