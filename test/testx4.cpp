@@ -8,7 +8,7 @@ static void testRandomPlayerEmpty() {
     VoicePlayParameter params;
     RandomVoicePlayerPtr player = std::make_shared<RandomVoicePlayer>();
     player->finalize();
-    player->play(info, params);
+    player->play(info, params, nullptr, 0);
     assert(!info.valid);
 }
 
@@ -33,7 +33,7 @@ static void testRandomPlayerOneEntry() {
     RandomVoicePlayerPtr player = std::make_shared<RandomVoicePlayer>();
     player->addEntry(cr, 1, 60);
     player->finalize();
-    player->play(info, params);
+    player->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 }
@@ -55,7 +55,7 @@ static void testRandomPlayerTwoEntrySub(const char* reg1, const char* reg2, bool
     int ct101 = 0;
 
     for (int i = 0; i < 100; ++i) {
-        player->play(info, params);
+        player->play(info, params, nullptr, 0);
         assert(info.valid);
         switch (info.sampleIndex) {
             case 100:
@@ -110,7 +110,7 @@ static void testRandomPlayerBadData() {
     int ct101 = 0;
 
     for (int i = 0; i < 100; ++i) {
-        player->play(info, params);
+        player->play(info, params, nullptr, 0);
         assert(info.valid);
         switch (info.sampleIndex) {
             case 100:
@@ -145,19 +145,19 @@ static void testRRPlayerCrazyPos() {
     player->addEntry(cr3, 103, 60);
     player->finalize();
 
-    player->play(info, params);
+    player->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 102);        // b is lowest seq
 
-    player->play(info, params);
+    player->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 101);        // a is second lowest seq
 
-    player->play(info, params);
+    player->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 103);        //c is highest
 
-    player->play(info, params);
+    player->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 102);        // b is lowest seq
 

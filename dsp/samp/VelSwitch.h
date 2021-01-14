@@ -12,7 +12,7 @@
 class VelSwitch : public ISamplerPlayback {
 public:
     ISamplerPlaybackPtr mapVelToPlayer(unsigned int vel);
-    void play(VoicePlayInfo&, const VoicePlayParameter&) override;
+    void play(VoicePlayInfo&, const VoicePlayParameter&, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
     void addVelocityRange(unsigned int velRangeStart, ISamplerPlaybackPtr player);
 
@@ -32,9 +32,9 @@ inline void VelSwitch::addVelocityRange(unsigned int velRangeStart, ISamplerPlay
     }
 }
 
-inline void VelSwitch::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
+inline void VelSwitch::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     ISamplerPlaybackPtr player = mapVelToPlayer(params.midiVelocity);
-    player->play(info, params);
+    player->play(info, params, loader, sampleRate);
 }
 
 inline ISamplerPlaybackPtr VelSwitch::mapVelToPlayer(unsigned int vel) {

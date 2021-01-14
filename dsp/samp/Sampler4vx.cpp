@@ -19,7 +19,7 @@ void Sampler4vx::setLoader(WaveLoaderPtr loader) {
 #endif
 }
 
-void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity) {
+void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
     if (!patch || !waves) {
         printf("4vx not intit\n");
         return;
@@ -28,7 +28,7 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity) {
     VoicePlayParameter params;
     params.midiPitch = midiPitch;
     params.midiVelocity = midiVelocity;
-    patch->play(patchInfo, params);
+    patch->play(patchInfo, params, waves.get(), sampleRate);
     if (!patchInfo.valid) {
         printf("could not get play info pitch %d vel%d\n", midiPitch, midiVelocity);
         fflush(stdout);

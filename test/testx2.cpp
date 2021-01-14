@@ -23,7 +23,6 @@ static void testWaveLoader0() {
     w.addNextSample("fake file name");
     w.load();
     auto x = w.getInfo(1);
-    printf("foo\n");
     assert(!x->valid);
 
     x = w.getInfo(0);
@@ -35,8 +34,25 @@ static void testWaveLoader1() {
     w.addNextSample("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav");
     w.load();
     auto x = w.getInfo(1);
-    printf("foo\n");
     assert(x->valid);
+}
+
+static void testWaveLoaderNot44() {
+    printf("******************************** put this test back when samples put back\n");
+#if 0
+    WaveLoader w;
+    w.addNextSample("D:\\samples\\K18-Upright-Piano\\K18_orig\\A0.f.wav");
+  
+    w.load();
+    auto x = w.getInfo(1);
+    assert(x->valid);
+    assertEQ(x->sampleRate, 48000);
+    assertEQ(x->numChannels, 2);
+#endif
+}
+
+static void testWaveLoaderNotMono() {
+    assert(false);
 }
 
 static void testPlayInfo() {
@@ -55,7 +71,7 @@ static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) {
     VoicePlayParameter params;
     params.midiPitch = 60;
     params.midiVelocity = 60;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     int minSampleIndex = 200;
     int maxSampleIndex = -200;
@@ -64,7 +80,7 @@ static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) {
             info.valid = false;
             params.midiPitch = pitch;
             params.midiVelocity = vel;
-            cinst->play(info, params);
+            cinst->play(info, params, nullptr, 0);
             assert(info.valid);
             assert(info.canPlay());
             minSampleIndex = std::min(minSampleIndex, info.sampleIndex);
@@ -75,11 +91,11 @@ static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) {
     // VoicePlayParameter params;
     params.midiPitch = 20;
     params.midiVelocity = 60;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
     params.midiPitch = 109;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
     assert(minSampleIndex == 1);
@@ -230,7 +246,7 @@ static void testSampler() {
     const int channel = 0;
     const int midiPitch = 60;
     const int midiVel = 60;
-    s.note_on(channel, midiPitch, midiVel);
+    s.note_on(channel, midiPitch, midiVel, 0);
 
 
     float_4 x = s.step(0, 1.f / 44100.f);
@@ -259,7 +275,7 @@ static void testSamplerRealSound() {
     const int channel = 0;
     const int midiPitch = 60;
     const int midiVel = 60;
-    s.note_on(channel, midiPitch, midiVel);
+    s.note_on(channel, midiPitch, midiVel, 0);
     float_4 x = s.step(0, 1.f / 44100.f);
     assert(x[0] == 0);
 
@@ -353,7 +369,7 @@ static void testCompileInst0() {
     assert(!info.valid);
     params.midiPitch = 50;
     params.midiVelocity = 60;
-    i->play(info, params);
+    i->play(info, params, nullptr, 0);
     assert(info.valid);  // this will fail until we implement a real compiler
     assertNE(info.sampleIndex, 0);
 }
@@ -372,7 +388,7 @@ static void testCompileInst1() {
     VoicePlayParameter params;
     params.midiPitch = 60;
     params.midiVelocity = 60;
-    i->play(info, params);
+    i->play(info, params, nullptr, 0);
     assert(info.valid);  // this will fail until we implement a real compiler
     assertNE(info.sampleIndex, 0);
 }
@@ -392,18 +408,18 @@ static void testCompileOverlap() {
     params.midiPitch = 60;
     params.midiVelocity = 2;
 
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertNE(info.sampleIndex, 0);
     assertEQ(info.needsTranspose, false);
 
     params.midiPitch = 61;
     params.midiVelocity = 100;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(!info.valid);
     params.midiPitch = 59;
     params.midiVelocity = 12;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(!info.valid);
 }
 
@@ -423,7 +439,7 @@ static void testTranspose1() {
     VoicePlayParameter params;
     params.midiPitch = 26;
     params.midiVelocity = 64;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assert(info.needsTranspose);
     assertEQ(info.transposeAmt, pitchMul);
@@ -549,7 +565,7 @@ static void testCompileTreeOne() {
     VoicePlayParameter params;
     params.midiPitch = 60;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
 }
 
@@ -581,7 +597,7 @@ static void testCompileKey() {
     VoicePlayParameter params;
     params.midiPitch = 12;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.needsTranspose, false);
 }
@@ -601,27 +617,27 @@ static void testCompileMultiPitch() {
     VoicePlayParameter params;
     params.midiPitch = 9;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(!info.valid);
 
     params.midiPitch = 21;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(!info.valid);
 
     params.midiPitch = 0;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(!info.valid);
 
     params.midiPitch = 127;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(!info.valid);
 
     params.midiPitch = 11;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.needsTranspose, false);
 
@@ -631,28 +647,28 @@ static void testCompileMultiPitch() {
 
     params.midiPitch = 12;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
     assertGT(info.transposeAmt, 1);
 
     params.midiPitch = 10;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
     assertLT(info.transposeAmt, 1);
 
     params.midiPitch = 13;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
     assertEQ(info.sampleIndex, 2);
 
     params.midiPitch = 20;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
     assertGT(info.transposeAmt, 1);
@@ -676,12 +692,12 @@ static void testCompileMultiVel() {
     VoicePlayParameter params;
     params.midiPitch = 11;
     params.midiVelocity = 60;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(!info.valid);
 
     params.midiPitch = 10;
     params.midiVelocity = 1;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 }
@@ -712,63 +728,63 @@ static void testCompileMulPitchAndVelSimple() {
     VoicePlayParameter params;
     params.midiPitch = 10;
     params.midiVelocity = 1;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 10;
     params.midiVelocity = 21;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 10;
     params.midiVelocity = 91;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 20;
     params.midiVelocity = 1;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 20;
     params.midiVelocity = 21;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 20;
     params.midiVelocity = 91;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 30;
     params.midiVelocity = 1;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 30;
     params.midiVelocity = 21;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 30;
     params.midiVelocity = 91;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
@@ -798,14 +814,14 @@ static void testCompileMulPitchAndVelComplex1() {
     VoicePlayParameter params;
     params.midiPitch = 10;
     params.midiVelocity = 20;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 20;
     params.midiVelocity = 22;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
@@ -834,19 +850,19 @@ static void  testCompileAmpegRelease() {
     params.midiVelocity = 127;
 
     // inherited
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.ampeg_release, 50);
 
     // set directly
     params.midiPitch = 30;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.ampeg_release, 10);
 
     // default
     params.midiPitch = 20;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.ampeg_release, .001f);
  
@@ -873,38 +889,38 @@ static void testCompileAmpVel() {
     // velrack = 100
     params.midiPitch = 30;
     params.midiVelocity = 127;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.gain, 1);
 
     params.midiVelocity = 64;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertClose(info.gain, .25f, .01f);
 
     // veltrack = 0
     params.midiPitch = 40;
     params.midiVelocity = 127;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.gain, 1);
 
     params.midiVelocity = 1;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.gain, 1);
 
     // default. veltrack should be 100
     params.midiPitch = 20;
     params.midiVelocity = 64;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertClose(info.gain, .25f, .01f);
 
     // veltrack 50, inherited
     params.midiPitch = 10;
     params.midiVelocity = 64;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertClose(info.gain, .56, .01f);     //number gotten from known-good.
                                             //but at least it's > .25 and < 1
@@ -938,21 +954,21 @@ static void testCompileMulPitchAndVelComplex2() {
     VoicePlayParameter params;
     params.midiPitch = 10;
     params.midiVelocity = 20;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 10;
     params.midiVelocity = 27;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 10;
     params.midiVelocity = 91;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
@@ -974,12 +990,12 @@ static void testGroupInherit() {
     VoicePlayParameter params;
     params.midiPitch = 40;
     params.midiVelocity = 120;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
 
     params.midiPitch = 41;
     params.midiVelocity = 120;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(!info.valid);
 
     // This doesn't work, becuase we don't have exclusive velocity zones.
@@ -1015,7 +1031,7 @@ static void testCompileSimpleDrum() {
         VoicePlayParameter params;
         params.midiPitch = 40;
         params.midiVelocity = 110;
-        ci->play(info, params);
+        ci->play(info, params, nullptr, 0);
 
         assert(info.valid);
         assert(info.sampleIndex > 0);
@@ -1031,17 +1047,17 @@ static void testCompileSimpleDrum() {
     VoicePlayParameter params;
     params.midiPitch = 41;
     params.midiVelocity = 64;
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     waves.insert(info.sampleIndex);
 
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     waves.insert(info.sampleIndex);
 
-    ci->play(info, params);
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     waves.insert(info.sampleIndex);
@@ -1073,11 +1089,45 @@ static void testCompileSort() {
     assertEQ(regions[2]->hivel, 127);
 }
 
+static void testSampleRate() {
+
+    WaveLoader w;
+    // TODO: change back to k18 orig when test is done
+    w.addNextSample("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav");
+  
+    w.load();
+    auto x = w.getInfo(1);
+    assert(x->valid);
+    assertEQ(x->sampleRate, 48000);
+    assertEQ(x->numChannels, 1);    // loader already made mono
+
+    CompiledRegionPtr cr1 = st::makeRegion(R"foo(<region>sample=a key=60 seq_position=200)foo");
+
+//  SimpleVoicePlayer(CompiledRegionPtr reg, int midiPitch, int sampleIndex) :
+
+    SimpleVoicePlayer simplePlayer(cr1, 60, 1);
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 64;
+    simplePlayer.play(info, params, &w, 44100);
+    assert(info.valid);
+
+    float expectedTranspose = 44100.f / 48000.f;
+    assert(info.needsTranspose);
+    assertClose(info.transposeAmt, expectedTranspose, .01);
+
+  //  bool needsTranspose = false;
+  //  float transposeAmt = 1;
+}
+
 void testx2() {
     assert(parseCount == 0);
     assert(compileCount == 0);
     testWaveLoader0();
     testWaveLoader1();
+    testWaveLoaderNot44();
     testPlayInfo();
 
     testCubicInterp();
@@ -1138,6 +1188,8 @@ void testx2() {
 
     testSampler();
     //testSamplerRealSound();
+
+    testSampleRate();
     assertEQ(parseCount, 0);
     assertEQ(compileCount, 0);
 }

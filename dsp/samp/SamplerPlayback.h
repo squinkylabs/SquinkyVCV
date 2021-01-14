@@ -7,6 +7,8 @@
 #include "RandomRange.h"
 #include "CompiledRegion.h"
 
+class WaveLoader;
+
 /**
  * When a patch is asked to "play", it serves up one of these.
  * So this is the "output" of play.
@@ -41,8 +43,14 @@ public:
 class ISamplerPlayback {
 public:
     virtual ~ISamplerPlayback() = default;
-    // TODO: should this return VoicePlayInfoPtr??
-    virtual void play(VoicePlayInfo&, const VoicePlayParameter&) = 0;
+
+    /**
+     * @param info is where the playback info is returned.
+     * @param params are not play parameters.
+     * @param loader is all the wave files. may be null for some tests.
+     * @param sampleRate is the current sample rate. Ignored if loader is nullptr
+     */
+    virtual void play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) = 0;
     virtual void _dump(int depth) const = 0;
 
 protected:
@@ -117,11 +125,12 @@ class SimpleVoicePlayer : public ISamplerPlayback {
 public:
     SimpleVoicePlayer() = delete;
     SimpleVoicePlayer(CompiledRegionPtr reg, int midiPitch, int sampleIndex) :
-        data(reg, sampleIndex, midiPitch),
+        data(reg, midiPitch, sampleIndex),
         lineNumber(reg->lineNumber) {
+        assert(sampleIndex > 0);
 
     }
-    void play(VoicePlayInfo& info, const VoicePlayParameter& params) override;
+    void play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override {
         indent(depth);
         printf("simple voice player si=%d\n", data.sampleIndex);
@@ -139,7 +148,7 @@ private:
  */
 class NullVoicePlayer : public ISamplerPlayback {
 public:
-    void play(VoicePlayInfo& info, const VoicePlayParameter&) override {
+    void play(VoicePlayInfo& info, const VoicePlayParameter&, WaveLoader* loader, float sampleRate) override {
         info.valid = false;
     }
     void _dump(int depth) const override {
@@ -152,7 +161,7 @@ public:
 class RandomVoicePlayer : public ISamplerPlayback {
 public:
     RandomVoicePlayer() : rand(0) {}
-    void play(VoicePlayInfo& info, const VoicePlayParameter&) override;
+    void play(VoicePlayInfo& info, const VoicePlayParameter&, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
     void addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch);
     void finalize();
@@ -180,7 +189,7 @@ public:
         int seq_position = 0;
     };
     using RRPlayInfoPtr = std::shared_ptr<RRPlayInfo>;
-    void play(VoicePlayInfo& info, const VoicePlayParameter&) override;
+    void play(VoicePlayInfo& info, const VoicePlayParameter&, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
     void addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch);
     void finalize();

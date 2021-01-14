@@ -26,7 +26,7 @@ using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 class CompiledInstrument : public ISamplerPlayback {
 public:
     static CompiledInstrumentPtr make(const SInstrumentPtr);
-    void play(VoicePlayInfo&, const VoicePlayParameter& params) override;
+    void play(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
     void _setTestMode() {
         testMode = true;

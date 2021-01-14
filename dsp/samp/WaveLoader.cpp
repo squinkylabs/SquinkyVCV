@@ -25,7 +25,7 @@ WaveLoader::WaveInfo::WaveInfo(const std::string& path) : fileName(path) {
 
 void WaveLoader::addNextSample(const std::string& fileName) {
     assert(!didLoad);
-    printf("adding %s\n", fileName.c_str());
+    // printf("adding %s\n", fileName.c_str());
 
     auto x = fileName.find(foreignSeparator());
     assert(x == std::string::npos);
@@ -34,7 +34,7 @@ void WaveLoader::addNextSample(const std::string& fileName) {
 }
 
 void WaveLoader::load() {
-    printf("waveLoader::load %lld\n", filesToLoad.size());
+    // printf("waveLoader::load %lld\n", filesToLoad.size());
     assert(!didLoad);
     didLoad = true;
     for (std::string& file : filesToLoad) {
@@ -55,12 +55,39 @@ void WaveLoader::WaveInfo::load() {
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
-        SQWARN("error opening wave");
+        SQWARN("error opening wave %s",  fileName.c_str());
         return;
     }
-    SQINFO("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
+    //SQINFO("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
+    if (numChannels > 1) {
+        pSampleData = convertToMono(pSampleData, totalFrameCount, numChannels);
+        numChannels = 1;
+    }
     data = pSampleData;
     valid = true;
+}
+
+
+float* WaveLoader::WaveInfo::convertToMono(float* data, uint64_t frames, int channels)
+{
+    
+    uint64_t newBufferSize = 1 + frames / channels;
+    void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
+    float* dest = reinterpret_cast<float *>(x);
+    for (uint64_t i=0; i< frames / channels; ++i) {
+        float temp = 0;
+        for (int ch=0; ch<channels; ++ch) {
+            temp += data[i + ch];
+        
+        }
+        temp /= channels;
+        assert(temp <= 1);
+        assert(temp >= -1);
+        dest[i] = temp;
+    }
+    
+    DRWAV_FREE(data);
+    return dest;
 }
 
 char WaveLoader::nativeSeparator() {

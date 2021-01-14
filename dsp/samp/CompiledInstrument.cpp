@@ -207,7 +207,7 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
             case CompiledRegion::Type::Base: {
                 const int sampleIndex = addSampleFile(region->sampleFile);
                 assert(region->type() == CompiledRegion::Type::Base);
-                ISamplerPlaybackPtr singlePlayer = std::make_shared<SimpleVoicePlayer>(region, sampleIndex, midiPitch);
+                ISamplerPlaybackPtr singlePlayer = std::make_shared<SimpleVoicePlayer>(region, midiPitch, sampleIndex);
                 dest->addEntry(midiPitch, singlePlayer);
             } break;
             case CompiledRegion::Type::Random: {
@@ -483,13 +483,13 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPt
     return instOut;
 }
 
-void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
+void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     //  pitchMap.play(info, midiPitch, midiVelocity);
     if (!player) {
         printf("ci can't play yet\n");
         return;
     }
-    player->play(info, params);
+    player->play(info, params, loader, sampleRate);
 }
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootPath) {

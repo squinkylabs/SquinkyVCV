@@ -1,6 +1,7 @@
 
 
 #include "SamplerPlayback.h"
+#include "WaveLoader.h"
 
 #include "SqLog.h"
 
@@ -19,8 +20,16 @@ VoicePlayInfo::VoicePlayInfo(CompiledRegionPtr region, int midiPitch, int sample
     }
 }
 
-void SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
+void SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     cachedInfoToPlayInfo(info, params, data);
+    if (loader) {
+        // do we need to adapt to changed sample rate?
+        unsigned int waveSampleRate  = loader->getInfo(info.sampleIndex)->sampleRate; 
+        if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
+            info.needsTranspose = true;
+            info.transposeAmt = data.transposeAmt * sampleRate / float(waveSampleRate);
+        }
+    }
 }
 
 void RandomVoicePlayer::_dump(int depth) const {
@@ -28,7 +37,7 @@ void RandomVoicePlayer::_dump(int depth) const {
     printf("Random Voice Player (tbd)\n");
 }
 
-void RandomVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
+void RandomVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     assert(finalized);
     if (entries.empty()) {
         SQWARN("RandomPlayer has no entries");
@@ -125,7 +134,7 @@ void RoundRobinVoicePlayer::_dump(int depth) const {
     printf("Round Robin Voice Payer (tbd)");
 }
 
-void RoundRobinVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params) {
+void RoundRobinVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     if (currentEntry >= numEntries) {
         currentEntry = 0;
     }

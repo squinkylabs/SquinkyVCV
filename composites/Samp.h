@@ -227,7 +227,7 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                     if (midiVelocity < 1) {
                         midiVelocity = 1;
                     }
-                    playback[bank].note_on(iSub, midiPitch, midiVelocity);
+                    playback[bank].note_on(iSub, midiPitch, midiVelocity, args.sampleRate);
                     // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
                 } else {
                     playback[bank].note_off(iSub);
@@ -342,7 +342,8 @@ void Samp<TBase>::servicePendingPatchRequest() {
     }
 
     if (messagePool.empty()) {
-        assert(false);
+        // assert(false);
+        SQWARN("message pool empty at 346");
         return;
     }
 

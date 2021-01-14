@@ -23,10 +23,10 @@ static void testVelSwitch1() {
     CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
 
     // Need to make some "test" sample playback ptrs. just need to be able to recognize them later
-    ISamplerPlaybackPtr p0 = std::make_shared<SimpleVoicePlayer>(r0, 100, 0);
-    ISamplerPlaybackPtr p1 = std::make_shared<SimpleVoicePlayer>(r0, 101, 0);
-    ISamplerPlaybackPtr p2 = std::make_shared<SimpleVoicePlayer>(r0, 102, 0);
-    ISamplerPlaybackPtr p3 = std::make_shared<SimpleVoicePlayer>(r0, 103, 0);
+    ISamplerPlaybackPtr p0 = std::make_shared<SimpleVoicePlayer>(r0, 0, 100);
+    ISamplerPlaybackPtr p1 = std::make_shared<SimpleVoicePlayer>(r0, 0, 101);
+    ISamplerPlaybackPtr p2 = std::make_shared<SimpleVoicePlayer>(r0, 0, 102);
+    ISamplerPlaybackPtr p3 = std::make_shared<SimpleVoicePlayer>(r0, 0, 103);
 
     v.addVelocityRange(1, p0);  // index 1 starts at vel 1 (0 illegal
     v.addVelocityRange(2, p1);
@@ -40,23 +40,23 @@ static void testVelSwitch1() {
     params.midiVelocity = 1;
 
   
-    test->play(info, params);
+    test->play(info, params, nullptr, 0);
     assertEQ(info.sampleIndex, 100);
 
     test = v.mapVelToPlayer(2);
-    test->play(info, params);
+    test->play(info, params, nullptr, 0);
     assertEQ(info.sampleIndex, 101);
 
     test = v.mapVelToPlayer(99);
-    test->play(info, params);
+    test->play(info, params, nullptr, 0);
     assertEQ(info.sampleIndex, 102);
 
     test = v.mapVelToPlayer(100);
-    test->play(info, params);
+    test->play(info, params, nullptr, 0);
     assertEQ(info.sampleIndex, 103);
 
     test = v.mapVelToPlayer(101);
-    test->play(info, params);
+    test->play(info, params, nullptr, 0);
     assertEQ(info.sampleIndex, 103);
 }
 
@@ -137,41 +137,41 @@ static void testSmallPianoVelswitch() {
     VoicePlayParameter params;
     params.midiPitch = 60;
     params.midiVelocity = 60;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     assert(info.valid);
 
 
     params.midiPitch = 64;
     params.midiVelocity = 1;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     const int si1 = info.sampleIndex;
 
     params.midiVelocity = 22;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     const int si22 = info.sampleIndex;
 
     params.midiVelocity = 23;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     const int si23 = info.sampleIndex;
 
     params.midiVelocity = 30;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     const int si30 = info.sampleIndex;
 
     params.midiVelocity = 43;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     const int si43 = info.sampleIndex;
 
     params.midiVelocity = 44;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     const int si44 = info.sampleIndex;
 
     params.midiVelocity = 107;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     const int si107 = info.sampleIndex;
 
     params.midiVelocity = 127;
-    cinst->play(info, params);
+    cinst->play(info, params, nullptr, 0);
     const int si127 = info.sampleIndex;
 
     assertEQ(si1, si22);
