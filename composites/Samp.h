@@ -333,7 +333,7 @@ void Samp<TBase>::commonConstruct() {
 
     std::unique_ptr<ThreadClient> client(new ThreadClient(threadState, std::move(server)));
     this->thread = std::move(client);
-}
+};
 
 template <class TBase>
 void Samp<TBase>::servicePendingPatchRequest() {
