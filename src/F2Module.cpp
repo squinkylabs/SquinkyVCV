@@ -98,7 +98,7 @@ public:
         float value =getValue();
         SqStream str;
         str.precision(0);
-        str.add(value + 100);
+        str.add(value * 100);
         str.add("%");
         return str.str();
     }

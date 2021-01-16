@@ -87,13 +87,13 @@ inline void SqStream::add(float f)
         format = "%.2f";
         break;
     default:
-        SQWARN("unimplemented precission %d\n", _precision);
+        SQWARN("unimplemented precision %d\n", _precision);
 
     }
 
     snprintf(nextLoc, sizeRemaining, format, f);
     length = int(strlen(buffer));
-    SQWARN("float was %f, printed to %s prec=%d\n", f, nextLoc, _precision);
+   // SQWARN("float was %f, printed to %s prec=%d\n", f, nextLoc, _precision);
 }
 inline std::string SqStream::str()
 {

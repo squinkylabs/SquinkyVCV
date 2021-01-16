@@ -187,12 +187,8 @@ inline void Samp<TBase>::step_n() {
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
     numChannels_m = inPort.channels;
     outPort.setChannels(numChannels_m);
-    // printf("just set to %d channels\n", numChannels_m); fflush(stdout);
-
     servicePendingPatchRequest();
     serviceMessagesReturnedToComposite();
-
-    currentPatchMessage = nullptr;
 }
 
 template <class TBase>
@@ -288,23 +284,20 @@ public:
 
         cinst->setWaves(waves, samplePath);
 
-       // SQINFO("about to load waves\n");
         // TODO: need a way for wave loader to return error/
         waves->load();
-       // SQINFO("loaded waves\n");
         WaveLoader::WaveInfoPtr info = waves->getInfo(1);
         assert(info->valid);
 
         smsg->instrument = cinst;
         smsg->waves = waves;
-       // SQINFO("loader thread returning happy");
+        SQINFO("loader thread returning happy");
 
         sendMessageToClient(msg);
     }
 
 private:
     std::string samplePath;
-   // std::string fileName;
     std::string fullPath;
 
     void parsePath(SampMessage* msg) {
@@ -342,7 +335,6 @@ void Samp<TBase>::servicePendingPatchRequest() {
     }
 
     if (messagePool.empty()) {
-        // assert(false);
         SQWARN("message pool empty at 346");
         return;
     }
@@ -358,6 +350,7 @@ void Samp<TBase>::servicePendingPatchRequest() {
         WARN("Unable to sent message to server.");
         messagePool.push(msg);
     }
+    SQINFO("send message to server");
 }
 template <class TBase>
 void Samp<TBase>::serviceMessagesReturnedToComposite() {
@@ -368,9 +361,9 @@ void Samp<TBase>::serviceMessagesReturnedToComposite() {
         SampMessage* smsg = static_cast<SampMessage*>(newMsg);
         if (currentPatchMessage) {
             messagePool.push(currentPatchMessage);
+            fflush(stderr); fflush(stdout);
         }
-        currentPatchMessage = smsg;
-        
+        currentPatchMessage = smsg;        
         setNewPatch();
     }
 }

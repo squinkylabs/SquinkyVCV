@@ -7,6 +7,7 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "Limiter.h"
+#include "SqLog.h"
 #include "SqMath.h"
 #include "SqPort.h"
 #include "StateVariableFilter2.h"
@@ -347,13 +348,16 @@ inline void F2_Poly<TBase>::setupFreq()
         SqInput& fcPort = TBase::inputs[FC_INPUT];
         float_4 fcCV = fcPort.getPolyVoltageSimd<float_4>(baseChannel);
         const bool fcCVChanged =  rack::simd::movemask(fcCV != lastFcVC[bank]);
+
         if (fcCVChanged || rChanged || fcKnobChanged || fcTrimChanged) {
-            lastFcVC[bank] = fcCVChanged;
+           // SQINFO("changed: %d, %d, %d, %d", fcCVChanged, rChanged, fcKnobChanged, fcTrimChanged);
+            lastFcVC[bank] = fcCV;
 
             float_4 combinedFcVoltage = scaleFc(
                 fcCV,
                 lastFcKnob,
                 lastFcTrim);
+           // SQINFO("cv=%f, knob=%f, trim=%f combined = %f", fcCV[0], lastFcKnob, lastFcTrim, combinedFcVoltage[0]);
 
             auto fr = fastFcFunc2(combinedFcVoltage, processedRValue, float(oversample), sampleTime);
 
