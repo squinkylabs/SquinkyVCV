@@ -46,9 +46,6 @@ private:
 template <typename T, int SIZE>
 inline ManagedPool<T, SIZE>::ManagedPool()
 {
-    SQINFO("Managed Pool CTRO info");
-    
-    SQWARN("Managed Pool CTRO warn");
     // Manufacture the items here
     for (int i = 0; i < SIZE; ++i) {
         T * item = new T();
@@ -63,7 +60,6 @@ template <typename T, int SIZE>
 inline void ManagedPool<T, SIZE>::push(T* value)
 {
     ringBuffer.push(value);
-    SQINFO("Managed Pool::push.");
 }
 
 
@@ -71,7 +67,6 @@ template <typename T, int SIZE>
 inline T* ManagedPool<T, SIZE>::pop()
 {
     return ringBuffer.pop();
-     SQINFO("Managed Pool:: pop.");
 }
 
 template <typename T, int SIZE>

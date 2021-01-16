@@ -350,8 +350,8 @@ void Samp<TBase>::servicePendingPatchRequest() {
         WARN("Unable to sent message to server.");
         messagePool.push(msg);
     }
-    SQINFO("send message to server");
 }
+
 template <class TBase>
 void Samp<TBase>::serviceMessagesReturnedToComposite() {
     // see if any messages came back for us

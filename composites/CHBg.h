@@ -4,21 +4,20 @@
 #include <algorithm>
 
 #include "AudioMath.h"
-#include "poly.h"
 #include "ObjectCache.h"
 #include "SinOscillator.h"
+#include "poly.h"
 
 using Osc = SinOscillator<float, true>;
 
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
-    inline float clamp(float v, float lo, float hi)
-    {
-        assert(lo < hi);
-        return std::min(hi, std::max(v, lo));
-    }
+inline float clamp(float v, float lo, float hi) {
+    assert(lo < hi);
+    return std::min(hi, std::max(v, lo));
 }
+}  // namespace std
 #endif
 
 /**
@@ -28,20 +27,16 @@ namespace std {
  * reduced polynomial order to what we actually use (10), perf = 39.5
  */
 template <class TBase>
-class CHBg : public TBase
-{
+class CHBg : public TBase {
 public:
-    CHBg(Module * module) : TBase(module)
-    {
+    CHBg(Module *module) : TBase(module) {
         init();
     }
-    CHBg() : TBase()
-    {
+    CHBg() : TBase() {
         init();
     }
 
-    enum ParamIds
-    {
+    enum ParamIds {
         PARAM_TUNE,
         PARAM_OCTAVE,
         PARAM_EXTGAIN,
@@ -67,8 +62,7 @@ public:
     };
     const int numHarmonics = 1 + PARAM_H9 - PARAM_H0;
 
-    enum InputIds
-    {
+    enum InputIds {
         CV_INPUT,
         PITCH_MOD_INPUT,
         LINEAR_FM_INPUT,
@@ -90,14 +84,12 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         MIX_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         GAIN_GREEN_LIGHT,
         GAIN_RED_LIGHT,
         NUM_LIGHTS
@@ -111,7 +103,7 @@ public:
     float _freq = 0;
 
 private:
-    bool economyMode = true;        // let's default to economy mode
+    bool economyMode = true;  // let's default to economy mode
     int cycleCount = 1;
     int clipCount = 0;
     int signalCount = 0;
@@ -155,7 +147,7 @@ private:
      * Audio taper for the slope.
      */
     AudioMath::ScaleFun<float> slopeScale =
-    {AudioMath::makeLinearScaler<float>(-18, 0)};
+        {AudioMath::makeLinearScaler<float>(-18, 0)};
 
     /**
      * do one-time calculations when sample rate changes
@@ -177,39 +169,35 @@ private:
      * @param raw = 0..1
      * @return 0..1
      */
-    float taper(float raw)
-    {
+    float taper(float raw) {
         return LookupTable<float>::lookup(*audioTaper, raw, false);
     }
 };
 
 template <class TBase>
-inline void  CHBg<TBase>::init()
-{
+inline void CHBg<TBase>::init() {
     for (int i = 0; i < polyOrder; ++i) {
         _octave[i] = log2(float(i + 1));
     }
 }
 
 template <class TBase>
-inline float  CHBg<TBase>::getOctave(int i) const
-{
+inline float CHBg<TBase>::getOctave(int i) const {
     assert(i >= 0 && i < polyOrder);
     return _octave[i];
 }
 
 template <class TBase>
-inline float CHBg<TBase>::getInput()
-{
+inline float CHBg<TBase>::getInput() {
     assert(TBase::engineGetSampleTime() > 0);
 
     // Get the frequency from the inputs.
     float pitch = 1.0f + roundf(TBase::params[PARAM_OCTAVE].value) + TBase::params[PARAM_TUNE].value / 12.0f;
     pitch += TBase::inputs[CV_INPUT].value;
     pitch += .25f * TBase::inputs[PITCH_MOD_INPUT].value *
-        taper(TBase::params[PARAM_PITCH_MOD_TRIM].value);
+             taper(TBase::params[PARAM_PITCH_MOD_TRIM].value);
 
-    const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
+    const float q = float(log2(261.626));  // move up to pitch range of EvenVCO
     pitch += q;
     _freq = expLookup(pitch);
 
@@ -224,8 +212,8 @@ inline float CHBg<TBase>::getInput()
     Osc::setFrequency(sinParams, time);
 
     if (cycleCount == 0) {
-    // Get the gain from the envelope generator in
-    // eGain = {0 .. 10.0f }
+        // Get the gain from the envelope generator in
+        // eGain = {0 .. 10.0f }
         float eGain = TBase::inputs[ENV_INPUT].active ? TBase::inputs[ENV_INPUT].value : 10.f;
         isExternalAudio = TBase::inputs[AUDIO_INPUT].active;
 
@@ -241,12 +229,9 @@ inline float CHBg<TBase>::getInput()
         finalGain = taperedGain * eGain;
     }
 
-    float input = finalGain * (isExternalAudio ?
-        TBase::inputs[AUDIO_INPUT].value :
-        Osc::run(sinState, sinParams));
+    float input = finalGain * (isExternalAudio ? TBase::inputs[AUDIO_INPUT].value : Osc::run(sinState, sinParams));
 
     checkClipping(input);
-
 
     // Now clip or fold to keep in -1...+1
     if (TBase::params[PARAM_FOLD].value > .5) {
@@ -266,8 +251,7 @@ inline float CHBg<TBase>::getInput()
  *      nothing - turn off
  */
 template <class TBase>
-inline void CHBg<TBase>::checkClipping(float input)
-{
+inline void CHBg<TBase>::checkClipping(float input) {
     if (input > 1) {
         // if clipping, go red
         clipCount = clipDuration;
@@ -293,11 +277,10 @@ inline void CHBg<TBase>::checkClipping(float input)
 }
 
 template <class TBase>
-inline void CHBg<TBase>::calcVolumes(float * volumes)
-{
+inline void CHBg<TBase>::calcVolumes(float *volumes) {
     // first get the harmonics knobs, and scale them
     for (int i = 0; i < numHarmonics; ++i) {
-        float val = taper(TBase::params[i + PARAM_H0].value);       // apply taper to the knobs
+        float val = taper(TBase::params[i + PARAM_H0].value);  // apply taper to the knobs
 
         // If input connected, scale and multiply with knob value
         if (TBase::inputs[i + H0_INPUT].active) {
@@ -313,7 +296,7 @@ inline void CHBg<TBase>::calcVolumes(float * volumes)
         const float even = taper(TBase::params[PARAM_MAG_EVEN].value);
         const float odd = taper(TBase::params[PARAM_MAG_ODD].value);
         for (int i = 1; i < polyOrder; ++i) {
-            const float mul = (i & 1) ? even : odd;     // 0 = fundamental, 1=even, 2=odd....
+            const float mul = (i & 1) ? even : odd;  // 0 = fundamental, 1=even, 2=odd....
             volumes[i] *= mul;
         }
     }
@@ -331,8 +314,7 @@ inline void CHBg<TBase>::calcVolumes(float * volumes)
 }
 
 template <class TBase>
-inline void CHBg<TBase>::step()
-{
+inline void CHBg<TBase>::step() {
     if (economyMode) {
         if (--cycleCount < 0) {
             cycleCount = 3;
@@ -352,8 +334,6 @@ inline void CHBg<TBase>::step()
         }
     }
 
-
     float output = poly.run(input, std::min(finalGain, 1.f));
     TBase::outputs[MIX_OUTPUT].value = 5.0f * output;
 }
-

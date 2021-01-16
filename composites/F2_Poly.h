@@ -1,9 +1,11 @@
 
 #pragma once
 
-#include "AudioMath_4.h"
 #include <assert.h>
+
 #include <memory>
+
+#include "AudioMath_4.h"
 #include "Divider.h"
 #include "IComposite.h"
 #include "Limiter.h"
@@ -14,32 +16,29 @@
 
 //#include "dsp/common.hpp"
 //#include "dsp/approx.hpp"
-#include "simd.h"
 #include <algorithm>
 
+#include "simd.h"
 
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
-    inline float clamp(float v, float lo, float hi)
-    {
-        assert(lo < hi);
-        return std::min(hi, std::max(v, lo));
-    }
+inline float clamp(float v, float lo, float hi) {
+    assert(lo < hi);
+    return std::min(hi, std::max(v, lo));
 }
+}  // namespace std
 #endif
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
-
 template <class TBase>
-class F2_PolyDescription : public IComposite
-{
+class F2_PolyDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -101,25 +100,21 @@ public:
  * 
  */
 template <class TBase>
-class F2_Poly : public TBase
-{
+class F2_Poly : public TBase {
 public:
     using T = float_4;
 
-    F2_Poly(Module * module) : TBase(module)
-    {
+    F2_Poly(Module* module) : TBase(module) {
         init();
     }
 
-    F2_Poly() : TBase()
-    {
+    F2_Poly() : TBase() {
         init();
     }
 
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         TOPOLOGY_PARAM,
         FC_PARAM,
         R_PARAM,
@@ -127,11 +122,11 @@ public:
         MODE_PARAM,
         LIMITER_PARAM,
         FC_TRIM_PARAM,
+        CV_UPDATE_FREQ,
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         AUDIO_INPUT,
         FC_INPUT,
         Q_INPUT,
@@ -139,19 +134,16 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
-    enum class Topology
-    {
+    enum class Topology {
         SINGLE,
         SERIES,
         PARALLEL,
@@ -160,8 +152,7 @@ public:
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<F2_PolyDescription<TBase>>();
     }
 
@@ -174,8 +165,8 @@ public:
 
     const StateVariableFilterParams2<T>& _params1() const;
     const StateVariableFilterParams2<T>& _params2() const;
-private:
 
+private:
     StateVariableFilterParams2<T> params1[4];
     StateVariableFilterParams2<T> params2[4];
     StateVariableFilterState2<T> state1[4];
@@ -210,7 +201,7 @@ private:
     static float_4 fastQFunc(float_4 qV, int numStages);
     static std::pair<float_4, float_4> fastFcFunc2(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime);
 
-    using  processFunction = void (F2_Poly<TBase>::*)(const typename TBase::ProcessArgs& args);
+    using processFunction = void (F2_Poly<TBase>::*)(const typename TBase::ProcessArgs& args);
     processFunction procFun;
 
     void processOneBankSeries(const typename TBase::ProcessArgs& args);
@@ -218,12 +209,11 @@ private:
     void processOneBank12_nolim(const typename TBase::ProcessArgs& args);
     void processGeneric(const typename TBase::ProcessArgs& args);
 
-     AudioMath_4::ScaleFun scaleFc = AudioMath_4::makeScalerWithBipolarAudioTrim(0, 10, 0, 10);    
+    AudioMath_4::ScaleFun scaleFc = AudioMath_4::makeScalerWithBipolarAudioTrim(0, 10, 0, 10);
 };
 
 template <class TBase>
-inline void F2_Poly<TBase>::init()
-{
+inline void F2_Poly<TBase>::init() {
     divn.setup(4, [this]() {
         this->stepn();
     });
@@ -234,11 +224,10 @@ inline void F2_Poly<TBase>::init()
 }
 
 template <class TBase>
-inline void F2_Poly<TBase>::stepm()
-{
+inline void F2_Poly<TBase>::stepm() {
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-  
+
     numChannels_m = inPort.channels;
     outPort.setChannels(numChannels_m);
 
@@ -246,37 +235,32 @@ inline void F2_Poly<TBase>::stepm()
 
     setupModes();
     setupProcFunc();
-    limiterEnabled_m =  bool( std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
+    limiterEnabled_m = bool(std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
 }
 
 template <class TBase>
-inline void F2_Poly<TBase>::setupLimiter()
-{
+inline void F2_Poly<TBase>::setupLimiter() {
     limiter.setTimes(1, 100, TBase::engineGetSampleTime());
 }
 
 template <class TBase>
-inline void F2_Poly<TBase>::onSampleRateChange()
-{
+inline void F2_Poly<TBase>::onSampleRateChange() {
     setupLimiter();
 }
 
 template <class TBase>
-inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params1() const 
-{
+inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params1() const {
     return params1[0];
 }
 
 template <class TBase>
-inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params2() const 
-{
+inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params2() const {
     return params2[0];
 }
 
 template <class TBase>
-inline float_4 F2_Poly<TBase>::fastQFunc(float_4 qV, int numStages)
-{
-    assert(numStages >=1 && numStages <= 2);
+inline float_4 F2_Poly<TBase>::fastQFunc(float_4 qV, int numStages) {
+    assert(numStages >= 1 && numStages <= 2);
 
     const float expMult = (numStages == 1) ? 1 / 1.5f : 1 / 2.5f;
     float_4 q = rack::dsp::approxExp2_taylor5(qV * expMult) - .5;
@@ -287,23 +271,22 @@ template <class TBase>
 inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc2(float_4 freqVolts, float_4 r, float oversample, float sampleTime) {
     assert(oversample == 4);
     assert(sampleTime < .0001);
-    float_4 freq =  rack::dsp::FREQ_C4 *  rack::dsp::approxExp2_taylor5(freqVolts + 30 - 4) / 1073741824;
+    float_4 freq = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(freqVolts + 30 - 4) / 1073741824;
 
     freq /= oversample;
     freq *= sampleTime;
 
-// we could pass in 1/r, too
+    // we could pass in 1/r, too
     float_4 f1 = freq / r;
     float_4 f2 = freq * r;
     return std::make_pair(f1, f2);
 }
 
 template <class TBase>
-inline void F2_Poly<TBase>::setupFreq()
-{
+inline void F2_Poly<TBase>::setupFreq() {
     const float sampleTime = TBase::engineGetSampleTime();
-    const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
-    const int numStages = (topologyInt == 0) ? 1 : 2; 
+    const int topologyInt = int(std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
+    const int numStages = (topologyInt == 0) ? 1 : 2;
 
     const bool fcKnobChanged = lastFcKnob != F2_Poly<TBase>::params[FC_PARAM].value;
     const bool fcTrimChanged = lastFcTrim != F2_Poly<TBase>::params[FC_TRIM_PARAM].value;
@@ -341,71 +324,65 @@ inline void F2_Poly<TBase>::setupFreq()
         const bool rChanged = rack::simd::movemask(rVolts != lastRv[bank]);
         if (rChanged) {
             lastRv[bank] = rVolts;
-            processedRValue =  rack::dsp::approxExp2_taylor5(rVolts/3.f);
+            processedRValue = rack::dsp::approxExp2_taylor5(rVolts / 3.f);
             //printf("rv=%f procR = %f\n", rVolts[0], processedRValue[0]);
         }
 
         SqInput& fcPort = TBase::inputs[FC_INPUT];
         float_4 fcCV = fcPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const bool fcCVChanged =  rack::simd::movemask(fcCV != lastFcVC[bank]);
+        const bool fcCVChanged = rack::simd::movemask(fcCV != lastFcVC[bank]);
 
         if (fcCVChanged || rChanged || fcKnobChanged || fcTrimChanged) {
-           // SQINFO("changed: %d, %d, %d, %d", fcCVChanged, rChanged, fcKnobChanged, fcTrimChanged);
+            // SQINFO("changed: %d, %d, %d, %d", fcCVChanged, rChanged, fcKnobChanged, fcTrimChanged);
             lastFcVC[bank] = fcCV;
 
             float_4 combinedFcVoltage = scaleFc(
                 fcCV,
                 lastFcKnob,
                 lastFcTrim);
-           // SQINFO("cv=%f, knob=%f, trim=%f combined = %f", fcCV[0], lastFcKnob, lastFcTrim, combinedFcVoltage[0]);
+            // SQINFO("cv=%f, knob=%f, trim=%f combined = %f", fcCV[0], lastFcKnob, lastFcTrim, combinedFcVoltage[0]);
 
             auto fr = fastFcFunc2(combinedFcVoltage, processedRValue, float(oversample), sampleTime);
 
             params1[bank].setFreq(fr.first);
             params2[bank].setFreq(fr.second);
-        }     
+        }
     }
 }
 
 template <class TBase>
-inline void F2_Poly<TBase>::setupModes()
-{
-    const int modeParam = int( std::round(F2_Poly<TBase>::params[MODE_PARAM].value));
-    auto mode =  StateVariableFilter2<T>::Mode(modeParam);
+inline void F2_Poly<TBase>::setupModes() {
+    const int modeParam = int(std::round(F2_Poly<TBase>::params[MODE_PARAM].value));
+    auto mode = StateVariableFilter2<T>::Mode(modeParam);
     filterFunc = StateVariableFilter2<T>::getProcPointer(mode, oversample);
 
-    const int topologyInt = int( std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
+    const int topologyInt = int(std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     topology_m = Topology(topologyInt);
 }
 
 template <class TBase>
-inline void F2_Poly<TBase>::setupProcFunc()
-{
+inline void F2_Poly<TBase>::setupProcFunc() {
     procFun = &F2_Poly<TBase>::processGeneric;
     if (numBanks_m == 1) {
         if (topology_m == Topology::SERIES) {
             procFun = &F2_Poly<TBase>::processOneBankSeries;
         } else if (topology_m == Topology::SINGLE) {
             if (limiterEnabled_m) {
-                procFun = &F2_Poly<TBase>::processOneBank12_lim; 
+                procFun = &F2_Poly<TBase>::processOneBank12_lim;
             } else {
-                procFun = &F2_Poly<TBase>::processOneBank12_nolim; 
+                procFun = &F2_Poly<TBase>::processOneBank12_nolim;
             }
         }
     }
 }
 
-
 template <class TBase>
-inline void F2_Poly<TBase>::stepn()
-{
+inline void F2_Poly<TBase>::stepn() {
     setupFreq();
 }
 
-
 template <class TBase>
-inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
-{
+inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args) {
     divm.step();
     divn.step();
     assert(oversample == 4);
@@ -413,10 +390,8 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args)
     (this->*procFun)(args);
 }
 
-
 template <class TBase>
-inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessArgs& args) 
-{
+inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessArgs& args) {
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
 
@@ -435,8 +410,7 @@ inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessAr
 }
 
 template <class TBase>
-inline void F2_Poly<TBase>::processOneBank12_lim(const typename TBase::ProcessArgs& args) 
-{
+inline void F2_Poly<TBase>::processOneBank12_lim(const typename TBase::ProcessArgs& args) {
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
 
@@ -449,8 +423,7 @@ inline void F2_Poly<TBase>::processOneBank12_lim(const typename TBase::ProcessAr
 }
 
 template <class TBase>
-inline void F2_Poly<TBase>::processOneBank12_nolim(const typename TBase::ProcessArgs& args) 
-{
+inline void F2_Poly<TBase>::processOneBank12_nolim(const typename TBase::ProcessArgs& args) {
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
 
@@ -463,45 +436,36 @@ inline void F2_Poly<TBase>::processOneBank12_nolim(const typename TBase::Process
 }
 
 template <class TBase>
-inline void F2_Poly<TBase>::processGeneric(const typename TBase::ProcessArgs& args) 
-{
+inline void F2_Poly<TBase>::processGeneric(const typename TBase::ProcessArgs& args) {
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
     for (int bank = 0; bank < numBanks_m; bank++) {
         const int baseChannel = 4 * bank;
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
         T output;
-        switch(topology_m) {
-            case Topology::SERIES:
-                {
-                    const T temp = (*filterFunc)(input, state1[bank], params1[bank]);
-                    output = (*filterFunc)(temp, state2[bank], params2[bank]);
-                }
-                break;
-            case Topology::PARALLEL:
-                {
-                    // parallel add
-                    output = (*filterFunc)(input, state1[bank], params1[bank]);
-                    output += (*filterFunc)(input, state2[bank], params2[bank]);
-                }
-                break;
-            case Topology::PARALLEL_INV:
-                {
-                    // parallel sub
-                    output = (*filterFunc)(input, state1[bank], params1[bank]);
-                    output -= (*filterFunc)(input, state2[bank], params2[bank]);
-                }
-                break;
-            case Topology::SINGLE:
-                {
-                    // one filter 4X
-                    output = (*filterFunc)(input, state1[bank], params1[bank]);
-                }
-                break;
-            default: 
+        switch (topology_m) {
+            case Topology::SERIES: {
+                const T temp = (*filterFunc)(input, state1[bank], params1[bank]);
+                output = (*filterFunc)(temp, state2[bank], params2[bank]);
+            } break;
+            case Topology::PARALLEL: {
+                // parallel add
+                output = (*filterFunc)(input, state1[bank], params1[bank]);
+                output += (*filterFunc)(input, state2[bank], params2[bank]);
+            } break;
+            case Topology::PARALLEL_INV: {
+                // parallel sub
+                output = (*filterFunc)(input, state1[bank], params1[bank]);
+                output -= (*filterFunc)(input, state2[bank], params2[bank]);
+            } break;
+            case Topology::SINGLE: {
+                // one filter 4X
+                output = (*filterFunc)(input, state1[bank], params1[bank]);
+            } break;
+            default:
                 assert(false);
         }
 
-         if (limiterEnabled_m) {
+        if (limiterEnabled_m) {
             output = limiter.step(output);
         } else {
             output *= outputGain_n;
@@ -515,14 +479,12 @@ inline void F2_Poly<TBase>::processGeneric(const typename TBase::ProcessArgs& ar
 }
 
 template <class TBase>
-int F2_PolyDescription<TBase>::getNumParams()
-{
+int F2_PolyDescription<TBase>::getNumParams() {
     return F2_Poly<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case F2_Poly<TBase>::TOPOLOGY_PARAM:
@@ -544,12 +506,13 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i)
             ret = {0, 1, 1, "Limiter"};
             break;
         case F2_Poly<TBase>::FC_TRIM_PARAM:
-         ret = {-1, 1, 0, "Fc modulation trim"};
+            ret = {-1, 1, 0, "Fc modulation trim"};
+            break;
+        case F2_Poly<TBase>::CV_UPDATE_FREQ:
+            ret = {0, 1, 0, "CV update fidelity"};
             break;
         default:
             assert(false);
     }
     return ret;
 }
-
-

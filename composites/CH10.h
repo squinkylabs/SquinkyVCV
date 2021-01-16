@@ -2,27 +2,22 @@
 #pragma once
 
 #include "ObjectCache.h"
-#include "poly.h"
 #include "SinOscillator.h"
+#include "poly.h"
 
 template <class TBase>
-class CH10Description : public IComposite
-{
+class CH10Description : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
 
 template <class TBase>
-class CH10 : public TBase
-{
+class CH10 : public TBase {
 public:
-
-    CH10(Module * module) : TBase(module)
-    {
+    CH10(Module* module) : TBase(module) {
     }
-    CH10() : TBase()
-    {
+    CH10() : TBase() {
     }
 
     /**
@@ -33,8 +28,7 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         A0_PARAM,
         A1_PARAM,
         A2_PARAM,
@@ -164,28 +158,24 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         ACV_INPUT,
         BCV_INPUT,
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         MIXED_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<CH10Description<TBase>>();
     }
 
@@ -198,8 +188,7 @@ private:
     using Osc = SinOscillator<float, true>;
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
     static const int polyOrder = 10;
-    class VCOState
-    {
+    class VCOState {
     public:
         SinOscillatorParams<float> sinParams;
         SinOscillatorState<float> sinState;
@@ -215,44 +204,36 @@ private:
     void doOutput();
 };
 
-
 template <class TBase>
-inline void CH10<TBase>::init()
-{
+inline void CH10<TBase>::init() {
 }
 
-
 template <class TBase>
-inline void CH10<TBase>::step()
-{
+inline void CH10<TBase>::step() {
     updatePitch();
     updateAudio();
 }
 
 template <class TBase>
-inline void CH10<TBase>::updatePitch()
-{
+inline void CH10<TBase>::updatePitch() {
     updateVCOs(0);
     updateVCOs(1);
 }
 
-
 template <class TBase>
-inline void CH10<TBase>::updateVCOs(int which)
-{
+inline void CH10<TBase>::updateVCOs(int which) {
     const float cv = TBase::inputs[ACV_INPUT + which].value;
-   // const float finePitch = TBase::params[FINE1_PARAM + delta].value / 12.0f;
+    // const float finePitch = TBase::params[FINE1_PARAM + delta].value / 12.0f;
     const float finePitch = 0;
     const float semiPitch = TBase::params[ASEMI_PARAM + which].value / 12.0f;
     float pitch = 1.0f + roundf(TBase::params[AOCTAVE_PARAM + which].value) +
-        semiPitch +
-        finePitch;
+                  semiPitch +
+                  finePitch;
     pitch += cv;
     //
-    const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
+    const float q = float(log2(261.626));  // move up to pitch range of EvenVCO
     pitch += q;
     const float freq = expLookup(pitch);
-
 
     float time = freq * TBase::engineGetSampleTime();
 
@@ -260,8 +241,7 @@ inline void CH10<TBase>::updateVCOs(int which)
 }
 
 template <class TBase>
-inline void CH10<TBase>::runVCOs(int which)
-{
+inline void CH10<TBase>::runVCOs(int which) {
     CH10<TBase>::VCOState& vco = vcoState[which];
     float sinOsc = Osc::run(vco.sinState, vco.sinParams);
 
@@ -269,16 +249,14 @@ inline void CH10<TBase>::runVCOs(int which)
 }
 
 template <class TBase>
-inline void CH10<TBase>::updateAudio()
-{
+inline void CH10<TBase>::updateAudio() {
     runVCOs(0);
     runVCOs(1);
     doOutput();
 }
 
 template <class TBase>
-inline void CH10<TBase>::doOutput()
-{
+inline void CH10<TBase>::doOutput() {
     float sum = 0;
     int num = 0;
     for (int i = 0; i < polyOrder; ++i) {
@@ -302,7 +280,7 @@ inline void CH10<TBase>::doOutput()
             int id = CH10<TBase>::A0B0_PARAM + col + row * 10;
             if (TBase::params[id].value > .5f) {
                 const float ring = vcoState[0].poly.getOutput(col) *
-                    vcoState[1].poly.getOutput(row);
+                                   vcoState[1].poly.getOutput(row);
                 sum += ring;
                 ++num;
             }
@@ -312,25 +290,20 @@ inline void CH10<TBase>::doOutput()
     TBase::outputs[MIXED_OUTPUT].value = sum / num;
 }
 
-
 template <class TBase>
-int CH10Description<TBase>::getNumParams()
-{
+int CH10Description<TBase>::getNumParams() {
     return CH10<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config CH10Description<TBase>::getParam(int i)
-{
+inline IComposite::Config CH10Description<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
 
-
     if (i >= CH10<TBase>::A0_PARAM && i <= CH10<TBase>::A9B9_PARAM) {
-       // std::stringstream str;
-      //  str << "h " << i;
+        // std::stringstream str;
+        //  str << "h " << i;
         ret.name = " some harmonic";
         return ret;
-
     }
 
     switch (i) {
@@ -352,9 +325,8 @@ inline IComposite::Config CH10Description<TBase>::getParam(int i)
         case CH10<TBase>::BTUNE_PARAM:
             ret = {-1.0f, 1.0f, 0, "B fine Tune"};
             break;
-        default: 
+        default:
             assert(0);
     }
     return ret;
 }
-

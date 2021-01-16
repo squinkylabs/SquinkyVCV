@@ -182,13 +182,13 @@ inline void F4<TBase>::setupQComp()
         NonUniformLookupTable<float>::addPoint(qCompParams, .02, 1.76);
 #endif
         // There for R = 2.2
-        NonUniformLookupTable<float>::addPoint(qCompParams, .0001, 7.97);
-        NonUniformLookupTable<float>::addPoint(qCompParams, .0002, 7.97);
-        NonUniformLookupTable<float>::addPoint(qCompParams, .0005, 8.37);
-        NonUniformLookupTable<float>::addPoint(qCompParams, .001,  5.02);
-        NonUniformLookupTable<float>::addPoint(qCompParams, .002,  3.2);
-        NonUniformLookupTable<float>::addPoint(qCompParams, .01,  2.1);
-        NonUniformLookupTable<float>::addPoint(qCompParams, .02, 3.1);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .0001f, 7.97f);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .0002f, 7.97f);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .0005f, 8.37f);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .001f,  5.02f);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .002f,  3.2f);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .01f,  2.1f);
+        NonUniformLookupTable<float>::addPoint(qCompParams, .02f, 3.1f);
         
         NonUniformLookupTable<float>::finalize(qCompParams);
     }
@@ -249,7 +249,7 @@ inline void F4<TBase>::setupFreq()
 
   //  float qDbg, rDbg, fDbg;
     float qForFilter = 1;
-    float freqForFilter = .1;
+    float freqForFilter = .1f;
     {
         float qVolts = F4<TBase>::params[Q_PARAM].value;
         qVolts += F4<TBase>::inputs[Q_INPUT].getVoltage(0);
@@ -261,7 +261,7 @@ inline void F4<TBase>::setupFreq()
 
         const float expMult = .25f; 
       //  const float q =  5.6 - std::exp2(qVolts * expMult);
-        qForFilter =  5.6 - std::exp2(qVolts * expMult);
+        qForFilter = float(5.6 - std::exp2(qVolts * expMult));
     //    qDbg = q;
 
       //  printf("qvolt = %f giving q = %f\n", qVolts, q);
@@ -395,10 +395,10 @@ inline IComposite::Config F4Description<TBase>::getParam(int i)
             ret = {0, 10, 5, "Fc"};
             break;
         case F4<TBase>::R_PARAM:
-            ret = {2.4, 10, 3, "R"};
+            ret = {2.4f, 10, 3, "R"};
             break;
         case F4<TBase>::Q_PARAM:
-            ret = {0, 10, 1.9, "Q"};
+            ret = {0, 10, 1.9f, "Q"};
             break;
         case F4<TBase>::NOTCH_PARAM:
             ret = {0, 1, 0, "Notch"};

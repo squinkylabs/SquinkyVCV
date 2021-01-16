@@ -2,35 +2,31 @@
 #pragma once
 
 #include <assert.h>
+
 #include <memory>
+
 #include "IComposite.h"
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
-
 template <class TBase>
-class BlankDescription : public IComposite
-{
+class BlankDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
 
 template <class TBase>
-class Blank : public TBase
-{
+class Blank : public TBase {
 public:
-
-    Blank(Module * module) : TBase(module)
-    {
+    Blank(Module* module) : TBase(module) {
     }
-    Blank() : TBase()
-    {
+    Blank() : TBase() {
     }
 
     /**
@@ -41,31 +37,26 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         TEST_PARAM,
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<BlankDescription<TBase>>();
     }
 
@@ -76,29 +67,23 @@ public:
     void process(const typename TBase::ProcessArgs& args) override;
 
 private:
-
 };
 
-
 template <class TBase>
-inline void Blank<TBase>::init()
-{
+inline void Blank<TBase>::init() {
 }
 
 template <class TBase>
-inline void Blank<TBase>::process(const typename TBase::ProcessArgs& args)
-{
+inline void Blank<TBase>::process(const typename TBase::ProcessArgs& args) {
 }
 
 template <class TBase>
-int BlankDescription<TBase>::getNumParams()
-{
+int BlankDescription<TBase>::getNumParams() {
     return Blank<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config BlankDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config BlankDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case Blank<TBase>::TEST_PARAM:
@@ -109,5 +94,3 @@ inline IComposite::Config BlankDescription<TBase>::getParam(int i)
     }
     return ret;
 }
-
-

@@ -92,12 +92,10 @@ inline void ADSR4::setLambda(float_4& output, float input, float mult) {
     // printf("set lambda input=%f, output=%f\n", input, output[0]); fflush(stdout);
 }
 
-
 // this isn't exact - but close enough?
 inline void ADSR4::setLambda_L(float_4& output, float inputSec) {
-     output = 100 * rack::simd::pow(100.f, -inputSec) ;
+    output = 100 * rack::simd::pow(100.f, -inputSec);
 }
-
 
 inline void ADSR4::setA(float t, float mult) {
     setLambda(attackLambda, t, mult);
@@ -117,6 +115,5 @@ inline void ADSR4::setR(float t, float mult) {
 }
 
 inline void ADSR4::setR_L(float tSec) {
-        setLambda_L(releaseLambda, tSec);
+    setLambda_L(releaseLambda, tSec);
 }
-

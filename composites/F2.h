@@ -2,7 +2,9 @@
 #pragma once
 
 #include <assert.h>
+
 #include <memory>
+
 #include "Divider.h"
 #include "IComposite.h"
 #include "Limiter.h"
@@ -279,7 +281,7 @@ template <class TBase>
 inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
 {
     assert(false);
-    #if 0
+#if 0
     divn.step();
     assert(oversample == 4);
 
@@ -354,7 +356,7 @@ inline void F2<TBase>::process(const typename TBase::ProcessArgs& args)
     output = std::max(-10.f, output);
 
     F2<TBase>::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
-    #endif
+#endif
 }
 
 template <class TBase>
@@ -392,4 +394,3 @@ inline IComposite::Config F2Description<TBase>::getParam(int i)
     return ret;
 }
 #endif
-
