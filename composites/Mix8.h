@@ -1,30 +1,29 @@
 
 #pragma once
 
+#include <assert.h>
+
+#include <memory>
+
 #include "Divider.h"
 #include "IComposite.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "SqMath.h"
 
-#include <assert.h>
-#include <memory>
-
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
 template <class TBase>
-class Mix8Description : public IComposite
-{
+class Mix8Description : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
-
 
 /**
  * CPU usage, straight AS copy: 298
@@ -83,14 +82,11 @@ float PanL(float balance, float cv) { // -1...+1
  */
 
 template <class TBase>
-class Mix8 : public TBase
-{
+class Mix8 : public TBase {
 public:
-    Mix8(Module * module) : TBase(module)
-    {
+    Mix8(Module* module) : TBase(module) {
     }
-    Mix8() : TBase()
-    {
+    Mix8() : TBase() {
     }
 
     /**
@@ -101,8 +97,7 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         MASTER_VOLUME_PARAM,
         MASTER_MUTE_PARAM,
         GAIN0_PARAM,
@@ -149,8 +144,7 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         AUDIO0_INPUT,
         AUDIO1_INPUT,
         AUDIO2_INPUT,
@@ -192,8 +186,7 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         LEFT_OUTPUT,
         RIGHT_OUTPUT,
         CHANNEL0_OUTPUT,
@@ -209,15 +202,13 @@ public:
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<Mix8Description<TBase>>();
     }
 
@@ -241,7 +232,7 @@ public:
      * allocate extra bank for the master mute
      */
     float buf_muteInputs[numChannels + 4];
-    float buf_masterGain=0;
+    float buf_masterGain = 0;
     float buf_auxReturnGain = 0;
 
 private:
@@ -258,12 +249,11 @@ private:
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
-    inline float clamp(float v, float lo, float hi)
-    {
-        assert(lo < hi);
-        return std::min(hi, std::max(v, lo));
-    }
+inline float clamp(float v, float lo, float hi) {
+    assert(lo < hi);
+    return std::min(hi, std::max(v, lo));
 }
+}  // namespace std
 #endif
 
 #if 0
@@ -285,15 +275,13 @@ static inline float PanR(float balance, float cv)
 #endif
 
 template <class TBase>
-inline void Mix8<TBase>::stepn(int div)
-{
+inline void Mix8<TBase>::stepn(int div) {
     // fill buf_channelGains
     for (int i = 0; i < numChannels; ++i) {
         const float slider = TBase::params[i + GAIN0_PARAM].value;
 
         // TODO: get rid of normalize. if active ? cv : 10;
-        const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ?
-             TBase::inputs[i + LEVEL0_INPUT].getVoltage(0) : 10.f;
+        const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ? TBase::inputs[i + LEVEL0_INPUT].getVoltage(0) : 10.f;
         const float cv = std::clamp(
             rawCV / 10.0f,
             0.0f,
@@ -304,7 +292,7 @@ inline void Mix8<TBase>::stepn(int div)
     buf_masterGain = TBase::params[MASTER_VOLUME_PARAM].value;
     buf_auxReturnGain = TBase::params[RETURN_GAIN_PARAM].value;
 
-        // send gains
+    // send gains
     for (int i = 0; i < numChannels; ++i) {
         const float slider = TBase::params[i + SEND0_PARAM].value;
         buf_channelSendGains[i] = slider;
@@ -336,9 +324,9 @@ inline void Mix8<TBase>::stepn(int div)
     } else {
         for (int i = 0; i < numChannels; ++i) {
             const bool muteActivated = ((TBase::params[i + MUTE0_PARAM].value > .5f) ||
-                (TBase::inputs[i + MUTE0_INPUT].getVoltage(0) > 2));
+                                        (TBase::inputs[i + MUTE0_INPUT].getVoltage(0) > 2));
             buf_muteInputs[i] = muteActivated ? 0.f : 1.f;
-           // buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
+            // buf_muteInputs[i] = 1.0f - TBase::params[i + MUTE0_PARAM].value;       // invert mute
         }
     }
     buf_muteInputs[8] = 1.0f - TBase::params[MASTER_MUTE_PARAM].value;
@@ -346,20 +334,18 @@ inline void Mix8<TBase>::stepn(int div)
 }
 
 template <class TBase>
-inline void Mix8<TBase>::init()
-{
+inline void Mix8<TBase>::init() {
     const int divRate = 4;
     divider.setup(divRate, [this, divRate] {
         this->stepn(divRate);
-        });
+    });
 
     // 400 was smooth, 100 popped
     antiPop.setCutoff(1.0f / 100.f);
 }
 
 template <class TBase>
-inline void Mix8<TBase>::step()
-{
+inline void Mix8<TBase>::step() {
     divider.step();
 
     // fill buf_inputs
@@ -403,17 +389,14 @@ inline void Mix8<TBase>::step()
 }
 
 template <class TBase>
-int Mix8Description<TBase>::getNumParams()
-{
+int Mix8Description<TBase>::getNumParams() {
     return Mix8<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config Mix8Description<TBase>::getParam(int i)
-{
+inline IComposite::Config Mix8Description<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
-
         case Mix8<TBase>::MASTER_VOLUME_PARAM:
             ret = {0, 1, .8f, "Master Vol"};
             break;
@@ -548,5 +531,3 @@ inline IComposite::Config Mix8Description<TBase>::getParam(int i)
     }
     return ret;
 }
-
-

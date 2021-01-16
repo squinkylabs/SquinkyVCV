@@ -3,21 +3,20 @@
 #include "AsymWaveShaper.h"
 #include "ButterworthFilterDesigner.h"
 #include "IComposite.h"
-#include "IIRUpsampler.h"
 #include "IIRDecimator.h"
+#include "IIRUpsampler.h"
 #include "LookupTable.h"
 #include "ObjectCache.h"
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
 template <class TBase>
-class ShaperDescription : public IComposite
-{
+class ShaperDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -48,22 +47,18 @@ Version 1, cpu usage:
 
  */
 template <class TBase>
-class Shaper : public TBase
-{
+class Shaper : public TBase {
 public:
-    Shaper(Module * module) : TBase(module)
-    {
+    Shaper(Module* module) : TBase(module) {
         init();
     }
-    Shaper() : TBase()
-    {
+    Shaper() : TBase() {
         init();
     }
 
     void onSampleRateChange() override;
 
-    enum class Shapes
-    {
+    enum class Shapes {
         AsymSpline,
         Clip,
         EmitterCoupled,
@@ -77,8 +72,7 @@ public:
 
     static const char* getString(Shapes);
 
-    enum ParamIds
-    {
+    enum ParamIds {
         PARAM_SHAPE,
         PARAM_GAIN,
         PARAM_GAIN_TRIM,
@@ -89,8 +83,7 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         INPUT_AUDIO0,
         INPUT_AUDIO1,
         INPUT_GAIN,
@@ -98,22 +91,19 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         OUTPUT_AUDIO0,
         OUTPUT_AUDIO1,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<ShaperDescription<TBase>>();
     }
 
@@ -135,14 +125,13 @@ private:
     const static int maxOversample = 16;
     int curOversample = 16;
     void init();
-  
+
     std::shared_ptr<LookupTableParams<float>> tanhLookup;
     AsymWaveShaper asymShaper;
     int cycleCount = 0;
     Shapes shape = Shapes::Clip;
     int asymCurveindex = 0;
 
-  
     class DSPImp {
     public:
         /**
@@ -163,12 +152,11 @@ private:
 
     void processCV();
     void setOversample();
-    void processBuffer(float *) const;
+    void processBuffer(float*) const;
 };
 
 template <class TBase>
-const char* Shaper<TBase>::getString(Shapes shape)
-{
+const char* Shaper<TBase>::getString(Shapes shape) {
     const char* ret = "";
     switch (shape) {
         case Shapes::Clip:
@@ -202,18 +190,15 @@ const char* Shaper<TBase>::getString(Shapes shape)
     return ret;
 }
 
-
 template <class TBase>
-void  Shaper<TBase>::init()
-{
+void Shaper<TBase>::init() {
     onSampleRateChange();
     setOversample();
     tanhLookup = ObjectCache<float>::getTanh5();
 }
 
 template <class TBase>
-void  Shaper<TBase>::setOversample()
-{
+void Shaper<TBase>::setOversample() {
     //   float fc = .25 / float(oversample);
     for (int i = 0; i < 2; ++i) {
         DSPImp& imp = dsp[i];
@@ -223,8 +208,7 @@ void  Shaper<TBase>::setOversample()
 }
 
 template <class TBase>
-void  Shaper<TBase>::onSampleRateChange()
-{
+void Shaper<TBase>::onSampleRateChange() {
     const float cutoffHz = 20.f;
     float fcNormalized = cutoffHz * this->engineGetSampleTime();
     assert((fcNormalized > 0) && (fcNormalized < .1));
@@ -235,9 +219,8 @@ void  Shaper<TBase>::onSampleRateChange()
 }
 
 template <class TBase>
-void Shaper<TBase>::processCV()
-{
-    int oversampleCode = (int) std::round(TBase::params[PARAM_OVERSAMPLE].value);
+void Shaper<TBase>::processCV() {
+    int oversampleCode = (int)std::round(TBase::params[PARAM_OVERSAMPLE].value);
     switch (oversampleCode) {
         case 0:
             curOversample = 16;
@@ -270,21 +253,20 @@ void Shaper<TBase>::processCV()
 
     _offset = offsetInput;
 
-    const int iShape = (int) std::round(TBase::params[PARAM_SHAPE].value);
+    const int iShape = (int)std::round(TBase::params[PARAM_SHAPE].value);
     shape = Shapes(iShape);
 
     const float sym = .1f * (5 - _offset);
-    asymCurveindex = (int) round(sym * 15.1);           // This math belongs in the shaper
+    asymCurveindex = (int)round(sym * 15.1);  // This math belongs in the shaper
 
     for (int i = 0; i < 2; ++i) {
         dsp[i].isActive = TBase::inputs[INPUT_AUDIO0 + i].isConnected() &&
-            TBase::outputs[OUTPUT_AUDIO0 + i].isConnected();
+                          TBase::outputs[OUTPUT_AUDIO0 + i].isConnected();
     }
 }
 
 template <class TBase>
-void  Shaper<TBase>::step()
-{
+void Shaper<TBase>::step() {
     if (--cycleCount < 0) {
         cycleCount = 7;
         processCV();
@@ -338,10 +320,8 @@ void  Shaper<TBase>::step()
     }
 }
 
-
 template <class TBase>
-void  Shaper<TBase>::processBuffer(float* buffer) const
-{
+void Shaper<TBase>::processBuffer(float* buffer) const {
     switch (shape) {
         case Shapes::FullWave:
             for (int i = 0; i < curOversample; ++i) {
@@ -352,7 +332,7 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
                 buffer[i] = x;
             }
             break;
-        case  Shapes::AsymSpline:
+        case Shapes::AsymSpline:
             for (int i = 0; i < curOversample; ++i) {
                 float x = buffer[i];
                 x *= .15f;
@@ -412,46 +392,41 @@ void  Shaper<TBase>::processBuffer(float* buffer) const
             }
             break;
 
-        case Shapes::Crush:
-        {
-            float invGain = 1 + (1 - _gainInput) * 100; //0..10
+        case Shapes::Crush: {
+            float invGain = 1 + (1 - _gainInput) * 100;  //0..10
             invGain *= .01f;
             invGain = std::max(invGain, .09f);
             assert(invGain >= .09);
             for (int i = 0; i < curOversample; ++i) {
-                float x = buffer[i];            // for crush, no gain has been applied
+                float x = buffer[i];  // for crush, no gain has been applied
 
                 x *= invGain;
                 x = std::round(x + .5f) - .5f;
                 x /= invGain;
                 buffer[i] = x;
             }
-        }
-        break;
+        } break;
 
         default:
             assert(false);
     }
-
 }
 
 template <class TBase>
-int ShaperDescription<TBase>::getNumParams()
-{
+int ShaperDescription<TBase>::getNumParams() {
     return Shaper<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-IComposite::Config ShaperDescription<TBase>::getParam(int i)
-{
+IComposite::Config ShaperDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
 
     switch (i) {
         case Shaper<TBase>::PARAM_SHAPE:
             ret = {0,
-                float(Shaper<TBase>::Shapes::Invalid) - 1,
-                0,
-                "Shape"};
+                   float(Shaper<TBase>::Shapes::Invalid) - 1,
+                   0,
+                   "Shape"};
             break;
 
         case Shaper<TBase>::PARAM_GAIN:

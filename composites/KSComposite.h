@@ -1,23 +1,18 @@
 #pragma once
 
-
 #include "FunVCO3.h"
 
 template <class TBase>
-class KSComposite : public TBase
-{
+class KSComposite : public TBase {
 public:
-    KSComposite()
-    {
+    KSComposite() {
         init();
     }
-    KSComposite(Module * module) : TBase(module)
-    {
+    KSComposite(Module* module) : TBase(module) {
         init();
     }
 
-    enum ParamIds
-    {
+    enum ParamIds {
         OCTAVE_PARAM,
         SEMI_PARAM,
         FINE_PARAM,
@@ -26,31 +21,26 @@ public:
         PWM_PARAM,
         NUM_PARAMS
     };
-    enum InputIds
-    {
+    enum InputIds {
         PITCH_INPUT,
         FM_INPUT,
         SYNC_INPUT,
         PW_INPUT,
         NUM_INPUTS
     };
-    enum OutputIds
-    {
+    enum OutputIds {
         SIN_OUTPUT,
         TRI_OUTPUT,
         SAW_OUTPUT,
         SQR_OUTPUT,
         NUM_OUTPUTS
     };
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
-
     void step() override;
-    void init()
-    {
+    void init() {
         oscillator.init();
     }
 #if 0
@@ -61,13 +51,11 @@ public:
 #endif
 
 private:
-    KSOscillator <16, 16> oscillator;
+    KSOscillator<16, 16> oscillator;
 };
 
 template <class TBase>
-inline void KSComposite<TBase>::step()
-{
-
+inline void KSComposite<TBase>::step() {
     // TODO: tune these
 
     /* from functional
@@ -78,19 +66,18 @@ inline void KSComposite<TBase>::step()
     }
     */
 
-   // const float cv = getInput(osc, CV1_INPUT, CV2_INPUT, CV3_INPUT);
+    // const float cv = getInput(osc, CV1_INPUT, CV2_INPUT, CV3_INPUT);
     const float cv = TBase::inputs[PITCH_INPUT].getVoltage(0);
     const float finePitch = TBase::params[FINE_PARAM].value / 12.0f;
     const float semiPitch = TBase::params[SEMI_PARAM].value / 12.0f;
     // const float fm = getInput(osc, FM1_INPUT, FM2_INPUT, FM3_INPUT);
 
     float pitch = 1.0f + roundf(TBase::params[OCTAVE_PARAM].value) +
-        semiPitch +
-        finePitch;
+                  semiPitch +
+                  finePitch;
     pitch += cv;
 
     oscillator.setPitch(pitch);
-
 
     oscillator.setPulseWidth(TBase::params[PW_PARAM].value + TBase::params[PWM_PARAM].value * TBase::inputs[PW_INPUT].getVoltage(0) / 10.0f);
     oscillator.syncEnabled = TBase::inputs[SYNC_INPUT].isConnected();
@@ -110,5 +97,4 @@ inline void KSComposite<TBase>::step()
         TBase::outputs[SAW_OUTPUT].setVoltage(5.0f * oscillator.saw(), 0);
     if (TBase::outputs[SQR_OUTPUT].isConnected())
         TBase::outputs[SQR_OUTPUT].setVoltage(5.0f * oscillator.sqr(), 0);
-
 }

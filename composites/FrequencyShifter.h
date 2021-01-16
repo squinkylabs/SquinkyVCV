@@ -1,23 +1,22 @@
 #pragma once
 
-#include "IComposite.h"
-#include "LookupTable.h"
-#include "SinOscillator.h"
 #include "BiquadFilter.h"
 #include "BiquadParams.h"
 #include "BiquadState.h"
 #include "HilbertFilterDesigner.h"
+#include "IComposite.h"
+#include "LookupTable.h"
+#include "SinOscillator.h"
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
 template <class TBase>
-class BootyDescription : public IComposite
-{
+class BootyDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -30,67 +29,55 @@ public:
  * If TBase is TestComposite, this class may stand alone for unit tests.
  */
 template <class TBase>
-class FrequencyShifter : public TBase
-{
+class FrequencyShifter : public TBase {
 public:
-    FrequencyShifter(Module * module) : TBase(module)
-    {
+    FrequencyShifter(Module* module) : TBase(module) {
     }
 
-    FrequencyShifter() : TBase()
-    {
+    FrequencyShifter() : TBase() {
     }
 
-    virtual ~FrequencyShifter()
-    {
+    virtual ~FrequencyShifter() {
     }
-
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<BootyDescription<TBase>>();
     }
 
-    void setSampleRate(float rate)
-    {
+    void setSampleRate(float rate) {
         reciprocalSampleRate = 1 / rate;
         HilbertFilterDesigner<T>::design(rate, hilbertFilterParamsSin, hilbertFilterParamsCos);
     }
 
     // must be called after setSampleRate
-    void init()
-    {
+    void init() {
         SinOscillator<T, true>::setFrequency(oscParams, T(.01));
-        exponential2 = ObjectCache<T>::getExp2();   // Get a shared copy of the 2**x lookup.
-                                                    // This will enable exp mode to track at
-                                                    // 1V/ octave.
+        exponential2 = ObjectCache<T>::getExp2();  // Get a shared copy of the 2**x lookup.
+                                                   // This will enable exp mode to track at
+                                                   // 1V/ octave.
     }
 
     // Define all the enums here. This will let the tests and the widget access them.
-    enum ParamIds
-    {
-        PITCH_PARAM,      // the big pitch knob
+    enum ParamIds {
+        PITCH_PARAM,  // the big pitch knob
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         AUDIO_INPUT,
         CV_INPUT,
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         SIN_OUTPUT,
         COS_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
@@ -99,8 +86,8 @@ public:
      */
     void step() override;
 
-    typedef float T;        // use floats for all signals
-    T freqRange = 5;        // the freq range switch
+    typedef float T;  // use floats for all signals
+    T freqRange = 5;  // the freq range switch
 private:
     SinOscillatorParams<T> oscParams;
     SinOscillatorState<T> oscState;
@@ -115,8 +102,7 @@ private:
 };
 
 template <class TBase>
-inline void FrequencyShifter<TBase>::step()
-{
+inline void FrequencyShifter<TBase>::step() {
     assert(exponential2->isValid());
 
     // Add the knob and the CV value.
@@ -133,9 +119,9 @@ inline void FrequencyShifter<TBase>::step()
         cvTotal *= T(1. / 5.);
         freqHz = cvTotal;
     } else {
-        cvTotal += 7;           // shift up to GE 2 (min value for out 1v/oct lookup)
+        cvTotal += 7;  // shift up to GE 2 (min value for out 1v/oct lookup)
         freqHz = LookupTable<T>::lookup(*exponential2, cvTotal);
-        freqHz /= 2;            // down to 2..2k range that we want.
+        freqHz /= 2;  // down to 2..2k range that we want.
     }
 
     SinOscillator<float, true>::setFrequency(oscParams, freqHz * reciprocalSampleRate);
@@ -158,25 +144,20 @@ inline void FrequencyShifter<TBase>::step()
     TBase::outputs[COS_OUTPUT].setVoltage(x - y, 0);
 }
 
-
 template <class TBase>
-int BootyDescription<TBase>::getNumParams()
-{
+int BootyDescription<TBase>::getNumParams() {
     return FrequencyShifter<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-IComposite::Config BootyDescription<TBase>::getParam(int i)
-{
-   
+IComposite::Config BootyDescription<TBase>::getParam(int i) {
     IComposite::Config ret = {0.0f, 1.0f, 0.0f, "Code type"};
     switch (i) {
-        case FrequencyShifter<TBase>::PITCH_PARAM:      // the big pitch knob
+        case FrequencyShifter<TBase>::PITCH_PARAM:  // the big pitch knob
             ret = {-5.0, 5.0, 0.0, "Pitch shift"};
             break;
         default:
             assert(false);
     }
     return ret;
-
 }

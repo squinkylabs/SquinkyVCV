@@ -1,6 +1,10 @@
 
 #pragma once
 
+#include <assert.h>
+
+#include <memory>
+
 #include "CommChannels.h"
 #include "Divider.h"
 #include "IComposite.h"
@@ -9,35 +13,29 @@
 #include "ObjectCache.h"
 #include "SqMath.h"
 
-#include <assert.h>
-#include <memory>
-
-#define _NN     // normaled mono mode
+#define _NN  // normaled mono mode
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 
 template <class TBase>
-class MixStereoDescription : public IComposite
-{
+class MixStereoDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
 
-
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
-    inline float clamp(float v, float lo, float hi)
-    {
-        assert(lo < hi);
-        return std::min(hi, std::max(v, lo));
-    }
+inline float clamp(float v, float lo, float hi) {
+    assert(lo < hi);
+    return std::min(hi, std::max(v, lo));
 }
+}  // namespace std
 #endif
 
 /**
@@ -47,18 +45,14 @@ namespace std {
  */
 
 template <class TBase>
-class MixStereo : public TBase
-{
+class MixStereo : public TBase {
 public:
-
-    template<typename Q>
+    template <typename Q>
     friend class MixHelper;
 
-    MixStereo (::rack::engine::Module * module) : TBase(module)
-    {
+    MixStereo(::rack::engine::Module* module) : TBase(module) {
     }
-    MixStereo() : TBase()
-    {
+    MixStereo() : TBase() {
     }
     static const int numChannels = 4;
     static const int numGroups = 2;
@@ -69,40 +63,37 @@ public:
     void init();
     void setupFilters();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         GAIN0_PARAM,
         GAIN1_PARAM,
-      
+
         PAN0_PARAM,
         PAN1_PARAM,
-     
+
         MUTE0_PARAM,
         MUTE1_PARAM,
         SOLO0_PARAM,
         SOLO1_PARAM,
-      
-        ALL_CHANNELS_OFF_PARAM, // when > .05, acts as if all channels muted.
+
+        ALL_CHANNELS_OFF_PARAM,  // when > .05, acts as if all channels muted.
 
         SEND0_PARAM,
         SEND1_PARAM,
         SENDb0_PARAM,
         SENDb1_PARAM,
-       
-        PRE_FADERa_PARAM,       // 0 = post, 1 = pre
+
+        PRE_FADERa_PARAM,  // 0 = post, 1 = pre
         PRE_FADERb_PARAM,
 
         MUTE0_STATE_PARAM,
         MUTE1_STATE_PARAM,
-       
 
         CV_MUTE_TOGGLE,
 
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         AUDIO0_INPUT,
         AUDIO1_INPUT,
         AUDIO2_INPUT,
@@ -110,18 +101,17 @@ public:
 
         LEVEL0_INPUT,
         LEVEL1_INPUT,
-    
+
         PAN0_INPUT,
         PAN1_INPUT,
-       
+
         MUTE0_INPUT,
         MUTE1_INPUT,
-       
+
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         CHANNEL0_OUTPUT,
         CHANNEL1_OUTPUT,
         CHANNEL2_OUTPUT,
@@ -129,8 +119,7 @@ public:
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         SOLO0_LIGHT,
         SOLO1_LIGHT,
         MUTE0_LIGHT,
@@ -140,8 +129,7 @@ public:
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<MixStereoDescription<TBase>>();
     }
 
@@ -197,8 +185,8 @@ private:
 
     MultiLPF<cvFilterSize> filteredCV;
 
-   // std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
-   // std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
+    // std::shared_ptr<LookupTableParams<float>> panL = ObjectCache<float>::getMixerPanL();
+    // std::shared_ptr<LookupTableParams<float>> panR = ObjectCache<float>::getMixerPanR();
 
     const float* expansionInputs = nullptr;
     float* expansionOutputs = nullptr;
@@ -206,12 +194,11 @@ private:
     // TODO:cut down mix helper size.
     MixHelper<MixStereo<TBase>> helper;
 
-     std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
+    std::shared_ptr<LookupTableParams<float>> taperLookupParam = ObjectCache<float>::getAudioTaper18();
 };
 
 template <class TBase>
-inline void MixStereo<TBase>::stepn(int div)
-{
+inline void MixStereo<TBase>::stepn(int div) {
     const int numUb = cvFilterSize;
     for (int i = 0; i < numUb; ++i) {
         unbufferedCV[i] = 0;
@@ -243,8 +230,7 @@ inline void MixStereo<TBase>::stepn(int div)
             const float slider = LookupTable<float>::lookup(*taperLookupParam, rawSlider);
 
             assert(group + LEVEL0_INPUT < NUM_INPUTS);
-            const float rawCV = TBase::inputs[group + LEVEL0_INPUT].isConnected() ?
-                TBase::inputs[group + LEVEL0_INPUT].getVoltage(0) : 10.f;
+            const float rawCV = TBase::inputs[group + LEVEL0_INPUT].isConnected() ? TBase::inputs[group + LEVEL0_INPUT].getVoltage(0) : 10.f;
             const float cv = std::clamp(
                 rawCV / 10.0f,
                 0.0f,
@@ -253,17 +239,16 @@ inline void MixStereo<TBase>::stepn(int div)
         }
 
         // now round up the mutes
-        float rawMuteValue = 0;        // assume muted
+        float rawMuteValue = 0;  // assume muted
         if (moduleIsMuted) {
-
         } else if (anySolo) {
             // If any channels in this module are soloed, then
             // mute any channels that aren't soled
             assert(group + SOLO0_PARAM < NUM_PARAMS);
             rawMuteValue = TBase::params[group + SOLO0_PARAM].value;
         } else {
-             // The pre-calculated state in :params[i + MUTE0_STATE_PARAM] will
-             // be applicable if no solo
+            // The pre-calculated state in :params[i + MUTE0_STATE_PARAM] will
+            // be applicable if no solo
             assert(group + MUTE0_STATE_PARAM < NUM_PARAMS);
             rawMuteValue = TBase::params[group + MUTE0_STATE_PARAM].value > .5 ? 0.f : 1.f;
         }
@@ -285,7 +270,7 @@ inline void MixStereo<TBase>::stepn(int div)
             const float cv = TBase::inputs[group + PAN0_INPUT].getVoltage(0);
             const float panValue = std::clamp(balance + cv / 5, -1, 1);
 
-            float rightPan = 1 + panValue;   // 0..2
+            float rightPan = 1 + panValue;  // 0..2
             rightPan *= .5f;                // 0..1
             float leftPan = 1 - rightPan;
             unbufferedCV[cvOffsetGainBalance + group * 2] = leftPan * groupGain;
@@ -301,13 +286,13 @@ inline void MixStereo<TBase>::stepn(int div)
             const float sliderA = TBase::params[group + SEND0_PARAM].value;
             const float sliderB = TBase::params[group + SENDb0_PARAM].value;
 
-            const float panAttenuation = .5f;     // 6db pan law
+            const float panAttenuation = .5f;  // 6db pan law
 
             // TODO: we can do some main volume work ahead of time, just like the sends here
             if (!AisPreFader) {
-                // post faster, gain sees mutes, faders,  pan, and send level    
+                // post faster, gain sees mutes, faders,  pan, and send level
                 buf_channelSendGainA[group * 2] = filteredCV.get(group * 2 + cvOffsetGainBalance) * sliderA;
-                buf_channelSendGainA[group * 2 + 1] = filteredCV.get(group * 2 + 1 +  cvOffsetGainBalance) * sliderA;
+                buf_channelSendGainA[group * 2 + 1] = filteredCV.get(group * 2 + 1 + cvOffsetGainBalance) * sliderA;
             } else {
                 // pre-fader fader, gain sees mutes and send only
                 buf_channelSendGainA[group * 2] = muteValue * sliderA * panAttenuation;
@@ -345,41 +330,36 @@ inline void MixStereo<TBase>::stepn(int div)
 }
 
 template <class TBase>
-inline void MixStereo<TBase>::init()
-{
+inline void MixStereo<TBase>::init() {
     const int divRate = 4;
     divider.setup(divRate, [this, divRate] {
         this->stepn(divRate);
-        });
+    });
     setupFilters();
 }
 
 template <class TBase>
-inline void MixStereo<TBase>::onSampleRateChange()
-{
+inline void MixStereo<TBase>::onSampleRateChange() {
     setupFilters();
 }
 
 template <class TBase>
-inline void MixStereo<TBase>::setupFilters()
-{
+inline void MixStereo<TBase>::setupFilters() {
     // 400 was smooth, 100 popped
     const float x = TBase::engineGetSampleTime() * 44100.f / 100.f;
     filteredCV.setCutoff(x);
 }
 
 template <class TBase>
-inline void MixStereo<TBase>::_disableAntiPop()
-{
-    filteredCV.setCutoff(0.49f);     // set it super fast
+inline void MixStereo<TBase>::_disableAntiPop() {
+    filteredCV.setCutoff(0.49f);  // set it super fast
 }
 
 template <class TBase>
-inline void MixStereo<TBase>::step()
-{
+inline void MixStereo<TBase>::step() {
     divider.step();
 
-    float left = 0, right = 0;              // these variables will be summed up over all channels
+    float left = 0, right = 0;  // these variables will be summed up over all channels
     float lSendA = 0, rSendA = 0;
     float lSendB = 0, rSendB = 0;
 
@@ -418,17 +398,17 @@ inline void MixStereo<TBase>::step()
         // now calculate and output the channel outs
         // TODO: clean this up
         assert(channel + CHANNEL0_OUTPUT < NUM_OUTPUTS);
-        #ifdef _NN
+#ifdef _NN
         float channelOutput = 0;
-            if (groupIsMono[group] || true) {           // mod for artem - pan all the time
-                channelOutput = channelInput * filteredCV.get(channel + cvOffsetGainBalance);
-            } else {
-                channelOutput = channelInput * filteredCV.get(group + cvOffsetGain);
-            }
-            TBase::outputs[channel + CHANNEL0_OUTPUT].setVoltage(channelOutput, 0);
-        #else
-            TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(group + cvOffsetGain);
-        #endif
+        if (groupIsMono[group] || true) {  // mod for artem - pan all the time
+            channelOutput = channelInput * filteredCV.get(channel + cvOffsetGainBalance);
+        } else {
+            channelOutput = channelInput * filteredCV.get(group + cvOffsetGain);
+        }
+        TBase::outputs[channel + CHANNEL0_OUTPUT].setVoltage(channelOutput, 0);
+#else
+        TBase::outputs[channel + CHANNEL0_OUTPUT].value = channelInput * filteredCV.get(group + cvOffsetGain);
+#endif
     }
 
     // output the buses to the expansion port
@@ -439,30 +419,26 @@ inline void MixStereo<TBase>::step()
         expansionOutputs[3] = rSendA;
         expansionOutputs[4] = lSendB;
         expansionOutputs[5] = rSendB;
-    } 
+    }
 }
 
 template <class TBase>
-inline void MixStereo<TBase>::setExpansionInputs(const float* p)
-{
+inline void MixStereo<TBase>::setExpansionInputs(const float* p) {
     expansionInputs = p;
 }
 
 template <class TBase>
-inline void MixStereo<TBase>::setExpansionOutputs(float* p)
-{
+inline void MixStereo<TBase>::setExpansionOutputs(float* p) {
     expansionOutputs = p;
 }
 
 template <class TBase>
-int MixStereoDescription<TBase>::getNumParams()
-{
+int MixStereoDescription<TBase>::getNumParams() {
     return MixStereo<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config MixStereoDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config MixStereoDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case MixStereo<TBase>::GAIN0_PARAM:
@@ -501,17 +477,17 @@ inline IComposite::Config MixStereoDescription<TBase>::getParam(int i)
         case MixStereo<TBase>::SENDb1_PARAM:
             ret = {0, 1.0f, 0, "Send 2b"};
             break;
-        case  MixStereo<TBase>::ALL_CHANNELS_OFF_PARAM:
+        case MixStereo<TBase>::ALL_CHANNELS_OFF_PARAM:
             ret = {0, 1.0f, 0, "All Off"};
             break;
-        case  MixStereo<TBase>::PRE_FADERa_PARAM:      // 0 = post, 1 = pre
+        case MixStereo<TBase>::PRE_FADERa_PARAM:  // 0 = post, 1 = pre
             ret = {0, 1.0f, 0, "Pre Fader A"};
             break;
-        case  MixStereo<TBase>::PRE_FADERb_PARAM:
+        case MixStereo<TBase>::PRE_FADERb_PARAM:
             ret = {0, 1.0f, 0, "Pre Fader B"};
             break;
         case MixStereo<TBase>::MUTE0_STATE_PARAM:
-            ret = {0, 1, 0, "MSX0"};            // not user visible
+            ret = {0, 1, 0, "MSX0"};  // not user visible
             break;
         case MixStereo<TBase>::MUTE1_STATE_PARAM:
             ret = {0, 1, 0, "MSX1"};
@@ -524,6 +500,3 @@ inline IComposite::Config MixStereoDescription<TBase>::getParam(int i)
     }
     return ret;
 }
-
-
-

@@ -1,27 +1,26 @@
 
 #pragma once
 
-#include "Divider.h"
+#include <assert.h>
+
+#include <memory>
+
 #include "Cmprsr.h"
+#include "Divider.h"
+#include "IComposite.h"
 #include "LookupTableFactory.h"
 #include "ObjectCache.h"
 #include "SqPort.h"
 
-#include <assert.h>
-#include <memory>
-#include "IComposite.h"
-
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
-
 template <class TBase>
-class CompressorDescription : public IComposite
-{
+class CompressorDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -84,15 +83,11 @@ public:
  * 16h ch lim no dist: 28.6
  */
 template <class TBase>
-class Compressor : public TBase
-{
+class Compressor : public TBase {
 public:
-
-    Compressor(Module * module) : TBase(module)
-    {
+    Compressor(Module* module) : TBase(module) {
     }
-    Compressor() : TBase()
-    {
+    Compressor() : TBase() {
     }
 
     /**
@@ -103,43 +98,38 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         ATTACK_PARAM,
         RELEASE_PARAM,
         THRESHOLD_PARAM,
         RATIO_PARAM,
         MAKEUPGAIN_PARAM,
-      //  REDUCEDISTORTION_PARAM,
+        //  REDUCEDISTORTION_PARAM,
         NOTBYPASS_PARAM,
         WETDRY_PARAM,
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         LAUDIO_INPUT,
         RAUDIO_INPUT,
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         LAUDIO_OUTPUT,
         RAUDIO_OUTPUT,
         DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<CompressorDescription<TBase>>();
     }
 
@@ -166,7 +156,6 @@ public:
     }
 
 private:
-
     Cmprsr compressorsL[4];
     Cmprsr compressorsR[4];
     void setupLimiter();
@@ -195,27 +184,23 @@ private:
     float lastRawMix = -1;
     float lastRawA = -1;
     float lastRawR = -1;
-   // int lastReduceDistortion = -1;
     float lastThreshold = -1;
-    int lastRatio = -1;
+    float lastRatio = -1;
     bool bypassed = false;
 };
 
 template <class TBase>
-inline const std::vector<std::string>& Compressor<TBase>::ratios()
-{
+inline const std::vector<std::string>& Compressor<TBase>::ratios() {
     return Cmprsr::ratios();
 }
 
 template <class TBase>
-inline const std::vector<std::string>& Compressor<TBase>::ratiosLong()
-{
+inline const std::vector<std::string>& Compressor<TBase>::ratiosLong() {
     return Cmprsr::ratiosLong();
 }
 
 template <class TBase>
-inline void Compressor<TBase>::init()
-{
+inline void Compressor<TBase>::init() {
     setupLimiter();
     divn.setup(32, [this]() {
         this->stepn();
@@ -227,8 +212,7 @@ inline void Compressor<TBase>::init()
 }
 
 template <class TBase>
-inline float Compressor<TBase>::getGainReductionDb() const
-{
+inline float Compressor<TBase>::getGainReductionDb() const {
     float_4 minGain_4 = 1;
     if (bypassed) {
         return 0;
@@ -237,21 +221,20 @@ inline float Compressor<TBase>::getGainReductionDb() const
     for (int bank = 0; bank < numBanksL_m; ++bank) {
         minGain_4 = SimdBlocks::min(minGain_4, compressorsL[bank].getGain());
     }
-     for (int bank = 0; bank < numBanksR_m; ++bank) {
+    for (int bank = 0; bank < numBanksR_m; ++bank) {
         minGain_4 = SimdBlocks::min(minGain_4, compressorsR[bank].getGain());
     }
 
     float minGain = minGain_4[0];
-    minGain = std::min(minGain,  minGain_4[1]);
-    minGain = std::min(minGain,  minGain_4[2]);
-    minGain = std::min(minGain,  minGain_4[3]);
-    auto r =  AudioMath::db(minGain);
+    minGain = std::min(minGain, minGain_4[1]);
+    minGain = std::min(minGain, minGain_4[2]);
+    minGain = std::min(minGain, minGain_4[3]);
+    auto r = AudioMath::db(minGain);
     return -r;
 }
 
 template <class TBase>
-inline void Compressor<TBase>::stepn()
-{
+inline void Compressor<TBase>::stepn() {
     SqInput& inPortL = TBase::inputs[LAUDIO_INPUT];
     SqOutput& outPortL = TBase::outputs[LAUDIO_OUTPUT];
     SqInput& inPortR = TBase::inputs[RAUDIO_INPUT];
@@ -263,7 +246,7 @@ inline void Compressor<TBase>::stepn()
     outPortR.setChannels(numChannelsR_m);
 
     numBanksL_m = (numChannelsL_m / 4) + ((numChannelsL_m % 4) ? 1 : 0);
-    numBanksR_m = (numChannelsR_m / 4) + ((numChannelsR_m % 4) ? 1 : 0);   
+    numBanksR_m = (numChannelsR_m / 4) + ((numChannelsR_m % 4) ? 1 : 0);
     // printf("\n****** after stepm banks = %d numch=%d\n", numBanks_m, numChannels_m);
 
     pollAttackRelease();
@@ -289,7 +272,7 @@ inline void Compressor<TBase>::stepn()
         lastThreshold = threshold;
         lastRatio = rawRatio;
         Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
-        for (int i = 0; i<4; ++i) {
+        for (int i = 0; i < 4; ++i) {
             compressorsL[i].setThreshold(threshold);
             compressorsR[i].setThreshold(threshold);
             compressorsL[i].setCurve(ratio);
@@ -308,13 +291,12 @@ inline void Compressor<TBase>::stepn()
         }
     }
 
-    bypassed =  !bool(std::round(Compressor<TBase>::params[NOTBYPASS_PARAM].value));
+    bypassed = !bool(std::round(Compressor<TBase>::params[NOTBYPASS_PARAM].value));
     // printf("notbypass value = %f, bypassed = %d\n", Compressor<TBase>::params[NOTBYPASS_PARAM].value, bypassed); fflush(stdout);
 }
 
 template <class TBase>
-inline void Compressor<TBase>::pollAttackRelease()
-{
+inline void Compressor<TBase>::pollAttackRelease() {
     const float rawAttack = Compressor<TBase>::params[ATTACK_PARAM].value;
     const float rawRelease = Compressor<TBase>::params[RELEASE_PARAM].value;
     const bool reduceDistortion = true;
@@ -325,8 +307,8 @@ inline void Compressor<TBase>::pollAttackRelease()
 
         const float attack = LookupTable<float>::lookup(attackFunctionParams, rawAttack);
         const float release = LookupTable<float>::lookup(releaseFunctionParams, rawRelease);
-        
-        for (int i = 0; i<4; ++i) {
+
+        for (int i = 0; i < 4; ++i) {
             compressorsL[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
             compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
         }
@@ -334,8 +316,7 @@ inline void Compressor<TBase>::pollAttackRelease()
 }
 
 template <class TBase>
-inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
-{
+inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args) {
     divn.step();
 
     SqInput& inPortL = TBase::inputs[LAUDIO_INPUT];
@@ -364,7 +345,6 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
         const float_4 mixedOutput = wetOutput * wetLevel + input * dryLevel;
 
         outPortL.setVoltageSimd(mixedOutput, baseChannel);
-
     }
     for (int bank = 0; bank < numBanksR_m; ++bank) {
         const int baseChannel = bank * 4;
@@ -378,45 +358,41 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args)
 
 // TODO: do we still need this old init function? combine with other?
 template <class TBase>
-inline void Compressor<TBase>::setupLimiter()
-{
-    for (int i = 0; i<4; ++i) {
+inline void Compressor<TBase>::setupLimiter() {
+    for (int i = 0; i < 4; ++i) {
         compressorsL[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
         compressorsR[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
     }
 }
 
 template <class TBase>
-inline void Compressor<TBase>::onSampleRateChange()
-{
+inline void Compressor<TBase>::onSampleRateChange() {
     setupLimiter();
 }
 
 template <class TBase>
-int CompressorDescription<TBase>::getNumParams()
-{
+int CompressorDescription<TBase>::getNumParams() {
     return Compressor<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config CompressorDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case Compressor<TBase>::ATTACK_PARAM:
             // .8073 too low .8075 too much
             ret = {0, 1, .8074f, "Attack time"};
             break;
-         case Compressor<TBase>::RELEASE_PARAM:
+        case Compressor<TBase>::RELEASE_PARAM:
             ret = {0, 1, .25f, "Release time"};
             break;
-         case Compressor<TBase>::THRESHOLD_PARAM:
+        case Compressor<TBase>::THRESHOLD_PARAM:
             ret = {0, 10, 10, "Threshold"};
             break;
-         case Compressor<TBase>::RATIO_PARAM:
+        case Compressor<TBase>::RATIO_PARAM:
             ret = {0, 8, 3, "Compression ratio"};
             break;
-         case Compressor<TBase>::MAKEUPGAIN_PARAM:
+        case Compressor<TBase>::MAKEUPGAIN_PARAM:
             ret = {0, 40, 0, "Makeup gain"};
             break;
         case Compressor<TBase>::NOTBYPASS_PARAM:
@@ -430,5 +406,3 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i)
     }
     return ret;
 }
-
-

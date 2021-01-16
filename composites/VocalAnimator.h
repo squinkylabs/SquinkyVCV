@@ -10,18 +10,16 @@
 #include "StateVariableFilter.h"
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
 #define _ANORM
 
-
 template <class TBase>
-class VocalAnimatorDescription : public IComposite
-{
+class VocalAnimatorDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -33,37 +31,31 @@ public:
  * with mod sub-sample 2 => 26
  */
 template <class TBase>
-class VocalAnimator : public TBase
-{
+class VocalAnimator : public TBase {
 public:
     typedef float T;
     static const int numTriangle = 4;
     static const int numModOutputs = 3;
     static const int numFilters = 4;
-    static const int modulationSubSample = 2;       // do at a fraction of the audio sample rate
+    static const int modulationSubSample = 2;  // do at a fraction of the audio sample rate
 
-    VocalAnimator(Module * module) : TBase(module)
-    {
+    VocalAnimator(Module* module) : TBase(module) {
     }
-    VocalAnimator() : TBase()
-    {
+    VocalAnimator() : TBase() {
     }
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<VocalAnimatorDescription<TBase>>();
     }
 
-    void setSampleRate(float rate)
-    {
+    void setSampleRate(float rate) {
         reciprocalSampleRate = 1 / rate;
         modulatorParams.setRateAndSpread(.5, .5, 0, reciprocalSampleRate);
     }
 
-    enum ParamIds
-    {
+    enum ParamIds {
         LFO_RATE_PARAM,
         FILTER_Q_PARAM,
         FILTER_FC_PARAM,
@@ -89,8 +81,7 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         AUDIO_INPUT,
         LFO_RATE_CV_INPUT,
         FILTER_Q_CV_INPUT,
@@ -99,8 +90,7 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         AUDIO_OUTPUT,
         LFO0_OUTPUT,
         LFO1_OUTPUT,
@@ -108,8 +98,7 @@ public:
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         LFO0_LIGHT,
         LFO1_LIGHT,
         LFO2_LIGHT,
@@ -131,15 +120,14 @@ public:
         std::log2(T(522)),
         std::log2(T(1340)),
         std::log2(T(2570)),
-        std::log2(T(3700))
-    };
-            // 1, .937 .3125
+        std::log2(T(3700))};
+    // 1, .937 .3125
     const T nominalModSensitivity[numFilters] = {T(1), T(.937), T(.3125), 0};
 
     // Following are for unit tests.
     T normalizedFilterFreq[numFilters];
     bool jamModForTest = false;
-    T   modValueForTest = 0;
+    T modValueForTest = 0;
     int modulationSubSampleCounter = 1;
     T filterNormalizedBandwidth = .1f;
 
@@ -154,7 +142,7 @@ public:
 
     std::shared_ptr<LookupTableParams<T>> expLookup;
 
-    // We need a bunch of scalers to convert knob, CV, trim into the voltage 
+    // We need a bunch of scalers to convert knob, CV, trim into the voltage
     // range each parameter needs.
     AudioMath::ScaleFun<T> scale0_1;
     AudioMath::ScaleFun<T> scalem2_2;
@@ -163,19 +151,18 @@ public:
 };
 
 template <class TBase>
-inline void VocalAnimator<TBase>::init()
-{
+inline void VocalAnimator<TBase>::init() {
     for (int i = 0; i < numFilters; ++i) {
         filterParams[i].setMode(StateVariableFilterParams<T>::Mode::BandPass);
-        filterParams[i].setQ(15);           // or should it be 5?
+        filterParams[i].setQ(15);  // or should it be 5?
 
         filterParams[i].setFreq(nominalFilterCenterHz[i] * reciprocalSampleRate);
         filterFrequencyLog[i] = nominalFilterCenterLog2[i];
 
         normalizedFilterFreq[i] = nominalFilterCenterHz[i] * reciprocalSampleRate;
     }
-    scale0_1 = AudioMath::makeScalerWithBipolarAudioTrim(0, 1); // full CV range -> 0..1
-    scalem2_2 = AudioMath::makeScalerWithBipolarAudioTrim(-2, 2); // full CV range -> -2..2
+    scale0_1 = AudioMath::makeScalerWithBipolarAudioTrim(0, 1);    // full CV range -> 0..1
+    scalem2_2 = AudioMath::makeScalerWithBipolarAudioTrim(-2, 2);  // full CV range -> -2..2
     scaleQ = AudioMath::makeScalerWithBipolarAudioTrim(.71f, 21);
     scalen5_5 = AudioMath::makeScalerWithBipolarAudioTrim(-5, 5);
 
@@ -183,18 +170,16 @@ inline void VocalAnimator<TBase>::init()
     expLookup = ObjectCache<T>::getExp2();
 }
 
-
 template <class TBase>
-inline void VocalAnimator<TBase>::step()
-{
-   // printf("step %d\n", modulationSubSampleCounter);
+inline void VocalAnimator<TBase>::step() {
+    // printf("step %d\n", modulationSubSampleCounter);
     if (--modulationSubSampleCounter <= 0) {
         modulationSubSampleCounter = modulationSubSample;
         stepModulation();
     }
 
     // Now run the filters
-    T filterMix = 0;                // Sum the folder outputs here
+    T filterMix = 0;  // Sum the folder outputs here
     const T input = TBase::inputs[AUDIO_INPUT].getVoltage(0);
 
     for (int i = 0; i < numFilters; ++i) {
@@ -203,20 +188,16 @@ inline void VocalAnimator<TBase>::step()
 #ifdef _ANORM
     filterMix *= filterNormalizedBandwidth * 2;
 #else
-    filterMix *= T(.3);            // attenuate to avoid clip
+    filterMix *= T(.3);  // attenuate to avoid clip
 #endif
     TBase::outputs[AUDIO_OUTPUT].setVoltage(filterMix, 0);
-
 }
 
 template <class TBase>
-inline void VocalAnimator<TBase>::stepModulation()
-{
-   // printf("step mod\n");
+inline void VocalAnimator<TBase>::stepModulation() {
+    // printf("step mod\n");
     const bool bass = TBase::params[BASS_EXP_PARAM].value > .5;
-    const auto mode = bass ?
-        StateVariableFilterParams<T>::Mode::LowPass :
-        StateVariableFilterParams<T>::Mode::BandPass;
+    const auto mode = bass ? StateVariableFilterParams<T>::Mode::LowPass : StateVariableFilterParams<T>::Mode::BandPass;
 
     for (int i = 0; i < numFilters + 1 - 1; ++i) {
         filterParams[i].setMode(mode);
@@ -282,7 +263,7 @@ inline void VocalAnimator<TBase>::stepModulation()
             case 1:
                 // In this mode (1) CV comes straight through at 1V/8
                 // Even on the top (fixed) filter
-                logFreq += fc;    // add without attenuation for 1V/octave
+                logFreq += fc;  // add without attenuation for 1V/octave
                 break;
             case 0:
                 // In mode (0) CV gets scaled per filter, as in the original design.
@@ -308,13 +289,13 @@ inline void VocalAnimator<TBase>::stepModulation()
         const bool modulateThisFilter = (i < 3);
         if (modulateThisFilter) {
             logFreq += modulatorOutput[i] *
-                baseModDepth *
-                nominalModSensitivity[i];
+                       baseModDepth *
+                       nominalModSensitivity[i];
         }
 
         logFreq += ((i < 3) ? modulatorOutput[i] : 0) *
-            baseModDepth *
-            nominalModSensitivity[i];
+                   baseModDepth *
+                   nominalModSensitivity[i];
 
         filterFrequencyLog[i] = logFreq;
 
@@ -343,9 +324,9 @@ inline void VocalAnimator<TBase>::stepModulation()
 
     // scale by sub-sample rate to lfo rate sounds right.
     const float modRate = modulationSubSample * scalem2_2(
-        TBase::inputs[LFO_RATE_CV_INPUT].getVoltage(0),
-        TBase::params[LFO_RATE_PARAM].value,
-        TBase::params[LFO_RATE_TRIM_PARAM].value);
+                                                    TBase::inputs[LFO_RATE_CV_INPUT].getVoltage(0),
+                                                    TBase::params[LFO_RATE_PARAM].value,
+                                                    TBase::params[LFO_RATE_TRIM_PARAM].value);
     modulatorParams.setRateAndSpread(
         modRate,
         spread,
@@ -353,10 +334,8 @@ inline void VocalAnimator<TBase>::stepModulation()
         reciprocalSampleRate);
 }
 
-
 template <class TBase>
-int VocalAnimatorDescription<TBase>::getNumParams()
-{
+int VocalAnimatorDescription<TBase>::getNumParams() {
     return VocalAnimator<TBase>::NUM_PARAMS;
 }
 
@@ -389,8 +368,7 @@ enum ParamIds
 };
 */
 template <class TBase>
-inline IComposite::Config VocalAnimatorDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config VocalAnimatorDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case VocalAnimator<TBase>::LFO_RATE_PARAM:
@@ -421,7 +399,7 @@ inline IComposite::Config VocalAnimatorDescription<TBase>::getParam(int i)
             ret = {0.0f, 1.0f, 0.0f, "Bass expand"};
             break;
         case VocalAnimator<TBase>::TRACK_EXP_PARAM:
-            ret = {0, 2, 0, "Track ExP"};           // TODO: we don't use this - what is the default?
+            ret = {0, 2, 0, "Track ExP"};  // TODO: we don't use this - what is the default?
             ret.active = false;
             break;
         case VocalAnimator<TBase>::LFO_MIX_PARAM:

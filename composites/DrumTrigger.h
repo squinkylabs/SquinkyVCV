@@ -1,26 +1,26 @@
 
 #pragma once
 
+#include <assert.h>
+
+#include <memory>
+
 #include "Divider.h"
 #include "IComposite.h"
 #include "PitchUtils.h"
 
-#include <assert.h>
-#include <memory>
-
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 
 using Module = ::rack::engine::Module;
 
 #define numTriggerChannels 8
 
 template <class TBase>
-class DrumTriggerDescription : public IComposite
-{
+class DrumTriggerDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -30,15 +30,11 @@ public:
  * First impl uses 3.5%, so CPU isn't much of an issue
  */
 template <class TBase>
-class DrumTrigger : public TBase
-{
+class DrumTrigger : public TBase {
 public:
-
-    DrumTrigger(Module * module) : TBase(module)
-    {
+    DrumTrigger(Module* module) : TBase(module) {
     }
-    DrumTrigger() : TBase()
-    {
+    DrumTrigger() : TBase() {
     }
 
     /**
@@ -49,21 +45,18 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         TEST_PARAM,
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         CV_INPUT,
         GATE_INPUT,
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         GATE0_OUTPUT,
         GATE1_OUTPUT,
         GATE2_OUTPUT,
@@ -75,8 +68,7 @@ public:
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         LIGHT0,
         LIGHT1,
         LIGHT2,
@@ -90,8 +82,7 @@ public:
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<DrumTriggerDescription<TBase>>();
     }
 
@@ -101,33 +92,27 @@ public:
     void step() override;
     void stepn(int n);
 
-    static float base()
-    {
+    static float base() {
         return 0;
     }
 
 private:
     Divider div;
-
 };
 
-
 template <class TBase>
-inline void DrumTrigger<TBase>::init()
-{
+inline void DrumTrigger<TBase>::init() {
     div.setup(8, [this] {
         this->stepn(div.getDiv());
-        });
+    });
 }
 template <class TBase>
-inline void DrumTrigger<TBase>::step()
-{
+inline void DrumTrigger<TBase>::step() {
     div.step();
 }
 
 template <class TBase>
-inline void DrumTrigger<TBase>::stepn(int n)
-{
+inline void DrumTrigger<TBase>::stepn(int n) {
     // for each input channel, the semitone pitch it is at
     int pitches[16] = {-1};
     bool gates[16] = {false};
@@ -166,14 +151,12 @@ inline void DrumTrigger<TBase>::stepn(int n)
 }
 
 template <class TBase>
-int DrumTriggerDescription<TBase>::getNumParams()
-{
+int DrumTriggerDescription<TBase>::getNumParams() {
     return DrumTrigger<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config DrumTriggerDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config DrumTriggerDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case DrumTrigger<TBase>::TEST_PARAM:
@@ -184,5 +167,3 @@ inline IComposite::Config DrumTriggerDescription<TBase>::getParam(int i)
     }
     return ret;
 }
-
-

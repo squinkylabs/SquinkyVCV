@@ -3,22 +3,21 @@
 
 #include <vector>
 
-#include "ClockMult.h"
-#include "ObjectCache.h"
 #include "AsymRampShaper.h"
+#include "ClockMult.h"
 #include "GateTrigger.h"
 #include "IComposite.h"
+#include "ObjectCache.h"
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
 template <class TBase>
-class TremoloDescription : public IComposite
-{
+class TremoloDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -29,34 +28,28 @@ public:
  * down to 7.2 with /4 subsample
  */
 template <class TBase>
-class Tremolo : public TBase
-{
+class Tremolo : public TBase {
 public:
-    Tremolo(Module * module) : TBase(module), gateTrigger(true)
-    {
+    Tremolo(Module* module) : TBase(module), gateTrigger(true) {
     }
 
-    Tremolo() : TBase(), gateTrigger(true)
-    {
+    Tremolo() : TBase(), gateTrigger(true) {
     }
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<TremoloDescription<TBase>>();
     }
 
-    void setSampleRate(float rate)
-    {
+    void setSampleRate(float rate) {
         reciprocalSampleRate = 1 / rate;
     }
 
     // must be called after setSampleRate
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         LFO_RATE_PARAM,
         LFO_SHAPE_PARAM,
         LFO_SKEW_PARAM,
@@ -71,8 +64,7 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         AUDIO_INPUT,
         CLOCK_INPUT,
         LFO_SHAPE_INPUT,
@@ -82,16 +74,14 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         AUDIO_OUTPUT,
         SAW_OUTPUT,
         LFO_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
@@ -102,14 +92,13 @@ public:
 
 private:
     int inputSubSampleCounter = 1;
-    const static int inputSubSample = 4;    // only look at knob/cv every 4
+    const static int inputSubSample = 4;  // only look at knob/cv every 4
     float skew = .1f;
     float phase = 0;
     float shape = 0;
     float modDepth = 0;
     float shapeMul = 0;
     float gain = 0;
-
 
     void stepInput();
 
@@ -130,27 +119,23 @@ private:
     GateTrigger gateTrigger;
 };
 
-
-
 template <class TBase>
-inline void Tremolo<TBase>::init()
-{
+inline void Tremolo<TBase>::init() {
     tanhLookup = ObjectCache<float>::getTanh5();
     clock.setMultiplier(0);
 
-    scale_rate = AudioMath::makeLinearScaler(4.f, 9.f);        // log domain, 16 range
+    scale_rate = AudioMath::makeLinearScaler(4.f, 9.f);  // log domain, 16 range
     scale_skew = AudioMath::makeLinearScaler(-.99f, .99f);
     scale_shape = AudioMath::makeLinearScaler(0.f, 1.f);
     scale_depth = AudioMath::makeLinearScaler(0.f, 1.f);
     scale_phase = AudioMath::makeLinearScaler(-1.f, 1.f);
 
-    stepInput();            // call once to init
+    stepInput();  // call once to init
 }
 
 template <class TBase>
-inline void Tremolo<TBase>::stepInput()
-{
-    int clockMul = (int) round(TBase::params[CLOCK_MULT_PARAM].value);
+inline void Tremolo<TBase>::stepInput() {
+    int clockMul = (int)round(TBase::params[CLOCK_MULT_PARAM].value);
 
     // UI is shifted
     clockMul++;
@@ -183,10 +168,10 @@ inline void Tremolo<TBase>::stepInput()
 
     shapeMul = std::max(.25f, 10 * shape);
     gain = modDepth /
-        LookupTable<float>::lookup(*tanhLookup.get(), (shapeMul / 2));
+           LookupTable<float>::lookup(*tanhLookup.get(), (shapeMul / 2));
 
     // update internal clock from knob
-    if (clockMul == 0)          // only calc rate for internal
+    if (clockMul == 0)  // only calc rate for internal
     {
         const float logRate = scale_rate(
             0,
@@ -202,8 +187,7 @@ inline void Tremolo<TBase>::stepInput()
 }
 
 template <class TBase>
-inline void Tremolo<TBase>::step()
-{
+inline void Tremolo<TBase>::step() {
     if (--inputSubSampleCounter <= 0) {
         inputSubSampleCounter = inputSubSample;
         stepInput();
@@ -215,7 +199,6 @@ inline void Tremolo<TBase>::step()
         clock.refClock();
     }
 
-
     // ------------ now generate the lfo waveform
     clock.sampleClock();
     float mod = clock.getSaw();
@@ -225,18 +208,13 @@ inline void Tremolo<TBase>::step()
     TBase::outputs[SAW_OUTPUT].setVoltage(10 * mod, 0);
 
     // TODO: don't scale twice - just get it right the first time
-  //  const float shapeMul = std::max(.25f, 10 * shape);
+    //  const float shapeMul = std::max(.25f, 10 * shape);
     mod *= shapeMul;
-
     mod = LookupTable<float>::lookup(*tanhLookup.get(), mod);
     TBase::outputs[LFO_OUTPUT].setVoltage(5 * mod, 0);
 
-
-    // TODO: move this intp input proc
-   // const float gain = modDepth /
-   //     LookupTable<float>::lookup(*tanhLookup.get(), (shapeMul / 2));
-    const float finalMod = gain * mod + 1;      // TODO: this offset by 1 is pretty good, but we 
-                                                // could add an offset control to make it really "chop" off
+    const float finalMod = gain * mod + 1;  // TODO: this offset by 1 is pretty good, but we
+                                            // could add an offset control to make it really "chop" off
 
     TBase::outputs[AUDIO_OUTPUT].setVoltage(TBase::inputs[AUDIO_INPUT].getVoltage(0) * finalMod, 0);
 }
@@ -282,29 +260,13 @@ LookupUniform<vec_t>::lookup_clip_v(*tanhParams, tempBuffer, tempBuffer, sampleF
     // now range = +/- tanh(5*shape) * depth / tanh(10 * shape)
 */
 
-
 template <class TBase>
-int TremoloDescription<TBase>::getNumParams()
-{
+int TremoloDescription<TBase>::getNumParams() {
     return Tremolo<TBase>::NUM_PARAMS;
 }
 
-/*
-        LFO_RATE_PARAM,
-        LFO_SHAPE_PARAM,
-        LFO_SKEW_PARAM,
-        LFO_PHASE_PARAM,
-        MOD_DEPTH_PARAM,
-        CLOCK_MULT_PARAM,
-
-        LFO_SHAPE_TRIM_PARAM,
-        LFO_SKEW_TRIM_PARAM,
-        LFO_PHASE_TRIM_PARAM,
-        MOD_DEPTH_TRIM_PARAM,
-*/
 template <class TBase>
-inline IComposite::Config TremoloDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config TremoloDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case Tremolo<TBase>::LFO_RATE_PARAM:

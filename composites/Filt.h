@@ -1,6 +1,11 @@
 
 #pragma once
 
+#include <assert.h>
+
+#include <memory>
+#include <string>
+
 #include "Divider.h"
 #include "IComposite.h"
 #include "LadderFilter.h"
@@ -9,22 +14,17 @@
 #include "ObjectCache.h"
 #include "PeakDetector.h"
 
-#include <assert.h>
-#include <memory>
-#include <string>
-
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
 /**
  */
 template <class TBase>
-class FiltDescription : public IComposite
-{
+class FiltDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -37,18 +37,14 @@ public:
  * final version: 152
  */
 template <class TBase>
-class Filt : public TBase
-{
+class Filt : public TBase {
 public:
     using T = double;
-    Filt(Module * module) : TBase(module)
-    {
+    Filt(Module* module) : TBase(module) {
     }
-    Filt() : TBase()
-    {
+    Filt() : TBase() {
     }
-    virtual ~Filt()
-    {
+    virtual ~Filt() {
     }
 
     /**
@@ -59,8 +55,7 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         FC_PARAM,
         FC1_TRIM_PARAM,
         FC2_TRIM_PARAM,
@@ -80,10 +75,9 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
-        L_AUDIO_INPUT,          // In poly mode, this is the only input we care about.
-        R_AUDIO_INPUT,      
+    enum InputIds {
+        L_AUDIO_INPUT,  // In poly mode, this is the only input we care about.
+        R_AUDIO_INPUT,
         CV_INPUT1,
         CV_INPUT2,
         Q_INPUT,
@@ -93,15 +87,13 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
-        L_AUDIO_OUTPUT,         // In poly mode, this is the only output we care about.
+    enum OutputIds {
+        L_AUDIO_OUTPUT,  // In poly mode, this is the only output we care about.
         R_AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         SLOPE0_LIGHT,
         SLOPE1_LIGHT,
         SLOPE2_LIGHT,
@@ -113,20 +105,17 @@ public:
         NUM_LIGHTS
     };
 
-    static std::vector<std::string> getTypeNames()
-    {
+    static std::vector<std::string> getTypeNames() {
         return LadderFilter<T>::getTypeNames();
     }
 
-    static std::vector<std::string> getVoicingNames()
-    {
+    static std::vector<std::string> getVoicingNames() {
         return LadderFilter<T>::getVoicingNames();
     }
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<FiltDescription<TBase>>();
     }
 
@@ -135,8 +124,7 @@ public:
      */
     void step() override;
 
-    float getLevel() const
-    {
+    float getLevel() const {
         return peak.get();
     }
 
@@ -168,26 +156,22 @@ private:
     Divider div;
     PeakDetector peak;
 
-
     ProcessingVars processingVars;
     void setupProcessingVars();
 };
 
-
 template <class TBase>
-inline void Filt<TBase>::init()
-{
+inline void Filt<TBase>::init() {
     div.setup(4, [this] {
         this->stepn(div.getDiv());
-        });
+    });
 }
 
 template <class TBase>
-inline void Filt<TBase>::setupProcessingVars()
-{
+inline void Filt<TBase>::setupProcessingVars() {
     // in nomrmal poly mode, we use one dsp per channel in the left input.
     // but of only right input connected, we still need one.
-    processingVars.numFiltersActive =  TBase::inputs[L_AUDIO_INPUT].channels;
+    processingVars.numFiltersActive = TBase::inputs[L_AUDIO_INPUT].channels;
     if (processingVars.numFiltersActive == 0) {
         processingVars.numFiltersActive = TBase::inputs[R_AUDIO_INPUT].channels;
     }
@@ -209,12 +193,10 @@ inline void Filt<TBase>::setupProcessingVars()
             processingVars.mode = LadderFilterBank<T>::Modes::stereo;
             processingVars.inputForChannel1 = &TBase::inputs[R_AUDIO_INPUT];
             processingVars.numFiltersActive = 2;
-        }
-        else if (li && !ri && lo && ro) {
+        } else if (li && !ri && lo && ro) {
             // do we need lo here? if only right was connected we would still do this, yes?
             processingVars.mode = LadderFilterBank<T>::Modes::leftOnly;
-        }
-        else if (!li && ri && lo && ro) {
+        } else if (!li && ri && lo && ro) {
             processingVars.mode = LadderFilterBank<T>::Modes::rightOnly;
             processingVars.inputForChannel0 = &TBase::inputs[R_AUDIO_INPUT];
         }
@@ -222,25 +204,23 @@ inline void Filt<TBase>::setupProcessingVars()
 }
 
 template <class TBase>
-inline void Filt<TBase>::stepn(int divFactor)
-{
+inline void Filt<TBase>::stepn(int divFactor) {
     setupProcessingVars();
 
-    const LadderFilter<T>::Types type = (LadderFilter<T>::Types) (int) std::round(TBase::params[TYPE_PARAM].value);
-    const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing) (int) std::round(TBase::params[VOICING_PARAM].value);
+    const LadderFilter<T>::Types type = (LadderFilter<T>::Types)(int)std::round(TBase::params[TYPE_PARAM].value);
+    const LadderFilter<T>::Voicing voicing = (LadderFilter<T>::Voicing)(int)std::round(TBase::params[VOICING_PARAM].value);
 
-    filters.stepn( TBase::engineGetSampleTime(), processingVars.numFiltersActive,
-        TBase::inputs[CV_INPUT1], TBase::inputs[CV_INPUT2], TBase::inputs[Q_INPUT], TBase::inputs[DRIVE_INPUT],
-        TBase::inputs[EDGE_INPUT], TBase::inputs[SLOPE_INPUT],
-        TBase::params[FC_PARAM].value, TBase::params[FC1_TRIM_PARAM].value,  TBase::params[FC2_TRIM_PARAM].value,
-        TBase::params[MASTER_VOLUME_PARAM].value,
-        TBase::params[Q_PARAM].value, TBase::params[Q_TRIM_PARAM].value, TBase::params[BASS_MAKEUP_PARAM].value,
-        type, voicing,
-        TBase::params[DRIVE_PARAM].value,  TBase::params[DRIVE_TRIM_PARAM].value,
-        TBase::params[EDGE_PARAM].value,  TBase::params[EDGE_TRIM_PARAM].value,
-        TBase::params[SLOPE_PARAM].value, TBase::params[SLOPE_TRIM_PARAM].value,
-        TBase::params[SPREAD_PARAM].value
-    );
+    filters.stepn(TBase::engineGetSampleTime(), processingVars.numFiltersActive,
+                  TBase::inputs[CV_INPUT1], TBase::inputs[CV_INPUT2], TBase::inputs[Q_INPUT], TBase::inputs[DRIVE_INPUT],
+                  TBase::inputs[EDGE_INPUT], TBase::inputs[SLOPE_INPUT],
+                  TBase::params[FC_PARAM].value, TBase::params[FC1_TRIM_PARAM].value, TBase::params[FC2_TRIM_PARAM].value,
+                  TBase::params[MASTER_VOLUME_PARAM].value,
+                  TBase::params[Q_PARAM].value, TBase::params[Q_TRIM_PARAM].value, TBase::params[BASS_MAKEUP_PARAM].value,
+                  type, voicing,
+                  TBase::params[DRIVE_PARAM].value, TBase::params[DRIVE_TRIM_PARAM].value,
+                  TBase::params[EDGE_PARAM].value, TBase::params[EDGE_TRIM_PARAM].value,
+                  TBase::params[SLOPE_PARAM].value, TBase::params[SLOPE_TRIM_PARAM].value,
+                  TBase::params[SPREAD_PARAM].value);
 
     // now update level LEDs
     peak.decay(divFactor * TBase::engineGetSampleTime() * 5);
@@ -252,7 +232,7 @@ inline void Filt<TBase>::stepn(int divFactor)
 
     // update the slope LEDs from the first filter stage
     for (int i = 0; i < 4; ++i) {
-       // float s = imp._f.getLEDValue(i);
+        // float s = imp._f.getLEDValue(i);
         float s = filters.get(0).getLEDValue(i);
         s *= 2.5;
         s = s * s;
@@ -264,21 +244,18 @@ inline void Filt<TBase>::stepn(int divFactor)
     TBase::outputs[L_AUDIO_OUTPUT].setChannels(processingVars.leftOutputChannels);
 }
 
-
-
 template <class TBase>
-inline void Filt<TBase>::step()
-{
+inline void Filt<TBase>::step() {
     div.step();
 
     if (LadderFilterBank<T>::Modes::stereo == processingVars.mode) assert(processingVars.numFiltersActive == 2);
 
     filters.step(processingVars.numFiltersActive, processingVars.mode,
-        TBase::inputs[L_AUDIO_INPUT],  TBase::outputs[L_AUDIO_OUTPUT],
-        processingVars.inputForChannel0, processingVars.inputForChannel1,
-        peak);
+                 TBase::inputs[L_AUDIO_INPUT], TBase::outputs[L_AUDIO_OUTPUT],
+                 processingVars.inputForChannel0, processingVars.inputForChannel1,
+                 peak);
 
-    // if audio, clear out 
+    // if audio, clear out
     if (processingVars.numFiltersActive == 0) {
         for (int i = 0; i < TBase::outputs[L_AUDIO_OUTPUT].channels; ++i) {
             TBase::outputs[L_AUDIO_OUTPUT].setVoltage(0, i);
@@ -286,37 +263,33 @@ inline void Filt<TBase>::step()
     }
 
     switch (processingVars.mode) {
-    case LadderFilterBank<T>::Modes::normal:
-        TBase::outputs[R_AUDIO_OUTPUT].setVoltage(0, 0);
-        break;
-    case LadderFilterBank<T>::Modes::stereo:
-        // copy the r output from poly port to  mono R out
-        {
-            const float r = TBase::outputs[L_AUDIO_OUTPUT].getVoltage(1);
-            TBase::outputs[R_AUDIO_OUTPUT].setVoltage(r, 0);
-        }
-        break;
-    case LadderFilterBank<T>::Modes::rightOnly:
-    case LadderFilterBank<T>::Modes::leftOnly:
-        {
+        case LadderFilterBank<T>::Modes::normal:
+            TBase::outputs[R_AUDIO_OUTPUT].setVoltage(0, 0);
+            break;
+        case LadderFilterBank<T>::Modes::stereo:
+            // copy the r output from poly port to  mono R out
+            {
+                const float r = TBase::outputs[L_AUDIO_OUTPUT].getVoltage(1);
+                TBase::outputs[R_AUDIO_OUTPUT].setVoltage(r, 0);
+            }
+            break;
+        case LadderFilterBank<T>::Modes::rightOnly:
+        case LadderFilterBank<T>::Modes::leftOnly: {
             const float r = TBase::outputs[L_AUDIO_OUTPUT].getVoltage(0);
             TBase::outputs[R_AUDIO_OUTPUT].setVoltage(r, 0);
-        }
-        break;
-    default:
-        assert(false);
+        } break;
+        default:
+            assert(false);
     }
 }
 
 template <class TBase>
-int FiltDescription<TBase>::getNumParams()
-{
+int FiltDescription<TBase>::getNumParams() {
     return Filt<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config FiltDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config FiltDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case Filt<TBase>::FC_PARAM:
@@ -325,24 +298,20 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
         case Filt<TBase>::Q_PARAM:
             ret = {-5, 5, -5, "Resonance"};
             break;
-        case Filt<TBase>::TYPE_PARAM:
-            { 
-                int num = (int) LadderFilter<float>::Types::NUM_TYPES;
-                ret = {0, float(num - 1) , 0, "Type"};
-            }
-            break;
+        case Filt<TBase>::TYPE_PARAM: {
+            int num = (int)LadderFilter<float>::Types::NUM_TYPES;
+            ret = {0, float(num - 1), 0, "Type"};
+        } break;
         case Filt<TBase>::DRIVE_PARAM:
             ret = {-5, 5, -5, "Drive"};
             break;
         case Filt<TBase>::EDGE_PARAM:
             ret = {-5, 5, 0, "Edge"};
             break;
-        case Filt<TBase>::VOICING_PARAM:
-            {
-                int numV = (int) LadderFilter<float>::Voicing::NUM_VOICINGS;
-                ret = {0, float(numV - 1) , 0, "Voicing"};
-            }
-            break;
+        case Filt<TBase>::VOICING_PARAM: {
+            int numV = (int)LadderFilter<float>::Voicing::NUM_VOICINGS;
+            ret = {0, float(numV - 1), 0, "Voicing"};
+        } break;
         case Filt<TBase>::SPREAD_PARAM:
             ret = {0, 1, 0, "Capacitor"};
             break;
@@ -366,7 +335,7 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
             break;
         case Filt<TBase>::SLOPE_TRIM_PARAM:
             ret = {-1, 1, 0, "Slope trim"};
-            break;   
+            break;
         case Filt<TBase>::MASTER_VOLUME_PARAM:
             ret = {0, 1, .5, "Output volume"};
             break;
@@ -378,9 +347,3 @@ inline IComposite::Config FiltDescription<TBase>::getParam(int i)
     }
     return ret;
 }
-
-
-
-
-
-

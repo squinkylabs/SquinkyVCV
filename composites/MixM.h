@@ -1,38 +1,35 @@
 
 #pragma once
 
+#include <assert.h>
+#include <immintrin.h>
+
+#include <memory>
+
 #include "Divider.h"
 #include "IComposite.h"
 #include "MixHelper.h"
-#include "mixpolyhelper.h"
 #include "MultiLag.h"
 #include "ObjectCache.h"
 #include "SqMath.h"
-
-
-#include <assert.h>
-#include <immintrin.h>
-#include <memory>
+#include "mixpolyhelper.h"
 
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
-    inline float clamp(float v, float lo, float hi)
-    {
-        assert(lo < hi);
-        return std::min(hi, std::max(v, lo));
-    }
+inline float clamp(float v, float lo, float hi) {
+    assert(lo < hi);
+    return std::min(hi, std::max(v, lo));
 }
+}  // namespace std
 #endif
 
 template <class TBase>
-class MixMDescription : public IComposite
-{
+class MixMDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
-
 
 /**
     Perf: 12.4 before new stuff (mix8 was 20)
@@ -56,19 +53,16 @@ public:
  */
 
 template <class TBase>
-class MixM : public TBase
-{
+class MixM : public TBase {
 public:
-    template<typename Q>
+    template <typename Q>
     friend class MixHelper;
-    template<typename Q>
+    template <typename Q>
     friend class MixPolyHelper;
 
-    MixM(Module * module) : TBase(module)
-    {
+    MixM(Module* module) : TBase(module) {
     }
-    MixM() : TBase()
-    {
+    MixM() : TBase() {
     }
 
     static const int numChannels = 4;
@@ -82,8 +76,7 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         MASTER_VOLUME_PARAM,
         MASTER_MUTE_PARAM,
         GAIN0_PARAM,
@@ -104,7 +97,7 @@ public:
         SOLO1_PARAM,
         SOLO2_PARAM,
         SOLO3_PARAM,
-        ALL_CHANNELS_OFF_PARAM, // when > .05, acts as if all channels muted. 
+        ALL_CHANNELS_OFF_PARAM,  // when > .05, acts as if all channels muted.
 
         SEND0_PARAM,
         SEND1_PARAM,
@@ -116,7 +109,7 @@ public:
         SENDb2_PARAM,
         SENDb3_PARAM,
 
-        PRE_FADERa_PARAM,       // 0 = post, 1 = pre
+        PRE_FADERa_PARAM,  // 0 = post, 1 = pre
         PRE_FADERb_PARAM,
 
         RETURN_GAIN_PARAM,
@@ -135,8 +128,7 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         AUDIO0_INPUT,
         AUDIO1_INPUT,
         AUDIO2_INPUT,
@@ -160,8 +152,7 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         LEFT_OUTPUT,
         RIGHT_OUTPUT,
         CHANNEL0_OUTPUT,
@@ -175,8 +166,7 @@ public:
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         SOLO0_LIGHT,
         SOLO1_LIGHT,
         SOLO2_LIGHT,
@@ -193,8 +183,7 @@ public:
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<MixMDescription<TBase>>();
     }
 
@@ -221,6 +210,7 @@ public:
     float buf_auxReturnGainB = 0;
 
     void _disableAntiPop();
+
 private:
     Divider divider;
 
@@ -245,50 +235,45 @@ private:
 
     MixHelper<MixM<TBase>> helper;
     MixPolyHelper<MixM<TBase>> polyHelper;
-    std::shared_ptr<LookupTableParams<float>> taperLookupParam =  ObjectCache<float>::getAudioTaper18();
+    std::shared_ptr<LookupTableParams<float>> taperLookupParam = ObjectCache<float>::getAudioTaper18();
 };
 
 template <class TBase>
-inline void MixM<TBase>::init()
-{
+inline void MixM<TBase>::init() {
     const int divRate = 4;
     divider.setup(divRate, [this, divRate] {
         this->stepn(divRate);
-        });
+    });
 
     setupFilters();
 }
 
 template <class TBase>
-inline void MixM<TBase>::onSampleRateChange()
-{
+inline void MixM<TBase>::onSampleRateChange() {
     setupFilters();
 }
 
 template <class TBase>
-inline void MixM<TBase>::_disableAntiPop()
-{
-    filteredCV.setCutoff(0.49f);     // set it super fast
+inline void MixM<TBase>::_disableAntiPop() {
+    filteredCV.setCutoff(0.49f);  // set it super fast
 }
 
 template <class TBase>
-inline void MixM<TBase>::setupFilters()
-{
+inline void MixM<TBase>::setupFilters() {
     // 400 was smooth, 100 popped
     const float x = TBase::engineGetSampleTime() * 44100.f / 100.f;
     filteredCV.setCutoff(x);
 }
 
 template <class TBase>
-inline void MixM<TBase>::stepn(int div)
-{
+inline void MixM<TBase>::stepn(int div) {
     // Add enough passing for a whole 4 element vector
     float unbufferedCV[cvOffsetMaster + 4] = {0};
 
     const bool moduleIsMuted = TBase::params[ALL_CHANNELS_OFF_PARAM].value > .5f;
     const bool AisPreFader = TBase::params[PRE_FADERa_PARAM].value > .5;
     const bool BisPreFader = TBase::params[PRE_FADERb_PARAM].value > .5;
- 
+
     helper.procMixInputs(this);
     helper.procMasterMute(this);
     polyHelper.updatePolyphony(this);
@@ -299,12 +284,12 @@ inline void MixM<TBase>::stepn(int div)
         buf_auxReturnGainA = 2 * LookupTable<float>::lookup(*taperLookupParam, rawSlider);
 
         rawSlider = TBase::params[RETURN_GAINb_PARAM].value;
-        buf_auxReturnGainB =  2 * LookupTable<float>::lookup(*taperLookupParam, rawSlider);
+        buf_auxReturnGainB = 2 * LookupTable<float>::lookup(*taperLookupParam, rawSlider);
 
         rawSlider = TBase::params[MASTER_VOLUME_PARAM].value;
-        float procMaster =  2 * LookupTable<float>::lookup(*taperLookupParam, rawSlider);
+        float procMaster = 2 * LookupTable<float>::lookup(*taperLookupParam, rawSlider);
         unbufferedCV[cvOffsetMaster] = (1.0f - TBase::params[MASTER_MUTE_STATE_PARAM].value) *
-           procMaster;
+                                       procMaster;
     }
 
     // If the is an external solo, then mute all channels
@@ -318,14 +303,13 @@ inline void MixM<TBase>::stepn(int div)
 
     for (int i = 0; i < numChannels; ++i) {
         float channelGain = 0;
-       
+
         // First let's round up the channel volume
         {
             const float rawSlider = TBase::params[i + GAIN0_PARAM].value;
             const float slider = LookupTable<float>::lookup(*taperLookupParam, rawSlider);
 
-            const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ?
-                TBase::inputs[i + LEVEL0_INPUT].getVoltage(0) : 10.f;
+            const float rawCV = TBase::inputs[i + LEVEL0_INPUT].isConnected() ? TBase::inputs[i + LEVEL0_INPUT].getVoltage(0) : 10.f;
             const float cv = std::clamp(
                 rawCV / 10.0f,
                 0.0f,
@@ -334,16 +318,15 @@ inline void MixM<TBase>::stepn(int div)
         }
 
         // now round up the mutes
-        float rawMuteValue = 0;        // assume muted
+        float rawMuteValue = 0;  // assume muted
         if (moduleIsMuted) {
-         
         } else if (anySolo) {
             // If any channels in this module are soloed, then
             // mute any channels that aren't soled
             rawMuteValue = TBase::params[i + SOLO0_PARAM].value;
         } else {
-             // The pre-calculated state in :params[i + MUTE0_STATE_PARAM] will
-             // be applicable if no solo
+            // The pre-calculated state in :params[i + MUTE0_STATE_PARAM] will
+            // be applicable if no solo
             rawMuteValue = TBase::params[i + MUTE0_STATE_PARAM].value > .5 ? 0.f : 1.f;
         }
         channelGain *= rawMuteValue;
@@ -366,11 +349,10 @@ inline void MixM<TBase>::stepn(int div)
             const float muteValue = filteredCV.get(cvOffsetMute + i);
             const float sliderA = TBase::params[i + SEND0_PARAM].value;
             const float sliderB = TBase::params[i + SENDb0_PARAM].value;
-               
 
             // TODO: we can do some main volume work ahead of time, just like the sends here
             if (!AisPreFader) {
-                // post faster, gain sees mutes, faders,  pan, and send level    
+                // post faster, gain sees mutes, faders,  pan, and send level
                 buf_channelSendGainsALeft[i] = filteredCV.get(i + cvOffsetPanLeft) * sliderA;
                 buf_channelSendGainsARight[i] = filteredCV.get(i + cvOffsetPanRight) * sliderA;
             } else {
@@ -398,13 +380,12 @@ inline void MixM<TBase>::stepn(int div)
     }
     filteredCV.step(unbufferedCV);
 }
-        
+
 template <class TBase>
-inline void MixM<TBase>::step()
-{
+inline void MixM<TBase>::step() {
     divider.step();
 
-    float left = 0, right = 0;              // these variables will be summed up over all channels
+    float left = 0, right = 0;  // these variables will be summed up over all channels
     float lSend = 0, rSend = 0;
     float lSendb = 0, rSendb = 0;
 
@@ -453,23 +434,19 @@ inline void MixM<TBase>::step()
 }
 
 template <class TBase>
-inline void MixM<TBase>::setExpansionInputs(const float* p)
-{
+inline void MixM<TBase>::setExpansionInputs(const float* p) {
     expansionInputs = p;
 }
 
 template <class TBase>
-int MixMDescription<TBase>::getNumParams()
-{
+int MixMDescription<TBase>::getNumParams() {
     return MixM<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config MixMDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config MixMDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
-
         case MixM<TBase>::MASTER_VOLUME_PARAM:
             ret = {0, 1, .75f, "Master Vol"};
             break;
@@ -557,14 +534,14 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
         case MixM<TBase>::ALL_CHANNELS_OFF_PARAM:
             ret = {0, 1.0f, 0, "(All Off)"};
             break;
-        case  MixM<TBase>::PRE_FADERa_PARAM:      // 0 = post, 1 = pre
+        case MixM<TBase>::PRE_FADERa_PARAM:  // 0 = post, 1 = pre
             ret = {0, 1.0f, 0, "Pre Fader A"};
             break;
-        case  MixM<TBase>::PRE_FADERb_PARAM:
+        case MixM<TBase>::PRE_FADERb_PARAM:
             ret = {0, 1.0f, 0, "Pre Fader B"};
             break;
         case MixM<TBase>::MUTE0_STATE_PARAM:
-            ret = {0, 1, 0, "MSX0"};            // not user visible
+            ret = {0, 1, 0, "MSX0"};  // not user visible
             break;
         case MixM<TBase>::MUTE1_STATE_PARAM:
             ret = {0, 1, 0, "MSX1"};
@@ -586,4 +563,3 @@ inline IComposite::Config MixMDescription<TBase>::getParam(int i)
     }
     return ret;
 }
-

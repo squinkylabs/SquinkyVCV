@@ -1,19 +1,21 @@
 
 #pragma once
 
-//#ifndef _MSC_VER 
+//#ifndef _MSC_VER
 #if 1
-#include "asserts.h"
+#include <assert.h>
+
+#include <memory>
+
 #include "AudioMath.h"
 #include "Divider.h"
-#include "SubVCO.h"
-#include <assert.h>
-#include <memory>
 #include "IComposite.h"
 #include "LookupTableFactory.h"
-#include "simd.h"
 #include "SimpleQuantizer.h"
 #include "SqPort.h"
+#include "SubVCO.h"
+#include "asserts.h"
+#include "simd.h"
 
 /**
  * only update n if patched, otherwise m: 18/56
@@ -26,29 +28,25 @@
  * 6/9 after re-write 40
  */
 
-
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
-    inline float clamp(float v, float lo, float hi)
-    {
-        assert(lo < hi);
-        return std::min(hi, std::max(v, lo));
-    }
+inline float clamp(float v, float lo, float hi) {
+    assert(lo < hi);
+    return std::min(hi, std::max(v, lo));
 }
+}  // namespace std
 #endif
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
-
 template <class TBase>
-class SubDescription : public IComposite
-{
+class SubDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -58,8 +56,7 @@ public:
  * but it is poly so it hold for all of them
  * Values are derived from knobs and CV
  */
-class MixParams
-{
+class MixParams {
 public:
     float vcoGain = 0;
     float subAGain = 0;
@@ -74,22 +71,17 @@ public:
  * 
  * to it alternates left/right as it marches through all 8 pairs
  */
-class MixParamsAll
-{
+class MixParamsAll {
 public:
     MixParams params[16] = {};
 };
 
 template <class TBase>
-class Sub : public TBase
-{
+class Sub : public TBase {
 public:
-
-    Sub(Module * module) : TBase(module)
-    {
+    Sub(Module* module) : TBase(module) {
     }
-    Sub() : TBase()
-    {
+    Sub() : TBase() {
     }
 
     /**
@@ -99,9 +91,8 @@ public:
     * Only needs to be called once.
     */
     void init();
-    // 
-    enum ParamIds
-    {
+    //
+    enum ParamIds {
         OCTAVE1_PARAM,
         OCTAVE2_PARAM,
         FINE1_PARAM,
@@ -121,7 +112,7 @@ public:
         SUB1B_LEVEL_PARAM,
         SUB2B_LEVEL_PARAM,
         WAVEFORM1_PARAM,
-        WAVEFORM2_PARAM, 
+        WAVEFORM2_PARAM,
         QUANTIZER_SCALE_PARAM,
         SEMITONE1_PARAM,
         SEMITONE2_PARAM,
@@ -133,8 +124,7 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         VOCT_INPUT,
         SUB1A_TUNE_INPUT,
         SUB2A_TUNE_INPUT,
@@ -151,21 +141,18 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         MAIN_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<SubDescription<TBase>>();
     }
 
@@ -178,17 +165,17 @@ public:
     void stepm();
     VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4>& _get(int n) {
         return oscillators[n];
-    } 
+    }
 
     MixParamsAll mixParams;
     static void normalizeVolume(float&, float&, float&, float&, float&, float&);
-private:
 
+private:
     std::shared_ptr<SimpleQuantizer> quantizer;
     VoltageControlledOscillator<16, 16, rack::simd::float_4, rack::simd::int32_4> oscillators[4];
     AudioMath::ScaleFun<float> divScaleFn = AudioMath::makeLinearScaler2<float>(1, 16, 1, 16);
     AudioMath::ScaleFun<float> pwScaleFn = AudioMath::makeLinearScaler2<float>(0, 100, 0, 1);
-     
+
     LookupTableParams<float> audioTaper;
 
     /**
@@ -196,8 +183,8 @@ private:
      */
     int numDualChannels = 1;
     int numBanks = 1;
-  //  bool vco1HasMixCV = false;
-  //  bool vco2HasMixCV = false;
+    //  bool vco1HasMixCV = false;
+    //  bool vco2HasMixCV = false;
     bool shouldUpdateVco1Often_m = false;
     bool shouldUpdateVco2Often_m = false;
 
@@ -218,8 +205,7 @@ private:
 };
 
 template <class TBase>
-inline void Sub<TBase>::init()
-{
+inline void Sub<TBase>::init() {
     LookupTableFactory<float>::makeAudioTaper(audioTaper);
     divn.setup(4, [this]() {
         this->stepn();
@@ -229,22 +215,20 @@ inline void Sub<TBase>::init()
         this->stepm();
     });
 
-    for (int i=0; i<4; ++i) {
+    for (int i = 0; i < 4; ++i) {
         oscillators[i].index = i;
     }
 
-    std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Even };
-    quantizer = std::make_shared<SimpleQuantizer>(scales,  SimpleQuantizer::Scales::_off);
+    std::vector<SimpleQuantizer::Scales> scales = {SimpleQuantizer::Scales::_12Even};
+    quantizer = std::make_shared<SimpleQuantizer>(scales, SimpleQuantizer::Scales::_off);
 }
 
-
 template <class TBase>
-inline void Sub<TBase>::normalizeVolume(float& a, float& b, float& c, float& d, float& e, float& f)
-{
+inline void Sub<TBase>::normalizeVolume(float& a, float& b, float& c, float& d, float& e, float& f) {
     float sum = a + b + c + d + e + f;
-    float comp = 4;        // if quiet, boost by this
+    float comp = 4;  // if quiet, boost by this
 
-    const float threshold = 1;      // was 1
+    const float threshold = 1;  // was 1
     if (sum > threshold) {
         comp *= (threshold / sum);
     }
@@ -257,8 +241,7 @@ inline void Sub<TBase>::normalizeVolume(float& a, float& b, float& c, float& d, 
 }
 
 template <class TBase>
-inline void Sub<TBase>::computeGains(bool doOne, bool doTwo, bool agc)
-{
+inline void Sub<TBase>::computeGains(bool doOne, bool doTwo, bool agc) {
     int vcoNumber = 0;
     int channelPairNumber = 0;
 
@@ -270,44 +253,44 @@ inline void Sub<TBase>::computeGains(bool doOne, bool doTwo, bool agc)
     while (channelPairNumber < numDualChannels) {
         if (doOne) {
             mixParams.params[vcoNumber].vcoGain = computeGain(
-                Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value,  
+                Sub<TBase>::params[Sub<TBase>::VCO1_LEVEL_PARAM].value,
                 Sub<TBase>::inputs[MAIN1_LEVEL_INPUT],
                 channelPairNumber);
             mixParams.params[vcoNumber].subAGain = computeGain(
-                Sub<TBase>::params[Sub<TBase>::SUB1A_LEVEL_PARAM].value,  
+                Sub<TBase>::params[Sub<TBase>::SUB1A_LEVEL_PARAM].value,
                 Sub<TBase>::inputs[SUB1A_LEVEL_INPUT],
                 channelPairNumber);
             mixParams.params[vcoNumber].subBGain = computeGain(
-                Sub<TBase>::params[Sub<TBase>::SUB1B_LEVEL_PARAM].value,  
+                Sub<TBase>::params[Sub<TBase>::SUB1B_LEVEL_PARAM].value,
                 Sub<TBase>::inputs[SUB1B_LEVEL_INPUT],
                 channelPairNumber);
         }
         if (vcoNumber == 0) {
-       // printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);     
+            // printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);
         }
         ++vcoNumber;
 
         if (doTwo) {
             mixParams.params[vcoNumber].vcoGain = computeGain(
-                Sub<TBase>::params[Sub<TBase>::VCO2_LEVEL_PARAM].value,  
+                Sub<TBase>::params[Sub<TBase>::VCO2_LEVEL_PARAM].value,
                 Sub<TBase>::inputs[MAIN2_LEVEL_INPUT],
                 channelPairNumber);
             mixParams.params[vcoNumber].subAGain = computeGain(
-                Sub<TBase>::params[Sub<TBase>::SUB2A_LEVEL_PARAM].value,  
+                Sub<TBase>::params[Sub<TBase>::SUB2A_LEVEL_PARAM].value,
                 Sub<TBase>::inputs[SUB2A_LEVEL_INPUT],
                 channelPairNumber);
             mixParams.params[vcoNumber].subBGain = computeGain(
-                Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value,  
+                Sub<TBase>::params[Sub<TBase>::SUB2B_LEVEL_PARAM].value,
                 Sub<TBase>::inputs[SUB2B_LEVEL_INPUT],
                 channelPairNumber);
         }
-      //  printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);
-        
-         if (agc) {
+        //  printf("params[%d] = %f, %f, %f\n", vcoNumber, mixParams.params[vcoNumber].vcoGain, mixParams.params[vcoNumber].subAGain, mixParams.params[vcoNumber].subBGain);
+
+        if (agc) {
             normalizeVolume(
-                mixParams.params[vcoNumber-1].vcoGain,
-                mixParams.params[vcoNumber-1].subAGain,
-                mixParams.params[vcoNumber-1].subBGain,
+                mixParams.params[vcoNumber - 1].vcoGain,
+                mixParams.params[vcoNumber - 1].subAGain,
+                mixParams.params[vcoNumber - 1].subBGain,
                 mixParams.params[vcoNumber].vcoGain,
                 mixParams.params[vcoNumber].subAGain,
                 mixParams.params[vcoNumber].subBGain);
@@ -315,9 +298,9 @@ inline void Sub<TBase>::computeGains(bool doOne, bool doTwo, bool agc)
             // This stuff could all be done in normal knob scaling code.
             const float normBoost = 2;
             if (doOne) {
-                mixParams.params[vcoNumber-1].vcoGain *= normBoost;
-                mixParams.params[vcoNumber-1].subAGain *= normBoost;
-                mixParams.params[vcoNumber-1].subBGain *= normBoost;
+                mixParams.params[vcoNumber - 1].vcoGain *= normBoost;
+                mixParams.params[vcoNumber - 1].subAGain *= normBoost;
+                mixParams.params[vcoNumber - 1].subBGain *= normBoost;
             }
             if (doTwo) {
                 mixParams.params[vcoNumber].vcoGain *= normBoost;
@@ -331,8 +314,7 @@ inline void Sub<TBase>::computeGains(bool doOne, bool doTwo, bool agc)
 }
 
 template <class TBase>
-inline float Sub<TBase>::computeGain(float knobValue, SqInput& cv, int pairChannel)
-{
+inline float Sub<TBase>::computeGain(float knobValue, SqInput& cv, int pairChannel) {
     float value = LookupTable<float>::lookup(audioTaper, knobValue * .01f);
     value *= cv.isConnected() ? cv.getPolyVoltage(pairChannel) : 10;
     value *= .1f;
@@ -341,19 +323,16 @@ inline float Sub<TBase>::computeGain(float knobValue, SqInput& cv, int pairChann
 }
 
 template <class TBase>
-inline float  Sub<TBase>::computePWSub(ParamIds knobId, ParamIds trimId, InputIds port, int pairChannel)
-{
-    const float pw =  pwScaleFn(
+inline float Sub<TBase>::computePWSub(ParamIds knobId, ParamIds trimId, InputIds port, int pairChannel) {
+    const float pw = pwScaleFn(
         Sub<TBase>::inputs[port].getPolyVoltage(pairChannel),
         Sub<TBase>::params[knobId].value,
-        Sub<TBase>::params[trimId].value
-    );
+        Sub<TBase>::params[trimId].value);
     return pw;
 }
 
 template <class TBase>
-inline float_4 Sub<TBase>::computePW(int bank) 
-{
+inline float_4 Sub<TBase>::computePW(int bank) {
     float_4 ret;
     int channelPair = bank / 2;
     ret[0] = computePWSub(PULSEWIDTH1_PARAM, PULSEWIDTH1_TRIM_PARAM, PWM1_INPUT, channelPair);
@@ -365,23 +344,20 @@ inline float_4 Sub<TBase>::computePW(int bank)
 }
 
 template <class TBase>
-inline int  Sub<TBase>::computeDivisorSub(ParamIds knobId, ParamIds trimId, InputIds port, int pairChannel)
-{
+inline int Sub<TBase>::computeDivisorSub(ParamIds knobId, ParamIds trimId, InputIds port, int pairChannel) {
     float cv = .1f * Sub<TBase>::inputs[port].getPolyVoltage(pairChannel);
     cv = std::clamp(cv, -1.f, 1.f);
-    
-    float rawF =  divScaleFn(
+
+    float rawF = divScaleFn(
         cv,
         Sub<TBase>::params[knobId].value,
-        Sub<TBase>::params[trimId].value
-    );
+        Sub<TBase>::params[trimId].value);
     rawF = std::clamp(rawF, 1.f, 16.f);
     return int(rawF);
 }
 
 template <class TBase>
-inline void Sub<TBase>::computeDivisors(int bank, int32_4& divaOut, int32_4& divbOut)
-{
+inline void Sub<TBase>::computeDivisors(int bank, int32_4& divaOut, int32_4& divbOut) {
     int channelPair = bank / 2;
     divaOut[0] = computeDivisorSub(SUB1A_TUNE_PARAM, SUB1A_TUNE_PARAM, SUB1A_TUNE_INPUT, channelPair);
     divbOut[0] = computeDivisorSub(SUB1B_TUNE_PARAM, SUB1B_TUNE_PARAM, SUB1B_TUNE_INPUT, channelPair);
@@ -393,18 +369,16 @@ inline void Sub<TBase>::computeDivisors(int bank, int32_4& divaOut, int32_4& div
     divbOut[2] = computeDivisorSub(SUB1B_TUNE_PARAM, SUB1B_TUNE_PARAM, SUB1B_TUNE_INPUT, channelPair);
     divaOut[3] = computeDivisorSub(SUB2A_TUNE_PARAM, SUB2A_TUNE_PARAM, SUB2A_TUNE_INPUT, channelPair);
     divbOut[3] = computeDivisorSub(SUB2B_TUNE_PARAM, SUB2B_TUNE_PARAM, SUB2B_TUNE_INPUT, channelPair);
-
 }
 
 template <class TBase>
-inline void Sub<TBase>::setupQuantizer()
-{
+inline void Sub<TBase>::setupQuantizer() {
     int scale = int(std::round(Sub<TBase>::params[QUANTIZER_SCALE_PARAM].value));
-    quantizer->setScale( SimpleQuantizer::Scales(scale));
+    quantizer->setScale(SimpleQuantizer::Scales(scale));
 }
 
 inline void parseWF(int wf, bool& mainIsSaw, bool& subIsSaw) {
-    switch(wf) {
+    switch (wf) {
         case 0:
             mainIsSaw = true;
             subIsSaw = true;
@@ -423,12 +397,11 @@ inline void parseWF(int wf, bool& mainIsSaw, bool& subIsSaw) {
 }
 
 // TODO: implement this smart (SIMD) and move
-inline float_4 bitfieldToMask(int x)
-{
+inline float_4 bitfieldToMask(int x) {
     float_4 y = float_4::zero();
     int bit = 1;
     float_4 mask = float_4::mask();
-    for (int index = 0 ; index < 4; ++index) {
+    for (int index = 0; index < 4; ++index) {
         if (x & bit) {
             y[index] = mask[0];
         }
@@ -440,18 +413,18 @@ inline float_4 bitfieldToMask(int x)
 template <class TBase>
 inline void Sub<TBase>::setupWaveforms() {
     // for now use vco1 for both
-    int wf = int (std::round(Sub<TBase>::params[Sub<TBase>::WAVEFORM1_PARAM].value));
+    int wf = int(std::round(Sub<TBase>::params[Sub<TBase>::WAVEFORM1_PARAM].value));
     bool mainAIsSaw = true;
     bool subAIsSaw = true;
     parseWF(wf, mainAIsSaw, subAIsSaw);
 
-    wf = int (std::round(Sub<TBase>::params[Sub<TBase>::WAVEFORM2_PARAM].value));
+    wf = int(std::round(Sub<TBase>::params[Sub<TBase>::WAVEFORM2_PARAM].value));
     bool mainBIsSaw = true;
     bool subBIsSaw = true;
     parseWF(wf, mainBIsSaw, subBIsSaw);
 
- //   printf("amain=%d asub=%d bmain=%d bsub=%d\n", mainAIsSaw, subAIsSaw, mainBIsSaw, subBIsSaw);
- //   fflush(stdout);
+    //   printf("amain=%d asub=%d bmain=%d bsub=%d\n", mainAIsSaw, subAIsSaw, mainBIsSaw, subBIsSaw);
+    //   fflush(stdout);
 
     // ok, remember A and B 0 are two vcos, so each bank is only 2 voices
     int mainIsSawBitMask = 0;
@@ -469,7 +442,7 @@ inline void Sub<TBase>::setupWaveforms() {
         subIsSawBitMask |= (2 | 8);
     }
 
- //   printf("in setup waveform mainIsSawBitMask=%x\n subIsSawBitMask=%x\n",mainIsSawBitMask,     subIsSawBitMask);
+    //   printf("in setup waveform mainIsSawBitMask=%x\n subIsSawBitMask=%x\n",mainIsSawBitMask,     subIsSawBitMask);
 
     float_4 mainIsSawMask = bitfieldToMask(mainIsSawBitMask);
     float_4 subIsSawMask = bitfieldToMask(subIsSawBitMask);
@@ -480,12 +453,11 @@ inline void Sub<TBase>::setupWaveforms() {
 }
 
 template <class TBase>
-inline void Sub<TBase>::stepm()
-{
+inline void Sub<TBase>::stepm() {
     setupQuantizer();
     setupWaveforms();
     numDualChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
-    Sub<TBase>::outputs[ Sub<TBase>::MAIN_OUTPUT].setChannels(numDualChannels);
+    Sub<TBase>::outputs[Sub<TBase>::MAIN_OUTPUT].setChannels(numDualChannels);
 
     const int numVCO = numDualChannels * 2;
     numBanks = numVCO / 4;
@@ -500,32 +472,32 @@ inline void Sub<TBase>::stepm()
     activeChannels_m[2] = 0;
     activeChannels_m[3] = 0;
 
-    if (numDualChannels <= 2 ) {
-        activeChannels_m[0] = numDualChannels * 2;    
+    if (numDualChannels <= 2) {
+        activeChannels_m[0] = numDualChannels * 2;
     } else if (numDualChannels <= 4) {
         activeChannels_m[0] = 4;
-        activeChannels_m[1] = (numDualChannels-2) * 2;
+        activeChannels_m[1] = (numDualChannels - 2) * 2;
     } else if (numDualChannels <= 6) {
         activeChannels_m[0] = 4;
         activeChannels_m[1] = 4;
-        activeChannels_m[2] = (numDualChannels-4) * 2;
+        activeChannels_m[2] = (numDualChannels - 4) * 2;
     } else if (numDualChannels <= 8) {
         activeChannels_m[0] = 4;
         activeChannels_m[1] = 4;
         activeChannels_m[2] = 4;
-        activeChannels_m[3] = (numDualChannels-6) * 2;
+        activeChannels_m[3] = (numDualChannels - 6) * 2;
     } else {
         assert(false);
     }
 
     // figure out who has mix inputs patched
-    shouldUpdateVco1Often_m =  Sub<TBase>::inputs[Sub<TBase>::MAIN1_LEVEL_INPUT].isConnected() ||
-        Sub<TBase>::inputs[Sub<TBase>::SUB1A_LEVEL_INPUT].isConnected() ||
-        Sub<TBase>::inputs[Sub<TBase>::SUB1B_LEVEL_INPUT].isConnected();
+    shouldUpdateVco1Often_m = Sub<TBase>::inputs[Sub<TBase>::MAIN1_LEVEL_INPUT].isConnected() ||
+                              Sub<TBase>::inputs[Sub<TBase>::SUB1A_LEVEL_INPUT].isConnected() ||
+                              Sub<TBase>::inputs[Sub<TBase>::SUB1B_LEVEL_INPUT].isConnected();
 
-    shouldUpdateVco2Often_m =  Sub<TBase>::inputs[Sub<TBase>::MAIN2_LEVEL_INPUT].isConnected() ||
-        Sub<TBase>::inputs[Sub<TBase>::SUB2A_LEVEL_INPUT].isConnected() ||
-        Sub<TBase>::inputs[Sub<TBase>::SUB2B_LEVEL_INPUT].isConnected();
+    shouldUpdateVco2Often_m = Sub<TBase>::inputs[Sub<TBase>::MAIN2_LEVEL_INPUT].isConnected() ||
+                              Sub<TBase>::inputs[Sub<TBase>::SUB2A_LEVEL_INPUT].isConnected() ||
+                              Sub<TBase>::inputs[Sub<TBase>::SUB2B_LEVEL_INPUT].isConnected();
 
     agcEnabled_m = Sub<TBase>::params[Sub<TBase>::AGC_PARAM].value > .5f;
 
@@ -539,11 +511,10 @@ inline void Sub<TBase>::stepm()
     if (!shouldUpdateVco1Often_m || !shouldUpdateVco2Often_m) {
         computeGains(!shouldUpdateVco1Often_m, !shouldUpdateVco2Often_m, agcEnabled_m);
     }
-}  
+}
 
 template <class TBase>
-inline void Sub<TBase>::stepn()
-{
+inline void Sub<TBase>::stepn() {
     //printf("stepn numBanks = %d\n", numBanks);
     // if either side has a CV connected, then update that now
     if (shouldUpdateVco1Often_m || shouldUpdateVco2Often_m) {
@@ -552,12 +523,12 @@ inline void Sub<TBase>::stepn()
 
     // get the base pitch in volts from the 2X2 pitch knobs.
     // Jam it into one float_4 <A,B,A,B>
-    const float basePitch1 = 
+    const float basePitch1 =
         Sub<TBase>::params[OCTAVE1_PARAM].value +
         Sub<TBase>::params[SEMITONE1_PARAM].value / 12.f +
         Sub<TBase>::params[FINE1_PARAM].value - 4;
-    const float basePitch2 = 
-        Sub<TBase>::params[OCTAVE2_PARAM].value + 
+    const float basePitch2 =
+        Sub<TBase>::params[OCTAVE2_PARAM].value +
         Sub<TBase>::params[SEMITONE2_PARAM].value / 12.f +
         Sub<TBase>::params[FINE2_PARAM].value - 4;
     float_4 combinedPitch(0);
@@ -567,8 +538,6 @@ inline void Sub<TBase>::stepn()
 
     combinedPitch[2] = basePitch1;
     combinedPitch[3] = basePitch2;
-
-   
 
     // Now loop thought all VCOs, combining the individual CV with the
     int channel = 0;
@@ -587,7 +556,7 @@ inline void Sub<TBase>::stepn()
         rack::simd::int32_4 divisorA;
         rack::simd::int32_4 divisorB;
         computeDivisors(bank, divisorA, divisorB);
-        
+
         oscillators[bank].setupSub(activeChannels_m[bank], pitch, divisorA, divisorB);
     }
 
@@ -601,25 +570,23 @@ inline void Sub<TBase>::stepn()
         float_4 pw = computePW(bank);
         oscillators[bank].setPW(pw);
         oscillators[bank].computeOffsetCorrection(sampleTime);
-     }
+    }
 }
 
 // new version, poly mix (when it works)
 template <class TBase>
-inline void Sub<TBase>::step()
-{
-
+inline void Sub<TBase>::step() {
     divm.step();
     divn.step();
     // look at controls and update VCO
 
     // run the audio
     const float sampleTime = TBase::engineGetSampleTime();
-    
+
     // Prepare the mixed output and send it out.
     int vcoNumber = 0;
     int channelPairNumber = 0;
-    for (int bank=0; bank < numBanks; ++bank) {
+    for (int bank = 0; bank < numBanks; ++bank) {
         oscillators[bank].process(sampleTime, 0);
 
         // now, what do do with the output? to now lets grab pairs
@@ -633,16 +600,14 @@ inline void Sub<TBase>::step()
         const MixParams& params1 = this->mixParams.params[vcoNumber++];
 
         float mixed0 = mains[0] * params0.vcoGain +
-            mains[1] * params1.vcoGain +
-            subs0[0] * params0.subAGain +
-            subs0[1] * params1.subAGain +
-            subs1[0] * params0.subBGain +
-            subs1[1] * params1.subBGain;
-        
+                       mains[1] * params1.vcoGain +
+                       subs0[0] * params0.subAGain +
+                       subs0[1] * params1.subAGain +
+                       subs1[0] * params0.subBGain +
+                       subs1[1] * params1.subBGain;
 
         assert(mixed0 < 15);
         assert(mixed0 > -15);
-
 
         mixed0 = std::clamp(mixed0, -10, 10);
         Sub<TBase>::outputs[MAIN_OUTPUT].setVoltage(mixed0, channelPairNumber++);
@@ -652,12 +617,12 @@ inline void Sub<TBase>::step()
             const MixParams& params1 = this->mixParams.params[vcoNumber++];
 
             float mixed0 = mains[2] * params0.vcoGain +
-                mains[3] * params1.vcoGain +
-                subs0[2] * params0.subAGain +
-                subs0[3] * params1.subAGain +
-                subs1[2] * params0.subBGain +
-                subs1[3] * params1.subBGain;
-            
+                           mains[3] * params1.vcoGain +
+                           subs0[2] * params0.subAGain +
+                           subs0[3] * params1.subAGain +
+                           subs1[2] * params0.subBGain +
+                           subs1[3] * params1.subBGain;
+
             assert(mixed0 < 15);
             assert(mixed0 > -15);
             std::clamp(mixed0, -10, 10);
@@ -666,7 +631,7 @@ inline void Sub<TBase>::step()
     }
 }
 
-#if 0   // old version, levels not poly
+#if 0  // old version, levels not poly
 template <class TBase>
 inline void Sub<TBase>::step()
 {
@@ -698,7 +663,7 @@ inline void Sub<TBase>::step()
 
      
             const float limit = 10;
-#if 0 // ndef NDEBUG
+#if 0  // ndef NDEBUG
       
         if ( (mixed0 >= limit) ||
         (mixed0 <= -limit) ||
@@ -739,14 +704,12 @@ inline void Sub<TBase>::step()
 #endif
 
 template <class TBase>
-int SubDescription<TBase>::getNumParams()
-{
+int SubDescription<TBase>::getNumParams() {
     return Sub<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config SubDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config SubDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case Sub<TBase>::OCTAVE1_PARAM:
@@ -830,7 +793,7 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
         case Sub<TBase>::QUANTIZER_SCALE_PARAM:
             ret = {0, 4, 0, "Quantizer Scale"};
             break;
-         case Sub<TBase>::AGC_PARAM:
+        case Sub<TBase>::AGC_PARAM:
             ret = {0, 1, 0, "agc"};
             break;
         default:
@@ -839,6 +802,3 @@ inline IComposite::Config SubDescription<TBase>::getParam(int i)
     return ret;
 }
 #endif
-
-
-

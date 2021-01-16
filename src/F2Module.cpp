@@ -154,7 +154,7 @@ void F2Module::process(const ProcessArgs& args)
 struct F2Widget : ModuleWidget
 {
     F2Widget(F2Module *);
-    DECLARE_MANUAL("Basic VCF Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
+ //   DECLARE_MANUAL("Basic VCF Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK)
     {
@@ -166,10 +166,24 @@ struct F2Widget : ModuleWidget
         return label;
     }
 
+    void appendContextMenu(Menu *menu) override;
+
     void addJacks(F2Module *module, std::shared_ptr<IComposite> icomp);
     void addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp);
     
 };
+
+void F2Widget::appendContextMenu(Menu* theMenu) 
+{
+    MenuLabel *spacerLabel = new MenuLabel();
+    theMenu->addChild(spacerLabel);
+    ManualMenuItem* manual = new ManualMenuItem("Basic VCF Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
+    theMenu->addChild(manual);
+    
+    SqMenuItem_BooleanParam2 * item = new SqMenuItem_BooleanParam2(module, Comp::CV_UPDATE_FREQ);
+    item->text = "CV Fidelity";
+    theMenu->addChild(item);
+}
 
 void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
 {
