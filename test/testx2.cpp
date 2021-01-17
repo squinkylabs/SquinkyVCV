@@ -5,18 +5,18 @@
 #include "CubicInterpolator.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
-#include "samplerTests.h"
 #include "SamplerSchema.h"
 #include "Streamer.h"
 #include "WaveLoader.h"
 #include "asserts.h"
+#include "samplerTests.h"
 
 //#include "SParse.h"
 
-static char* tinnyPiano = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
+static const char* tinnyPiano = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
 const char* tinnyPianoRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
 
-static char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo";
+static const char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo";
 
 static void testWaveLoader0() {
     WaveLoader w;
@@ -248,7 +248,6 @@ static void testSampler() {
     const int midiVel = 60;
     s.note_on(channel, midiPitch, midiVel, 0);
 
-
     float_4 x = s.step(0, 1.f / 44100.f);
     assert(x[0] == 0);
 }
@@ -343,8 +342,8 @@ static void testParseGlobalWitRegionKVCompiled() {
     assert(group->compiledValues);
     assertEQ(group->compiledValues->_size(), 0);
 
-    assertEQ(group->regions.size(), 3)
-        SRegionPtr r = group->regions[0];
+    assertEQ(group->regions.size(), 3);
+    SRegionPtr r = group->regions[0];
     assertEQ(r->compiledValues->_size(), 0);
     r = group->regions[2];
     assertEQ(r->compiledValues->_size(), 0);
@@ -467,7 +466,7 @@ static void testCubicInterp() {
 }
 
 static void testCompiledRegion() {
-    CompiledRegionPtr cr = st::makeRegion( R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200)foo");
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200)foo");
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
     assertEQ(cr->hivel, 22);
@@ -477,7 +476,7 @@ static void testCompiledRegion() {
 }
 
 static void testCompiledRegionInherit() {
-    CompiledRegionPtr cr = st::makeRegion(  R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo");
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo");
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
     assertEQ(cr->hivel, 22);
@@ -487,7 +486,7 @@ static void testCompiledRegionInherit() {
 }
 
 static void testCompiledRegionKey() {
-    CompiledRegionPtr cr = st::makeRegion(  R"foo(<region>key=32)foo");
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>key=32)foo");
     assertEQ(cr->lokey, 32);
     assertEQ(cr->hikey, 32);
 }
@@ -499,13 +498,13 @@ static void testCompiledRegionVel() {
 }
 
 static void testCompiledRegionVel2() {
-    CompiledRegionPtr cr = st::makeRegion( R"foo(<region>lovel=71)foo");
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>lovel=71)foo");
     assertEQ(cr->lovel, 71);
     assertEQ(cr->hivel, 127);
 }
 
 static void testCompiledRegionVel3() {
-    CompiledRegionPtr cr = st::makeRegion( R"foo(<region>hivel=59 lovel=29)foo");
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hivel=59 lovel=29)foo");
     assertEQ(cr->lovel, 29);
     assertEQ(cr->hivel, 59);
 }
@@ -829,7 +828,7 @@ static void testCompileMulPitchAndVelComplex1() {
     assertEQ(sampleIndicies.size(), 2);
 }
 
-static void  testCompileAmpegRelease() {
+static void testCompileAmpegRelease() {
     printf("\n----- static void testCompileAmpegRelease() \n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     const char* data = R"foo(
@@ -865,7 +864,6 @@ static void  testCompileAmpegRelease() {
     ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.ampeg_release, .001f);
- 
 }
 
 static void testCompileAmpVel() {
@@ -922,9 +920,8 @@ static void testCompileAmpVel() {
     params.midiVelocity = 64;
     ci->play(info, params, nullptr, 0);
     assert(info.valid);
-    assertClose(info.gain, .56, .01f);     //number gotten from known-good.
-                                            //but at least it's > .25 and < 1
-
+    assertClose(info.gain, .56, .01f);  //number gotten from known-good.
+                                        //but at least it's > .25 and < 1
 }
 
 static void testCompileMulPitchAndVelComplex2() {
@@ -1090,20 +1087,19 @@ static void testCompileSort() {
 }
 
 static void testSampleRate() {
-
     WaveLoader w;
     // TODO: change back to k18 orig when test is done
     w.addNextSample("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav");
-  
+
     w.load();
     auto x = w.getInfo(1);
     assert(x->valid);
     assertEQ(x->sampleRate, 48000);
-    assertEQ(x->numChannels, 1);    // loader already made mono
+    assertEQ(x->numChannels, 1);  // loader already made mono
 
     CompiledRegionPtr cr1 = st::makeRegion(R"foo(<region>sample=a key=60 seq_position=200)foo");
 
-//  SimpleVoicePlayer(CompiledRegionPtr reg, int midiPitch, int sampleIndex) :
+    //  SimpleVoicePlayer(CompiledRegionPtr reg, int midiPitch, int sampleIndex) :
 
     SimpleVoicePlayer simplePlayer(cr1, 60, 1);
 
@@ -1118,8 +1114,8 @@ static void testSampleRate() {
     assert(info.needsTranspose);
     assertClose(info.transposeAmt, expectedTranspose, .01);
 
-  //  bool needsTranspose = false;
-  //  float transposeAmt = 1;
+    //  bool needsTranspose = false;
+    //  float transposeAmt = 1;
 }
 
 void testx2() {

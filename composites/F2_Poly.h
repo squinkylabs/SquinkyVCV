@@ -45,6 +45,12 @@ public:
 };
 
 /**
+ * 2021 - re-boot
+ * mono 12 + lim:   9.02
+ * 12 no lim        8.9  
+ * 24+lim:          18.19
+ * 16ch             22.32    
+ * 
  * reduce unnecessary fc calcs:
  *  *  12+lim:      8.7   
  *  12, no lim:     8.7
@@ -189,7 +195,11 @@ private:
 
     float_4 processedRValue = -1;
 
-    Divider divn;
+    // Divider divn;
+    // default to 1/4 SR cv update, go on next one 
+    int stepNcounter = 3;
+    int stepNmax = 3;
+
     Divider divm;
     void stepn();
     void stepm();
@@ -214,9 +224,9 @@ private:
 
 template <class TBase>
 inline void F2_Poly<TBase>::init() {
-    divn.setup(4, [this]() {
-        this->stepn();
-    });
+  //  divn.setup(4, [this]() {
+  //      this->stepn();
+  //  });
     divm.setup(16, [this]() {
         this->stepm();
     });
@@ -236,6 +246,9 @@ inline void F2_Poly<TBase>::stepm() {
     setupModes();
     setupProcFunc();
     limiterEnabled_m = bool(std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
+
+    const bool hres = bool(.5f < std::round(F2_Poly<TBase>::params[CV_UPDATE_FREQ].value));
+    stepNmax = hres ? 0 : 3;
 }
 
 template <class TBase>
@@ -376,15 +389,23 @@ inline void F2_Poly<TBase>::setupProcFunc() {
     }
 }
 
+
+
 template <class TBase>
 inline void F2_Poly<TBase>::stepn() {
+    ++stepNcounter;
+    if (stepNcounter <= stepNmax) {
+        return;
+    }
+    stepNcounter = 0;
     setupFreq();
 }
 
 template <class TBase>
 inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args) {
     divm.step();
-    divn.step();
+   // divn.step();
+    stepn();
     assert(oversample == 4);
     assert(procFun);
     (this->*procFun)(args);
