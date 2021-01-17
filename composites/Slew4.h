@@ -2,6 +2,7 @@
 #pragma once
 
 #include <assert.h>
+
 #include <memory>
 
 #include "Divider.h"
@@ -10,15 +11,14 @@
 #include "ObjectCache.h"
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
 template <class TBase>
-class Slew4Description : public IComposite
-{
+class Slew4Description : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -30,16 +30,12 @@ public:
  * 
  */
 template <class TBase>
-class Slew4 : public TBase
-{
+class Slew4 : public TBase {
 public:
-
-    Slew4(Module * module) : TBase(module)
-    {
+    Slew4(Module* module) : TBase(module) {
     }
 
-    Slew4() : TBase()
-    {
+    Slew4() : TBase() {
     }
 
     /**
@@ -50,16 +46,14 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         PARAM_RISE,
         PARAM_FALL,
         PARAM_LEVEL,
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         INPUT_TRIGGER0,
         INPUT_TRIGGER1,
         INPUT_TRIGGER2,
@@ -81,8 +75,7 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         OUTPUT0,
         OUTPUT1,
         OUTPUT2,
@@ -102,15 +95,13 @@ public:
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<Slew4Description<TBase>>();
     }
 
@@ -119,16 +110,13 @@ public:
      */
     void step() override;
 
-    
-    void onSampleRateChange() override
-    {
+    void onSampleRateChange() override {
         knobToFilterL = makeLPFDirectFilterLookup<float>(this->engineGetSampleTime(), 4);
     }
 
 private:
-
     MultiLag<8> lag;
-    std::shared_ptr <LookupTableParams<float>> knobToFilterL;
+    std::shared_ptr<LookupTableParams<float>> knobToFilterL;
     Divider divider;
 
     void updateKnobs();
@@ -137,25 +125,21 @@ private:
     std::shared_ptr<LookupTableParams<float>> audioTaper =
         ObjectCache<float>::getAudioTaper();
     float _outputLevel = 0;
-
-
 };
 
 template <class TBase>
-inline void Slew4<TBase>::init()
-{
-    divider.setup(4, [this](){
+inline void Slew4<TBase>::init() {
+    divider.setup(4, [this]() {
         updateKnobs();
     });
-    
+
     onSampleRateChange();
     lag.setAttack(.1f);
     lag.setRelease(.0001f);
 }
 
 template <class TBase>
-inline void Slew4<TBase>::updateKnobs()
-{
+inline void Slew4<TBase>::updateKnobs() {
     const float combinedA = lin(
         TBase::inputs[INPUT_RISE].getVoltage(0),
         TBase::params[PARAM_RISE].value,
@@ -173,26 +157,24 @@ inline void Slew4<TBase>::updateKnobs()
         lag.setEnable(false);
     } else {
         lag.setEnable(true);
-    #endif
+#endif
 
     const float lA = LookupTable<float>::lookup(*knobToFilterL, combinedA);
-        lag.setAttackL(lA);
-        const float lR = LookupTable<float>::lookup(*knobToFilterL, combinedR);
-        lag.setReleaseL(lR);
+    lag.setAttackL(lA);
+    const float lR = LookupTable<float>::lookup(*knobToFilterL, combinedR);
+    lag.setReleaseL(lR);
 
     const float knob = TBase::params[PARAM_LEVEL].value;
     _outputLevel = LookupTable<float>::lookup(*audioTaper, knob, false);
 }
 
-
 template <class TBase>
-inline void Slew4<TBase>::step()
-{
+inline void Slew4<TBase>::step() {
     divider.step();
     // get input to slews
     float slewInput[8];
     float triggerIn = 0;
-    for (int i=0; i<8; ++i) {
+    for (int i = 0; i < 8; ++i) {
         // if input is patched, it becomes the new normaled input;
         const bool bPatched = TBase::inputs[i + INPUT_TRIGGER0].isConnected();
         if (bPatched) {
@@ -204,17 +186,17 @@ inline void Slew4<TBase>::step()
 
     // clock the slew
     lag.step(slewInput);
-   
+
     // send slew to output
     float sum = 0;
-    for (int i=0; i<8; ++i) {
+    for (int i = 0; i < 8; ++i) {
         //if audio in hooked up, then output[n] = input[n] * lag
         // else output = lag
-        float inputValue = 10.f;   
+        float inputValue = 10.f;
 
         if (TBase::inputs[i + INPUT_AUDIO0].isConnected()) {
             inputValue = TBase::inputs[i + INPUT_AUDIO0].getVoltage(0);
-        } 
+        }
         TBase::outputs[i + OUTPUT0].setVoltage(lag.get(i) * inputValue * .1f, 0);
         sum += TBase::outputs[i + OUTPUT0].getVoltage(0);
 
@@ -227,14 +209,12 @@ inline void Slew4<TBase>::step()
 }
 
 template <class TBase>
-int Slew4Description<TBase>::getNumParams()
-{
+int Slew4Description<TBase>::getNumParams() {
     return Slew4<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config Slew4Description<TBase>::getParam(int i)
-{
+inline IComposite::Config Slew4Description<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case Slew4<TBase>::PARAM_RISE:

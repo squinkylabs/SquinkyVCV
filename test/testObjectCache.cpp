@@ -217,6 +217,19 @@ static void testLPF()
     assert(f4);
 }
 
+template <typename T>
+static void testVelocity()
+{
+    // don't need thia?
+    #if 0
+    auto vel = ObjectCache<T>::getVelocityLookup();
+    for (int i = 1; i < 128; ++i) {
+        assert(false);
+    }
+
+#endif
+}
+
 
 template <typename T>
 static void test()
@@ -231,6 +244,7 @@ static void test()
     testTanh5<T>();
     testExp2Ex<T>();
     testLPF<T>();
+    testVelocity<T>();
 }
 
 void testObjectCache()

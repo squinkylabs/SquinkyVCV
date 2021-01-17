@@ -1,22 +1,23 @@
 
 #pragma once
 
+#include <random>
+
+#include "BiquadFilter.h"
+#include "BiquadParams.h"
+#include "BiquadState.h"
 #include "ButterworthFilterDesigner.h"
 #include "Decimator.h"
 #include "GraphicEq.h"
-#include "LowpassFilter.h"
-#include "BiquadParams.h"
-#include "BiquadState.h"
-#include "BiquadFilter.h"
-#include "ObjectCache.h"
 #include "IComposite.h"
-#include <random>
+#include "LowpassFilter.h"
+#include "ObjectCache.h"
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
 /**
@@ -61,34 +62,27 @@ using Module = ::rack::engine::Module;
  */
 
 template <class TBase>
-class LFNDescription : public IComposite
-{
+class LFNDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
 
 template <class TBase>
-class LFN : public TBase
-{
+class LFN : public TBase {
 public:
-
-    LFN(Module * module) : TBase(module)
-    {
+    LFN(Module* module) : TBase(module) {
     }
-    LFN() : TBase()
-    {
+    LFN() : TBase() {
     }
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<LFNDescription<TBase>>();
     }
 
-    void setSampleTime(float time)
-    {
+    void setSampleTime(float time) {
         reciprocalSampleRate = time;
         updateLPF();
     }
@@ -101,8 +95,7 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         EQ0_PARAM,
         EQ1_PARAM,
         EQ2_PARAM,
@@ -113,8 +106,7 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         EQ0_INPUT,
         EQ1_INPUT,
         EQ2_INPUT,
@@ -123,14 +115,12 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
@@ -139,14 +129,12 @@ public:
      */
     void step() override;
 
-    float getBaseFrequency() const
-    {
+    float getBaseFrequency() const {
         return baseFrequency;
     }
 
-    bool isXLFN() const
-    {
-        return  TBase::params[XLFN_PARAM].value > .5;
+    bool isXLFN() const {
+        return TBase::params[XLFN_PARAM].value > .5;
     }
 
     /**
@@ -176,7 +164,7 @@ private:
      */
     float baseFrequency = 1;
 
-   /**
+    /**
     * The last value baked by the LPF filter calculation
     * done on the UI thread.
     */
@@ -186,9 +174,8 @@ private:
     std::default_random_engine generator{57};
     std::normal_distribution<double> distribution{-1.0, 1.0};
 
-    float noise()
-    {
-        return  (float) distribution(generator);
+    float noise() {
+        return (float)distribution(generator);
     }
 
     int controlUpdateCount = 0;
@@ -204,52 +191,48 @@ private:
      * map knob range from .1 Hz to 2.0 Hz
      */
     std::function<double(double)> rangeFunc =
-    {AudioMath::makeFunc_Exp(-5, 5, .1, 2)};
+        {AudioMath::makeFunc_Exp(-5, 5, .1, 2)};
 
-/**
+    /**
  * Audio taper for the EQ gains. Arbitrary max value selected
  * to give "good" output level.
  */
     AudioMath::SimpleScaleFun<float> gainScale =
-    {AudioMath::makeSimpleScalerAudioTaper(0, 35)};
+        {AudioMath::makeSimpleScalerAudioTaper(0, 35)};
 };
 
-
-
 template <class TBase>
-int LFNDescription<TBase>::getNumParams()
-{
+int LFNDescription<TBase>::getNumParams() {
     return LFN<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config LFNDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config LFNDescription<TBase>::getParam(int i) {
     const float gmin = -5;
     const float gmax = 5;
     const float gdef = 0;
     Config ret(0, 1, 0, "");
-    switch(i) {
+    switch (i) {
         case LFN<TBase>::EQ0_PARAM:
-            ret = { gmin, gmax, gdef, "Low freq mix"};
+            ret = {gmin, gmax, gdef, "Low freq mix"};
             break;
         case LFN<TBase>::EQ1_PARAM:
-            ret = { gmin, gmax, gdef, "Mid-low freq fix"};
+            ret = {gmin, gmax, gdef, "Mid-low freq fix"};
             break;
         case LFN<TBase>::EQ2_PARAM:
-            ret = { gmin, gmax, gdef, "Mid freq mix"};
+            ret = {gmin, gmax, gdef, "Mid freq mix"};
             break;
         case LFN<TBase>::EQ3_PARAM:
-            ret = { gmin, gmax, gdef, "Mid-high freq mix"};
+            ret = {gmin, gmax, gdef, "Mid-high freq mix"};
             break;
         case LFN<TBase>::EQ4_PARAM:
-            ret = { gmin, gmax, gdef, "High freq mix"};
+            ret = {gmin, gmax, gdef, "High freq mix"};
             break;
         case LFN<TBase>::FREQ_RANGE_PARAM:
-            ret = {  -5, 5, 0, "Base frequency"};
+            ret = {-5, 5, 0, "Base frequency"};
             break;
         case LFN<TBase>::XLFN_PARAM:
-            ret = { 0, 1, 0, "Extra low frequency"};
+            ret = {0, 1, 0, "Extra low frequency"};
             break;
         default:
             assert(false);
@@ -258,11 +241,9 @@ inline IComposite::Config LFNDescription<TBase>::getParam(int i)
 }
 
 template <class TBase>
-inline void LFN<TBase>::pollForChangeOnUIThread()
-{
+inline void LFN<TBase>::pollForChangeOnUIThread() {
     if ((lastBaseFrequencyParamValue != TBase::params[FREQ_RANGE_PARAM].value) ||
         (lastXLFMParamValue != TBase::params[XLFN_PARAM].value)) {
-
         lastBaseFrequencyParamValue = TBase::params[FREQ_RANGE_PARAM].value;
         lastXLFMParamValue = TBase::params[XLFN_PARAM].value;
 
@@ -271,19 +252,17 @@ inline void LFN<TBase>::pollForChangeOnUIThread()
             baseFrequency /= 10.f;
         }
 
-        updateLPF();         // now get the filters updated
+        updateLPF();  // now get the filters updated
     }
 }
 
 template <class TBase>
-inline void LFN<TBase>::init()
-{
+inline void LFN<TBase>::init() {
     updateLPF();
 }
 
 template <class TBase>
-inline void LFN<TBase>::updateLPF()
-{
+inline void LFN<TBase>::updateLPF() {
     assert(reciprocalSampleRate > 0);
     // decimation must be 100hz (what our EQ is designed at)
     // divided by base.
@@ -300,8 +279,7 @@ inline void LFN<TBase>::updateLPF()
 }
 
 template <class TBase>
-inline void LFN<TBase>::step()
-{
+inline void LFN<TBase>::step() {
     // Let's only check the inputs every 4 samples. Still plenty fast, but
     // get the CPU usage down really far.
     if (controlUpdateCount++ > 4) {
@@ -325,6 +303,5 @@ inline void LFN<TBase>::step()
         decimator.acceptData(z);
     }
 
-    TBase::outputs[OUTPUT].setVoltage((float) x, 0);
+    TBase::outputs[OUTPUT].setVoltage((float)x, 0);
 }
-

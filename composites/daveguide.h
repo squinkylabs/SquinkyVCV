@@ -4,38 +4,30 @@
 #include "FractionalDelay.h"
 #include "ObjectCache.h"
 
-
 template <class TBase>
-class DaveguideDescription : public IComposite
-{
+class DaveguideDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
 
 template <class TBase>
-class Daveguide : public TBase
-{
+class Daveguide : public TBase {
 public:
-    Daveguide(Module * module) : TBase(module), delay(44100)
-    {
-       // init();
+    Daveguide(Module* module) : TBase(module), delay(44100) {
+        // init();
     }
-    Daveguide() : TBase(), delay(44100)
-    {
-       // init();
+    Daveguide() : TBase(), delay(44100) {
+        // init();
     }
 
-    
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<DaveguideDescription<TBase>>();
     }
 
-    enum ParamIds
-    {
+    enum ParamIds {
         OCTAVE_PARAM,
         TUNE_PARAM,
         DECAY_PARAM,
@@ -43,21 +35,18 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         AUDIO_INPUT,
         CV_INPUT,
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
@@ -67,24 +56,21 @@ public:
     void step() override;
 
     float _freq = 0;
+
 private:
     RecirculatingFractionalDelay delay;
 
     //static std::function<double(double)> makeFunc_Exp(double xMin, double xMax, double yMin, double yMax);
 
-   // std::function<double(double)> delayScale = AudioMath::makeFunc_Exp(-5, 5, 1, 500);
+    // std::function<double(double)> delayScale = AudioMath::makeFunc_Exp(-5, 5, 1, 500);
 
-  //  AudioMath::ScaleFun<float> feedbackScale = AudioMath::makeLinearScaler(0.f, 1.f);
+    //  AudioMath::ScaleFun<float> feedbackScale = AudioMath::makeLinearScaler(0.f, 1.f);
 
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
-
-
 };
 
-
 template <class TBase>
-void  Daveguide<TBase>::step()
-{
+void Daveguide<TBase>::step() {
 #if 0
     // make delay knob to from 1 ms. to 1000
     double delayMS = delayScale(TBase::params[PARAM_DELAY].value);
@@ -103,7 +89,7 @@ void  Daveguide<TBase>::step()
     float pitch = 1.0f + roundf(TBase::params[OCTAVE_PARAM].value) + TBase::params[TUNE_PARAM].value / 12.0f;
     pitch += TBase::inputs[CV_INPUT].getVoltage(0);
 
-    const float q = float(log2(261.626));       // move up to pitch range of even vco
+    const float q = float(log2(261.626));  // move up to pitch range of even vco
     pitch += q;
     _freq = expLookup(pitch);
     const float delaySeconds = 1.0f / _freq;
@@ -121,11 +107,8 @@ void  Daveguide<TBase>::step()
     TBase::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
 }
 
-
-
 template <class TBase>
-int DaveguideDescription<TBase>::getNumParams()
-{
+int DaveguideDescription<TBase>::getNumParams() {
     return Daveguide<TBase>::NUM_PARAMS;
 }
 
@@ -136,21 +119,20 @@ int DaveguideDescription<TBase>::getNumParams()
         FC_PARAM,
 */
 template <class TBase>
-inline IComposite::Config DaveguideDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config DaveguideDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case Daveguide<TBase>::OCTAVE_PARAM:
             ret = {-5, 5, 0, "Octave"};
             break;
         case Daveguide<TBase>::TUNE_PARAM:
-            ret = { -5, 5, 0, "Tune" };
+            ret = {-5, 5, 0, "Tune"};
             break;
         case Daveguide<TBase>::DECAY_PARAM:
-            ret = { -5, 5, 0, "Decay" };
+            ret = {-5, 5, 0, "Decay"};
             break;
         case Daveguide<TBase>::FC_PARAM:
-            ret = { -5, 5, 0, "Fc" };
+            ret = {-5, 5, 0, "Fc"};
             break;
         default:
             assert(false);

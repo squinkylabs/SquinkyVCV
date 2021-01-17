@@ -71,75 +71,65 @@ float -> float_4 isn't free.
  */
 
 #include <assert.h>
+
 #include <memory>
 #include <vector>
 
 //#ifndef _MSC_VER
 #if 1
 #include "ADSR16.h"
-#include "WVCODsp.h"
+#include "Divider.h"
+#include "IComposite.h"
 #include "LookupTable.h"
 #include "ObjectCache.h"
-
-#include "IComposite.h"
-
-#include "Divider.h"
+#include "WVCODsp.h"
 
 using float_4 = rack::simd::float_4;
 
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
-    inline float clamp(float v, float lo, float hi)
-    {
-        assert(lo < hi);
-        return std::min(hi, std::max(v, lo));
-    }
+inline float clamp(float v, float lo, float hi) {
+    assert(lo < hi);
+    return std::min(hi, std::max(v, lo));
 }
+}  // namespace std
 #endif
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 
 using Module = ::rack::engine::Module;
 
 template <class TBase>
-class WVCODescription : public IComposite
-{
+class WVCODescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
 
-class TriFormula
-{
+class TriFormula {
 public:
-    static void getLeftA(float_4& outA, float_4 k)
-    {
+    static void getLeftA(float_4& outA, float_4 k) {
         simd_assertLT(k, float_4(1));
         simd_assertGT(k, float_4(0));
         outA = 1 / k;
     }
-    static void getRightAandB(float_4& outA, float_4& outB, float_4 k)
-    {
+    static void getRightAandB(float_4& outA, float_4& outB, float_4 k) {
         outA = 1 / (k - 1);
         outB = -outA;
     }
 };
 
 template <class TBase>
-class WVCO : public TBase
-{
+class WVCO : public TBase {
 public:
-
-    WVCO(Module * module) : TBase(module)
-    {
+    WVCO(Module* module) : TBase(module) {
     }
-    WVCO() : TBase()
-    {
+    WVCO() : TBase() {
     }
 
     /**
@@ -150,8 +140,7 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         OCTAVE_PARAM,
         FREQUENCY_MULTIPLIER_PARAM,
         FINE_TUNE_PARAM,
@@ -160,25 +149,24 @@ public:
         WAVESHAPE_GAIN_PARAM,
         WAVE_SHAPE_PARAM,
         FEEDBACK_PARAM,
-        OUTPUT_LEVEL_PARAM,         // 8
+        OUTPUT_LEVEL_PARAM,  // 8
 
         ATTACK_PARAM,
         DECAY_PARAM,
         SUSTAIN_PARAM,
-        RELEASE_PARAM,              // 12
+        RELEASE_PARAM,  // 12
 
         ADSR_SHAPE_PARAM,
         ADSR_FBCK_PARAM,
         ADSR_OUTPUT_LEVEL_PARAM,
         ADSR_LFM_DEPTH_PARAM,
         SNAP_PARAM,
-        SNAP2_PARAM,                // This is unused now
-        PATCH_VERSION_PARAM,        // just for backwards compatibility with patch loading 19
+        SNAP2_PARAM,          // This is unused now
+        PATCH_VERSION_PARAM,  // just for backwards compatibility with patch loading 19
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         VOCT_INPUT,
         FM_INPUT,
         LINEAR_FM_INPUT,
@@ -190,21 +178,18 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         MAIN_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<WVCODescription<TBase>>();
     }
 
@@ -212,12 +197,12 @@ public:
      * Main processing entry point. Called every sample
      */
 #ifndef _MSC_VER
-     __attribute__((flatten))
+    __attribute__((flatten))
 #endif
-    void step() override;
+    void
+    step() override;
 
-    static std::vector<std::string> getWaveformNames()
-    {
+    static std::vector<std::string> getWaveformNames() {
         return {"Sine", "Wave folder", "Triangle<>Saw"};
     }
 
@@ -230,14 +215,14 @@ private:
     ADSR16 adsr;
 
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
-    std::shared_ptr<LookupTableParams<float>>  audioTaperLookupParams = ObjectCache<float>::getAudioTaper();
+    std::shared_ptr<LookupTableParams<float>> audioTaperLookupParams = ObjectCache<float>::getAudioTaper();
 
     // variables to stash processed knobs and other input
     // variables with _m suffix updated every m period
-    float_4 basePitch_m = 0;        // all the knobs, no cv. units are volts
-    int numChannels_m = 1;      // 1..16
-    int numBanks_m = 1;     // 1..4
-    float_4 depth_m;                // exp mode depth from knob
+    float_4 basePitch_m = 0;  // all the knobs, no cv. units are volts
+    int numChannels_m = 1;    // 1..16
+    int numBanks_m = 1;       // 1..4
+    float_4 depth_m;          // exp mode depth from knob
     float_4 baseFmDepth_m = 0;
     bool fmDepthConnected_m = false;
     bool feedbackConnected_m = false;
@@ -245,7 +230,7 @@ private:
     bool syncInputConnected_m = false;
 
     float_4 freqMultiplier_m = 1;
-    float baseShapeGain = 0;    // 0..1 -> re-do this!
+    float baseShapeGain = 0;  // 0..1 -> re-do this!
     float_4 baseFeedback_m = 0;
     float_4 baseOutputLevel_m = 1;  // 0..x
     float_4 baseOffset_m = 0;
@@ -279,22 +264,19 @@ private:
     void updateShapes_n();
 };
 
-
 template <class TBase>
-inline void WVCO<TBase>::init()
-{
-    adsr.setNumChannels(1);         // just to prime the pump, will write true value later
+inline void WVCO<TBase>::init() {
+    adsr.setNumChannels(1);  // just to prime the pump, will write true value later
     divn.setup(4, [this]() {
         stepn_lowerRate();
     });
-     divm.setup(16, [this]() {
+    divm.setup(16, [this]() {
         stepm();
     });
 }
 
 template <class TBase>
-inline float WVCO<TBase>::convertOldShapeGain(float old) const
-{
+inline float WVCO<TBase>::convertOldShapeGain(float old) const {
     std::function<double(double)> fi = AudioMath::makeFunc_InverseAudioTaper(-18);
 
     // run the current value through the inverse function to get the new value.
@@ -308,29 +290,27 @@ inline float WVCO<TBase>::convertOldShapeGain(float old) const
 }
 
 template <class TBase>
-inline void WVCO<TBase>::stepm()
-{
+inline void WVCO<TBase>::stepm() {
     numChannels_m = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
-    WVCO<TBase>::outputs[ WVCO<TBase>::MAIN_OUTPUT].setChannels(numChannels_m);
+    WVCO<TBase>::outputs[WVCO<TBase>::MAIN_OUTPUT].setChannels(numChannels_m);
 
     numBanks_m = numChannels_m / 4;
     if (numChannels_m > numBanks_m * 4) {
         numBanks_m++;
     }
 
-    float basePitch = -4.0f + roundf(TBase::params[OCTAVE_PARAM].value) +      
-        TBase::params[FINE_TUNE_PARAM].value / 12.0f;
+    float basePitch = -4.0f + roundf(TBase::params[OCTAVE_PARAM].value) +
+                      TBase::params[FINE_TUNE_PARAM].value / 12.0f;
 
-    const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
+    const float q = float(log2(261.626));  // move up to pitch range of EvenVCO
     basePitch += q;
     basePitch_m = float_4(basePitch);
 
     depth_m = .3f * LookupTable<float>::lookup(
-                *audioTaperLookupParams, 
-                TBase::params[FM_DEPTH_PARAM].value * .01f);
+                        *audioTaperLookupParams,
+                        TBase::params[FM_DEPTH_PARAM].value * .01f);
 
-
-    freqMultiplier_m =  float_4(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value)); 
+    freqMultiplier_m = float_4(std::round(TBase::params[FREQUENCY_MULTIPLIER_PARAM].value));
 
     baseFmDepth_m = float_4(WVCO<TBase>::params[LINEAR_FM_DEPTH_PARAM].value * .003f);
     {
@@ -347,12 +327,10 @@ inline void WVCO<TBase>::stepm()
     }
     {
         Port& syncInputPort = WVCO<TBase>::inputs[SYNC_INPUT];
-        syncInputConnected_m = syncInputPort.isConnected(); 
+        syncInputConnected_m = syncInputPort.isConnected();
     }
 
-  
-
-    int wfFromUI = (int) std::round(TBase::params[WAVE_SHAPE_PARAM].value);
+    int wfFromUI = (int)std::round(TBase::params[WAVE_SHAPE_PARAM].value);
     WVCODsp::WaveForm wf = WVCODsp::WaveForm(wfFromUI);
 
     baseShapeGain = TBase::params[WAVESHAPE_GAIN_PARAM].value / 100;
@@ -365,16 +343,15 @@ inline void WVCO<TBase>::stepm()
 
     const bool sync = TBase::inputs[SYNC_INPUT].isConnected();
 
-
-    for (int bank=0; bank < numBanks_m; ++bank) {
+    for (int bank = 0; bank < numBanks_m; ++bank) {
         dsp[bank].waveform = wf;
         dsp[bank].setSyncEnable(sync);
         dsp[bank].waveformOffset = baseOffset_m;
     }
 
     // these numbers here are just values found by experimenting - no math.
-    baseFeedback_m =  float_4(3.f * TBase::params[FEEDBACK_PARAM].value * 2.f / 1000.f);
-    baseOutputLevel_m =  float_4(TBase::params[OUTPUT_LEVEL_PARAM].value / 100.f);
+    baseFeedback_m = float_4(3.f * TBase::params[FEEDBACK_PARAM].value * 2.f / 1000.f);
+    baseOutputLevel_m = float_4(TBase::params[OUTPUT_LEVEL_PARAM].value / 100.f);
 
     // Sine, Fold, SawTri
     // find the correct offset and gains to apply the waveformat
@@ -386,10 +363,10 @@ inline void WVCO<TBase>::stepm()
             break;
         case WVCODsp::WaveForm::Fold:
             baseOffset_m = 0;
-            baseOutputLevel_m *=  (5.f * 5.f / 5.6f);
+            baseOutputLevel_m *= (5.f * 5.f / 5.6f);
             break;
         case WVCODsp::WaveForm::SawTri:
-            baseOffset_m = -.5f; 
+            baseOffset_m = -.5f;
             baseOutputLevel_m *= 10;
             break;
         default:
@@ -404,17 +381,16 @@ inline void WVCO<TBase>::stepm()
     if (snap || snap2) {
         k = .6f;
     }
-     if (snap3 || (snap && snap2)) {
+    if (snap3 || (snap && snap2)) {
         k = .3f;
     }
- 
+
     adsr.setParams(
         TBase::params[ATTACK_PARAM].value * .01f,
         TBase::params[DECAY_PARAM].value * .01f,
         TBase::params[SUSTAIN_PARAM].value * .01f,
         TBase::params[RELEASE_PARAM].value * .01f,
-        k
-    ) ;
+        k);
 
     adsr.setNumChannels(numChannels_m);
 
@@ -425,43 +401,40 @@ inline void WVCO<TBase>::stepm()
 }
 
 template <class TBase>
-inline void WVCO<TBase>::updateFreq_n()
-{
-    for (int bank=0; bank < numBanks_m; ++bank) {
-        float_4 freq=0;
+inline void WVCO<TBase>::updateFreq_n() {
+    for (int bank = 0; bank < numBanks_m; ++bank) {
+        float_4 freq = 0;
 
         const int baseChannel = 4 * bank;
 
         float_4 pitch = basePitch_m;
         // use SIMD here?
-        Port& v8Port = TBase::inputs[VOCT_INPUT]; 
+        Port& v8Port = TBase::inputs[VOCT_INPUT];
         pitch += v8Port.getPolyVoltageSimd<float_4>(baseChannel);
 
         Port& fmInputPort = TBase::inputs[FM_INPUT];
-        pitch += fmInputPort.getPolyVoltage(baseChannel) * depth_m; 
-        for (int i=0; i<4; ++i) { 
-             freq[i] = expLookup(pitch[i]);      
-        }       
+        pitch += fmInputPort.getPolyVoltage(baseChannel) * depth_m;
+        for (int i = 0; i < 4; ++i) {
+            freq[i] = expLookup(pitch[i]);
+        }
 
         freq *= freqMultiplier_m;
         float_4 time = rack::simd::clamp(freq * TBase::engineGetSampleTime(), -.5f, 0.5f);
         freq = time;
-    
+
         dsp[bank].normalizedFreq = freq / WVCODsp::oversampleRate;
     }
 }
 
 template <class TBase>
-inline void WVCO<TBase>::updateShapes_n()
-{
-    for (int bank=0; bank < numBanks_m; ++bank) {
+inline void WVCO<TBase>::updateShapes_n() {
+    for (int bank = 0; bank < numBanks_m; ++bank) {
         const int baseChannel = bank * 4;
 
-
         float_4 envMult = (enableAdsrShape) ? adsr.get(bank) : 1;
-        simd_assertLE( envMult, float_4(2));
-        simd_assertGE(envMult, float_4(0)); 
-       
+        simd_assertLE(envMult, float_4(2));
+        simd_assertGE(envMult, float_4(0));
+
         float_4 baseGain = baseShapeGain;
         Port& port = TBase::inputs[SHAPE_INPUT];
         if (port.isConnected()) {
@@ -470,7 +443,7 @@ inline void WVCO<TBase>::updateShapes_n()
             baseGain = rack::simd::clamp(baseGain, 0, 1);
         }
         float_4 correctedWaveShapeMultiplier = baseGain * envMult;
-        switch(dsp[bank].waveform) {
+        switch (dsp[bank].waveform) {
             case WVCODsp::WaveForm::Sine:
                 break;
             case WVCODsp::WaveForm::Fold:
@@ -483,9 +456,8 @@ inline void WVCO<TBase>::updateShapes_n()
         }
         dsp[bank].correctedWaveShapeMultiplier = correctedWaveShapeMultiplier;
 
-        assertLE( baseShapeGain, 1);
-        assertGE( baseShapeGain, 0);   
-
+        assertLE(baseShapeGain, 1);
+        assertGE(baseShapeGain, 0);
 
         // we could spit this triangle calc it we aren't triangle,
         // but it doesn't take very long.
@@ -510,15 +482,14 @@ inline void WVCO<TBase>::updateShapes_n()
 }
 
 template <class TBase>
-inline void WVCO<TBase>::stepn_lowerRate()
-{
-    updateFreq_n();    
+inline void WVCO<TBase>::stepn_lowerRate() {
+    updateFreq_n();
     updateShapes_n();
 }
 
 #ifndef _MSC_VER
 template <class TBase>
-inline void  __attribute__((flatten)) WVCO<TBase>::stepn_fullRate()
+inline void __attribute__((flatten)) WVCO<TBase>::stepn_fullRate()
 #else
 template <class TBase>
 inline void WVCO<TBase>::stepn_fullRate()
@@ -531,7 +502,7 @@ inline void WVCO<TBase>::stepn_fullRate()
     {
         // can do gates is lower rate (but it's no better)
         float_4 gates[4];
-        for (int i=0; i<4; ++i) {
+        for (int i = 0; i < 4; ++i) {
             Port& p = TBase::inputs[GATE_INPUT];
             float_4 g = p.getVoltageSimd<float_4>(i * 4);
             float_4 gate = (g > float_4(1));
@@ -541,15 +512,15 @@ inline void WVCO<TBase>::stepn_fullRate()
 
         adsr.step(gates, TBase::engineGetSampleTime());
     }
-    
+
     // ----------------------------------------------------------------------------
     // now update all the DSP params.
     // This is the new, cleaner version.
-    for (int bank=0; bank < numBanks_m; ++bank) {
-        
-        float_4 feedbackAmount = baseFeedback_m;;  
+    for (int bank = 0; bank < numBanks_m; ++bank) {
+        float_4 feedbackAmount = baseFeedback_m;
+        ;
         if (enableAdsrFeedback) {
-            feedbackAmount *= adsr.get(bank); 
+            feedbackAmount *= adsr.get(bank);
         }
         if (feedbackConnected_m) {
             Port& feedbackPort = WVCO<TBase>::inputs[FEEDBACK_INPUT];
@@ -559,18 +530,16 @@ inline void WVCO<TBase>::stepn_fullRate()
         dsp[bank].feedback = feedbackAmount;
 
         // TODO: add CV (use getNormalPolyVoltage)
-        dsp[bank].outputLevel = baseOutputLevel_m;    
+        dsp[bank].outputLevel = baseOutputLevel_m;
         if (enableAdsrLevel) {
             dsp[bank].outputLevel *= adsr.get(bank);
-        } 
+        }
     }
 }
 
-
-
 template <class TBase>
 #ifndef _MSC_VER
-inline void  __attribute__((flatten)) WVCO<TBase>::step()
+inline void __attribute__((flatten)) WVCO<TBase>::step()
 #else
 inline void WVCO<TBase>::step()
 #endif
@@ -584,16 +553,15 @@ inline void WVCO<TBase>::step()
 
     // this could even be moves out of the "every sample" loop
     if (!syncInputConnected_m && !fmInputConnected_m) {
-        for (int bank=0; bank < numBanks_m; ++bank) {
+        for (int bank = 0; bank < numBanks_m; ++bank) {
             const int baseChannel = 4 * bank;
             dsp[bank].fmInput = 0;
-            float_4 v =dsp[bank].step( float_4::zero());
+            float_4 v = dsp[bank].step(float_4::zero());
             WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
         }
     } else {
-
         // TODO: don't do this if fm input port not connected. sync also
-        for (int bank=0; bank < numBanks_m; ++bank) {
+        for (int bank = 0; bank < numBanks_m; ++bank) {
             const int baseChannel = 4 * bank;
             Port& fmInputPort = WVCO<TBase>::inputs[LINEAR_FM_INPUT];
             float_4 fmInput = fmInputPort.getPolyVoltageSimd<float_4>(baseChannel);
@@ -613,21 +581,19 @@ inline void WVCO<TBase>::step()
 
             Port& syncPort = WVCO<TBase>::inputs[SYNC_INPUT];
             const float_4 syncInput = syncPort.getPolyVoltageSimd<float_4>(baseChannel);
-            float_4 v = dsp[bank].step(syncInput); 
+            float_4 v = dsp[bank].step(syncInput);
             WVCO<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(v, baseChannel);
         }
     }
 }
 
 template <class TBase>
-inline int WVCODescription<TBase>::getNumParams()
-{
+inline int WVCODescription<TBase>::getNumParams() {
     return WVCO<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config WVCODescription<TBase>::getParam(int i)
-{
+inline IComposite::Config WVCODescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case WVCO<TBase>::OCTAVE_PARAM:
@@ -640,7 +606,7 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {-12.0f, 12.0f, 0, "Fine tune"};
             break;
         case WVCO<TBase>::FM_DEPTH_PARAM:
-         ret = {.0f, 100.0f, 0, "Frequency modulation"};
+            ret = {.0f, 100.0f, 0, "Frequency modulation"};
             break;
         case WVCO<TBase>::LINEAR_FM_DEPTH_PARAM:
             ret = {0, 100, 0, "Through-zero FM Depth"};
@@ -673,13 +639,13 @@ inline IComposite::Config WVCODescription<TBase>::getParam(int i)
             ret = {0, 1, 0, "ADSR->Shape"};
             break;
         case WVCO<TBase>::ADSR_FBCK_PARAM:
-         ret = {0, 1, 0, "ADSR->Feedback"};
+            ret = {0, 1, 0, "ADSR->Feedback"};
             break;
         case WVCO<TBase>::ADSR_OUTPUT_LEVEL_PARAM:
-         ret = {0, 1, 0, "ADSR->output Level"};
+            ret = {0, 1, 0, "ADSR->output Level"};
             break;
         case WVCO<TBase>::ADSR_LFM_DEPTH_PARAM:
-         ret = {0, 1, 0, "ADSR->LFM Depth"};
+            ret = {0, 1, 0, "ADSR->LFM Depth"};
             break;
         case WVCO<TBase>::SNAP_PARAM:
             ret = {0, 2, 0, "ADSR Snap"};

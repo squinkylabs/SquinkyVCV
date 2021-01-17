@@ -1,17 +1,18 @@
 
 #pragma once
 
-#include "ButterworthFilterDesigner.h"
-#include "Decimator.h"
-#include "LowpassFilter.h"
+#include <random>
+
+#include "BiquadFilter.h"
 #include "BiquadParams.h"
 #include "BiquadState.h"
-#include "BiquadFilter.h"
+#include "ButterworthFilterDesigner.h"
+#include "Decimator.h"
 #include "Divider.h"
-#include "ObjectCache.h"
 #include "IComposite.h"
+#include "LowpassFilter.h"
+#include "ObjectCache.h"
 #include "StateVariableFilter.h"
-#include <random>
 
 /**
  * Noise generator feeding a bandpass filter.
@@ -38,12 +39,10 @@
  * TODO:
  *      get the bandpass working a audio rates.
  */
-class LFNBChannel
-{
+class LFNBChannel {
 public:
-    void setSampleTime(float sampleTime)
-    {
-        float decimationDivisor = 100;          // only for Fc = 1;
+    void setSampleTime(float sampleTime) {
+        float decimationDivisor = 100;  // only for Fc = 1;
         designLPF(sampleTime, decimationDivisor);
         setupDecimator(decimationDivisor);
     }
@@ -51,42 +50,35 @@ public:
     /* with just noise, it's ok.
      * with decimated noise, it's ok (but blocky looking
      */
-    float step()
-    {
+    float step() {
         bool needsData;
         TButter x = decimator.clock(needsData);
         x = BiquadFilter<TButter>::run(x, lpfState, lpfParams);
         if (needsData) {
             double z = 50 * StateVariableFilter<double>::run(noise(), bpState, bpParams);
-            z /= sqrt(_fc);           // boost output at low freq. But this will over compensate! do we need log f here?
+            z /= sqrt(_fc);  // boost output at low freq. But this will over compensate! do we need log f here?
             z *= .007;
-            decimator.acceptData( float(z));
-
+            decimator.acceptData(float(z));
         }
         return float(x);
     }
 
-    void setFilter(float fc, float q)
-    {
+    void setFilter(float fc, float q) {
         bpParams.setFreq(fc);
         bpParams.setQ(q);
         _fc = fc;
     }
-    LFNBChannel()
-    {
+    LFNBChannel() {
         bpParams.setMode(StateVariableFilterParams<double>::Mode::BandPass);
     }
 
 private:
-
-    void designLPF(float sampleTime, float decimationDivisor)
-    {
-        const float lpFc = 50 * sampleTime;        // for now, let's try 100 hz. probably too high
+    void designLPF(float sampleTime, float decimationDivisor) {
+        const float lpFc = 50 * sampleTime;  // for now, let's try 100 hz. probably too high
         ButterworthFilterDesigner<TButter>::designThreePoleLowpass(
             lpfParams, lpFc);
     }
-    void setupDecimator(float decimationDivisor)
-    {
+    void setupDecimator(float decimationDivisor) {
         decimator.setDecimationRate(decimationDivisor);
     }
     ::Decimator decimator;
@@ -106,43 +98,34 @@ private:
 
     std::default_random_engine generator{57};
     std::normal_distribution<double> distribution{-1.0, 1.0};
-    float noise()
-    {
-        return  (float) distribution(generator);
+    float noise() {
+        return (float)distribution(generator);
     }
     float _fc = .1f;
 };
 
-
 template <class TBase>
-class LFNBDescription : public IComposite
-{
+class LFNBDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
 
 template <class TBase>
-class LFNB : public TBase
-{
+class LFNB : public TBase {
 public:
-
-    LFNB(Module * module) : TBase(module)
-    {
+    LFNB(Module* module) : TBase(module) {
     }
-    LFNB() : TBase()
-    {
+    LFNB() : TBase() {
     }
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<LFNBDescription<TBase>>();
     }
 
-    void onSampleRateChange() override
-    {
+    void onSampleRateChange() override {
         const float s = this->engineGetSampleTime();
         channels[0].setSampleTime(s);
         channels[1].setSampleTime(s);
@@ -156,8 +139,7 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         FC0_PARAM,
         FC1_PARAM,
         Q0_PARAM,
@@ -170,26 +152,23 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         FC0_INPUT,
         FC1_INPUT,
         Q0_INPUT,
         Q1_INPUT,
-     //   AUDIO0_INPUT,
-     //   AUDIO1_INPUT,
+        //   AUDIO0_INPUT,
+        //   AUDIO1_INPUT,
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         AUDIO0_OUTPUT,
         AUDIO1_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
@@ -198,14 +177,12 @@ public:
      */
     void step() override;
 
-    float getBaseFrequency() const
-    {
+    float getBaseFrequency() const {
         return baseFrequency;
     }
 
-    bool isXLFN() const
-    {
-        return  TBase::params[XLFNB_PARAM].value > .5;
+    bool isXLFN() const {
+        return TBase::params[XLFNB_PARAM].value > .5;
     }
 
     /**
@@ -215,7 +192,6 @@ public:
     void pollForChangeOnUIThread();
 
 private:
-
     LFNBChannel channels[2];
     Divider divider;
 
@@ -226,88 +202,78 @@ private:
      */
     float baseFrequency = 1;
 
-   /**
+    /**
     * The last value baked by the LPF filter calculation
     * done on the UI thread.
     */
     float lastBaseFrequencyParamValue = -100;
     float lastXLFMParamValue = -1;
 
-   // int controlUpdateCount = 0;
+    // int controlUpdateCount = 0;
 
     /**
      * Must be called after baseFrequency is updated.
      * re-calculates the butterworth lowpass.
      */
-  //  void updateLPF();
+    //  void updateLPF();
 
     /**
      * scaling function for the range / base frequency knob
      * map knob range from .1 Hz to 2.0 Hz
      */
     std::function<double(double)> rangeFunc =
-    {AudioMath::makeFunc_Exp(-5, 5, .1, 2)};
+        {AudioMath::makeFunc_Exp(-5, 5, .1, 2)};
 
-/**
+    /**
  * Audio taper for the EQ gains. Arbitrary max value selected
  * to give "good" output level.
  */
     AudioMath::SimpleScaleFun<float> gainScale =
-    {AudioMath::makeSimpleScalerAudioTaper(0, 35)};
+        {AudioMath::makeSimpleScalerAudioTaper(0, 35)};
 
-
-// new stuff
+    // new stuff
     std::shared_ptr<LookupTableParams<float>> expLookup = ObjectCache<float>::getExp2();
     AudioMath::ScaleFun<float> cvLinearScalar = AudioMath::makeLinearScaler(2.f, 14.f);
-    AudioMath::ScaleFun<float> qLinearScalar  = AudioMath::makeLinearScaler(1.f, 30.f);
+    AudioMath::ScaleFun<float> qLinearScalar = AudioMath::makeLinearScaler(1.f, 30.f);
 };
 
-
 template <class TBase>
-inline void LFNB<TBase>::pollForChangeOnUIThread()
-{
-
+inline void LFNB<TBase>::pollForChangeOnUIThread() {
 }
 
 template <class TBase>
-inline void LFNB<TBase>::init()
-{
+inline void LFNB<TBase>::init() {
     divider.setup(4, [this]() {
         stepn(4);
     });
 }
 
-
 template <class TBase>
-inline void LFNB<TBase>::stepn(int)
-{
+inline void LFNB<TBase>::stepn(int) {
     // update the BP filter base on fc,q knobs and cv
     float k = cvLinearScalar(
         TBase::inputs[FC0_INPUT].getVoltage(0),
         TBase::params[FC0_PARAM].value,
         TBase::params[FC0_TRIM_PARAM].value);
 
-    float fm =  LookupTable<float>::lookup(*expLookup, k); 
+    float fm = LookupTable<float>::lookup(*expLookup, k);
     float fc = fm / 4;
-
-   
 
     float q = qLinearScalar(
         TBase::inputs[Q0_INPUT].getVoltage(0),
         TBase::params[Q0_PARAM].value,
         TBase::params[Q0_TRIM_PARAM].value);
 
-     channels[0].setFilter(fc * this->engineGetSampleTime(), q);
+    channels[0].setFilter(fc * this->engineGetSampleTime(), q);
 }
 
 template <class TBase>
-inline void LFNB<TBase>::step()
-{
+inline void LFNB<TBase>::step() {
     divider.step();
 
     for (int i = 0; i < 2; ++i) {
         float x = channels[i].step();
-        TBase::outputs[AUDIO0_OUTPUT + i].setVoltage((float) x, 0);
+        TBase::outputs[AUDIO0_OUTPUT + i].setVoltage((float)x, 0);
     }
 #if 0
     // Let's only check the inputs every 4 samples. Still plenty fast, but
@@ -337,24 +303,20 @@ inline void LFNB<TBase>::step()
 #endif
 }
 
-
-
 template <class TBase>
-int LFNBDescription<TBase>::getNumParams()
-{
+int LFNBDescription<TBase>::getNumParams() {
     return LFNB<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config LFNBDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config LFNBDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
-    switch(i) {
+    switch (i) {
         case LFNB<TBase>::FC0_PARAM:
-            ret = { -5, 5, 0, "Frequency 1"};
+            ret = {-5, 5, 0, "Frequency 1"};
             break;
         case LFNB<TBase>::Q0_PARAM:
-            ret = { -5, 5, 0, "Filter Q 1"};
+            ret = {-5, 5, 0, "Filter Q 1"};
             break;
         case LFNB<TBase>::FC0_TRIM_PARAM:
             ret = {-5, 5, 0, "Frequency CV trim 1"};
@@ -375,12 +337,10 @@ inline IComposite::Config LFNBDescription<TBase>::getParam(int i)
             ret = {-5, 5, 0, "Filter Q CV trim 2"};
             break;
         case LFNB<TBase>::XLFNB_PARAM:
-            ret = { 0, 1, 0, "Extra low frequency"};
+            ret = {0, 1, 0, "Extra low frequency"};
             break;
         default:
             assert(false);
     }
     return ret;
 }
-
-

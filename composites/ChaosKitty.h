@@ -1,6 +1,13 @@
 
 #pragma once
 
+#include <assert.h>
+
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "AudioMath.h"
 #include "Chaos.h"
 #include "Divider.h"
@@ -8,42 +15,30 @@
 #include "IComposite.h"
 #include "ObjectCache.h"
 
-#include <assert.h>
-#include <algorithm>
-#include <memory>
-#include <string>
-#include <vector>
-
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
-
 template <class TBase>
-class ChaosKittyDescription : public IComposite
-{
+class ChaosKittyDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
 
 template <class TBase>
-class ChaosKitty : public TBase
-{
+class ChaosKitty : public TBase {
 public:
-
-    ChaosKitty(Module * module) : TBase(module)
-    {
+    ChaosKitty(Module* module) : TBase(module) {
     }
-    ChaosKitty() : TBase()
-    {
+    ChaosKitty() : TBase() {
     }
 
     static std::vector<std::string> typeLabels() {
-        return { "noise", "pitched", "circle" };
+        return {"noise", "pitched", "circle"};
     }
 
     /**
@@ -54,8 +49,7 @@ public:
     */
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         CHAOS_PARAM,
         CHAOS_TRIM_PARAM,
         CHAOS2_PARAM,
@@ -67,29 +61,25 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         CHAOS_INPUT,
         CHAOS2_INPUT,
         V8_INPUT,
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         MAIN_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<ChaosKittyDescription<TBase>>();
     }
 
@@ -101,7 +91,9 @@ public:
     void onSampleRateChange(float rate, float time);
 
 private:
-    enum class Types { SimpleChaoticNoise, ResonantNoise, Circle};
+    enum class Types { SimpleChaoticNoise,
+                       ResonantNoise,
+                       Circle };
     Types type = Types::SimpleChaoticNoise;
     SimpleChaoticNoise simpleChaoticNoise;
     ResonantNoise resonantNoise;
@@ -117,12 +109,11 @@ private:
     void updatePitch();
     float gainAdjust = 1;
 
-     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
+    std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
 };
 
 template <class TBase>
-inline void ChaosKitty<TBase>::onSampleRateChange(float rate, float time)
-{
+inline void ChaosKitty<TBase>::onSampleRateChange(float rate, float time) {
     assert(rate > 10000);
     assert(time < .1);
     simpleChaoticNoise.onSampleRateChange(rate, time);
@@ -131,8 +122,7 @@ inline void ChaosKitty<TBase>::onSampleRateChange(float rate, float time)
 }
 
 template <class TBase>
-inline void ChaosKitty<TBase>::init()
-{
+inline void ChaosKitty<TBase>::init() {
     divn.setup(4, [this] {
         this->stepn(divn.getDiv());
     });
@@ -152,9 +142,9 @@ inline void ChaosKitty<TBase>::stepm(int n) {
         gainAdjust = 5.f / 2.f;
     } else if (type == Types::Circle) {
         gainAdjust = 1;
-    }else {
+    } else {
         gainAdjust = 0;
-       // assert(false);
+        // assert(false);
     }
 }
 
@@ -163,25 +153,24 @@ inline void ChaosKitty<TBase>::stepn(int n) {
     type = Types(int(std::round(TBase::params[TYPE_PARAM].value)));
 
     const float chaosCV = TBase::inputs[CHAOS_INPUT].getVoltage(0) / 10.f;
-    const float g  = scaleChaos(
+    const float g = scaleChaos(
         chaosCV,
         TBase::params[CHAOS_PARAM].value,
         TBase::params[CHAOS_TRIM_PARAM].value);
     simpleChaoticNoise.setG(g);
     resonantNoise.setG(g);
-    
+
     float x = scaleKCircleMap(
         chaosCV,
         TBase::params[CHAOS_PARAM].value,
-        TBase::params[CHAOS_TRIM_PARAM].value);   
+        TBase::params[CHAOS_TRIM_PARAM].value);
     circleMap.setChaos(x);
 
     updatePitch();
 }
 
 template <class TBase>
-inline void ChaosKitty<TBase>::step()
-{
+inline void ChaosKitty<TBase>::step() {
     divm.step();
     divn.step();
     float output = gainAdjust;
@@ -191,27 +180,24 @@ inline void ChaosKitty<TBase>::step()
         output *= resonantNoise.step();
     } else if (type == Types::Circle) {
         output *= circleMap.step();
-    }else {
+    } else {
         output = 0;
     }
 
     output = std::min(output, 8.f);
     output = std::max(output, -8.f);
     TBase::outputs[MAIN_OUTPUT].setVoltage(output, 0);
-
-  
 }
 
 template <class TBase>
-inline void ChaosKitty<TBase>::updatePitch()
-{
-    float pitch = 1.0f + roundf(TBase::params[OCTAVE_PARAM].value); // + TBase::params[TUNE_PARAM].value / 12.0f;
+inline void ChaosKitty<TBase>::updatePitch() {
+    float pitch = 1.0f + roundf(TBase::params[OCTAVE_PARAM].value);  // + TBase::params[TUNE_PARAM].value / 12.0f;
     pitch += TBase::inputs[V8_INPUT].getVoltage(0);
 
-    const float q = float(std::log2(261.626));       // move up to pitch range of even vco
+    const float q = float(std::log2(261.626));  // move up to pitch range of even vco
     pitch += q;
     const float _freq = expLookup(pitch);
-    #if 0
+#if 0
     {
         static float lastFreq;
         if (_freq != lastFreq) {
@@ -219,7 +205,7 @@ inline void ChaosKitty<TBase>::updatePitch()
             lastFreq = _freq;
         }
     }
-    #endif
+#endif
 
     float brightness = TBase::params[BRIGHTNESS_PARAM].value;
     float resonance = TBase::params[RESONANCE_PARAM].value;
@@ -229,30 +215,28 @@ inline void ChaosKitty<TBase>::updatePitch()
 }
 
 template <class TBase>
-int ChaosKittyDescription<TBase>::getNumParams()
-{
+int ChaosKittyDescription<TBase>::getNumParams() {
     return ChaosKitty<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config ChaosKittyDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config ChaosKittyDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case ChaosKitty<TBase>::CHAOS_PARAM:
             ret = {-5, 5, 0, "Chaos"};
             break;
         case ChaosKitty<TBase>::CHAOS2_PARAM:
-            ret = { -5, 5, 0, "Chaos 2" };
+            ret = {-5, 5, 0, "Chaos 2"};
             break;
         case ChaosKitty<TBase>::CHAOS_TRIM_PARAM:
             ret = {-1, 1, 0, "Chaos trim"};
             break;
         case ChaosKitty<TBase>::CHAOS2_TRIM_PARAM:
-            ret = { -1, 1, 0, "Chaos 2 trim" };
+            ret = {-1, 1, 0, "Chaos 2 trim"};
             break;
         case ChaosKitty<TBase>::TYPE_PARAM:
-            ret = { 0, 2, 0, "type" };
+            ret = {0, 2, 0, "type"};
             break;
         case ChaosKitty<TBase>::OCTAVE_PARAM:
             ret = {-5, 5, 0, "octave"};
@@ -268,5 +252,3 @@ inline IComposite::Config ChaosKittyDescription<TBase>::getParam(int i)
     }
     return ret;
 }
-
-

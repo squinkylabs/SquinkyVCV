@@ -4,27 +4,22 @@
 #include "IComposite.h"
 
 template <class TBase>
-class FunDescription : public IComposite
-{
+class FunDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
 
 template <class TBase>
-class FunVCOComposite : public TBase
-{
+class FunVCOComposite : public TBase {
 public:
-    FunVCOComposite()
-    {
+    FunVCOComposite() {
         init();
     }
-    FunVCOComposite(Module * module) : TBase(module)
-    {
+    FunVCOComposite(Module* module) : TBase(module) {
         init();
     }
-    enum ParamIds
-    {
+    enum ParamIds {
         MODE_PARAM,
         SYNC_PARAM,
         FREQ_PARAM,
@@ -34,42 +29,36 @@ public:
         PWM_PARAM,
         NUM_PARAMS
     };
-    enum InputIds
-    {
+    enum InputIds {
         PITCH_INPUT,
         FM_INPUT,
         SYNC_INPUT,
         PW_INPUT,
         NUM_INPUTS
     };
-    enum OutputIds
-    {
+    enum OutputIds {
         SIN_OUTPUT,
         TRI_OUTPUT,
         SAW_OUTPUT,
         SQR_OUTPUT,
         NUM_OUTPUTS
     };
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<FunDescription<TBase>>();
     }
 
     void step() override;
-    void init()
-    {
+    void init() {
         oscillator.init();
     }
 
-    void setSampleRate(float rate)
-    {
+    void setSampleRate(float rate) {
         oscillator.sampleTime = 1.f / rate;
     }
 
@@ -81,18 +70,15 @@ private:
 #endif
 };
 
-
 template <class TBase>
-int FunDescription<TBase>::getNumParams()
-{
+int FunDescription<TBase>::getNumParams() {
     return FunVCOComposite<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config FunDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config FunDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
-    switch(i) {
+    switch (i) {
         case FunVCOComposite<TBase>::MODE_PARAM:
             ret = {0.0f, 1.0f, 1.0f, "Analog/digital mode"};
             break;
@@ -120,10 +106,8 @@ inline IComposite::Config FunDescription<TBase>::getParam(int i)
     return ret;
 }
 
-
 template <class TBase>
-inline void FunVCOComposite<TBase>::step()
-{
+inline void FunVCOComposite<TBase>::step() {
     oscillator.analog = TBase::params[MODE_PARAM].value > 0.0f;
     oscillator.soft = TBase::params[SYNC_PARAM].value <= 0.0f;
 
@@ -134,7 +118,6 @@ inline void FunVCOComposite<TBase>::step()
     }
 
     oscillator.setPitch(TBase::params[FREQ_PARAM].value, pitchFine + pitchCv);
-
 
     oscillator.setPulseWidth(TBase::params[PW_PARAM].value + TBase::params[PWM_PARAM].value * TBase::inputs[PW_INPUT].getVoltage(0) / 10.0f);
     oscillator.syncEnabled = TBase::inputs[SYNC_INPUT].isConnected();
@@ -156,5 +139,4 @@ inline void FunVCOComposite<TBase>::step()
         TBase::outputs[SAW_OUTPUT].setVoltage(5.0f * oscillator.saw(), 0);
     if (TBase::outputs[SQR_OUTPUT].isConnected())
         TBase::outputs[SQR_OUTPUT].setVoltage(5.0f * oscillator.sqr(), 0);
-
 }

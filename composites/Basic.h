@@ -8,24 +8,22 @@
 //#include "engine/Port.hpp"
 
 #include <assert.h>
+
 #include <memory>
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
-
 template <class TBase>
-class BasicDescription : public IComposite
-{
+class BasicDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
-
 
 /**
  * new mod dispatcher, moved pitch delta detect out of VCO
@@ -71,12 +69,9 @@ public:
  *      1 saw, 6.2
  */
 template <class TBase>
-class Basic : public TBase
-{
+class Basic : public TBase {
 public:
-
-    enum class Waves
-    {
+    enum class Waves {
         SIN,
         TRI,
         SAW,
@@ -84,14 +79,12 @@ public:
         EVEN,
         SIN_CLEAN,
         TRI_CLEAN,
-        END     // just a marker
+        END  // just a marker
     };
 
-    Basic(Module * module) : TBase(module)
-    {
+    Basic(Module* module) : TBase(module) {
     }
-    Basic() : TBase()
-    {
+    Basic() : TBase() {
     }
 
     /**
@@ -104,8 +97,7 @@ public:
 
     static std::string getLabel(Waves);
 
-    enum ParamIds
-    {
+    enum ParamIds {
         OCTAVE_PARAM,
         SEMITONE_PARAM,
         FINE_PARAM,
@@ -116,29 +108,25 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         VOCT_INPUT,
         PWM_INPUT,
         FM_INPUT,
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         MAIN_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<BasicDescription<TBase>>();
     }
 
@@ -150,13 +138,13 @@ public:
 private:
     BasicVCO vcos[4];
     float_4 lastPitches[4] = {-100, -100, -100, -100};
-    int numChannels_m = 1;      // 1..16
+    int numChannels_m = 1;  // 1..16
     int numBanks_m = 0;
     float basePitch_m = 0;
     float basePitchMod_m = 0;
     float basePw_m = 0;
     float basePwm_m = 0;
-    
+
     BasicVCO::processFunction pProcess = nullptr;
     std::shared_ptr<LookupTableParams<float>> bipolarAudioLookup = ObjectCache<float>::getBipolarAudioTaper();
 
@@ -167,38 +155,43 @@ private:
     void stepm();
     void nullFunc() {}
 
-    using  processFunction = void (Basic<TBase>::*)();
+    using processFunction = void (Basic<TBase>::*)();
     processFunction updatePwmFunc = &Basic<TBase>::nullFunc;
     processFunction updatePitchFunc = &Basic<TBase>::nullFunc;
 
     void _updatePwm();
-     __attribute__((flatten))
-    void _updatePitch();
+    __attribute__((flatten)) void _updatePitch();
     void _updatePitchNoFM();
     void updateBasePitch();
     void updateBasePwm();
 };
 
-
 template <class TBase>
-inline std::string Basic<TBase>::getLabel(Waves wf)
-{
-    switch(wf) {
-        case Waves::SIN: return "sine";
-        case Waves::TRI: return "tri";
-        case Waves::SAW: return "saw";
-        case Waves::SQUARE: return "square";
-        case Waves::EVEN: return "even";
-        case Waves::SIN_CLEAN: return "sine clean";
-        case Waves::TRI_CLEAN: return "tri clean";
+inline std::string Basic<TBase>::getLabel(Waves wf) {
+    switch (wf) {
+        case Waves::SIN:
+            return "sine";
+        case Waves::TRI:
+            return "tri";
+        case Waves::SAW:
+            return "saw";
+        case Waves::SQUARE:
+            return "square";
+        case Waves::EVEN:
+            return "even";
+        case Waves::SIN_CLEAN:
+            return "sine clean";
+        case Waves::TRI_CLEAN:
+            return "tri clean";
         case Waves::END:
-        default:  assert(false); return "unk";
+        default:
+            assert(false);
+            return "unk";
     }
 }
 
 template <class TBase>
-inline void Basic<TBase>::init()
-{
+inline void Basic<TBase>::init() {
     divn.setup(4, [this]() {
         this->stepn();
     });
@@ -211,71 +204,66 @@ inline void Basic<TBase>::init()
 }
 
 template <class TBase>
-inline void Basic<TBase>::stepm()
-{
+inline void Basic<TBase>::stepm() {
     numChannels_m = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
     Basic<TBase>::outputs[MAIN_OUTPUT].setChannels(numChannels_m);
 
     numBanks_m = (numChannels_m / 4);
-    numBanks_m +=((numChannels_m %4) == 0) ? 0 : 1;
+    numBanks_m += ((numChannels_m % 4) == 0) ? 0 : 1;
 
-    auto wf = BasicVCO::Waveform((int) std::round(TBase::params[WAVEFORM_PARAM].value));
+    auto wf = BasicVCO::Waveform((int)std::round(TBase::params[WAVEFORM_PARAM].value));
     pProcess = vcos[0].getProcPointer(wf);
     updateBasePitch();
     updateBasePwm();
 }
 
 template <class TBase>
-inline void Basic<TBase>::updateBasePwm()
-{
+inline void Basic<TBase>::updateBasePwm() {
     auto wf = BasicVCO::Waveform((int)TBase::params[WAVEFORM_PARAM].value);
     if (wf != BasicVCO::Waveform::SQUARE) {
-        updatePwmFunc= &Basic<TBase>::nullFunc;
+        updatePwmFunc = &Basic<TBase>::nullFunc;
         return;
     }
     updatePwmFunc = &Basic<TBase>::_updatePwm;
-    
+
     // 0..1
     basePw_m = Basic<TBase>::params[PW_PARAM].value / 100.f;
 
     // -1..1
     auto rawTrim = Basic<TBase>::params[PWM_PARAM].value / 100.f;
     auto taperedTrim = LookupTable<float>::lookup(*bipolarAudioLookup, rawTrim);
-    basePwm_m = taperedTrim; 
+    basePwm_m = taperedTrim;
 }
 
 template <class TBase>
-inline void Basic<TBase>::updateBasePitch()
-{
+inline void Basic<TBase>::updateBasePitch() {
     const bool connected = Basic<TBase>::inputs[FM_INPUT].isConnected();
     if (connected) {
-      //  updatePitchFunc  =   this->_updatePitch;
-      updatePitchFunc = &Basic<TBase>::_updatePitch;
+        //  updatePitchFunc  =   this->_updatePitch;
+        updatePitchFunc = &Basic<TBase>::_updatePitch;
     } else {
-        updatePitchFunc  =   &Basic<TBase>::_updatePitchNoFM;
+        updatePitchFunc = &Basic<TBase>::_updatePitchNoFM;
     }
 
-    basePitch_m = 
+    basePitch_m =
         Basic<TBase>::params[OCTAVE_PARAM].value +
         Basic<TBase>::params[SEMITONE_PARAM].value / 12.f +
         Basic<TBase>::params[FINE_PARAM].value / 12 - 4;
 
-    auto rawTrim =  Basic<TBase>::params[FM_PARAM].value / 100;
+    auto rawTrim = Basic<TBase>::params[FM_PARAM].value / 100;
     auto taperedTrim = LookupTable<float>::lookup(*bipolarAudioLookup, rawTrim);
-    basePitchMod_m = taperedTrim; 
+    basePitchMod_m = taperedTrim;
 }
 
 template <class TBase>
-inline void Basic<TBase>::stepn()
-{
+inline void Basic<TBase>::stepn() {
     (this->*updatePitchFunc)();
     (this->*updatePwmFunc)();
 }
 
 template <class TBase>
-inline void Basic<TBase>::_updatePwm()
-{
-    for (int bank = 0; bank < numBanks_m; ++ bank) {
+inline void Basic<TBase>::_updatePwm() {
+    for (int bank = 0; bank < numBanks_m; ++bank) {
         const int baseIndex = bank * 4;
         Port& p = TBase::inputs[PWM_INPUT];
 
@@ -288,11 +276,10 @@ inline void Basic<TBase>::_updatePwm()
 }
 
 template <class TBase>
-inline void Basic<TBase>::_updatePitch()
-{
+inline void Basic<TBase>::_updatePitch() {
     const float sampleTime = TBase::engineGetSampleTime();
     const float sampleRate = TBase::engineGetSampleRate();
-    for (int bank = 0; bank < numBanks_m; ++ bank) {
+    for (int bank = 0; bank < numBanks_m; ++bank) {
         const int baseIndex = bank * 4;
         Port& pVoct = TBase::inputs[VOCT_INPUT];
         const float_4 pitchCV = pVoct.getVoltageSimd<float_4>(baseIndex);
@@ -301,7 +288,7 @@ inline void Basic<TBase>::_updatePitch()
         const float_4 fmInput = pFM.getPolyVoltageSimd<float_4>(baseIndex) * basePitchMod_m;
         const float_4 totalCV = pitchCV + basePitch_m + fmInput;
 
-        const int pitchChangeMask =  rack::simd::movemask(totalCV != lastPitches[bank]);
+        const int pitchChangeMask = rack::simd::movemask(totalCV != lastPitches[bank]);
         if (pitchChangeMask) {
             vcos[bank].setPitch(totalCV, sampleTime, sampleRate);
             lastPitches[bank] = totalCV;
@@ -310,17 +297,16 @@ inline void Basic<TBase>::_updatePitch()
 }
 
 template <class TBase>
-inline void Basic<TBase>::_updatePitchNoFM()
-{
+inline void Basic<TBase>::_updatePitchNoFM() {
     const float sampleTime = TBase::engineGetSampleTime();
     const float sampleRate = TBase::engineGetSampleRate();
-    for (int bank = 0; bank < numBanks_m; ++ bank) {
+    for (int bank = 0; bank < numBanks_m; ++bank) {
         const int baseIndex = bank * 4;
         Port& pVoct = TBase::inputs[VOCT_INPUT];
         const float_4 pitchCV = pVoct.getVoltageSimd<float_4>(baseIndex);
 
         const float_4 totalCV = pitchCV + basePitch_m;
-        const int pitchChangeMask =  rack::simd::movemask(totalCV != lastPitches[bank]);
+        const int pitchChangeMask = rack::simd::movemask(totalCV != lastPitches[bank]);
         if (pitchChangeMask) {
             vcos[bank].setPitch(totalCV, sampleTime, sampleRate);
             lastPitches[bank] = totalCV;
@@ -329,35 +315,32 @@ inline void Basic<TBase>::_updatePitchNoFM()
 }
 
 template <class TBase>
-inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args)
-{
+inline void Basic<TBase>::process(const typename TBase::ProcessArgs& args) {
     divn.step();
     divm.step();
 
-    for (int bank = 0; bank < numBanks_m; ++ bank) {
+    for (int bank = 0; bank < numBanks_m; ++bank) {
         float_4 output = ((&vcos[bank])->*pProcess)(args.sampleTime);
         Basic<TBase>::outputs[MAIN_OUTPUT].setVoltageSimd(output, bank * 4);
     }
 }
 
 template <class TBase>
-int BasicDescription<TBase>::getNumParams()
-{
+int BasicDescription<TBase>::getNumParams() {
     return Basic<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config BasicDescription<TBase>::getParam(int i)
-{
-    const float numWaves = (float) Basic<TBase>::Waves::END;
-    const float defWave = (float) Basic<TBase>::Waves::SIN;
+inline IComposite::Config BasicDescription<TBase>::getParam(int i) {
+    const float numWaves = (float)Basic<TBase>::Waves::END;
+    const float defWave = (float)Basic<TBase>::Waves::SIN;
     Config ret(0, 1, 0, "");
     switch (i) {
         case Basic<TBase>::OCTAVE_PARAM:
             ret = {0, 10, 4, "Octave"};
             break;
         case Basic<TBase>::SEMITONE_PARAM:
-             ret = {-11.f, 11.0f, 0.f, "Semitone transpose"};
+            ret = {-11.f, 11.0f, 0.f, "Semitone transpose"};
             break;
         case Basic<TBase>::FINE_PARAM:
             ret = {-1.0f, 1, 0, "fine tune"};
@@ -366,8 +349,8 @@ inline IComposite::Config BasicDescription<TBase>::getParam(int i)
             ret = {-100.0f, 100, 0, "FM"};
             break;
         case Basic<TBase>::WAVEFORM_PARAM:
-            ret = {0.0f, numWaves-1, defWave, "Waveform"};
-            break;  
+            ret = {0.0f, numWaves - 1, defWave, "Waveform"};
+            break;
         case Basic<TBase>::PW_PARAM:
             ret = {0.0f, 100, 50, "pulse width"};
             break;
@@ -379,5 +362,3 @@ inline IComposite::Config BasicDescription<TBase>::getParam(int i)
     }
     return ret;
 }
-
-

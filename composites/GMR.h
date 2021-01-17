@@ -1,58 +1,50 @@
 
 #pragma once
 
-#include "ObjectCache.h"
-#include "GenerativeTriggerGenerator.h"
-#include "TriggerOutput.h"
-
 #include <memory>
 
+#include "GenerativeTriggerGenerator.h"
+#include "ObjectCache.h"
+#include "TriggerOutput.h"
+
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
 /**
  */
 template <class TBase>
-class GMR : public TBase
-{
+class GMR : public TBase {
 public:
-    GMR(Module * module) : TBase(module), inputClockProcessing(true)
-    {
+    GMR(Module* module) : TBase(module), inputClockProcessing(true) {
     }
-    GMR() : TBase(), inputClockProcessing(true)
-    {
+    GMR() : TBase(), inputClockProcessing(true) {
     }
-    void setSampleRate(float rate)
-    {
+    void setSampleRate(float rate) {
         reciprocalSampleRate = 1 / rate;
     }
 
     // must be called after setSampleRate
     void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         CLOCK_INPUT,
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         TRIGGER_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
@@ -68,11 +60,8 @@ private:
     TriggerOutput outputProcessing;
 };
 
-
-
 template <class TBase>
-inline void GMR<TBase>::init()
-{
+inline void GMR<TBase>::init() {
     StochasticGrammarDictionary::Grammar grammar = StochasticGrammarDictionary::getGrammar(0);
     gtg = std::make_shared<GenerativeTriggerGenerator>(
         AudioMath::random(),
@@ -82,8 +71,7 @@ inline void GMR<TBase>::init()
 }
 
 template <class TBase>
-inline void GMR<TBase>::step()
-{
+inline void GMR<TBase>::step() {
     bool outClock = false;
     float inClock = TBase::inputs[CLOCK_INPUT].getVoltage(0);
     inputClockProcessing.go(inClock);
@@ -93,4 +81,3 @@ inline void GMR<TBase>::step()
     outputProcessing.go(outClock);
     TBase::outputs[TRIGGER_OUTPUT].setVoltage(outputProcessing.get(), 0);
 }
-

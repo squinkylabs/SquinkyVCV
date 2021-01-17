@@ -9,15 +9,14 @@
 #include "SqMath.h"
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
 template <class TBase>
-class EV3Description : public IComposite
-{
+class EV3Description : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -28,44 +27,37 @@ public:
  * 44.7 with normalization
  */
 template <class TBase>
-class EV3 : public TBase
-{
+class EV3 : public TBase {
 public:
     friend class TestMB;
-    EV3(Module * module) : TBase(module)
-    {
+    EV3(Module* module) : TBase(module) {
         init();
     }
 
-    EV3() : TBase()
-    {
+    EV3() : TBase() {
         init();
     }
 
-    virtual ~EV3()
-    {
+    virtual ~EV3() {
     }
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<EV3Description<TBase>>();
     }
 
-    enum class Waves
-    {
+    enum class Waves {
         SIN,
         TRI,
         SAW,
         SQUARE,
         EVEN,
         NONE,
-        END     // just a marker
+        END  // just a marker
     };
 
-    enum ParamIds
-    {
+    enum ParamIds {
         MIX1_PARAM,
         MIX2_PARAM,
         MIX3_PARAM,
@@ -99,8 +91,7 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         CV1_INPUT,
         CV2_INPUT,
         CV3_INPUT,
@@ -113,8 +104,7 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         MIX_OUTPUT,
         VCO1_OUTPUT,
         VCO2_OUTPUT,
@@ -122,15 +112,13 @@ public:
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
     void step() override;
 
-    bool isLoweringVolume() const
-    {
+    bool isLoweringVolume() const {
         return volumeScale < 1;
     }
 
@@ -161,8 +149,7 @@ private:
 };
 
 template <class TBase>
-inline void EV3<TBase>::init()
-{
+inline void EV3<TBase>::init() {
     for (int i = 0; i < 3; ++i) {
         vcos[i].setWaveform(MinBLEPVCO::Waveform::Saw);
         _outGain[i] = 0;
@@ -171,10 +158,9 @@ inline void EV3<TBase>::init()
 
     div.setup(4, [this] {
         this->stepn(div.getDiv());
-        });
+    });
 
     vcos[0].setSyncCallback([this](float f) {
-
         if (TBase::params[SYNC2_PARAM].value > .5) {
             vcos[1].onMasterSync(f);
         }
@@ -182,28 +168,25 @@ inline void EV3<TBase>::init()
         if (TBase::params[SYNC3_PARAM].value > .5) {
             vcos[2].onMasterSync(f);
         }
-        });
+    });
 }
 
 template <class TBase>
-inline void EV3<TBase>::setSync()
-{
+inline void EV3<TBase>::setSync() {
     vcos[0].setSyncEnabled(false);
     vcos[1].setSyncEnabled(TBase::params[SYNC2_PARAM].value > .5);
     vcos[2].setSyncEnabled(TBase::params[SYNC3_PARAM].value > .5);
 }
 
 template <class TBase>
-inline void EV3<TBase>::processWaveforms()
-{
+inline void EV3<TBase>::processWaveforms() {
     vcos[0].setWaveform((MinBLEPVCO::Waveform)(int)TBase::params[WAVE1_PARAM].value);
     vcos[1].setWaveform((MinBLEPVCO::Waveform)(int)TBase::params[WAVE2_PARAM].value);
     vcos[2].setWaveform((MinBLEPVCO::Waveform)(int)TBase::params[WAVE3_PARAM].value);
 }
 
 template <class TBase>
-float EV3<TBase>::getInput(int osc, InputIds in1, InputIds in2, InputIds in3)
-{
+float EV3<TBase>::getInput(int osc, InputIds in1, InputIds in2, InputIds in3) {
     const bool in2Connected = TBase::inputs[in2].isConnected();
     const bool in3Connected = TBase::inputs[in3].isConnected();
     InputIds id = in1;
@@ -211,15 +194,16 @@ float EV3<TBase>::getInput(int osc, InputIds in1, InputIds in2, InputIds in3)
         id = in2;
     }
     if (osc == 2) {
-        if (in3Connected) id = in3;
-        else if (in2Connected)  id = in2;
+        if (in3Connected)
+            id = in3;
+        else if (in2Connected)
+            id = in2;
     }
     return TBase::inputs[id].value;
 }
 
 template <class TBase>
-void EV3<TBase>::processPWInput(int osc)
-{
+void EV3<TBase>::processPWInput(int osc) {
     const float pwmInput = getInput(osc, PWM1_INPUT, PWM2_INPUT, PWM3_INPUT) / 5.f;
 
     const int delta = osc * (OCTAVE2_PARAM - OCTAVE1_PARAM);
@@ -233,16 +217,14 @@ void EV3<TBase>::processPWInput(int osc)
 }
 
 template <class TBase>
-inline void EV3<TBase>::processPWInputs()
-{
+inline void EV3<TBase>::processPWInputs() {
     processPWInput(0);
     processPWInput(1);
     processPWInput(2);
 }
 
 template <class TBase>
-inline void EV3<TBase>::stepn(int)
-{
+inline void EV3<TBase>::stepn(int) {
     // do the mix know taper lookup at a lower sample rate
     for (int i = 0; i < 3; ++i) {
         const float knob = TBase::params[MIX1_PARAM + i].value;
@@ -253,8 +235,8 @@ inline void EV3<TBase>::stepn(int)
         const float semiPitch = TBase::params[SEMI1_PARAM + delta].value / 12.0f;
 
         float pitch = 1.0f + roundf(TBase::params[OCTAVE1_PARAM + delta].value) +
-            semiPitch +
-            finePitch;
+                      semiPitch +
+                      finePitch;
         _pitchOffset[i] = pitch;
     }
     setSync();
@@ -263,8 +245,7 @@ inline void EV3<TBase>::stepn(int)
 }
 
 template <class TBase>
-inline void EV3<TBase>::step()
-{
+inline void EV3<TBase>::step() {
     div.step();
     processPitchInputs();
     stepVCOs();
@@ -291,16 +272,14 @@ inline void EV3<TBase>::step()
 }
 
 template <class TBase>
-inline void EV3<TBase>::stepVCOs()
-{
+inline void EV3<TBase>::stepVCOs() {
     for (int i = 0; i < 3; ++i) {
         vcos[i].step();
     }
 }
 
 template <class TBase>
-inline void EV3<TBase>::processPitchInputs()
-{
+inline void EV3<TBase>::processPitchInputs() {
     float lastFM = 0;
     for (int osc = 0; osc < 3; ++osc) {
         assert(osc >= 0 && osc <= 2);
@@ -310,7 +289,7 @@ inline void EV3<TBase>::processPitchInputs()
         float pitch = _pitchOffset[osc];
         pitch += cv;
 
-        float fmCombined = 0;       // The final, scaled, value (post knob
+        float fmCombined = 0;  // The final, scaled, value (post knob
         if (TBase::inputs[FM1_INPUT + osc].isConnected()) {
             const float fm = TBase::inputs[FM1_INPUT + osc].value;
             const float fmDepth = AudioMath::quadraticBipolar(TBase::params[FM1_PARAM + delta].value);
@@ -321,26 +300,24 @@ inline void EV3<TBase>::processPitchInputs()
         pitch += fmCombined;
         lastFM = fmCombined;
 
-        const float q = float(log2(261.626));       // move up to pitch range of EvenVCO
+        const float q = float(log2(261.626));  // move up to pitch range of EvenVCO
         pitch += q;
         const float freq = expLookup(pitch);
         _freq[osc] = freq;
         vcos[osc].setNormalizedFreq(TBase::engineGetSampleTime() * freq,
-            TBase::engineGetSampleTime());
+                                    TBase::engineGetSampleTime());
     }
 }
 
 template <class TBase>
-int EV3Description<TBase>::getNumParams()
-{
+int EV3Description<TBase>::getNumParams() {
     return EV3<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config EV3Description<TBase>::getParam(int i)
-{
-    const float numWaves = (float) EV3<TBase>::Waves::END;
-    const float defWave = (float) EV3<TBase>::Waves::SIN;
+inline IComposite::Config EV3Description<TBase>::getParam(int i) {
+    const float numWaves = (float)EV3<TBase>::Waves::END;
+    const float defWave = (float)EV3<TBase>::Waves::SIN;
 
     Config ret(0, 1, 0, "");
     switch (i) {
@@ -352,7 +329,7 @@ inline IComposite::Config EV3Description<TBase>::getParam(int i)
             break;
         case EV3<TBase>::MIX3_PARAM:
             ret = {0.0f, 1.0f, 0, "VCO 3 level"};
-            break;    
+            break;
         case EV3<TBase>::OCTAVE1_PARAM:
             ret = {-5.0f, 4.0f, 0.f, "Octave transpose (VCO 1)"};
             break;
@@ -367,7 +344,7 @@ inline IComposite::Config EV3Description<TBase>::getParam(int i)
             break;
         case EV3<TBase>::SYNC1_PARAM:
             ret = {0.0f, 1.0f, 0.0f, "unused"};
-            ret.active = false;                 // this one is unused
+            ret.active = false;  // this one is unused
             break;
         case EV3<TBase>::WAVE1_PARAM:
             ret = {0.0f, numWaves, defWave, "Waveform (VCO 1)"};
@@ -432,7 +409,3 @@ inline IComposite::Config EV3Description<TBase>::getParam(int i)
     }
     return ret;
 }
-
-
-
-

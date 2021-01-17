@@ -8,6 +8,23 @@
 
 extern int _mdb;        // MIDI reverence count
 
+
+
+/** returns true if m is a valid mask for vector operations expecting a mask
+ * defined for non-debug
+ *
+ */
+inline bool isMask(float_4 m)
+{
+    float_4 nm = ~m;
+    return (
+        (m[0]==0 || nm[0]==0) && 
+        (m[1]==0 || nm[1]==0) && 
+        (m[2]==0 || nm[2]==0) && 
+        (m[3]==0 || nm[3]==0)
+    );
+}
+
 /**
  * Our own little assert library, loosely inspired by Chai Assert.
  *
@@ -44,15 +61,15 @@ extern int _mdb;        // MIDI reverence count
 #else
 
 #define assertEQEx(actual, expected, msg) if (actual != expected) { \
-    std::cout << "assertEq failed " << msg << " actual value =" << \
-    actual << " expected=" << expected << std::endl << std::flush; \
+    std::cout << "assertEq failed " << msg << " actual value =>" << \
+    actual << "< expected=>" << expected << "<" << std::endl << std::flush; \
     assert(false); }
 
 #define assertEQ(actual, expected) assertEQEx(actual, expected, "")
 
 #define assertNEEx(actual, expected, msg) if (actual == expected) { \
-    std::cout << "assertNE failed " << msg << " did not expect " << \
-    actual << " to be == to " << expected << std::endl << std::flush; \
+    std::cout << "assertNE failed " << msg << " did not expect >" << \
+    actual << "< to be == to >" << expected << "<" << std::endl << std::flush; \
     assert(false); }
 
 #define assertNE(actual, expected) assertNEEx(actual, expected, "")
@@ -100,15 +117,6 @@ extern int _mdb;        // MIDI reverence count
 
 // leave space after macro
 
-
-// #ifndef _MSC_VER
-#if 1
-
-//#include <simd/vector.hpp>
-//#include <simd/functions.hpp>
-//#include "SimdBlocks.h"
-
-
 using float_4 = rack::simd::float_4;
 using int32_4 = rack::simd::int32_4;
 
@@ -143,27 +151,6 @@ using int32_4 = rack::simd::int32_4;
     actual << " expected=" << expected << " computed diff = " << diff << std::endl << std::flush; \
     assert(false); }}
 #endif
-
-// mask must be 0 or all ones
-#if 0   // is this used? it looks wrong
-#define assertMask(m) \
-    if (((unsigned int) m != 0) && (unsigned int)(m) != 0xffffffff) { printf("dword is not mask: %x\n", (unsigned int) m); fflush(stdout); } \
-    assert((unsigned int) m == 0 || (unsigned int)(m) == 0xffffffff);
-#endif
-
-/** returns true if m is a valid mask for vector operations expecting a mask
- *
- */
-inline bool isMask(float_4 m)
-{
-    float_4 nm = ~m;
-    return (
-        (m[0]==0 || nm[0]==0) && 
-        (m[1]==0 || nm[1]==0) && 
-        (m[2]==0 || nm[2]==0) && 
-        (m[3]==0 || nm[3]==0)
-    );
-}
 
 std::string toStrLiteral(const float_4& x);
 std::string toStr(const float_4& x);
@@ -281,5 +268,5 @@ inline std::string toStrLiteral(const float_4& x)
     s << " 3=" << *pi; 
     return s.str();
 }
-#endif  // MS
+
 #endif  // NDEBUG

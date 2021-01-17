@@ -2,8 +2,9 @@
 #pragma once
 
 #include <assert.h>
-#include <memory>
+
 #include <cmath>
+#include <memory>
 
 #include "Divider.h"
 #include "GateTrigger.h"
@@ -16,44 +17,37 @@
 // #define _MLOG
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 
 using Module = ::rack::engine::Module;
 
 template <class TBase>
-class Seq4Description : public IComposite
-{
+class Seq4Description : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
 
 template <class TBase>
-class Seq4 : public TBase
-{
+class Seq4 : public TBase {
 public:
     template <class Tx>
     friend class SeqHost4;
 
-    Seq4(Module * module, MidiSong4Ptr song) :
-        TBase(module),
-        runStopProcessor(true)
-    {
+    Seq4(Module* module, MidiSong4Ptr song) : TBase(module),
+                                              runStopProcessor(true) {
         init(song);
     }
 
-    Seq4(MidiSong4Ptr song) : 
-        TBase(), 
-        runStopProcessor(true)
-    {
+    Seq4(MidiSong4Ptr song) : TBase(),
+                              runStopProcessor(true) {
         init(song);
     }
 
-    MidiSong4Ptr getSong()
-    {
+    MidiSong4Ptr getSong() {
         return player->getSong();
     }
 
@@ -68,10 +62,9 @@ public:
     *
     * Only needs to be called once.
     */
-   // void init();
+    // void init();
 
-    enum ParamIds
-    {
+    enum ParamIds {
         CLOCK_INPUT_PARAM,
         NUM_VOICES0_PARAM,
         NUM_VOICES_PARAM = NUM_VOICES0_PARAM,
@@ -80,7 +73,7 @@ public:
         NUM_VOICES3_PARAM,
         RUNNING_PARAM,
         TRIGGER_IMMEDIATE_PARAM,
-        PADSELECT0_PARAM,           // these pad select params are only used for automation
+        PADSELECT0_PARAM,  // these pad select params are only used for automation
         PADSELECT1_PARAM,
         PADSELECT2_PARAM,
         PADSELECT3_PARAM,
@@ -105,8 +98,7 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         CLOCK_INPUT,
         RESET_INPUT,
         RUN_INPUT,
@@ -119,8 +111,7 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         // TODO - 1..4
         CV_OUTPUT,
         CV0_OUTPUT = CV_OUTPUT,
@@ -131,12 +122,11 @@ public:
         GATE0_OUTPUT = GATE_OUTPUT,
         GATE1_OUTPUT,
         GATE2_OUTPUT,
-        GATE3_OUTPUT ,
+        GATE3_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         //GATE_LIGHT,
         RUN_STOP_LIGHT,
         NUM_LIGHTS
@@ -144,8 +134,7 @@ public:
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<Seq4Description<TBase>>();
     }
 
@@ -153,13 +142,12 @@ public:
      * Main processing entry point. Called every sample
      */
     void step() override;
-    
+
     /** This should be called on audio thread
      * (but is it??)
      */
-    void toggleRunStop()
-    {
-         runStopRequested = true;
+    void toggleRunStop() {
+        runStopRequested = true;
     }
 
     void onSampleRateChange() override;
@@ -171,7 +159,7 @@ public:
      * return 0 if not playing
      * section number (1..4) if playing
      */
-    int  getPlayStatus(int track) const;
+    int getPlayStatus(int track) const;
     void setNextSectionRequest(int track, int section);
     int getNextSectionRequest(int track) const;
 
@@ -180,6 +168,7 @@ public:
      * "pass thru" APIs.
      */
     MidiTrackPlayerPtr getTrackPlayer(int track);
+
 private:
     GateTrigger runStopProcessor;
     std::shared_ptr<MidiPlayer4> player;
@@ -200,87 +189,78 @@ private:
     void stepn(int n);
 
     bool lastGate[16] = {false};
-
 };
 
 template <class TBase>
-class SeqHost4 : public IMidiPlayerHost4
-{
+class SeqHost4 : public IMidiPlayerHost4 {
 public:
-    SeqHost4(Seq4<TBase>* s) : seq(s)
-    {
+    SeqHost4(Seq4<TBase>* s) : seq(s) {
     }
 
-    void setGate(int track, int voice, bool gate) override
-    {
+    void setGate(int track, int voice, bool gate) override {
         assert(track >= 0 && track < 4);
 #if defined(_MLOG)
-        printf("host::setGate(%d) = (%d, %.2f) t=%f\n", 
-            voice, 
-            gate,
-            seq->outputs[Seq4<TBase>::GATE_OUTPUT0 + track].voltages[voice],
-            seq->getPlayPosition()); fflush(stdout);
+        printf("host::setGate(%d) = (%d, %.2f) t=%f\n",
+               voice,
+               gate,
+               seq->outputs[Seq4<TBase>::GATE_OUTPUT0 + track].voltages[voice],
+               seq->getPlayPosition());
+        fflush(stdout);
 #endif
         seq->outputs[Seq4<TBase>::GATE0_OUTPUT + track].voltages[voice] = gate ? 10.f : 0.f;
     }
 
-    void setCV(int track, int voice, float cv) override
-    {
+    void setCV(int track, int voice, float cv) override {
         assert(track >= 0 && track < 4);
 #if defined(_MLOG)
-        printf("*** host::setCV(%d) = (%d, %.2f) t=%f\n", 
-            voice, 
-            seq->outputs[Seq4<TBase>::CV_OUTPUT0 + track].voltages[voice] > 5,
-            cv,
-            seq->getPlayPosition()); fflush(stdout);
+        printf("*** host::setCV(%d) = (%d, %.2f) t=%f\n",
+               voice,
+               seq->outputs[Seq4<TBase>::CV_OUTPUT0 + track].voltages[voice] > 5,
+               cv,
+               seq->getPlayPosition());
+        fflush(stdout);
 #endif
         seq->outputs[Seq4<TBase>::CV0_OUTPUT + track].voltages[voice] = cv;
     }
-    void onLockFailed() override
-    {
-
+    void onLockFailed() override {
     }
-    void resetClock() override
-    {
+    void resetClock() override {
         seq->resetClock();
     }
+
 private:
     Seq4<TBase>* const seq;
 };
 
 template <class TBase>
-void  Seq4<TBase>::init(MidiSong4Ptr song)
-{ 
+void Seq4<TBase>::init(MidiSong4Ptr song) {
     std::shared_ptr<IMidiPlayerHost4> host = std::make_shared<SeqHost4<TBase>>(this);
     player = std::make_shared<MidiPlayer4>(host, song);
-   // audition = std::make_shared<MidiAudition>(host);
+    // audition = std::make_shared<MidiAudition>(host);
 
     div.setup(4, [this] {
         this->stepn(div.getDiv());
-     });
+    });
     onSampleRateChange();
-    player->setPorts( TBase::inputs.data() + MOD0_INPUT, TBase::params.data() + TRIGGER_IMMEDIATE_PARAM);
+    player->setPorts(TBase::inputs.data() + MOD0_INPUT, TBase::params.data() + TRIGGER_IMMEDIATE_PARAM);
 }
 
 template <class TBase>
-void Seq4<TBase>::onSampleRateChange()
-{
+void Seq4<TBase>::onSampleRateChange() {
     float secondsPerRetrigger = 1.f / 1000.f;
     float samplePerTrigger = secondsPerRetrigger * this->engineGetSampleRate();
-    player->setSampleCountForRetrigger((int) samplePerTrigger);
-  //  audition->setSampleTime(this->engineGetSampleTime());
+    player->setSampleCountForRetrigger((int)samplePerTrigger);
+    //  audition->setSampleTime(this->engineGetSampleTime());
 }
 
 template <class TBase>
-void  Seq4<TBase>::serviceSelCV()
-{
-    const int baseOctave = int( std::round(TBase::params[CV_SELECT_OCTAVE_PARAM].value));
-    const int activeChannels = std::min(TBase::inputs[SELECT_CV_INPUT].getChannels(), TBase::inputs[SELECT_GATE_INPUT].getChannels()); 
+void Seq4<TBase>::serviceSelCV() {
+    const int baseOctave = int(std::round(TBase::params[CV_SELECT_OCTAVE_PARAM].value));
+    const int activeChannels = std::min(TBase::inputs[SELECT_CV_INPUT].getChannels(), TBase::inputs[SELECT_GATE_INPUT].getChannels());
     //printf("in service, base octave = %d\n", baseOctave);
-    
-    for (int i=0; i < activeChannels; ++i) {
 
-        const bool gate =  TBase::inputs[SELECT_GATE_INPUT].getVoltage(i) > 2;
+    for (int i = 0; i < activeChannels; ++i) {
+        const bool gate = TBase::inputs[SELECT_GATE_INPUT].getVoltage(i) > 2;
         if (gate != lastGate[i]) {
             lastGate[i] = gate;
             if (gate) {
@@ -289,18 +269,18 @@ void  Seq4<TBase>::serviceSelCV()
 
                 // normalize if one octave higher
 
-                if (pitch.first == (baseOctave+1)) {
+                if (pitch.first == (baseOctave + 1)) {
                     pitch.first = baseOctave;
                     pitch.second += 12;
                 }
                 if (pitch.first == baseOctave) {
-                     const int pad = pitch.second;
-                     if (pad <= 15) { 
+                    const int pad = pitch.second;
+                    if (pad <= 15) {
                         const int track = pad / 4;
                         const int section = 1 + pad - track * 4;
                         // printf("pad = %d track=%d sec=%d\n", pad, track, section); fflush(stdout);
                         setNextSectionRequest(track, section);
-                     }
+                    }
                 }
             }
         }
@@ -308,20 +288,19 @@ void  Seq4<TBase>::serviceSelCV()
 }
 
 template <class TBase>
-void  Seq4<TBase>::stepn(int n)
-{
+void Seq4<TBase>::stepn(int n) {
     player->step();
     serviceRunStop();
     serviceSelCV();
 
     // first process all the clock input params
-    const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int) std::round(TBase::params[CLOCK_INPUT_PARAM].value));
+    const SeqClock::ClockRate clockRate = SeqClock::ClockRate((int)std::round(TBase::params[CLOCK_INPUT_PARAM].value));
     clock.setup(clockRate, 0, TBase::engineGetSampleTime());
 
     // and the clock input
     const float extClock = TBase::inputs[CLOCK_INPUT].getVoltage(0);
 
-    // now call the clock 
+    // now call the clock
     const float reset = TBase::inputs[RESET_INPUT].getVoltage(0);
     const bool running = isRunning();
     int samplesElapsed = n;
@@ -330,20 +309,20 @@ void  Seq4<TBase>::stepn(int n)
     SeqClock::ClockResults results = clock.update(samplesElapsed, extClock, running, reset);
     if (results.didReset) {
         player->reset(true, true);
-        allGatesOff();          // turn everything off on reset, just in case of stuck notes.
+        allGatesOff();  // turn everything off on reset, just in case of stuck notes.
     }
 
     player->updateToMetricTime(results.totalElapsedTime, float(clock.getMetricTimePerClock()), running);
 
     // copy the current voice number to the poly ports
-    for (int i=0; i<MidiSong4::numTracks; ++i) {
-        const int numVoices = (int) std::round(TBase::params[NUM_VOICES0_PARAM+i].value + 1);
+    for (int i = 0; i < MidiSong4::numTracks; ++i) {
+        const int numVoices = (int)std::round(TBase::params[NUM_VOICES0_PARAM + i].value + 1);
         TBase::outputs[CV0_OUTPUT + i].channels = numVoices;
         TBase::outputs[GATE0_OUTPUT + i].channels = numVoices;
         player->setNumVoices(i, numVoices);
 
-        const float cvMode = TBase::params[CV_FUNCTION_PARAM + i].value; 
-        MidiTrackPlayer::CVInputMode mode = MidiTrackPlayer::CVInputMode( std::round(cvMode)); 
+        const float cvMode = TBase::params[CV_FUNCTION_PARAM + i].value;
+        MidiTrackPlayer::CVInputMode mode = MidiTrackPlayer::CVInputMode(std::round(cvMode));
         getTrackPlayer(i)->setCVInputMode(mode);
     }
 
@@ -365,16 +344,14 @@ void  Seq4<TBase>::stepn(int n)
 }
 
 template <class TBase>
-void  Seq4<TBase>::setSong(MidiSong4Ptr newSong)
-{
+void Seq4<TBase>::setSong(MidiSong4Ptr newSong) {
     player->setSong(newSong);
 }
 
 template <class TBase>
-void  Seq4<TBase>::serviceRunStop()
-{
+void Seq4<TBase>::serviceRunStop() {
     runStopProcessor.go(TBase::inputs[RUN_INPUT].getVoltage(0));
-    if (runStopProcessor.trigger() || runStopRequested) { 
+    if (runStopProcessor.trigger() || runStopRequested) {
         runStopRequested = false;
         bool curValue = isRunning();
         curValue = !curValue;
@@ -384,28 +361,24 @@ void  Seq4<TBase>::serviceRunStop()
 }
 
 template <class TBase>
-inline void Seq4<TBase>::step()
-{
+inline void Seq4<TBase>::step() {
     div.step();
 }
 
 template <class TBase>
-bool Seq4<TBase>::isRunning() const
-{
+bool Seq4<TBase>::isRunning() const {
     bool running = TBase::params[RUNNING_PARAM].value > .5;
     player->setRunningStatus(running);
     return running;
 }
 
 template <class TBase>
-MidiTrackPlayerPtr Seq4<TBase>::getTrackPlayer(int track)
-{
+MidiTrackPlayerPtr Seq4<TBase>::getTrackPlayer(int track) {
     return player->getTrackPlayer(track);
 }
 
 template <class TBase>
-int  Seq4<TBase>::getPlayStatus(int track) const
-{
+int Seq4<TBase>::getPlayStatus(int track) const {
     if (!isRunning()) {
         return 0;
     }
@@ -413,78 +386,78 @@ int  Seq4<TBase>::getPlayStatus(int track) const
 }
 
 template <class TBase>
-void  Seq4<TBase>::setNextSectionRequest(int track, int section)
-{
+void Seq4<TBase>::setNextSectionRequest(int track, int section) {
     player->setNextSectionRequest(track, section);
 }
 
 template <class TBase>
-int  Seq4<TBase>::getNextSectionRequest(int track) const
-{
+int Seq4<TBase>::getNextSectionRequest(int track) const {
     return player->getNextSectionRequest(track);
 }
 
 template <class TBase>
-inline void Seq4<TBase>::allGatesOff()
-{
-    for (int output=0; output < 4; ++output) {
+inline void Seq4<TBase>::allGatesOff() {
+    for (int output = 0; output < 4; ++output) {
         for (int i = 0; i < 16; ++i) {
-            
             TBase::outputs[GATE0_OUTPUT + output].voltages[i] = 0;
-        }  
+        }
     }
 }
 
 template <class TBase>
-inline void Seq4<TBase>::resetClock()
-{
+inline void Seq4<TBase>::resetClock() {
     clock.reset(false);
 }
 
 template <class TBase>
-inline std::vector<std::string> Seq4<TBase>::getClockRates()
-{
+inline std::vector<std::string> Seq4<TBase>::getClockRates() {
     return SeqClock::getClockRates();
 }
 
 template <class TBase>
-inline std::vector<std::string> Seq4<TBase>::getPolyLabels()
-{
-    return { "1", "2", "3", "4",
-        "5", "6", "7", "8",
-        "9", "10", "11", "12",
-        "13", "14", "15", "16",
+inline std::vector<std::string> Seq4<TBase>::getPolyLabels() {
+    return {
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
     };
 }
 
 template <class TBase>
-inline std::vector<std::string> Seq4<TBase>::getCVFunctionLabels()
-{
-    return { 
+inline std::vector<std::string> Seq4<TBase>::getCVFunctionLabels() {
+    return {
         "Poly",
         "Next",
         "Prev",
-        "Set"
-    };
+        "Set"};
 }
 template <class TBase>
-int Seq4Description<TBase>::getNumParams()
-{
+int Seq4Description<TBase>::getNumParams() {
     return Seq4<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config Seq4Description<TBase>::getParam(int i)
-{
+inline IComposite::Config Seq4Description<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case Seq4<TBase>::CLOCK_INPUT_PARAM:
-            {     
+        case Seq4<TBase>::CLOCK_INPUT_PARAM: {
             float low = 0;
             float high = int(SeqClock::ClockRate::NUM_CLOCKS) + 1;
             ret = {low, high, low, "Clock Rate"};
-            }
-            break;
+        } break;
         case Seq4<TBase>::RUNNING_PARAM:
             ret = {0, 1, 1, "Running"};
             break;
@@ -504,64 +477,64 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
             ret = {0, 1, 0, "Trigger Immediate"};
             break;
         case Seq4<TBase>::PADSELECT0_PARAM:
-            ret = { 0, 1, 0, "Select 1" };       
+            ret = {0, 1, 0, "Select 1"};
             break;
         case Seq4<TBase>::PADSELECT1_PARAM:
-            ret = { 0, 1, 0, "Select 2" };
+            ret = {0, 1, 0, "Select 2"};
             break;
         case Seq4<TBase>::PADSELECT2_PARAM:
-            ret = { 0, 1, 0, "Select 3" };
+            ret = {0, 1, 0, "Select 3"};
             break;
         case Seq4<TBase>::PADSELECT3_PARAM:
-            ret = { 0, 1, 0, "Select 4" };
+            ret = {0, 1, 0, "Select 4"};
             break;
         case Seq4<TBase>::PADSELECT4_PARAM:
-            ret = { 0, 1, 0, "Select 5" };
+            ret = {0, 1, 0, "Select 5"};
             break;
         case Seq4<TBase>::PADSELECT5_PARAM:
-            ret = { 0, 1, 0, "Select 6" };
+            ret = {0, 1, 0, "Select 6"};
             break;
         case Seq4<TBase>::PADSELECT6_PARAM:
-            ret = { 0, 1, 0, "Select 7" };
+            ret = {0, 1, 0, "Select 7"};
             break;
         case Seq4<TBase>::PADSELECT7_PARAM:
-            ret = { 0, 1, 0, "Select 8" };
+            ret = {0, 1, 0, "Select 8"};
             break;
         case Seq4<TBase>::PADSELECT8_PARAM:
-            ret = { 0, 1, 0, "Select 9" };
+            ret = {0, 1, 0, "Select 9"};
             break;
         case Seq4<TBase>::PADSELECT9_PARAM:
-            ret = { 0, 1, 0, "Select 10" };
+            ret = {0, 1, 0, "Select 10"};
             break;
         case Seq4<TBase>::PADSELECT10_PARAM:
-            ret = { 0, 1, 0, "Select 11" };
+            ret = {0, 1, 0, "Select 11"};
             break;
         case Seq4<TBase>::PADSELECT11_PARAM:
-            ret = { 0, 1, 0, "Select 12" };
+            ret = {0, 1, 0, "Select 12"};
             break;
         case Seq4<TBase>::PADSELECT12_PARAM:
-            ret = { 0, 1, 0, "Select 13" };
+            ret = {0, 1, 0, "Select 13"};
             break;
         case Seq4<TBase>::PADSELECT13_PARAM:
-            ret = { 0, 1, 0, "Select 14" };
+            ret = {0, 1, 0, "Select 14"};
             break;
         case Seq4<TBase>::PADSELECT14_PARAM:
-            ret = { 0, 1, 0, "Select 15" };
+            ret = {0, 1, 0, "Select 15"};
             break;
         case Seq4<TBase>::PADSELECT15_PARAM:
-            ret = { 0, 1, 0, "Select 16" };
+            ret = {0, 1, 0, "Select 16"};
             break;
         case Seq4<TBase>::CV_FUNCTION0_PARAM:
-            ret = { 0, 3, 1, "CV1 function" };
+            ret = {0, 3, 1, "CV1 function"};
             break;
         case Seq4<TBase>::CV_FUNCTION1_PARAM:
-            ret = { 0, 3, 1, "CV2 function" };
+            ret = {0, 3, 1, "CV2 function"};
             break;
         case Seq4<TBase>::CV_FUNCTION2_PARAM:
-            ret = { 0, 3, 1, "CV3 function" };
+            ret = {0, 3, 1, "CV3 function"};
             break;
         case Seq4<TBase>::CV_FUNCTION3_PARAM:
-            ret = { 0, 3, 1, "CV4 function" };
+            ret = {0, 3, 1, "CV4 function"};
             break;
         case Seq4<TBase>::CV_SELECT_OCTAVE_PARAM:
             ret = {0, 10, 2, "Select CV octave"};
@@ -571,5 +544,3 @@ inline IComposite::Config Seq4Description<TBase>::getParam(int i)
     }
     return ret;
 }
-
-

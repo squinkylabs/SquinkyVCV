@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SqLog.h"
+
 #include <assert.h>
 #include <string>
 #include <cstring>
@@ -75,6 +77,9 @@ inline void SqStream::add(float f)
 
     const char* format = "%.2f";
     switch (_precision) {
+    case 0:
+        format = "%.0f";
+        break; 
     case 1:
         format = "%.1f";
         break;
@@ -82,12 +87,13 @@ inline void SqStream::add(float f)
         format = "%.2f";
         break;
     default:
-        assert(false);
+        SQWARN("unimplemented precision %d\n", _precision);
+
     }
 
-    
     snprintf(nextLoc, sizeRemaining, format, f);
     length = int(strlen(buffer));
+   // SQWARN("float was %f, printed to %s prec=%d\n", f, nextLoc, _precision);
 }
 inline std::string SqStream::str()
 {

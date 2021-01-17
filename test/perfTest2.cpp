@@ -305,7 +305,7 @@ static void testF2_Poly16()
 
     comp.init();
 
-    
+    comp.params[Comp::CV_UPDATE_FREQ].value = 0;
     comp.inputs[Comp::AUDIO_INPUT].channels = 16;
     for (int i=0; i<16; ++i) {
         comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, i);
@@ -316,6 +316,30 @@ static void testF2_Poly16()
     args.sampleRate = 44199;
 
     MeasureTime<float>::run(overheadInOut, "testF2 (new) 16 ch", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+static void testF2_Poly16_hires()
+{
+    using Comp = F2_Poly<TestComposite>;
+    Comp comp;
+
+    comp.init();
+
+    comp.params[Comp::CV_UPDATE_FREQ].value = 1;
+    comp.inputs[Comp::AUDIO_INPUT].channels = 16;
+    for (int i=0; i<16; ++i) {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, i);
+    }
+ 
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "testF2 (new) 16 ch hires", [&comp, args]() {
         comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
         comp.process(args);
         return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
@@ -357,6 +381,7 @@ static void testF2_24l()
     comp.inputs[Comp::AUDIO_INPUT].channels = 1;
     comp.params[Comp::TOPOLOGY_PARAM].value = float(Comp::Topology::SERIES);
     comp.params[Comp::LIMITER_PARAM].value = 1;
+    
     for (int i=0; i<16; ++i) {
         comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, i);
     }
@@ -365,8 +390,37 @@ static void testF2_24l()
     args.sampleTime = 1.f / 44100.f;
     args.sampleRate = 44199;
 
-    MeasureTime<float>::run(overheadInOut, "testF2 (24/lim)", [&comp, args]() {
+    MeasureTime<float>::run(overheadInOut, "testF2 (24/lim mod)", [&comp, args]() {
         comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.process(args);
+        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
+        }, 1);
+}
+
+
+static void testF2_24l_hires()
+{
+    using Comp = F2_Poly<TestComposite>;
+    Comp comp;
+
+    comp.init();
+    
+    comp.inputs[Comp::AUDIO_INPUT].channels = 1;
+    comp.params[Comp::TOPOLOGY_PARAM].value = float(Comp::Topology::SERIES);
+    comp.params[Comp::LIMITER_PARAM].value = 1;
+    comp.params[Comp::CV_UPDATE_FREQ].value = 1;
+    for (int i=0; i<16; ++i) {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, i);
+    }
+ 
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44199;
+
+    MeasureTime<float>::run(overheadInOut, "testF2 (24/lim mod) hires", [&comp, args]() {
+        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.inputs[Comp::FC_INPUT].setVoltage(TestBuffers<float>::get());
         comp.process(args);
         return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
         }, 1);
@@ -527,16 +581,19 @@ void perfTest2()
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
 #ifndef _MSC_VER
+    testF2_Poly1();
+    testF2_Poly16();
+    testF2_Poly16_hires();
+    testF2_12nl();
+    testF2_24l();
+    testF2_24l_hires();
    
     testCompLim1();
     testCompLim16();
     testCompKnee();
     testCompKnee16();
     testCompKnee16Hard();
-    testF2_Poly1();
-    testF2_Poly16();
-    testF2_12nl();
-    testF2_24l();
+   
 #endif
 
 

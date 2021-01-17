@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "RingBuffer.h"
+#include "SqLog.h"
 
 /**
  * A very specialized container. Made for holding one free

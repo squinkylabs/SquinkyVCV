@@ -1,186 +1,183 @@
 #pragma once
 
-#include <vector>
 #include <cstdint>
+#include <vector>
 
-struct Light
-{
+struct Light {
     /** The square of the brightness value */
     float value = 0.0;
     float getBrightness();
-    void setBrightness(float brightness)
-    {
+    void setBrightness(float brightness) {
         value = (brightness > 0.f) ? brightness * brightness : 0.f;
     }
-    void setBrightnessSmooth(float brightness)
-    {
+    void setBrightnessSmooth(float brightness) {
     }
 };
 
 static const int PORT_MAX_CHANNELS = 16;
 
 struct alignas(32) Port {
-	/** Voltage of the port. */
-	union {
-		/** Unstable API. Use getVoltage() and setVoltage() instead. */
-		float voltages[PORT_MAX_CHANNELS] = {};
-		/** DEPRECATED. Unstable API. Use getVoltage() and setVoltage() instead. */
+    /** Voltage of the port. */
+    union {
+        /** Unstable API. Use getVoltage() and setVoltage() instead. */
+        float voltages[PORT_MAX_CHANNELS] = {};
+        /** DEPRECATED. Unstable API. Use getVoltage() and setVoltage() instead. */
 
         // TODO: get rid of this
-		float value;
-	};
-	union {
-		/** Number of polyphonic channels
+        float value;
+    };
+    union {
+        /** Number of polyphonic channels
 		Unstable API. Use set/getChannels() instead.
 		May be 0 to PORT_MAX_CHANNELS.
 		*/
-		uint8_t channels = 0;
-		/** DEPRECATED. Unstable API. Use isConnected() instead. */
-		uint8_t _active;
-	};
-	/** For rendering plug lights on cables.
+        uint8_t channels = 0;
+        /** DEPRECATED. Unstable API. Use isConnected() instead. */
+        uint8_t _active;
+    };
+    /** For rendering plug lights on cables.
 	Green for positive, red for negative, and blue for polyphonic.
 	*/
-	Light plugLights[3];
+    Light plugLights[3];
 
-	/** Sets the voltage of the given channel. */
-	void setVoltage(float voltage, int channel = 0) {
-		voltages[channel] = voltage;
-	}
+    /** Sets the voltage of the given channel. */
+    void setVoltage(float voltage, int channel = 0) {
+        voltages[channel] = voltage;
+    }
 
-	/** Returns the voltage of the given channel.
+    /** Returns the voltage of the given channel.
 	Because of proper bookkeeping, all channels higher than the input port's number of channels should be 0V.
 	*/
-	float getVoltage(int channel = 0) {
-		return voltages[channel];
-	}
+    float getVoltage(int channel = 0) {
+        return voltages[channel];
+    }
 
-	/** Returns the given channel's voltage if the port is polyphonic, otherwise returns the first voltage (channel 0). */
-	float getPolyVoltage(int channel) {
-		return isMonophonic() ? getVoltage(0) : getVoltage(channel);
-	}
+    /** Returns the given channel's voltage if the port is polyphonic, otherwise returns the first voltage (channel 0). */
+    float getPolyVoltage(int channel) {
+        return isMonophonic() ? getVoltage(0) : getVoltage(channel);
+    }
 
-	/** Returns the voltage if a cable is connected, otherwise returns the given normal voltage. */
-	float getNormalVoltage(float normalVoltage, int channel = 0) {
-		return isConnected() ? getVoltage(channel) : normalVoltage;
-	}
+    /** Returns the voltage if a cable is connected, otherwise returns the given normal voltage. */
+    float getNormalVoltage(float normalVoltage, int channel = 0) {
+        return isConnected() ? getVoltage(channel) : normalVoltage;
+    }
 
-	float getNormalPolyVoltage(float normalVoltage, int channel) {
-		return isConnected() ? getPolyVoltage(channel) : normalVoltage;
-	}
+    float getNormalPolyVoltage(float normalVoltage, int channel) {
+        return isConnected() ? getPolyVoltage(channel) : normalVoltage;
+    }
 
-	/** Returns a pointer to the array of voltages beginning with firstChannel.
+    /** Returns a pointer to the array of voltages beginning with firstChannel.
 	The pointer can be used for reading and writing.
 	*/
-	float* getVoltages(int firstChannel = 0) {
-		return &voltages[firstChannel];
-	}
+    float* getVoltages(int firstChannel = 0) {
+        return &voltages[firstChannel];
+    }
 
-	/** Copies the port's voltages to an array of size at least `channels`. */
-	void readVoltages(float* v) {
-		for (int c = 0; c < channels; c++) {
-			v[c] = voltages[c];
-		}
-	}
+    /** Copies the port's voltages to an array of size at least `channels`. */
+    void readVoltages(float* v) {
+        for (int c = 0; c < channels; c++) {
+            v[c] = voltages[c];
+        }
+    }
 
-	/** Copies an array of size at least `channels` to the port's voltages.
+    /** Copies an array of size at least `channels` to the port's voltages.
 	Remember to set the number of channels *before* calling this method.
 	*/
-	void writeVoltages(const float* v) {
-		for (int c = 0; c < channels; c++) {
-			voltages[c] = v[c];
-		}
-	}
+    void writeVoltages(const float* v) {
+        for (int c = 0; c < channels; c++) {
+            voltages[c] = v[c];
+        }
+    }
 
-	/** Sets all voltages to 0. */
-	void clearVoltages() {
-		for (int c = 0; c < channels; c++) {
-			voltages[c] = 0.f;
-		}
-	}
+    /** Sets all voltages to 0. */
+    void clearVoltages() {
+        for (int c = 0; c < channels; c++) {
+            voltages[c] = 0.f;
+        }
+    }
 
-	/** Returns the sum of all voltages. */
-	float getVoltageSum() {
-		float sum = 0.f;
-		for (int c = 0; c < channels; c++) {
-			sum += voltages[c];
-		}
-		return sum;
-	}
+    /** Returns the sum of all voltages. */
+    float getVoltageSum() {
+        float sum = 0.f;
+        for (int c = 0; c < channels; c++) {
+            sum += voltages[c];
+        }
+        return sum;
+    }
 
-	template <typename T>
-	T getVoltageSimd(int firstChannel) {
-		return T::load(&voltages[firstChannel]);
-	}
+    template <typename T>
+    T getVoltageSimd(int firstChannel) {
+        return T::load(&voltages[firstChannel]);
+    }
 
-	template <typename T>
-	T getPolyVoltageSimd(int firstChannel) {
-		return isMonophonic() ? getVoltage(0) : getVoltageSimd<T>(firstChannel);
-	}
+    template <typename T>
+    T getPolyVoltageSimd(int firstChannel) {
+        return isMonophonic() ? getVoltage(0) : getVoltageSimd<T>(firstChannel);
+    }
 
-	template <typename T>
-	T getNormalVoltageSimd(T normalVoltage, int firstChannel) {
-		return isConnected() ? getVoltageSimd<T>(firstChannel) : normalVoltage;
-	}
+    template <typename T>
+    T getNormalVoltageSimd(T normalVoltage, int firstChannel) {
+        return isConnected() ? getVoltageSimd<T>(firstChannel) : normalVoltage;
+    }
 
-	template <typename T>
-	T getNormalPolyVoltageSimd(T normalVoltage, int firstChannel) {
-		return isConnected() ? getPolyVoltageSimd<T>(firstChannel) : normalVoltage;
-	}
+    template <typename T>
+    T getNormalPolyVoltageSimd(T normalVoltage, int firstChannel) {
+        return isConnected() ? getPolyVoltageSimd<T>(firstChannel) : normalVoltage;
+    }
 
-	template <typename T>
-	void setVoltageSimd(T voltage, int firstChannel) {
-		voltage.store(&voltages[firstChannel]);
-	}
+    template <typename T>
+    void setVoltageSimd(T voltage, int firstChannel) {
+        voltage.store(&voltages[firstChannel]);
+    }
 
-	/** Sets the number of polyphony channels.
+    /** Sets the number of polyphony channels.
 	Also clears voltages of higher channels.
 	If disconnected, this does nothing (`channels` remains 0).
 	If 0 is given, `channels` is set to 1 but all voltages are cleared.
 	*/
-	void setChannels(int channels) {
-		// If disconnected, keep the number of channels at 0.
-		if (this->channels == 0) {
-			return;
-		}
-		// Set higher channel voltages to 0
-		for (int c = channels; c < this->channels; c++) {
-			voltages[c] = 0.f;
-		}
-		// Don't allow caller to set port as disconnected
-		if (channels == 0) {
-			channels = 1;
-		}
-		this->channels = channels;
-	}
+    void setChannels(int channels) {
+        // If disconnected, keep the number of channels at 0.
+        if (this->channels == 0) {
+            return;
+        }
+        // Set higher channel voltages to 0
+        for (int c = channels; c < this->channels; c++) {
+            voltages[c] = 0.f;
+        }
+        // Don't allow caller to set port as disconnected
+        if (channels == 0) {
+            channels = 1;
+        }
+        this->channels = channels;
+    }
 
-	/** Returns the number of channels.
+    /** Returns the number of channels.
 	If the port is disconnected, it has 0 channels.
 	*/
-	int getChannels() {
-		return channels;
-	}
+    int getChannels() {
+        return channels;
+    }
 
-	/** Returns whether a cable is connected to the Port.
+    /** Returns whether a cable is connected to the Port.
 	You can use this for skipping code that generates output voltages.
 	*/
-	bool isConnected() {
-		return channels > 0;
-	}
+    bool isConnected() {
+        return channels > 0;
+    }
 
-	/** Returns whether the cable exists and has 1 channel. */
-	bool isMonophonic() {
-		return channels == 1;
-	}
+    /** Returns whether the cable exists and has 1 channel. */
+    bool isMonophonic() {
+        return channels == 1;
+    }
 
-	/** Returns whether the cable exists and has more than 1 channel. */
-	bool isPolyphonic() {
-		return channels > 1;
-	}
+    /** Returns whether the cable exists and has more than 1 channel. */
+    bool isPolyphonic() {
+        return channels > 1;
+    }
 
-	void process(float deltaTime);
+    void process(float deltaTime);
 
-	/** Use getNormalVoltage() instead. */
+    /** Use getNormalVoltage() instead. */
 #if 0
 	DEPRECATED float normalize(float normalVoltage) {
 		return getNormalVoltage(normalVoltage);
@@ -188,75 +185,61 @@ struct alignas(32) Port {
 #endif
 };
 
-struct Input : Port
-{
+struct Input : Port {
 };
-struct Output : Port
-{
+struct Output : Port {
 };
 
-struct Param
-{
+struct Param {
     float value = 0.0;
 };
-
 
 /**
 * Base class for composites embeddable in a unit test
 * Isolates test from VCV.
 */
 
-class TestComposite
-{
+class TestComposite {
 public:
-
     using Port = ::Port;
     using Param = ::Param;
 
-    TestComposite() :
-        inputs(40),
-        outputs(40),
-        params(60),
-        lights(20)
-    {
+    TestComposite() : inputs(40),
+                      outputs(40),
+                      params(60),
+                      lights(20) {
     }
 
-	// If we prevent copying here, will prevent for derived classes
-	TestComposite(const TestComposite&) = delete;
-	TestComposite& operator= (const TestComposite&) = delete;
+    // If we prevent copying here, will prevent for derived classes
+    TestComposite(const TestComposite&) = delete;
+    TestComposite& operator=(const TestComposite&) = delete;
 
-    virtual ~TestComposite()
-    {
+    virtual ~TestComposite() {
     }
 
-	struct ProcessArgs {
-		float sampleRate;
-		float sampleTime;
-	};
- 
+    struct ProcessArgs {
+        float sampleRate;
+        float sampleTime;
+    };
+
     std::vector<Input> inputs;
     std::vector<Output> outputs;
     std::vector<Param> params;
     std::vector<Light> lights;
 
-    float engineGetSampleTime()
-    {
+    float engineGetSampleTime() {
         return 1.0f / 44100.0f;
     }
 
-    float engineGetSampleRate()
-    {
+    float engineGetSampleRate() {
         return 44100.f;
     }
 
-    virtual void step()
-    {
+    virtual void step() {
     }
 
-	virtual void process(const ProcessArgs& args)
-	{	
-	}
-	virtual void onSampleRateChange()
-    {
+    virtual void process(const ProcessArgs& args) {
+    }
+    virtual void onSampleRateChange() {
     }
 };

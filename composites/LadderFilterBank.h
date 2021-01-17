@@ -4,38 +4,34 @@
 #include "SqPort.h"
 #include "SqStream.h"
 
-
-
 template <typename T>
-class LadderFilterBank
-{
+class LadderFilterBank {
 public:
-
     enum class Modes {
-        normal,         // mono, poly. R out == L out
-        stereo,         // in L -> out L, in R -> out R
-        leftOnly,       // in L -> out L, out R
-        rightOnly       // in R -> out L, out R
+        normal,    // mono, poly. R out == L out
+        stereo,    // in L -> out L, in R -> out R
+        leftOnly,  // in L -> out L, out R
+        rightOnly  // in R -> out L, out R
     };
     void stepn(float sampleTime, int numChannels,
-        SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
-            float fcParam, float fc1TrimParam, float fc2TrimParam,
-            T volume,
-            float qParam, float qTrimParam, float makeupGainParam,
-            typename LadderFilter<T>::Types type,  typename LadderFilter<T>::Voicing voicing,
-            float driveParam, float driveTrim,
-            float edgeParam, float edgeTrim,
-            float slopeParam, float slopeTrim,
-            float spread);
-    
+               SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
+               float fcParam, float fc1TrimParam, float fc2TrimParam,
+               T volume,
+               float qParam, float qTrimParam, float makeupGainParam,
+               typename LadderFilter<T>::Types type, typename LadderFilter<T>::Voicing voicing,
+               float driveParam, float driveTrim,
+               float edgeParam, float edgeTrim,
+               float slopeParam, float slopeTrim,
+               float spread);
+
     /**
      * inputForChannel0 and 1 are optional.
      * They will be null except for special modes.
      */
     void step(int numChannels, Modes mode,
-        SqInput& audioInput,  SqOutput& audioOutput,
-        SqInput* inputForChannel0, SqInput* inputForChannel1,
-        PeakDetector& peak);
+              SqInput& audioInput, SqOutput& audioOutput,
+              SqInput* inputForChannel0, SqInput* inputForChannel1,
+              PeakDetector& peak);
 
     void _dump(int channel, const std::string& label) {
         SqStream s;
@@ -48,10 +44,11 @@ public:
     const LadderFilter<T>& get(int channel) {
         return filters[channel];
     }
+
 private:
     LadderFilter<T> filters[16];
 
-    std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();            // Do we need more precision?
+    std::shared_ptr<LookupTableParams<T>> expLookup = ObjectCache<T>::getExp2();  // Do we need more precision?
     AudioMath::ScaleFun<float> scaleGain = AudioMath::makeLinearScaler<float>(0, 1);
     std::shared_ptr<LookupTableParams<float>> audioTaper = {ObjectCache<float>::getAudioTaper()};
 
@@ -63,19 +60,18 @@ private:
 
 template <typename T>
 inline void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
-    SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
-    float fcParam, float fc1TrimParam, float fc2TrimParam,
-    T volume,
-    float qParam, float qTrimParam, float makeupGainParam,
-    typename LadderFilter<T>::Types type,  typename LadderFilter<T>::Voicing voicing,
-    float driveParam, float driveTrimParam,
-    float edgeParam, float edgeTrim,
-    float slopeParam, float slopeTrim,
-    float spreadParam)
-{
-    for (int channel=0; channel < numChannels; ++channel) {
+                                       SqInput& fc1Input, SqInput& fc2Input, SqInput& qInput, SqInput& driveInput, SqInput& edgeInput, SqInput& slopeInput,
+                                       float fcParam, float fc1TrimParam, float fc2TrimParam,
+                                       T volume,
+                                       float qParam, float qTrimParam, float makeupGainParam,
+                                       typename LadderFilter<T>::Types type, typename LadderFilter<T>::Voicing voicing,
+                                       float driveParam, float driveTrimParam,
+                                       float edgeParam, float edgeTrim,
+                                       float slopeParam, float slopeTrim,
+                                       float spreadParam) {
+    for (int channel = 0; channel < numChannels; ++channel) {
         LadderFilter<T>& filt = filters[channel];
-        
+
         filt.setType(type);
         filt.setVoicing(voicing);
         filt.setVolume(volume);
@@ -90,7 +86,7 @@ inline void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
             T freqCV2 = scaleFc(
                 fc2Input.getPolyVoltage(channel),
                 0,
-                fc2TrimParam);          // note: test second inputs
+                fc2TrimParam);  // note: test second inputs
             T freqCV = freqCV1 + freqCV2 + 6;
             const T fc = LookupTable<T>::lookup(*expLookup, freqCV, true) * 10;
             const T normFc = fc * sampleTime;
@@ -105,9 +101,7 @@ inline void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
                 qParam,
                 qTrimParam);
             const T qMiddle = 2.8;
-            res = (res < 2) ?
-                (res * qMiddle / 2) :
-                .5 * (res - 2) * (4 - qMiddle) + qMiddle;
+            res = (res < 2) ? (res * qMiddle / 2) : .5 * (res - 2) * (4 - qMiddle) + qMiddle;
 
             if (res < 0 || res > 4) fprintf(stderr, "res out of bounds %f\n", res);
 
@@ -116,10 +110,9 @@ inline void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
 
             filt.setFeedback(res);
             filt.setBassMakeupGain(makeupGain);
-
         }
         {
-            float  gainInput = scaleGain(
+            float gainInput = scaleGain(
                 driveInput.getPolyVoltage(channel),
                 driveParam,
                 driveTrimParam);
@@ -133,27 +126,24 @@ inline void LadderFilterBank<T>::stepn(float sampleTime, int numChannels,
                 edgeParam,
                 edgeTrim);
             filt.setEdge(edge);
-
         }
-        {  
+        {
             T slope = scaleSlope(
                 slopeInput.getPolyVoltage(channel),
                 slopeParam,
                 slopeTrim);
             filt.setSlope(slope);
-
         }
         filt.setFreqSpread(spreadParam);
-    } 
+    }
 }
 
 template <typename T>
 inline void LadderFilterBank<T>::step(int numChannels, Modes mode,
-         SqInput& audioInput,  SqOutput& audioOutput,
-         SqInput* inputForChannel0, SqInput* inputForChannel1,
-         PeakDetector& peak)
-{
-    for (int channel=0; channel < numChannels; ++channel) {
+                                      SqInput& audioInput, SqOutput& audioOutput,
+                                      SqInput* inputForChannel0, SqInput* inputForChannel1,
+                                      PeakDetector& peak) {
+    for (int channel = 0; channel < numChannels; ++channel) {
         LadderFilter<T>& filt = filters[channel];
 
         float input = audioInput.getVoltage(channel);
@@ -178,7 +168,7 @@ inline void LadderFilterBank<T>::step(int numChannels, Modes mode,
         }
 
         filt.run(input);
-        const float output = (float) filt.getOutput();
+        const float output = (float)filt.getOutput();
         audioOutput.setVoltage(output, channel);
         peak.step(output);
     }

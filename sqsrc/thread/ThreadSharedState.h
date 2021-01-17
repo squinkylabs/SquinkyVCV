@@ -35,7 +35,8 @@ public:
     {
         TEST1,
         TEST2,
-        NOISE     // used by ColoredNoise
+        NOISE,    // used by ColoredNoise
+        SAMP
     };
     ThreadMessage(Type t) : type(t)
     {

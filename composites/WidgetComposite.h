@@ -12,46 +12,36 @@ using Module = ::rack::engine::Module;
  * Base class for composites embedable in a VCV Widget
  * This is used for "real" implementations
  */
-class WidgetComposite
-{
+class WidgetComposite {
 public:
-
     using Port = ::rack::engine::Port;
     using ProcessArgs = ::rack::engine::Module::ProcessArgs;
-    
-    WidgetComposite(::rack::engine::Module * parent) :
-        inputs(parent->inputs),
-        outputs(parent->outputs),
-        params(parent->params),
-        lights(parent->lights)
-    {
+
+    WidgetComposite(::rack::engine::Module* parent) : inputs(parent->inputs),
+                                                      outputs(parent->outputs),
+                                                      params(parent->params),
+                                                      lights(parent->lights) {
     }
     virtual ~WidgetComposite() {}
     WidgetComposite(const WidgetComposite&) = delete;
     WidgetComposite& operator=(const WidgetComposite&) = delete;
 
-
-    virtual void step()
-    {
-    };
-    virtual void process(const ProcessArgs& args)
-	{
-		
-	}
+    virtual void step(){};
+    virtual void process(const ProcessArgs& args) {
+    }
     float engineGetSampleRate()
-    
+
     {
         return ::rack::appGet()->engine->getSampleRate();
     }
-    
-    float engineGetSampleTime()
-    {
+
+    float engineGetSampleTime() {
         return ::rack::appGet()->engine->getSampleTime();
     }
 
-    virtual void onSampleRateChange()
-    {
+    virtual void onSampleRateChange() {
     }
+
 protected:
     // These are references that point to the parent (real ones).
     // They are connected in the ctor
@@ -59,5 +49,6 @@ protected:
     std::vector<Output>& outputs;
     std::vector<Param>& params;
     std::vector<Light>& lights;
+
 private:
 };

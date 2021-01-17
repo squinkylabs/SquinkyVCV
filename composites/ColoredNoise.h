@@ -1,38 +1,34 @@
 #pragma once
 
 #include <memory>
-#include "assert.h"
 
 #include "AudioMath.h"
+#include "FFT.h"
+#include "FFTCrossFader.h"
+#include "FFTData.h"
 #include "IComposite.h"
 #include "ManagedPool.h"
 #include "ThreadClient.h"
 #include "ThreadServer.h"
 #include "ThreadSharedState.h"
-
-#include "FFTData.h"
-#include "FFT.h"
-#include "FFTCrossFader.h"
+#include "assert.h"
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 class NoiseMessage;
 
-
 template <class TBase>
-class ColoredNoiseDescription : public IComposite
-{
+class ColoredNoiseDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
 
 const int crossfadeSamples = 4 * 1024;
-
 
 /**
  * Implementation of the "Colors" noises generator
@@ -41,63 +37,52 @@ const int crossfadeSamples = 4 * 1024;
  * service thread less often and iput less often -> 5.6
  */
 template <class TBase>
-class ColoredNoise : public TBase
-{
+class ColoredNoise : public TBase {
 public:
-    ColoredNoise(Module * module) : TBase(module), crossFader(crossfadeSamples)
-    {
+    ColoredNoise(Module* module) : TBase(module), crossFader(crossfadeSamples) {
         commonConstruct();
     }
 
-    ColoredNoise() : TBase(), crossFader(crossfadeSamples)
-    {
+    ColoredNoise() : TBase(), crossFader(crossfadeSamples) {
         commonConstruct();
     }
 
-    virtual ~ColoredNoise()
-    {
-        thread.reset();     // kill the threads before deleting other things
+    virtual ~ColoredNoise() {
+        thread.reset();  // kill the threads before deleting other things
     }
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<ColoredNoiseDescription<TBase>>();
     }
 
-    void setSampleRate(float rate)
-    {
+    void setSampleRate(float rate) {
     }
 
     // must be called after setSampleRate
-    void init()
-    {
+    void init() {
         cv_scaler = AudioMath::makeLinearScaler<T>(-8, 8);
     }
 
     // Define all the enums here. This will let the tests and the widget access them.
-    enum ParamIds
-    {
+    enum ParamIds {
         SLOPE_PARAM,
         SLOPE_TRIM,
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         SLOPE_CV,
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         NUM_LIGHTS
     };
 
@@ -110,9 +95,8 @@ public:
 
     int _msgCount() const;  // just for debugging
 
-    typedef float T;        // use floats for all signals
+    typedef float T;  // use floats for all signals
 private:
-
     AudioMath::ScaleFun<T> cv_scaler;
     bool isRequestPending = false;
     int cycleCount = 1;
@@ -121,7 +105,7 @@ private:
      * crossFader generates the audio, but we must
      * feed it with NoiseMessage data from the ThreadServer
      */
-    FFTCrossFader   crossFader;
+    FFTCrossFader crossFader;
 
     // just for debugging
     int messageCount = 0;
@@ -140,21 +124,16 @@ private:
     void commonConstruct();
 };
 
-class NoiseMessage : public ThreadMessage
-{
+class NoiseMessage : public ThreadMessage {
 public:
-
     NoiseMessage() : ThreadMessage(Type::NOISE),
-        dataBuffer(new FFTDataReal(defaultNumBins))
-    {
+                     dataBuffer(new FFTDataReal(defaultNumBins)) {
     }
 
     NoiseMessage(int numBins) : ThreadMessage(Type::NOISE),
-        dataBuffer(new FFTDataReal(numBins))
-    {
+                                dataBuffer(new FFTDataReal(numBins)) {
     }
-    ~NoiseMessage()
-    {
+    ~NoiseMessage() {
     }
     const int defaultNumBins = 64 * 1024;
 
@@ -165,19 +144,17 @@ public:
     std::unique_ptr<FFTDataReal> dataBuffer;
 };
 
-class NoiseServer : public ThreadServer
-{
+class NoiseServer : public ThreadServer {
 public:
-    NoiseServer(std::shared_ptr<ThreadSharedState> state) : ThreadServer(state)
-    {
+    NoiseServer(std::shared_ptr<ThreadSharedState> state) : ThreadServer(state) {
     }
+
 protected:
     /**
      * This is called on the server thread, not the audio thread.
      * We have plenty of time to do some heavy lifting here.
      */
-    virtual void handleMessage(ThreadMessage* msg) override
-    {
+    virtual void handleMessage(ThreadMessage* msg) override {
         if (msg->type != ThreadMessage::Type::NOISE) {
             assert(false);
             return;
@@ -187,21 +164,21 @@ protected:
         NoiseMessage* noiseMessage = static_cast<NoiseMessage*>(msg);
         reallocSpectrum(noiseMessage);
         FFT::makeNoiseSpectrum(noiseSpectrum.get(),
-            noiseMessage->noiseSpec);
+                               noiseMessage->noiseSpec);
 
         // Now inverse FFT to time domain noise in client's buffer
         FFT::inverse(noiseMessage->dataBuffer.get(), *noiseSpectrum.get());
-        FFT::normalize(noiseMessage->dataBuffer.get(), 5);          // use 5v amplitude.
+        FFT::normalize(noiseMessage->dataBuffer.get(), 5);  // use 5v amplitude.
         sendMessageToClient(noiseMessage);
     }
+
 private:
     std::unique_ptr<FFTDataCpx> noiseSpectrum;
 
     // may do nothing, may create the first buffer,
     // may delete the old buffer and make a new one.
-    void reallocSpectrum(const NoiseMessage* msg)
-    {
-        if (noiseSpectrum && ((int) noiseSpectrum->size() == msg->dataBuffer->size())) {
+    void reallocSpectrum(const NoiseMessage* msg) {
+        if (noiseSpectrum && ((int)noiseSpectrum->size() == msg->dataBuffer->size())) {
             return;
         }
 
@@ -210,15 +187,13 @@ private:
 };
 
 template <class TBase>
-float ColoredNoise<TBase>::getSlope() const
-{
+float ColoredNoise<TBase>::getSlope() const {
     const NoiseMessage* curMsg = crossFader.playingMessage();
     return curMsg ? curMsg->noiseSpec.slope : 0;
 }
 
 template <class TBase>
-void ColoredNoise<TBase>::commonConstruct()
-{
+void ColoredNoise<TBase>::commonConstruct() {
     crossFader.enableMakeupGain(true);
     std::shared_ptr<ThreadSharedState> threadState = std::make_shared<ThreadSharedState>();
     std::unique_ptr<ThreadServer> server(new NoiseServer(threadState));
@@ -228,15 +203,12 @@ void ColoredNoise<TBase>::commonConstruct()
 }
 
 template <class TBase>
-int ColoredNoise<TBase>::_msgCount() const
-{
+int ColoredNoise<TBase>::_msgCount() const {
     return messageCount;
 }
 
-
 template <class TBase>
-void ColoredNoise<TBase>::serviceFFTServer()
-{
+void ColoredNoise<TBase>::serviceFFTServer() {
     // see if we need to request first frame of sample data
     // first request will be white noise. Is that ok?
     if (!isRequestPending && crossFader.empty()) {
@@ -270,8 +242,7 @@ void ColoredNoise<TBase>::serviceFFTServer()
 }
 
 template <class TBase>
-void ColoredNoise<TBase>::serviceAudio()
-{
+void ColoredNoise<TBase>::serviceAudio() {
     float output = 0;
     NoiseMessage* oldMessage = crossFader.step(&output);
     if (oldMessage) {
@@ -282,18 +253,16 @@ void ColoredNoise<TBase>::serviceAudio()
     TBase::outputs[AUDIO_OUTPUT].setVoltage(output, 0);
 }
 
-
 template <class TBase>
-void ColoredNoise<TBase>::serviceInputs()
-{
+void ColoredNoise<TBase>::serviceInputs() {
     if (isRequestPending) {
-        return;     // can't do anything until server is free.
+        return;  // can't do anything until server is free.
     }
     if (crossFader.empty()) {
-        return;     // if we don't have data, we will be asking anyway
+        return;  // if we don't have data, we will be asking anyway
     }
     if (messagePool.empty()) {
-        return;     // all our buffers are in use
+        return;  // all our buffers are in use
     }
 
     T combinedSlope = cv_scaler(
@@ -331,8 +300,7 @@ void ColoredNoise<TBase>::serviceInputs()
 }
 
 template <class TBase>
-void ColoredNoise<TBase>::step()
-{
+void ColoredNoise<TBase>::step() {
     if (--cycleCount < 0) {
         cycleCount = 3;
     }
@@ -346,16 +314,13 @@ void ColoredNoise<TBase>::step()
     serviceAudio();
 }
 
-
 template <class TBase>
-int ColoredNoiseDescription<TBase>::getNumParams()
-{
+int ColoredNoiseDescription<TBase>::getNumParams() {
     return ColoredNoise<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config ColoredNoiseDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config ColoredNoiseDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case ColoredNoise<TBase>::SLOPE_PARAM:
@@ -369,4 +334,3 @@ inline IComposite::Config ColoredNoiseDescription<TBase>::getParam(int i)
     }
     return ret;
 }
-

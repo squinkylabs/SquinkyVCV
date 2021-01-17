@@ -4,22 +4,21 @@
 
 #include "AudioMath.h"
 #include "FormantTables2.h"
+#include "IComposite.h"
 #include "LookupTable.h"
 #include "LookupTableFactory.h"
 #include "ObjectCache.h"
 #include "StateVariableFilter.h"
-#include "IComposite.h"
 
 namespace rack {
-    namespace engine {
-        struct Module;
-    }
+namespace engine {
+struct Module;
 }
+}  // namespace rack
 using Module = ::rack::engine::Module;
 
 template <class TBase>
-class VocalDescription : public IComposite
-{
+class VocalDescription : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -30,33 +29,27 @@ public:
  * update filters less often => 28.4
  */
 template <class TBase>
-class VocalFilter : public TBase
-{
+class VocalFilter : public TBase {
 public:
     typedef float T;
     static const int numFilters = FormantTables2::numFormantBands;
 
-    VocalFilter(Module * module) : TBase(module)
-    {
+    VocalFilter(Module* module) : TBase(module) {
     }
-    VocalFilter() : TBase()
-    {
+    VocalFilter() : TBase() {
     }
 
     /** Implement IComposite
      */
-    static std::shared_ptr<IComposite> getDescription()
-    {
+    static std::shared_ptr<IComposite> getDescription() {
         return std::make_shared<VocalDescription<TBase>>();
     }
 
-    void setSampleRate(float rate)
-    {
+    void setSampleRate(float rate) {
         reciprocalSampleRate = 1 / rate;
     }
 
-    enum ParamIds
-    {
+    enum ParamIds {
         FILTER_Q_PARAM,
         FILTER_Q_TRIM_PARAM,
         FILTER_FC_PARAM,
@@ -69,8 +62,7 @@ public:
         NUM_PARAMS
     };
 
-    enum InputIds
-    {
+    enum InputIds {
         AUDIO_INPUT,
         FILTER_Q_CV_INPUT,
         FILTER_FC_CV_INPUT,
@@ -79,14 +71,12 @@ public:
         NUM_INPUTS
     };
 
-    enum OutputIds
-    {
+    enum OutputIds {
         AUDIO_OUTPUT,
         NUM_OUTPUTS
     };
 
-    enum LightIds
-    {
+    enum LightIds {
         LED_A,
         LED_E,
         LED_I,
@@ -122,11 +112,10 @@ public:
 };
 
 template <class TBase>
-inline void VocalFilter<TBase>::init()
-{
+inline void VocalFilter<TBase>::init() {
     for (int i = 0; i < numFilters; ++i) {
         filterParams[i].setMode(StateVariableFilterParams<T>::Mode::BandPass);
-        filterParams[i].setQ(15);           // or should it be 5?
+        filterParams[i].setQ(15);  // or should it be 5?
 
         filterParams[i].setFreq(T(.1));
     }
@@ -137,9 +126,7 @@ inline void VocalFilter<TBase>::init()
     AudioMath::ScaleFun<T> rawQKnob = AudioMath::makeLinearScaler<T>(-1, 1);
     scaleQ = [rawQKnob](T cv, T param, T trim) {
         T temp = rawQKnob(cv, param, trim);
-        return (temp >= 0) ?
-            1 - 3 * temp / 4 :
-            1 - temp;
+        return (temp >= 0) ? 1 - 3 * temp / 4 : 1 - temp;
     };
 
     // get reference to table of 2 ** x
@@ -148,8 +135,7 @@ inline void VocalFilter<TBase>::init()
 }
 
 template <class TBase>
-inline void VocalFilter<TBase>::stepFilters()
-{
+inline void VocalFilter<TBase>::stepFilters() {
     int model = 0;
     const T switchVal = TBase::params[FILTER_MODEL_SELECT_PARAM].value;
     if (switchVal < .5) {
@@ -171,8 +157,7 @@ inline void VocalFilter<TBase>::stepFilters()
         TBase::params[FILTER_VOWEL_PARAM].value,
         TBase::params[FILTER_VOWEL_TRIM_PARAM].value);
 
-
-    int iVowel = (int) std::floor(fVowel);
+    int iVowel = (int)std::floor(fVowel);
 
     assert(iVowel >= 0);
     if (iVowel >= formantTables.numVowels) {
@@ -205,13 +190,12 @@ inline void VocalFilter<TBase>::stepFilters()
         TBase::params[FILTER_BRIGHTNESS_PARAM].value,
         TBase::params[FILTER_BRIGHTNESS_TRIM_PARAM].value);
 
-
- //   T filterMix = 0;
+    //   T filterMix = 0;
     for (int i = 0; i < numFilters; ++i) {
         const T fcLog = formantTables.getLogFrequency(model, i, fVowel);
         const T normalizedBw = bwMultiplier * formantTables.getNormalizedBandwidth(model, i, fVowel);
 
-        // Get the filter gain from the table, but scale by BW to counteract the filters 
+        // Get the filter gain from the table, but scale by BW to counteract the filters
         // gain that tracks Q
         T gainDB = formantTables.getGain(model, i, fVowel);
 
@@ -226,16 +210,13 @@ inline void VocalFilter<TBase>::stepFilters()
 
         filterParams[i].setFreq(fcFinal * reciprocalSampleRate);
         filterParams[i].setNormalizedBandwidth(normalizedBw);
-      //  filterMix += gain * StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
+        //  filterMix += gain * StateVariableFilter<T>::run(input, filterStates[i], filterParams[i]);
     }
-   // TBase::outputs[AUDIO_OUTPUT].value = 3 * filterMix;
+    // TBase::outputs[AUDIO_OUTPUT].value = 3 * filterMix;
 }
 
-
 template <class TBase>
-inline void VocalFilter<TBase>::step()
-{
-
+inline void VocalFilter<TBase>::step() {
     if (--cycleCount < 0) {
         cycleCount = 3;
     }
@@ -243,7 +224,6 @@ inline void VocalFilter<TBase>::step()
     if (cycleCount == 0) {
         stepFilters();
     }
-
 
     T filterMix = 0;
     const T input = TBase::inputs[AUDIO_INPUT].getVoltage(0);
@@ -254,16 +234,14 @@ inline void VocalFilter<TBase>::step()
 }
 
 template <class TBase>
-int VocalDescription<TBase>::getNumParams()
-{
+int VocalDescription<TBase>::getNumParams() {
     return VocalFilter<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config VocalDescription<TBase>::getParam(int i)
-{
+inline IComposite::Config VocalDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
-    switch(i) {
+    switch (i) {
         case VocalFilter<TBase>::FILTER_VOWEL_PARAM:
             ret = {-5.0, 5.0, 0.0, "Vowel"};
             break;

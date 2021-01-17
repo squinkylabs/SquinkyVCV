@@ -2,7 +2,7 @@
 
 #include "GateTrigger.h"
 
-#define _CHAUDIOTAPER       // not needed any more?
+#define _CHAUDIOTAPER  // not needed any more?
 
 /**
  * Does all of the mute and mute CD processing for mixers
@@ -16,12 +16,9 @@
         numGroups
  */
 template <class TMixComposite>
-class MixHelper
-{
+class MixHelper {
 public:
-    MixHelper()
-    {
-
+    MixHelper() {
     }
     /**
      * input: params[MUTE_PARAM];
@@ -31,6 +28,7 @@ public:
     void procMixInputs(TMixComposite*);
 
     void procMasterMute(TMixComposite*);
+
 private:
     /**
      * local state tracking stuff. index is usually channel nubmer,
@@ -41,18 +39,17 @@ private:
     bool cvWasHigh[TMixComposite::numChannels + 1] = {false};
 
     void procOneMute(
-        int index,              // index into my input triggers, etc..
-        TMixComposite*, 
-        int muteParam, 
-        int muteStateParam, 
-        int light, 
+        int index,  // index into my input triggers, etc..
+        TMixComposite*,
+        int muteParam,
+        int muteStateParam,
+        int light,
         bool cvMuteToggle,
         int cvInput);
 };
 
 template <class TMixComposite>
-inline void MixHelper<TMixComposite>::procMixInputs(TMixComposite* mixer)
-{
+inline void MixHelper<TMixComposite>::procMixInputs(TMixComposite* mixer) {
     const bool cvToggleMode = mixer->params[TMixComposite::CV_MUTE_TOGGLE].value > .5;
     for (int i = 0; i < TMixComposite::numGroups; ++i) {
         procOneMute(
@@ -62,17 +59,15 @@ inline void MixHelper<TMixComposite>::procMixInputs(TMixComposite* mixer)
             TMixComposite::MUTE0_STATE_PARAM + i,
             TMixComposite::MUTE0_LIGHT + i,
             cvToggleMode,
-            TMixComposite::MUTE0_INPUT + i
-            );
+            TMixComposite::MUTE0_INPUT + i);
     }
 }
 
 template <class TMixComposite>
-inline void MixHelper<TMixComposite>::procMasterMute(TMixComposite* mixer)
-{
+inline void MixHelper<TMixComposite>::procMasterMute(TMixComposite* mixer) {
     const bool cvToggleMode = mixer->params[TMixComposite::CV_MUTE_TOGGLE].value > .5;
     procOneMute(
-        TMixComposite::numGroups,   // mute status comes after the groups
+        TMixComposite::numGroups,  // mute status comes after the groups
         mixer,
         TMixComposite::MASTER_MUTE_PARAM,
         TMixComposite::MASTER_MUTE_STATE_PARAM,
@@ -89,8 +84,7 @@ inline void MixHelper<TMixComposite>::procOneMute(
     int muteStateParam,
     int light,
     bool cvMuteToggle,
-    int cvInput)
-{
+    int cvInput) {
     assert(muteParam < TMixComposite::NUM_PARAMS);
     assert(muteStateParam < TMixComposite::NUM_PARAMS);
     assert(light < int(TMixComposite::NUM_LIGHTS));
@@ -129,5 +123,3 @@ inline void MixHelper<TMixComposite>::procOneMute(
     mixer->params[muteStateParam].value = muted ? 1.f : 0.f;
     mixer->lights[light].value = muted ? 10.f : 0.f;
 }
-
-

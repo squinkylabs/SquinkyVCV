@@ -27,6 +27,7 @@
 #include "daveguide.h"
 #include "DividerX.h"
 #include "F2_Poly.h"
+#include "Samp.h"
 
 
 #include "WVCO.h"
@@ -100,5 +101,6 @@ void testIComposite()
     test<Compressor<TestComposite>>();
     test<DividerX<TestComposite>>();
     test<F2_Poly<TestComposite>>();
+    test<Samp<TestComposite>>();
 
 }
