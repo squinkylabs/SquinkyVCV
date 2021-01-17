@@ -212,7 +212,7 @@ bool SLex::procEqualsSignInIdentifier() {
 
         std::string nextId = curItem.substr(lastSpacePos + 1);
         auto filenameEndIndex = lastSpacePos;
-        auto searchIndex = lastSpacePos;
+        int searchIndex = int(lastSpacePos);
         while (searchIndex >= 0 && curItem.at(searchIndex) == ' ') {
             filenameEndIndex = searchIndex;
             searchIndex--;

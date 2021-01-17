@@ -93,7 +93,7 @@ void RandomVoicePlayer::finalize() {
         const float avg = 1.f / tempEntries.size();
         float nextValue = avg;
        // for (TempHolder& ent : tempEntries) {
-        for (int i=0; i<tempEntries.size(); ++i) {
+        for (size_t i=0; i<tempEntries.size(); ++i) {
             tempEntries[i].hirand = nextValue;
             nextValue += avg;
         }
