@@ -1,9 +1,9 @@
 
 
 #include "SamplerPlayback.h"
-#include "WaveLoader.h"
 
 #include "SqLog.h"
+#include "WaveLoader.h"
 
 VoicePlayInfo::VoicePlayInfo(CompiledRegionPtr region, int midiPitch, int sampleIndex) {
     this->valid = true;
@@ -24,7 +24,7 @@ void SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& para
     cachedInfoToPlayInfo(info, params, data);
     if (loader) {
         // do we need to adapt to changed sample rate?
-        unsigned int waveSampleRate  = loader->getInfo(info.sampleIndex)->sampleRate; 
+        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->sampleRate;
         if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
             info.needsTranspose = true;
             info.transposeAmt = data.transposeAmt * sampleRate / float(waveSampleRate);
@@ -92,8 +92,8 @@ void RandomVoicePlayer::finalize() {
 
         const float avg = 1.f / tempEntries.size();
         float nextValue = avg;
-       // for (TempHolder& ent : tempEntries) {
-        for (size_t i=0; i<tempEntries.size(); ++i) {
+        // for (TempHolder& ent : tempEntries) {
+        for (size_t i = 0; i < tempEntries.size(); ++i) {
             tempEntries[i].hirand = nextValue;
             nextValue += avg;
         }
@@ -122,7 +122,7 @@ void RandomVoicePlayer::addEntry(CompiledRegionPtr region, int sampleIndex, int 
     CachedSamplerPlaybackInfoPtr info = std::make_shared<CachedSamplerPlaybackInfo>(region, midiPitch, sampleIndex);
     entries.push_back(info);
     rand.addRange(region->hirand);
-    printf("rand add range entries=%d hirane=%f\n", (int) entries.size(), region->hirand);
+    printf("rand add range entries=%d hirane=%f\n", (int)entries.size(), region->hirand);
 }
 #endif
 

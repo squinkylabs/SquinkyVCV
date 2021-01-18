@@ -18,6 +18,7 @@ public:
         unsigned int sampleRate = 0;
         uint64_t totalFrameCount = 0;
         const std::string fileName;
+
     private:
         static float* convertToMono(float* data, uint64_t frames, int channels);
     };

@@ -52,6 +52,12 @@ public:
     SamplerSchema::KeysAndValuesPtr compiledValues;
 };
 
+class SControl {
+public:
+    SKeyValueList values;
+    SamplerSchema::KeysAndValuesPtr compiledValues;
+};
+
 class SLex;
 class SLexItem;
 class SInstrument;
@@ -77,6 +83,7 @@ private:
     };
 
     static std::string matchGlobal(SGlobal&, SLexPtr);
+    static std::string matchControl(SControl&, SLexPtr);
     static std::string matchRegions(SRegionList&, SLexPtr);
     static Result matchRegion(SRegionList&, SLexPtr);
     static std::string matchGroups(SGroupList&, SLexPtr lex);

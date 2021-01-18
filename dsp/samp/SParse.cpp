@@ -1,6 +1,5 @@
 
 #include "SParse.h"
-#include "SqLog.h"
 
 #include <assert.h>
 
@@ -10,6 +9,8 @@
 
 #include "SInstrument.h"
 #include "SLex.h"
+#include "SqLog.h"
+#include "SqStream.h"
 
 // globals for mem leak detection
 int parseCount = 0;
@@ -42,7 +43,11 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
         return "";
     }
 
-    std::string sError = matchGlobal(inst->global, lex);
+    std::string sError = matchControl(inst->control, lex);
+    if (!sError.empty()) {
+        return sError;
+    }
+    sError = matchGlobal(inst->global, lex);
     if (!sError.empty()) {
         return sError;
     }
@@ -54,12 +59,21 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
         auto item = lex->next();
         auto type = item->itemType;
         auto lineNumber = item->lineNumber;
-        printf("extra tok line number %d type = %d index=%d\n", int(lineNumber), int(type), lex->_index());
+        SqStream errorStream;
+        errorStream.add("extra tok line number ");
+        errorStream.add(int(lineNumber));
+        errorStream.add(" type= ");
+        errorStream.add(int(type));
+        errorStream.add(" index=");
+        errorStream.add(lex->_index());
+        //printf("extra tok line number %d type = %d index=%d\n", int(lineNumber), int(type), lex->_index());
         if (type == SLexItem::Type::Identifier) {
             SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
-            printf("id name is %s\n", id->idName.c_str());
+            // printf("id name is %s\n", id->idName.c_str());
+            errorStream.add("id name is ");
+            errorStream.add(id->idName);
         }
-        return "extra tokens";
+        return errorStream.str();
     }
     if (inst->groups.empty()) {
         return "no groups or regions";
@@ -184,6 +198,16 @@ std::string SParse::matchGlobal(SGlobal& g, SLexPtr lex) {
     return sError;
 }
 
+std::string SParse::matchControl(SControl& c, SLexPtr lex) {
+    auto token = lex->next();
+    std::string sError;
+    if (getTagName(token) == "control") {
+        lex->consume();
+        sError = matchKeyValuePairs(c.values, lex);
+    }
+
+    return sError;
+}
 std::string SParse::matchKeyValuePairs(SKeyValueList& values, SLexPtr lex) {
     for (bool done = false; !done;) {
         auto result = matchKeyValuePair(values, lex);

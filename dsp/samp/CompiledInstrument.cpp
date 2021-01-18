@@ -214,7 +214,7 @@ void CompiledInstrument::addSingleRegionPitchPlayers(PitchSwitchPtr dest, Compil
                 CompiledMultiRegionPtr multiRegion = std::dynamic_pointer_cast<CompiledMultiRegion>(region);
                 RandomVoicePlayerPtr multiPlayer = std::make_shared<RandomVoicePlayer>();
 #ifdef _LOG
-                printf("addSingleRegionPitchPlayers making Random from region #%d number in rotaion is %d\n", region->lineNumber, (int) multiRegion->getRegions().size());
+                printf("addSingleRegionPitchPlayers making Random from region #%d number in rotaion is %d\n", region->lineNumber, (int)multiRegion->getRegions().size());
 #endif
                 for (auto region : multiRegion->getRegions()) {
                     const int sampleIndex = addSampleFile(region->sampleFile);

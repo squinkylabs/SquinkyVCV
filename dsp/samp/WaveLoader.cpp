@@ -1,9 +1,11 @@
 
-#include "SqLog.h"
 #include "WaveLoader.h"
 
 #include <assert.h>
+
 #include <algorithm>
+
+#include "SqLog.h"
 
 #define DR_WAV_IMPLEMENTATION
 #include "dr_wav.h"
@@ -55,7 +57,7 @@ void WaveLoader::WaveInfo::load() {
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
-        SQWARN("error opening wave %s",  fileName.c_str());
+        SQWARN("error opening wave %s", fileName.c_str());
         return;
     }
     //SQINFO("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
@@ -67,25 +69,21 @@ void WaveLoader::WaveInfo::load() {
     valid = true;
 }
 
-
-float* WaveLoader::WaveInfo::convertToMono(float* data, uint64_t frames, int channels)
-{
-    
+float* WaveLoader::WaveInfo::convertToMono(float* data, uint64_t frames, int channels) {
     uint64_t newBufferSize = 1 + frames / channels;
     void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
-    float* dest = reinterpret_cast<float *>(x);
-    for (uint64_t i=0; i< frames / channels; ++i) {
+    float* dest = reinterpret_cast<float*>(x);
+    for (uint64_t i = 0; i < frames / channels; ++i) {
         float temp = 0;
-        for (int ch=0; ch<channels; ++ch) {
+        for (int ch = 0; ch < channels; ++ch) {
             temp += data[i + ch];
-        
         }
         temp /= channels;
         assert(temp <= 1);
         assert(temp >= -1);
         dest[i] = temp;
     }
-    
+
     DRWAV_FREE(data);
     return dest;
 }

@@ -246,7 +246,7 @@ void SLex::addCompletedItem(SLexItemPtr item, bool clearCurItem) {
 
 std::string SLexItem::lineNumberAsString() const {
     char buf[100];
-   // sprintf_s(buf, "%d", lineNumber);
+    // sprintf_s(buf, "%d", lineNumber);
     snprintf(buf, sizeof(buf), "%d", lineNumber);
     return buf;
 }

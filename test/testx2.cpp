@@ -11,6 +11,8 @@
 #include "asserts.h"
 #include "samplerTests.h"
 
+#include "SqLog.h"
+
 //#include "SParse.h"
 
 static const char* tinnyPiano = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
@@ -353,6 +355,19 @@ static void testParseGlobalWitRegionKVCompiled() {
     auto val = r->compiledValues->get(SamplerSchema::Opcode::LO_KEY);
     assertEQ(val->numericInt, 57);
 }
+
+static void testParseControl() {
+  const char* data = R"foo(<control>
+
+
+default_path=Woodwinds\Bassoon\stac\
+)foo";
+  
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+    assert(err.empty());
+}
+
 
 static void testCompileInst0() {
     printf("\n-- test comp inst 1\n");
@@ -1086,6 +1101,29 @@ static void testCompileSort() {
     assertEQ(regions[2]->hivel, 127);
 }
 
+static void testComp(const std::string& path) {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::goFile(path, inst);
+    if (!err.empty()) {
+        SQWARN("parse ret %s", err.c_str());
+    }
+    assert(err.empty());
+  //  go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    // ci->_dump(0);
+    VoicePlayInfo info;
+      VoicePlayParameter params;
+        params.midiPitch = 40;
+        params.midiVelocity = 110;
+    ci->play(info, params, nullptr, 0);
+}
+
+static void testCompileBassoon()
+{
+    testComp(R"foo(D:\samples\VSCO-2-CE-1.1.0\VSCO-2-CE-1.1.0\BassoonStac.sfz)foo");
+}
+
 static void testSampleRate() {
     WaveLoader w;
     // TODO: change back to k18 orig when test is done
@@ -1141,6 +1179,9 @@ void testx2() {
     testParseGlobalAndRegionCompiled();
     testParseGlobalWithKVAndRegionCompiled();
     testParseGlobalWitRegionKVCompiled();
+    testParseControl();
+   
+
 
     testCompiledRegion();
     testCompiledRegionInherit();
@@ -1167,6 +1208,7 @@ void testx2() {
     testCompileMulPitchAndVelSimple();
     testCompileMulPitchAndVelComplex1();
     testCompileMulPitchAndVelComplex2();
+    testCompileBassoon();
     testGroupInherit();
     assertEQ(compileCount, 0);
     testCompileSimpleDrum();

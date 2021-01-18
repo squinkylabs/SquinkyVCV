@@ -70,15 +70,17 @@ public:
     float ampeg_release = .001f;
 
     CompiledGroupPtrWeak weakParent;
-    int lineNumber = -1;;
+    int lineNumber = -1;
+    ;
+
 protected:
     CompiledRegion(CompiledRegionPtr);
-    CompiledRegion& operator = (const CompiledRegion&) = default;
+    CompiledRegion& operator=(const CompiledRegion&) = default;
 
 private:
-    static void findValue (int& returnValue, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
-    static void findValue (float&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
-    static void findValue (std::string&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+    static void findValue(int& returnValue, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+    static void findValue(float&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+    static void findValue(std::string&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
 };
 
 /**
@@ -89,6 +91,7 @@ class CompiledMultiRegion : public CompiledRegion {
 public:
     CompiledMultiRegion(CompiledGroupPtr parent);
     const std::vector<CompiledRegionPtr>& getRegions() { return originalRegions; }
+
 protected:
     std::vector<CompiledRegionPtr> originalRegions;
 };
@@ -120,6 +123,7 @@ public:
     std::vector<CompiledRegionPtr> regions;
     CompiledRegion::Type type() const;
     int sequence_length = 0;
+
 private:
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
 };

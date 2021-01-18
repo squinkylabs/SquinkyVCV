@@ -1,12 +1,12 @@
 
 #include "CompiledRegion.h"
-#include "SamplerSchema.h"
 
 #include <functional>
 #include <set>
 
 #include "CompiledInstrument.h"
 #include "SParse.h"
+#include "SamplerSchema.h"
 
 int compileCount = 0;
 
@@ -15,9 +15,9 @@ void CompiledRegion::findValue(int& intValue, SamplerSchema::Opcode opcode, cons
     auto value = reg.compiledValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Int);
-         intValue = value->numericInt;
-         return;
-     }
+        intValue = value->numericInt;
+        return;
+    }
     value = parent.compiledValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Int);
@@ -28,7 +28,6 @@ void CompiledRegion::findValue(int& intValue, SamplerSchema::Opcode opcode, cons
 }
 
 void CompiledRegion::findValue(float& floatValue, SamplerSchema::Opcode opcode, const SGroup& parent, const SRegion& reg) {
-
     auto value = reg.compiledValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Float);
@@ -45,13 +44,12 @@ void CompiledRegion::findValue(float& floatValue, SamplerSchema::Opcode opcode, 
 }
 
 void CompiledRegion::findValue(std::string& strValue, SamplerSchema::Opcode opcode, const SGroup& parent, const SRegion& reg) {
-
     auto value = reg.compiledValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::String);
-         strValue = value->string;
-         return;
-     }
+        strValue = value->string;
+        return;
+    }
     value = parent.compiledValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::String);
@@ -80,12 +78,12 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     if (key >= 0) {
         lokey = hikey = keycenter = key;
     }
-   
+
     findValue(seq_position, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
-    findValue(sampleFile,  SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
-    findValue(keycenter,  SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
-    findValue(lovel,  SamplerSchema::Opcode::LO_VEL, *parsedParent, reg);
-    findValue(hivel,  SamplerSchema::Opcode::HI_VEL, *parsedParent, reg);
+    findValue(sampleFile, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
+    findValue(keycenter, SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
+    findValue(lovel, SamplerSchema::Opcode::LO_VEL, *parsedParent, reg);
+    findValue(hivel, SamplerSchema::Opcode::HI_VEL, *parsedParent, reg);
 
     findValue(lorand, SamplerSchema::Opcode::LO_RAND, *parsedParent, reg);
     findValue(hirand, SamplerSchema::Opcode::HI_RAND, *parsedParent, reg);
@@ -139,14 +137,10 @@ CompiledMultiRegion::CompiledMultiRegion(CompiledGroupPtr parent) : CompiledRegi
     }
 }
 
-CompiledRoundRobinRegion::CompiledRoundRobinRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {
-};
+CompiledRoundRobinRegion::CompiledRoundRobinRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent){};
 
 CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {
 }
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -164,7 +158,7 @@ CompiledGroup::CompiledGroup(SGroupPtr group) {
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Int);
         sequence_length = value->numericInt;
-     }
+    }
 }
 
 bool CompiledGroup::shouldIgnore() const {
@@ -176,15 +170,13 @@ CompiledRegion::Type CompiledGroup::type() const {
     CompiledRegion::Type theType = CompiledRegion::Type::Base;
     if (this->sequence_length > 0) {
         theType = CompiledRegion::Type::RoundRobin;
-    }
-    else {
-        bool isProbabilty = !regions.empty();   // assume if any regions we are a probability group
+    } else {
+        bool isProbabilty = !regions.empty();  // assume if any regions we are a probability group
         for (auto child : regions) {
             // lorand=0 hirand=0.3
             if (child->lorand < 0) {
                 isProbabilty = false;
             }
-
         }
         if (isProbabilty) {
             theType = CompiledRegion::Type::Random;
