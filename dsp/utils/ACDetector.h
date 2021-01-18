@@ -8,13 +8,13 @@
 
 class ACDetector {
 public:
-    ACDetector() : trig(.1f, .1f) {}
-   // bool step(SqInput& input, int numChannels);
+    ACDetector() : trig(-threshold, threshold) {}
     bool step(float combinedInput);
+    const float threshold = .1f;
 
-private:
-    // let's turn on at 200 hz
+    // let's turn off at 200 hz
     const int thresholdPeriod = 44100 / 200;
+private:
     int counter = 0;
     bool lastValue = false;
     bool isACInput = false;
@@ -41,7 +41,7 @@ inline bool ACDetector::step(float combinedInput) {
         counter = 0;
     } else if (change) {
         // we active, but we got a change
-        isACInput = change;
+        isACInput = true;
         counter = 0;
     } else {
         // are active, but no input
