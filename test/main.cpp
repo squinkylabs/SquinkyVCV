@@ -110,6 +110,7 @@ extern void testx3();
 extern void testx4();
 extern void testADSR();
 extern void testWavThread();
+extern void testACDetector();
 
 #if 0
 #include <sstream>
@@ -211,6 +212,7 @@ if (runShaperGen) {
     testOnset2();
 
     testBiquad();
+    testACDetector();
 
 
     testSqStream();
