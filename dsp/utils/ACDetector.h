@@ -5,15 +5,17 @@
 #include "LowpassFilter.h"
 #include "SchmidtTrigger.h"
 
-
 class ACDetector {
 public:
-    ACDetector() : trig(-threshold, threshold) {}
+    ACDetector();
+    ACDetector(const ACDetector&) = delete;
+
     bool step(float combinedInput);
     const float threshold = .1f;
 
-    // let's turn off at 200 hz
+    // let's turn off at 200 Hz.
     const int thresholdPeriod = 44100 / 200;
+
 private:
     int counter = 0;
     bool lastValue = false;
@@ -21,15 +23,20 @@ private:
 
     SchmidtTrigger trig;
     LowpassFilterParams<float> dcBlockParams;
+    LowpassFilterState<float> dcBlockState;
 };
 
-inline bool ACDetector::step(float combinedInput) {
+inline ACDetector::ACDetector() : trig(-threshold, threshold) {
+    LowpassFilter<float>::setCutoff(dcBlockParams, 1.f / thresholdPeriod);
+}
 
+inline bool ACDetector::step(float _combinedInput) {
     //bool detector = false;
 
+    const float lpRout =  LowpassFilter<float>::run(_combinedInput, dcBlockState, dcBlockParams); 
+    const float combinedInput = _combinedInput - lpRout;
 
-
-  //  bool inputV = input.getVoltage(0) > .5;  // todo: schmidt
+    //  bool inputV = input.getVoltage(0) > .5;  // todo: schmidt
     bool inputV = trig.go(combinedInput);
     bool change = inputV != lastValue;
     lastValue = inputV;
