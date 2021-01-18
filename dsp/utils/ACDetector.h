@@ -2,11 +2,15 @@
 
 #include <assert.h>
 
-#include "SqPort.h"
+#include "LowpassFilter.h"
+#include "SchmidtTrigger.h"
+
 
 class ACDetector {
 public:
-    bool step(SqInput& input, int numChannels);
+    ACDetector() : trig(.1f, .1f) {}
+   // bool step(SqInput& input, int numChannels);
+    bool step(float combinedInput);
 
 private:
     // let's turn on at 200 hz
@@ -14,16 +18,19 @@ private:
     int counter = 0;
     bool lastValue = false;
     bool isACInput = false;
+
+    SchmidtTrigger trig;
+    LowpassFilterParams<float> dcBlockParams;
 };
 
-inline bool ACDetector::step(SqInput& input, int numChannels) {
-    assert(numChannels == 1);  // todo: implement poly
-    bool detector = false;
-    if (!input.isConnected()) {
-        return false;
-    }
+inline bool ACDetector::step(float combinedInput) {
 
-    bool inputV = input.getVoltage(0) > .5;  // todo: schmidt
+    //bool detector = false;
+
+
+
+  //  bool inputV = input.getVoltage(0) > .5;  // todo: schmidt
+    bool inputV = trig.go(combinedInput);
     bool change = inputV != lastValue;
     lastValue = inputV;
     if (!isACInput) {
