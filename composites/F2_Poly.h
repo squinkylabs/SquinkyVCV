@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "ACDetector.h"
 #include "AudioMath_4.h"
 #include "Divider.h"
 #include "IComposite.h"
@@ -20,6 +21,8 @@
 
 #include "simd.h"
 
+// Let's leave this off.
+// #define _ACDETECT
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
@@ -146,6 +149,9 @@ public:
     };
 
     enum LightIds {
+#ifdef _ACDETECT
+        LIGHT_TEST,
+#endif
         NUM_LIGHTS
     };
 
@@ -196,7 +202,7 @@ private:
     float_4 processedRValue = -1;
 
     // Divider divn;
-    // default to 1/4 SR cv update, go on next one 
+    // default to 1/4 SR cv update, go on next one
     int stepNcounter = 3;
     int stepNmax = 3;
 
@@ -220,13 +226,17 @@ private:
     void processGeneric(const typename TBase::ProcessArgs& args);
 
     AudioMath_4::ScaleFun scaleFc = AudioMath_4::makeScalerWithBipolarAudioTrim(0, 10, 0, 10);
+#ifdef _ACDETECT
+    ACDetector ac;
+    void checkForACCV();
+#endif
 };
 
 template <class TBase>
 inline void F2_Poly<TBase>::init() {
-  //  divn.setup(4, [this]() {
-  //      this->stepn();
-  //  });
+    //  divn.setup(4, [this]() {
+    //      this->stepn();
+    //  });
     divm.setup(16, [this]() {
         this->stepm();
     });
@@ -247,8 +257,10 @@ inline void F2_Poly<TBase>::stepm() {
     setupProcFunc();
     limiterEnabled_m = bool(std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
 
+#if !defined(_ACDETECT)
     const bool hres = bool(.5f < std::round(F2_Poly<TBase>::params[CV_UPDATE_FREQ].value));
     stepNmax = hres ? 0 : 3;
+    #endif
 }
 
 template <class TBase>
@@ -389,7 +401,31 @@ inline void F2_Poly<TBase>::setupProcFunc() {
     }
 }
 
+#ifdef _ACDETECT
+template <class TBase>
+inline void F2_Poly<TBase>::checkForACCV() {
+    SqInput& qPort = TBase::inputs[Q_INPUT];
+    SqInput& rPort = TBase::inputs[R_INPUT];
+    SqInput& fcPort = TBase::inputs[FC_INPUT];
+    if (!qPort.isConnected() && !rPort.isConnected() && !fcPort.isConnected()) {
+        stepNmax = 0;
+        TBase::lights[LIGHT_TEST].value = 0;
+        return;
+    }
 
+    float_4 total4 = float_4(0);
+    for (int bank = 0; bank < numBanks_m; bank++) {
+        const int baseChannel = 4 * bank;  
+        total4 += qPort.getPolyVoltageSimd<float_4>(baseChannel);
+        total4 += rPort.getPolyVoltageSimd<float_4>(baseChannel);
+        total4 += fcPort.getPolyVoltageSimd<float_4>(baseChannel);
+    }
+    float total = total4[0] + total4[1] + total4[2] + total4[3]; 
+    bool b = ac.step(total);
+    stepNmax = b ? 3 : 0;
+    TBase::lights[LIGHT_TEST].value = b ? 10.f : 0.f;
+}
+#endif
 
 template <class TBase>
 inline void F2_Poly<TBase>::stepn() {
@@ -398,13 +434,18 @@ inline void F2_Poly<TBase>::stepn() {
         return;
     }
     stepNcounter = 0;
+#ifdef _ACDETECT   
+    checkForACCV();
+#endif
     setupFreq();
 }
 
 template <class TBase>
 inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args) {
     divm.step();
-   // divn.step();
+    // divn.step();
+
+    // always do the CV calc, even though it might be divided.
     stepn();
     assert(oversample == 4);
     assert(procFun);
