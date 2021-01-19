@@ -25,6 +25,10 @@ using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 
 class CompiledInstrument : public ISamplerPlayback {
 public:
+    /**
+     * high level entry point to compile an instrument.
+     * will return null if error, and log the error cause as best it can.
+     */
     static CompiledInstrumentPtr make(const SInstrumentPtr);
     void play(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
@@ -67,9 +71,9 @@ private:
     std::map<std::string, int> relativeFilePaths;
     int nextIndex = 1;
 
-    void compile(const SInstrumentPtr);
-    void compileOld(const SInstrumentPtr);
-    void buildCompiledTree(const SInstrumentPtr i);
+    bool compile(const SInstrumentPtr);
+    //void compileOld(const SInstrumentPtr);
+    bool buildCompiledTree(const SInstrumentPtr i);
 
     ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);
     ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth);

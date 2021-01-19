@@ -280,9 +280,14 @@ public:
 
         // TODO: need a way for compiler to return error;
         CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+        if (!cinst) {
+            sendMessageToClient(msg);
+            return;
+        }
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
 
         cinst->setWaves(waves, samplePath);
+        // TODO: errors from wave loader
 
         // TODO: need a way for wave loader to return error/
         waves->load();

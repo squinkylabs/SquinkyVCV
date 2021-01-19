@@ -12,6 +12,7 @@
 #include "SInstrument.h"
 #include "SParse.h"
 #include "SamplerPlayback.h"
+#include "SqLog.h"
 #include "VelSwitch.h"
 #include "WaveLoader.h"
 
@@ -24,9 +25,12 @@ using Value = SamplerSchema::Value;
 //#define _LOG
 //#define _LOGOV
 
-void CompiledInstrument::compile(const SInstrumentPtr in) {
+bool CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);
-    buildCompiledTree(in);
+    bool ret = buildCompiledTree(in);
+    if (!ret) {
+        return false;
+    }
 
     // here we can prune the tree - removing regions that map to the same thing
     std::vector<CompiledRegionPtr> regions;
@@ -36,6 +40,10 @@ void CompiledInstrument::compile(const SInstrumentPtr in) {
 
     // now we need to build the player tree
     player = buildPlayerVelLayers(regions, 0);
+    if (!player) {
+        ret = false;
+    }
+    return ret;
 }
 
 int CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions) {
@@ -343,7 +351,7 @@ void CompiledInstrument::_dump(int depth) const {
     }
 }
 
-static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr cGroup) {
+static bool remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr cGroup) {
     assert(cGroup->regions.size());
     // First, make the new "mega region"
     // Take all the "normal" properties from the first region ("the prototype")
@@ -357,15 +365,36 @@ static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
             break;
         default:
             assert(false);
+            return false;
     }
 
     // validate assumptions about the schema
     CompiledRegionPtr prototype = cGroup->regions[0];
     for (auto region : cGroup->regions) {
+#if 1
+        if (region->lokey != prototype->lokey) {
+            SQWARN("prototype lokey mismatch at #%d", region->lineNumber);
+            return false;
+        }
+        if (region->hikey != prototype->hikey) {
+            SQWARN("prototype hikey mismatch at #%d", region->lineNumber);
+            return false;
+        }
+        if (region->lovel != prototype->lovel) {
+            SQWARN("prototype lovel mismatch at #%d", region->lineNumber);
+            return false;
+        }
+        if (region->hivel != prototype->hivel) {
+            SQWARN("prototype hivel mismatch at #%d", region->lineNumber);
+            return false;
+        }
+
+#else
         assert(region->lokey == prototype->lokey);
         assert(region->hikey == prototype->hikey);
         assert(region->lovel == prototype->lovel);
         assert(region->hivel == prototype->hivel);
+#endif
     }
 
     // now get rid of all the regions that were in our group
@@ -375,10 +404,11 @@ static void remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
     // And substitute this new multi region
     cGroup->addChild(multi);
     multi->weakParent = cGroup;
+    return true;
 }
 
-#if 1  // original way
-void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
+bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
+
     for (auto group : in->groups) {
         auto cGroup = std::make_shared<CompiledGroup>(group);
         if (!cGroup->shouldIgnore()) {
@@ -399,15 +429,20 @@ void CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
                     //  cGroup->regions.clear();
                     //  CompiledRegionPtr newRegion = std::make_shared < CompiledRoundRobbinRegion>();
                     //  cGroup->regions.push_back(newRegion);
-                    remakeTreeForMultiRegion(type, cGroup);
+                    bool b = remakeTreeForMultiRegion(type, cGroup);
+                    if (!b) {
+                        return false;
+                    }
                 } break;
                 default:
                     assert(false);
+                    return false;
             }
         }
     }
+    return true;
 }
-#endif
+
 
 void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array) {
     assert(array.empty());
@@ -479,8 +514,8 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPt
     assert(!inst->wasExpanded);
     expandAllKV(inst);
     CompiledInstrumentPtr instOut = std::make_shared<CompiledInstrument>();
-    instOut->compile(inst);
-    return instOut;
+    const bool result = instOut->compile(inst);
+    return result ? instOut : nullptr;
 }
 
 void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {

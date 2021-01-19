@@ -1157,6 +1157,7 @@ static void testComp(const std::string& path) {
   //  go(data, inst);
 
     auto ci = CompiledInstrument::make(inst);
+    assert(ci);
     // ci->_dump(0);
     VoicePlayInfo info;
       VoicePlayParameter params;
