@@ -8,7 +8,6 @@
 #include "PitchSwitch.h"
 #include "SamplerPlayback.h"
 
-//class SKeyValuePair;
 class SInstrument;
 class SRegion;
 class WaveLoader;
@@ -20,8 +19,40 @@ using SRegionPtr = std::shared_ptr<SRegion>;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 using SGroupPtr = std::shared_ptr<SGroup>;
 using VelSwitchPtr = std::shared_ptr<VelSwitch>;
-
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
+
+/**
+ * How "Compiling" works.
+ * 
+ * Compilation run after a successful parse. The input is a parse tree (SInstrumentPtr).
+ * The output is a fully formed "Play" tree.
+ * The intermediate data is the "compiled object" tree, which is rooted ad CompiledInstrument::groups
+ * 
+ * expandAllKV(inst) is called on the parse tree. It turns the textual parse data, which are
+ * string key value pairs into a directly accessible database (SamplerSchema::KeysAndValuesPtr), and put back
+ * into the PARSE tree as compiled values.
+ * 
+ * Uninitialized CompiledInstrument is created.
+ * 
+ * CompiledInstrument::compile(SInstrumentPtr) is called.
+ * 
+ * CompiledInstrument::buildCompiledTree. This runs over the parse tree, and build up
+ * the compiled tree rooted in CompiledInstrument::groups. This is where we find round robin
+ * and random regions and combine them into a single CompiledMiltiRegion.
+ * 
+ * CompiledInstrument::removeOverlaps() This is the one place where we identify any regions that might
+ * play at the same time (same pitch range, same velocity range). If we find an overlap, the smallest
+ * region wins and the others are discarded.
+ * 
+ * Lastly, the final "player" is build. This starts with buildPlayerVelLayers, but it recurses alternating velocity layers and
+ * pitch layers. The is special handling for RegionGroups.
+ * 
+ * Some notable things:
+ *      the compiled tree mirrors the structure of the parse tree pretty closely, other than the multi-regions.
+ *      the "player tree" does not follow that structure at all.
+ * 
+ * Q: where do we pruned (for example) the release samples?
+ */
 
 class CompiledInstrument : public ISamplerPlayback {
 public:
