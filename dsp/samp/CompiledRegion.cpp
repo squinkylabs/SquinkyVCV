@@ -144,7 +144,7 @@ CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMu
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-CompiledGroup::CompiledGroup(SGroupPtr group) {
+CompiledGroup::CompiledGroup(SGroupPtr group) : lineNumber(group->lineNumber) {
     compileCount++;
 
     auto value = group->compiledValues->get(Opcode::TRIGGER);

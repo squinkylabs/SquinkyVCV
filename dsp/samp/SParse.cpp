@@ -90,7 +90,7 @@ std::string SParse::matchGroupsOrRegions(SGroupList& groups, SLexPtr lex) {
     }
     if (getTagName(token) == "region") {
         // OK, the first thing is a region. To let's put it in a group, and continue
-        SGroupPtr fakeGroup = std::make_shared<SGroup>();
+        SGroupPtr fakeGroup = std::make_shared<SGroup>(token->lineNumber);
         groups.push_back(fakeGroup);
         auto resultString = matchRegions(fakeGroup->regions, lex);
         if (!resultString.empty()) {
@@ -140,7 +140,7 @@ SParse::Result SParse::matchGroup(SGroupList& groups, SLexPtr lex) {
     lex->consume();
 
     // make a new group to hold this one, and put it into the groups
-    SGroupPtr newGroup = std::make_shared<SGroup>();
+    SGroupPtr newGroup = std::make_shared<SGroup>(tok->lineNumber);
     groups.push_back(newGroup);
 
     // add all the key-values that belong to the group

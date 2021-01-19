@@ -361,6 +361,52 @@ static void testParseControl() {
 
 
 default_path=Woodwinds\Bassoon\stac\
+
+
+<global>
+
+
+
+
+ampeg_attack=0.001
+
+
+ampeg_release=3
+
+
+ampeg_dynamic=1
+
+
+
+
+volume=0
+
+
+
+
+<group> //Begin Group 1
+
+
+
+
+lorand=0.0 hirand=0.5
+
+
+group_label=gr_1
+
+
+
+
+
+
+<region>
+sample=PSBassoon_A1_v1_rr1.wav
+lokey=43
+hikey=46
+pitch_keycenter=45
+lovel=0
+hivel=62
+volume=12
 )foo";
   
     SInstrumentPtr inst = std::make_shared<SInstrument>();

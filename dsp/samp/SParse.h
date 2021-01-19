@@ -23,6 +23,7 @@ class SRegion {
 public:
     SRegion(int line) : lineNumber(line) { ++parseCount; }
     ~SRegion() { --parseCount; }
+    SRegion(const SRegion&) = delete;
     SKeyValueList values;
     SamplerSchema::KeysAndValuesPtr compiledValues;
     const int lineNumber = 0;
@@ -35,10 +36,13 @@ using SRegionList = std::vector<SRegionPtr>;
 // and they usually have children.
 class SGroup {
 public:
+    SGroup(int line) : lineNumber(line) {}
+    SGroup() = delete;
+
     SKeyValueList values;
     SamplerSchema::KeysAndValuesPtr compiledValues;
     SRegionList regions;
-
+    const int lineNumber;
     void _dump();
     static void dumpKeysAndValues(const SKeyValueList& v);
 };

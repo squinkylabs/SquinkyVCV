@@ -123,6 +123,7 @@ public:
     std::vector<CompiledRegionPtr> regions;
     CompiledRegion::Type type() const;
     int sequence_length = 0;
+    const int lineNumber;
 
 private:
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
