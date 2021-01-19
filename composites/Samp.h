@@ -117,6 +117,10 @@ public:
     //void step() override;
     void process(const typename TBase::ProcessArgs& args) override;
 
+    void setSamplePath(const std::string& path) {
+        SQWARN("Samp::setSamplePath unused");
+    }
+
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
                              // SInstrumentPtr instrument;
