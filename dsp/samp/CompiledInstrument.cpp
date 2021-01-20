@@ -417,7 +417,37 @@ static bool remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
     return true;
 }
 
-bool  CompiledInstrument::fixupOneRandomGrouping(GroupIter) {
+
+/**
+ * Inputs: a sequential list of 'n' groups with random probabilities on them.
+ *  each group in the list has 'r' regions as children, and they all match, in order
+ * 
+ * output 'r' mega groups, each with 'n' children.
+ * probabilities on the children.
+ */
+bool  CompiledInstrument::fixupOneRandomGrouping(GroupIter inputIter) {
+    // first, get all the groups in this random
+    std::vector<CompiledGroupPtr> randoGroups;
+    
+    // search throught all the input, picking stuff that belongs together
+    // for now, let's take all the random groups
+    for (bool done=false; !done; ) {
+        SQINFO("found one");
+        CompiledGroupPtr gp = *inputIter;
+        if (gp->lorand < 0) {
+            done = true;
+        }
+
+        if (!done) {
+            randoGroups.push_back(gp);
+        }
+        if (++inputIter == groups.end()) {
+            done = true;
+        }
+        
+    }
+
+
     assert(false);
     return false;
 }
