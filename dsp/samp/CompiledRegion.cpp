@@ -159,6 +159,16 @@ CompiledGroup::CompiledGroup(SGroupPtr group) : lineNumber(group->lineNumber) {
         assert(value->type == SamplerSchema::OpcodeType::Int);
         sequence_length = value->numericInt;
     }
+    value = group->compiledValues->get(Opcode::LO_RAND);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Float);
+        lorand = value->numericFloat;
+    }
+    value = group->compiledValues->get(Opcode::HI_RAND);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Float);
+        hirand = value->numericFloat;
+    }
 }
 
 bool CompiledGroup::shouldIgnore() const {
@@ -170,6 +180,9 @@ CompiledRegion::Type CompiledGroup::type() const {
     CompiledRegion::Type theType = CompiledRegion::Type::Base;
     if (this->sequence_length > 0) {
         theType = CompiledRegion::Type::RoundRobin;
+    } else if (this->lorand >= 0) {
+       // the group has prob on it.
+        theType = CompiledRegion::Type::GRandom;
     } else {
         bool isProbabilty = !regions.empty();  // assume if any regions we are a probability group
         for (auto child : regions) {

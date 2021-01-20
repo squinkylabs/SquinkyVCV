@@ -32,6 +32,11 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
         return false;
     }
 
+    ret = fixupCompiledTree();
+    if (!ret) {
+        return false;
+    }
+
     // here we can prune the tree - removing regions that map to the same thing
     std::vector<CompiledRegionPtr> regions;
     getAllRegions(regions);
@@ -351,6 +356,11 @@ void CompiledInstrument::_dump(int depth) const {
     }
 }
 
+static bool remakeTreeForGMultiRegion() {
+    assert(false);
+    return false;
+}
+
 static bool remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr cGroup) {
     assert(cGroup->regions.size());
     // First, make the new "mega region"
@@ -407,8 +417,36 @@ static bool remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
     return true;
 }
 
-bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
+bool  CompiledInstrument::fixupOneRandomGrouping(GroupIter) {
+    assert(false);
+    return false;
+}
 
+bool CompiledInstrument::fixupCompiledTree() {
+    for (auto iter = groups.begin(); iter != groups.end(); ++iter) {
+        CompiledGroupPtr cGroup = *iter;
+        const CompiledRegion::Type type = cGroup->type();
+        switch (type) {
+            case CompiledRegion::Type::GRandom: {
+                bool b = fixupOneRandomGrouping(iter);
+                if (!b) {
+                    return false;
+                }
+                //assert(false);
+                break;
+            } break;
+            case CompiledRegion::Type::Base:
+            case CompiledRegion::Type::RoundRobin:
+            case CompiledRegion::Type::Random:
+                break;
+            default:
+                assert(false);
+        }
+    }
+    return true;
+}
+
+bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
     for (auto group : in->groups) {
         auto cGroup = std::make_shared<CompiledGroup>(group);
         if (!cGroup->shouldIgnore()) {
@@ -434,6 +472,10 @@ bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
                         return false;
                     }
                 } break;
+                case CompiledRegion::Type::GRandom: {
+                    // do nothing, we will fixup in a second pass.
+                    //bool b = remakeTreeForGMultiRegion();
+                } break;
                 default:
                     assert(false);
                     return false;
@@ -442,7 +484,6 @@ bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
     }
     return true;
 }
-
 
 void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array) {
     assert(array.empty());

@@ -88,6 +88,7 @@ public:
     // test accessor
     const std::vector<CompiledGroupPtr>& _groups() { return groups; }
 
+    using GroupIter = std::vector<CompiledGroupPtr>::iterator; 
 private:
     std::vector<CompiledGroupPtr> groups;
     bool testMode = false;
@@ -105,6 +106,8 @@ private:
     bool compile(const SInstrumentPtr);
     //void compileOld(const SInstrumentPtr);
     bool buildCompiledTree(const SInstrumentPtr i);
+    bool fixupCompiledTree();
+    bool fixupOneRandomGrouping(GroupIter);
 
     ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);
     ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth);

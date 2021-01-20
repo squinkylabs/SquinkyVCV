@@ -35,8 +35,10 @@ public:
 
     enum class Type {
         Base,
-        RoundRobin,
-        Random
+        RoundRobin,     // group and regions where we RR between the regions in the one group.
+        Random,         // group and regions where we random between the regions in the one group.
+        GRandom,        // probability is on each group, so multiple groups involved.
+        GRoundRobbin
     };
     virtual Type type() const { return Type::Base; }
 
@@ -122,7 +124,12 @@ public:
     void addChild(CompiledRegionPtr child) { regions.push_back(child); }
     std::vector<CompiledRegionPtr> regions;
     CompiledRegion::Type type() const;
+
     int sequence_length = 0;
+    // assume no valid random data
+    float lorand = -1;
+    float hirand = -1;
+
     const int lineNumber;
 
 private:
