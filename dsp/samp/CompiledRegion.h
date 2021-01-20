@@ -91,8 +91,16 @@ private:
  */
 class CompiledMultiRegion : public CompiledRegion {
 public:
+    /** This consutructor makes a mult-region from a group.
+     * copies over all the children so that multi region has the same children as the group.
+     */
     CompiledMultiRegion(CompiledGroupPtr parent);
     const std::vector<CompiledRegionPtr>& getRegions() { return originalRegions; }
+
+    /** can add more regions this way.
+     * Usually used with the default constructor.
+     */
+    void addChild(CompiledRegionPtr);
 
 protected:
     std::vector<CompiledRegionPtr> originalRegions;
@@ -109,6 +117,7 @@ public:
 class CompiledRandomRegion : public CompiledMultiRegion {
 public:
     CompiledRandomRegion(CompiledGroupPtr parent);
+    CompiledRandomRegion();
     Type type() const override { return Type::Random; }
 };
 
@@ -117,7 +126,16 @@ public:
  */
 class CompiledGroup {
 public:
+    /** This is the normal constructor.
+     * create a new compiled group from a parsed group.
+     */
     CompiledGroup(SGroupPtr);
+
+    /**
+     * This constructor only for makins "synthetic" groups.
+     * line number may not be exactly right
+     */
+    CompiledGroup(int line);
     ~CompiledGroup() { compileCount--; }
 
     bool shouldIgnore() const;

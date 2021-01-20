@@ -171,6 +171,10 @@ CompiledGroup::CompiledGroup(SGroupPtr group) : lineNumber(group->lineNumber) {
     }
 }
 
+CompiledGroup::CompiledGroup(int line) : lineNumber(line) {
+    compileCount++;
+}
+
 bool CompiledGroup::shouldIgnore() const {
     bool dontIgnore = trigger == SamplerSchema::DiscreteValue::NONE || trigger == SamplerSchema::DiscreteValue::ATTACK;
     return !dontIgnore;

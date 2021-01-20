@@ -340,7 +340,6 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<Compi
             addVelSwitchToCoverPitchRegions(playerToReturn, velSwitch, bin.regions);
         }
     }
-
     return playerToReturn;
 }
 
@@ -356,164 +355,7 @@ void CompiledInstrument::_dump(int depth) const {
     }
 }
 
-static bool remakeTreeForGMultiRegion() {
-    assert(false);
-    return false;
-}
 
-static bool remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr cGroup) {
-    assert(cGroup->regions.size());
-    // First, make the new "mega region"
-    // Take all the "normal" properties from the first region ("the prototype")
-    std::shared_ptr<CompiledMultiRegion> multi;
-    switch (type) {
-        case CompiledRegion::Type::Random:
-            multi = std::make_shared<CompiledRandomRegion>(cGroup);
-            break;
-        case CompiledRegion::Type::RoundRobin:
-            multi = std::make_shared<CompiledRoundRobinRegion>(cGroup);
-            break;
-        default:
-            assert(false);
-            return false;
-    }
-
-    // validate assumptions about the schema
-    CompiledRegionPtr prototype = cGroup->regions[0];
-    for (auto region : cGroup->regions) {
-#if 1
-        if (region->lokey != prototype->lokey) {
-            SQWARN("prototype lokey mismatch at #%d", region->lineNumber);
-            return false;
-        }
-        if (region->hikey != prototype->hikey) {
-            SQWARN("prototype hikey mismatch at #%d", region->lineNumber);
-            return false;
-        }
-        if (region->lovel != prototype->lovel) {
-            SQWARN("prototype lovel mismatch at #%d", region->lineNumber);
-            return false;
-        }
-        if (region->hivel != prototype->hivel) {
-            SQWARN("prototype hivel mismatch at #%d", region->lineNumber);
-            return false;
-        }
-
-#else
-        assert(region->lokey == prototype->lokey);
-        assert(region->hikey == prototype->hikey);
-        assert(region->lovel == prototype->lovel);
-        assert(region->hivel == prototype->hivel);
-#endif
-    }
-
-    // now get rid of all the regions that were in our group
-    cGroup->regions.clear();
-    assert(cGroup->regions.empty());
-
-    // And substitute this new multi region
-    cGroup->addChild(multi);
-    multi->weakParent = cGroup;
-    return true;
-}
-
-
-/**
- * Inputs: a sequential list of 'n' groups with random probabilities on them.
- *  each group in the list has 'r' regions as children, and they all match, in order
- * 
- * output 'r' mega groups, each with 'n' children.
- * probabilities on the children.
- */
-bool  CompiledInstrument::fixupOneRandomGrouping(GroupIter inputIter) {
-    // first, get all the groups in this random
-    std::vector<CompiledGroupPtr> randoGroups;
-    
-    // search throught all the input, picking stuff that belongs together
-    // for now, let's take all the random groups
-    for (bool done=false; !done; ) {
-        SQINFO("found one");
-        CompiledGroupPtr gp = *inputIter;
-        if (gp->lorand < 0) {
-            done = true;
-        }
-
-        if (!done) {
-            randoGroups.push_back(gp);
-        }
-        if (++inputIter == groups.end()) {
-            done = true;
-        }
-        
-    }
-
-
-    assert(false);
-    return false;
-}
-
-bool CompiledInstrument::fixupCompiledTree() {
-    for (auto iter = groups.begin(); iter != groups.end(); ++iter) {
-        CompiledGroupPtr cGroup = *iter;
-        const CompiledRegion::Type type = cGroup->type();
-        switch (type) {
-            case CompiledRegion::Type::GRandom: {
-                bool b = fixupOneRandomGrouping(iter);
-                if (!b) {
-                    return false;
-                }
-                //assert(false);
-                break;
-            } break;
-            case CompiledRegion::Type::Base:
-            case CompiledRegion::Type::RoundRobin:
-            case CompiledRegion::Type::Random:
-                break;
-            default:
-                assert(false);
-        }
-    }
-    return true;
-}
-
-bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
-    for (auto group : in->groups) {
-        auto cGroup = std::make_shared<CompiledGroup>(group);
-        if (!cGroup->shouldIgnore()) {
-            this->groups.push_back(cGroup);
-            for (auto reg : group->regions) {
-                auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
-                cGroup->addChild(cReg);
-            }
-            // we that the tree is build, ask the group it it's special
-
-            const CompiledRegion::Type type = cGroup->type();
-            switch (type) {
-                case CompiledRegion::Type::Base:
-                    // nothing to do - tree is good
-                    break;
-                case CompiledRegion::Type::Random:
-                case CompiledRegion::Type::RoundRobin: {
-                    //  cGroup->regions.clear();
-                    //  CompiledRegionPtr newRegion = std::make_shared < CompiledRoundRobbinRegion>();
-                    //  cGroup->regions.push_back(newRegion);
-                    bool b = remakeTreeForMultiRegion(type, cGroup);
-                    if (!b) {
-                        return false;
-                    }
-                } break;
-                case CompiledRegion::Type::GRandom: {
-                    // do nothing, we will fixup in a second pass.
-                    //bool b = remakeTreeForGMultiRegion();
-                } break;
-                default:
-                    assert(false);
-                    return false;
-            }
-        }
-    }
-    return true;
-}
 
 void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array) {
     assert(array.empty());
@@ -590,7 +432,6 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPt
 }
 
 void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
-    //  pitchMap.play(info, midiPitch, midiVelocity);
     if (!player) {
         printf("ci can't play yet\n");
         return;
@@ -604,7 +445,6 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootP
 
     auto num = relativeFilePaths.size();
     tempPaths.resize(num);
-    // printf("resized to %zd\n", num);
     // index is 1..
     for (auto pathEntry : relativeFilePaths) {
         std::string path = pathEntry.first;
@@ -616,13 +456,6 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootP
         assert(!path.empty());
         tempPaths[waveIndex - 1] = path;
     }
-#if 0
-    printf("after fill, size of temp = %zd, started with %zd\n", tempPaths.size(), relativeFilePaths.size());
-
-    for (auto path : tempPaths) {
-        printf("temp: %s\n", path.c_str());
-    }
-#endif
 
     for (auto path : tempPaths) {
         assert(!path.empty());
@@ -641,4 +474,197 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
         }
     }
     inst->wasExpanded = true;
+}
+
+/**
+ * Inputs: a sequential list of 'n' groups with random probabilities on them.
+ *  each group in the list has 'r' regions as children, and they all match, in order
+ * 
+ * output 'r' mega groups, each with 'n' children.
+ * probabilities on the children.
+ */
+bool CompiledInstrument::fixupOneRandomGrouping(GroupIter inputIter) {
+    GroupIter originalIter = inputIter;
+    // first, get all the groups in this random
+    std::vector<CompiledGroupPtr> randoGroups;
+
+    // search through all the input, picking stuff that belongs together
+    // for now, let's take all the random groups
+    for (bool done = false; !done;) {
+        SQINFO("found one");
+        CompiledGroupPtr gp = *inputIter;
+        if (gp->lorand < 0) {
+            done = true;
+        }
+
+        if (!done) {
+            randoGroups.push_back(gp);
+        }
+        if (++inputIter == groups.end()) {
+            done = true;
+        }
+    }
+
+    // This would only happen if someone called us on a bad group.
+    if (groups.empty()) {
+        assert(false);
+        return false;
+    }
+
+    // Ok, now we have our 'n' groups
+    const int n = int(groups.size());
+    const int r = int(groups[0]->regions.size());
+
+    // validate that they all have the same number of children
+    for (auto group : groups) {
+        if (r != int(group->regions.size())) {
+            SQWARN("Random grouping unequal size");
+            return false;
+        }
+    }
+
+    // iterate through the matching children,making new groups with them
+    std::vector<CompiledGroupPtr> newGroups;
+    for (int regionIndex = 0; regionIndex < n; ++regionIndex) {
+
+        // make the new group for each of the 'n' children.
+        CompiledRegionPtr firstRegion = randoGroups[0]->regions[regionIndex];
+
+        
+        CompiledGroupPtr newGroup = std::make_shared<CompiledGroup>(firstRegion->lineNumber);
+        newGroups.push_back(newGroup);
+
+        // each new group gets a single child, amulti regionp,
+        // but multi region has zero childen to start
+        CompiledMultiRegionPtr multiRegion = std::make_shared<CompiledRandomRegion>();
+        newGroup->addChild(multiRegion);
+
+        for (int originalGroupIndex = 0; originalGroupIndex < r; ++originalGroupIndex) {
+            multiRegion->addChild( randoGroups[originalGroupIndex]->regions[regionIndex]);
+            // TODO: compare against prototype, just like we do with other mutli regions.
+        }
+  
+    }
+
+    return true;
+}
+
+
+static bool remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr cGroup) {
+    assert(cGroup->regions.size());
+    // First, make the new "mega region"
+    // Take all the "normal" properties from the first region ("the prototype")
+    std::shared_ptr<CompiledMultiRegion> multi;
+    switch (type) {
+        case CompiledRegion::Type::Random:
+            multi = std::make_shared<CompiledRandomRegion>(cGroup);
+            break;
+        case CompiledRegion::Type::RoundRobin:
+            multi = std::make_shared<CompiledRoundRobinRegion>(cGroup);
+            break;
+        default:
+            assert(false);
+            return false;
+    }
+
+    // validate assumptions about the schema
+    CompiledRegionPtr prototype = cGroup->regions[0];
+    for (auto region : cGroup->regions) {
+#if 1
+        if (region->lokey != prototype->lokey) {
+            SQWARN("prototype lokey mismatch at #%d", region->lineNumber);
+            return false;
+        }
+        if (region->hikey != prototype->hikey) {
+            SQWARN("prototype hikey mismatch at #%d", region->lineNumber);
+            return false;
+        }
+        if (region->lovel != prototype->lovel) {
+            SQWARN("prototype lovel mismatch at #%d", region->lineNumber);
+            return false;
+        }
+        if (region->hivel != prototype->hivel) {
+            SQWARN("prototype hivel mismatch at #%d", region->lineNumber);
+            return false;
+        }
+
+#else
+        assert(region->lokey == prototype->lokey);
+        assert(region->hikey == prototype->hikey);
+        assert(region->lovel == prototype->lovel);
+        assert(region->hivel == prototype->hivel);
+#endif
+    }
+
+    // now get rid of all the regions that were in our group
+    cGroup->regions.clear();
+    assert(cGroup->regions.empty());
+
+    // And substitute this new multi region
+    cGroup->addChild(multi);
+    multi->weakParent = cGroup;
+    return true;
+}
+
+bool CompiledInstrument::fixupCompiledTree() {
+    for (auto iter = groups.begin(); iter != groups.end(); ++iter) {
+        CompiledGroupPtr cGroup = *iter;
+        const CompiledRegion::Type type = cGroup->type();
+        switch (type) {
+            case CompiledRegion::Type::GRandom: {
+                bool b = fixupOneRandomGrouping(iter);
+                if (!b) {
+                    return false;
+                }
+                //assert(false);
+                break;
+            } break;
+            case CompiledRegion::Type::Base:
+            case CompiledRegion::Type::RoundRobin:
+            case CompiledRegion::Type::Random:
+                break;
+            default:
+                assert(false);
+        }
+    }
+    return true;
+}
+
+bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
+    for (auto group : in->groups) {
+        auto cGroup = std::make_shared<CompiledGroup>(group);
+        if (!cGroup->shouldIgnore()) {
+            this->groups.push_back(cGroup);
+            for (auto reg : group->regions) {
+                auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
+                cGroup->addChild(cReg);
+            }
+            // we that the tree is build, ask the group it it's special
+
+            const CompiledRegion::Type type = cGroup->type();
+            switch (type) {
+                case CompiledRegion::Type::Base:
+                    // nothing to do - tree is good
+                    break;
+                case CompiledRegion::Type::Random:
+                case CompiledRegion::Type::RoundRobin: {
+                    //  cGroup->regions.clear();
+                    //  CompiledRegionPtr newRegion = std::make_shared < CompiledRoundRobbinRegion>();
+                    //  cGroup->regions.push_back(newRegion);
+                    bool b = remakeTreeForMultiRegion(type, cGroup);
+                    if (!b) {
+                        return false;
+                    }
+                } break;
+                case CompiledRegion::Type::GRandom: {
+                    // do nothing, we will fixup in a second pass.
+                    //bool b = remakeTreeForGMultiRegion();
+                } break;
+                default:
+                    assert(false);
+                    return false;
+            }
+        }
+    }
+    return true;
 }
