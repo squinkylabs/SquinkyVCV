@@ -137,6 +137,11 @@ CompiledMultiRegion::CompiledMultiRegion(CompiledGroupPtr parent) : CompiledRegi
     }
 }
 
+void CompiledMultiRegion::addChild(CompiledRegionPtr child)
+{
+    originalRegions.push_back(child);
+}
+
 CompiledRoundRobinRegion::CompiledRoundRobinRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent){};
 
 CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {

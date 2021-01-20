@@ -482,10 +482,15 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
  * 
  * output 'r' mega groups, each with 'n' children.
  * probabilities on the children.
+ * 
+ * Will also fix up the tree to the top level groups are right by 
  */
 bool CompiledInstrument::fixupOneRandomGrouping(GroupIter inputIter) {
+    SQINFO("---- fixupOneRandomGrouping\n");
     GroupIter originalIter = inputIter;
-    // first, get all the groups in this random
+
+    // first, get all the groups in this random.
+    // note that these will eventuall all be removed from the CompiledInstrument (this)
     std::vector<CompiledGroupPtr> randoGroups;
 
     // search through all the input, picking stuff that belongs together
@@ -514,6 +519,7 @@ bool CompiledInstrument::fixupOneRandomGrouping(GroupIter inputIter) {
     // Ok, now we have our 'n' groups
     const int n = int(groups.size());
     const int r = int(groups[0]->regions.size());
+    const int debug = int(randoGroups.size());
 
     // validate that they all have the same number of children
     for (auto group : groups) {
@@ -524,6 +530,7 @@ bool CompiledInstrument::fixupOneRandomGrouping(GroupIter inputIter) {
     }
 
     // iterate through the matching children,making new groups with them
+    // at the end, all the newly created groups will be in newGroups
     std::vector<CompiledGroupPtr> newGroups;
     for (int regionIndex = 0; regionIndex < n; ++regionIndex) {
 
@@ -540,11 +547,17 @@ bool CompiledInstrument::fixupOneRandomGrouping(GroupIter inputIter) {
         newGroup->addChild(multiRegion);
 
         for (int originalGroupIndex = 0; originalGroupIndex < r; ++originalGroupIndex) {
-            multiRegion->addChild( randoGroups[originalGroupIndex]->regions[regionIndex]);
+            auto region = randoGroups[originalGroupIndex]->regions[regionIndex];
+            multiRegion->addChild(region);
+            assert(region->lorand == randoGroups[originalGroupIndex]->lorand);
+            assert(region->hirand == randoGroups[originalGroupIndex]->hirand);
             // TODO: compare against prototype, just like we do with other mutli regions.
         }
-  
     }
+
+    assert(false);  // now fixup the main tree (delete old GRand groups, add new groups
+                    // validate that top level are not GRand
+                    // validate that ghile regions have the right rand values.
 
     return true;
 }
@@ -570,7 +583,7 @@ static bool remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
     // validate assumptions about the schema
     CompiledRegionPtr prototype = cGroup->regions[0];
     for (auto region : cGroup->regions) {
-#if 1
+#if 1   // TODO: move this somewhere so we can re-uses it with GRandom
         if (region->lokey != prototype->lokey) {
             SQWARN("prototype lokey mismatch at #%d", region->lineNumber);
             return false;
@@ -616,7 +629,6 @@ bool CompiledInstrument::fixupCompiledTree() {
                 if (!b) {
                     return false;
                 }
-                //assert(false);
                 break;
             } break;
             case CompiledRegion::Type::Base:

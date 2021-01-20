@@ -31,6 +31,9 @@ extern int compileCount;
 class CompiledRegion {
 public:
     CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
+    CompiledRegion() {
+        ++compileCount;
+    }
     virtual ~CompiledRegion() { compileCount--; }
 
     enum class Type {
@@ -91,10 +94,13 @@ private:
  */
 class CompiledMultiRegion : public CompiledRegion {
 public:
-    /** This consutructor makes a mult-region from a group.
+    /** This constructor makes a multi-region from a group.
      * copies over all the children so that multi region has the same children as the group.
      */
     CompiledMultiRegion(CompiledGroupPtr parent);
+    CompiledMultiRegion() {
+
+    }
     const std::vector<CompiledRegionPtr>& getRegions() { return originalRegions; }
 
     /** can add more regions this way.
@@ -117,7 +123,7 @@ public:
 class CompiledRandomRegion : public CompiledMultiRegion {
 public:
     CompiledRandomRegion(CompiledGroupPtr parent);
-    CompiledRandomRegion();
+    CompiledRandomRegion() = default;
     Type type() const override { return Type::Random; }
 };
 
