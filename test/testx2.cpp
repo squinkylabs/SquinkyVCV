@@ -1171,6 +1171,84 @@ static void testCompileBassoon()
     testComp(R"foo(D:\samples\VSCO-2-CE-1.1.0\VSCO-2-CE-1.1.0\BassoonStac.sfz)foo");
 }
 
+static void testCompileGroupProbability() {
+    const char* data = R"foo(
+    
+<group> 
+lorand=0.0 hirand=0.5
+<region>
+sample=a.wav
+lokey=43
+hikey=46
+pitch_keycenter=45
+lovel=0
+hivel=62
+volume=12
+
+<region>
+sample=c.wav
+key=100
+lovel=0
+hivel=62
+volume=12
+
+<group> 
+lorand=0.5 hirand=1.5
+<region>
+sample=b.wav
+lokey=43
+hikey=46
+pitch_keycenter=45
+lovel=0
+hivel=62
+volume=12
+
+<region>
+sample=d.wav
+key=100
+lovel=0
+hivel=62
+volume=12
+)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    assert(ci);
+}
+
+
+static void testCompileGroupProbability2() {
+    const char* data = R"foo(
+    
+<group> 
+lorand=0.0 hirand=0.5
+<region>
+sample=a.wav
+lokey=43
+hikey=46
+pitch_keycenter=45
+lovel=0
+hivel=62
+volume=12
+<group> 
+lorand=0.5 hirand=1.5
+<region>
+sample=b.wav
+lokey=43
+hikey=46
+pitch_keycenter=45
+lovel=0
+hivel=62
+volume=12
+)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    auto ci = CompiledInstrument::make(inst);
+    assert(ci);
+}
+
 static void testSampleRate() {
     WaveLoader w;
     // TODO: change back to k18 orig when test is done
@@ -1255,6 +1333,7 @@ void testx2() {
     testCompileMulPitchAndVelSimple();
     testCompileMulPitchAndVelComplex1();
     testCompileMulPitchAndVelComplex2();
+    testCompileGroupProbability();
     testCompileBassoon();
     testGroupInherit();
     assertEQ(compileCount, 0);
