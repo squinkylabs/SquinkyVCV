@@ -485,9 +485,10 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
  * 
  * Will also fix up the tree to the top level groups are right by 
  */
-bool CompiledInstrument::fixupOneRandomGrouping(GroupIter inputIter) {
+bool CompiledInstrument::fixupOneRandomGrouping(int groupStartIndex) {
     SQINFO("---- fixupOneRandomGrouping\n");
-    GroupIter originalIter = inputIter;
+    //GroupIter originalIter = inputIter;
+    const int originalGroupStartIndex = groupStartIndex;
 
     // first, get all the groups in this random.
     // note that these will eventuall all be removed from the CompiledInstrument (this)
@@ -495,6 +496,7 @@ bool CompiledInstrument::fixupOneRandomGrouping(GroupIter inputIter) {
 
     // search through all the input, picking stuff that belongs together
     // for now, let's take all the random groups
+    GroupIter inputIter = groups.begin() + groupStartIndex;
     for (bool done = false; !done;) {
         SQINFO("found one");
         CompiledGroupPtr gp = *inputIter;
@@ -620,12 +622,13 @@ static bool remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
 }
 
 bool CompiledInstrument::fixupCompiledTree() {
-    for (auto iter = groups.begin(); iter != groups.end(); ++iter) {
-        CompiledGroupPtr cGroup = *iter;
+    for (int groupIndex = 0; groupIndex < int(groups.size()); ++ groupIndex) {
+    //for (auto iter = groups.begin(); iter != groups.end(); ++iter) {
+        CompiledGroupPtr cGroup = groups[groupIndex];
         const CompiledRegion::Type type = cGroup->type();
         switch (type) {
             case CompiledRegion::Type::GRandom: {
-                bool b = fixupOneRandomGrouping(iter);
+                bool b = fixupOneRandomGrouping(groupIndex);
                 if (!b) {
                     return false;
                 }

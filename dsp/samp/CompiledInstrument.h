@@ -107,7 +107,7 @@ private:
     //void compileOld(const SInstrumentPtr);
     bool buildCompiledTree(const SInstrumentPtr i);
     bool fixupCompiledTree();
-    bool fixupOneRandomGrouping(GroupIter);
+    bool fixupOneRandomGrouping(int groupStartIndex);
 
     ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);
     ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth);
