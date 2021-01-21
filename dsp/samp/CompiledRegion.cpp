@@ -6,6 +6,7 @@
 
 #include "CompiledInstrument.h"
 #include "SParse.h"
+#include "SqLog.h"
 #include "SamplerSchema.h"
 
 int compileCount = 0;
@@ -202,7 +203,8 @@ CompiledRegion::Type CompiledGroup::type() const {
         }
         if (isProbabilty) {
             theType = CompiledRegion::Type::Random;
-            assert(regions.size() > 1);
+            if (regions.size() < 2) SQWARN("rand region no options");
+            //assert(regions.size() > 1);
         }
     }
     return theType;

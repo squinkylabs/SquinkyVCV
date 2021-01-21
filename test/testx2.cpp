@@ -1168,6 +1168,7 @@ static void testComp(const std::string& path) {
 
 static void testCompileBassoon()
 {
+    SQINFO("testCompileBassoon");
     testComp(R"foo(D:\samples\VSCO-2-CE-1.1.0\VSCO-2-CE-1.1.0\BassoonStac.sfz)foo");
 }
 

@@ -487,6 +487,9 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
  */
 bool CompiledInstrument::fixupOneRandomGrouping(int groupStartIndex) {
     SQINFO("---- fixupOneRandomGrouping\n");
+    this->_dump(0);
+    const int gpp = int(groups.size());
+
     //GroupIter originalIter = inputIter;
     const int originalGroupStartIndex = groupStartIndex;
 
@@ -497,6 +500,7 @@ bool CompiledInstrument::fixupOneRandomGrouping(int groupStartIndex) {
     // search through all the input, picking stuff that belongs together
     // for now, let's take all the random groups
     GroupIter inputIter = groups.begin() + groupStartIndex;
+    SQINFO("going into first loop wiht gp sz = %d, start = %d", gpp, groupStartIndex);
     for (bool done = false; !done;) {
         SQINFO("found one");
         CompiledGroupPtr gp = *inputIter;
@@ -518,14 +522,14 @@ bool CompiledInstrument::fixupOneRandomGrouping(int groupStartIndex) {
         return false;
     }
 
-    // Ok, now we have our 'n' groups
-    const int n = int(groups.size());
-    const int r = int(groups[0]->regions.size());
+
+    const int numOrigGroups = int(randoGroups.size());       // how many top level groups are in the original sfz
+    const int numOrigRegionsPerGroup = int(randoGroups[0]->regions.size());
     const int debug = int(randoGroups.size());
 
     // validate that they all have the same number of children
-    for (auto group : groups) {
-        if (r != int(group->regions.size())) {
+    for (auto rgroup : randoGroups) {
+        if (numOrigRegionsPerGroup != int(rgroup->regions.size())) {
             SQWARN("Random grouping unequal size");
             return false;
         }
@@ -533,8 +537,9 @@ bool CompiledInstrument::fixupOneRandomGrouping(int groupStartIndex) {
 
     // iterate through the matching children,making new groups with them
     // at the end, all the newly created groups will be in newGroups
+    // if original rando groups have 10 resions, then we will end up with 10 new top-level groups.
     std::vector<CompiledGroupPtr> newGroups;
-    for (int regionIndex = 0; regionIndex < n; ++regionIndex) {
+    for (int regionIndex = 0; regionIndex < numOrigRegionsPerGroup; ++regionIndex) {
 
         // make the new group for each of the 'n' children.
         CompiledRegionPtr firstRegion = randoGroups[0]->regions[regionIndex];
@@ -548,8 +553,17 @@ bool CompiledInstrument::fixupOneRandomGrouping(int groupStartIndex) {
         CompiledMultiRegionPtr multiRegion = std::make_shared<CompiledRandomRegion>();
         newGroup->addChild(multiRegion);
 
-        for (int originalGroupIndex = 0; originalGroupIndex < r; ++originalGroupIndex) {
-            auto region = randoGroups[originalGroupIndex]->regions[regionIndex];
+
+        // Now, loop over the final number of groups, and assign this child in each of them
+        // OK, the issue is that r is not that same as randoGroups.size
+        // I is how many groups we want to end up with, but it
+        // isn't how many rando groups we have now.
+        for (int originalGroupIndex = 0; originalGroupIndex < numOrigGroups; ++originalGroupIndex) {
+            assert(randoGroups.size() > originalGroupIndex);
+            auto gp = randoGroups[originalGroupIndex];
+            assert(gp);
+            auto region = gp->regions[regionIndex];
+            assert(region);
             multiRegion->addChild(region);
             assert(region->lorand == randoGroups[originalGroupIndex]->lorand);
             assert(region->hirand == randoGroups[originalGroupIndex]->hirand);
@@ -557,10 +571,17 @@ bool CompiledInstrument::fixupOneRandomGrouping(int groupStartIndex) {
         }
     }
 
-    assert(false);  // now fixup the main tree (delete old GRand groups, add new groups
+    // remove the original groups from CompiledInstrument
+    auto startIter =  groups.begin() + groupStartIndex; 
+    groups.erase( startIter, startIter + randoGroups.size()); 
+    startIter = groups.begin() + groupStartIndex;
+    groups.insert(startIter,  newGroups.begin(), newGroups.end());
+
+   // assert(false);  // now fixup the randomain tree (delete old GRand groups, add new groups
                     // validate that top level are not GRand
                     // validate that ghile regions have the right rand values.
 
+    SQINFO("Leaving fixupOneRandomGrouping");
     return true;
 }
 
