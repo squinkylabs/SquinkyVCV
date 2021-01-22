@@ -35,7 +35,9 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::LO_RAND, OpcodeType::Float},
     {Opcode::HI_RAND, OpcodeType::Float},
     {Opcode::SEQ_LENGTH, OpcodeType::Int},
-    {Opcode::SEQ_POSITION, OpcodeType::Int}};
+    {Opcode::SEQ_POSITION, OpcodeType::Int},
+    {Opcode::DEFAULT_PATH, OpcodeType::String}
+    };
 
 static std::map<std::string, Opcode> opcodes = {
     {"hivel", Opcode::HI_VEL},
@@ -62,7 +64,9 @@ static std::map<std::string, Opcode> opcodes = {
     {"amp_veltrack", Opcode::AMP_VELTRACK},
     {"key", Opcode::KEY},
     {"seq_length", Opcode::SEQ_LENGTH},
-    {"seq_position", Opcode::SEQ_POSITION}};
+    {"seq_position", Opcode::SEQ_POSITION},
+    {"default_path", Opcode::DEFAULT_PATH}
+    };
 
 static std::set<std::string> unrecognized;
 

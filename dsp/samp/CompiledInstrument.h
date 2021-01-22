@@ -73,6 +73,8 @@ public:
      */
     void setWaves(WaveLoaderPtr waveLoader, const std::string& rootPath);
 
+    std::string getDefaultPath() const { return defaultPath; }
+
     /**
      * finds all the key/value pairs in a parse tree and expands them in place.
      */
@@ -94,6 +96,7 @@ private:
     bool testMode = false;
 
     ISamplerPlaybackPtr player;
+    std::string defaultPath;
 
     /**
      * Track all the unique relative paths here
@@ -104,7 +107,6 @@ private:
     int nextIndex = 1;
 
     bool compile(const SInstrumentPtr);
-    //void compileOld(const SInstrumentPtr);
     bool buildCompiledTree(const SInstrumentPtr i);
     bool fixupCompiledTree();
     bool fixupOneRandomGrouping(int groupStartIndex);
@@ -123,6 +125,8 @@ private:
     int addSampleFile(const std::string& s);
 
     ISamplerPlaybackPtr playbackMapVelocities(const std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
+
+    void extractDefaultPath(const SInstrumentPtr in);
 };
 
 //KeysAndValuesPtr compile(const SKeyValueList&);

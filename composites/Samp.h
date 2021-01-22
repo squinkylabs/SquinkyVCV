@@ -37,7 +37,9 @@ public:
     SampMessage() : ThreadMessage(Type::SAMP) {
     }
 
-    std::string pathToSfz;
+    std::string pathToSfz;          // full path to sfz file from user
+    std::string globalBase;         // aria base path from user
+    std::string defaultPath;        // override from the patch
 
     // returned to the composite
     CompiledInstrumentPtr instrument;
@@ -271,7 +273,7 @@ public:
     void handleMessage(ThreadMessage* msg) override {
         assert(msg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(msg);
-        // SQINFO("server got a message!\n");
+         SQINFO("server got a message!\n");
         parsePath(smsg);
 
         SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -292,6 +294,8 @@ public:
         }
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
 
+
+        samplePath += cinst->getDefaultPath();
         cinst->setWaves(waves, samplePath);
         // TODO: errors from wave loader
 
@@ -300,7 +304,7 @@ public:
 
         smsg->instrument = cinst;
         smsg->waves = loadedOK ? waves : nullptr;
-        SQINFO("loader thread returning %d", loadedOK);
+        SQINFO("** loader thread returning %d", loadedOK);
 
         sendMessageToClient(msg);
     }
@@ -308,9 +312,13 @@ public:
 private:
     std::string samplePath;
     std::string fullPath;
+    std::string globalPath;
 
     void parsePath(SampMessage* msg) {
         fullPath = msg->pathToSfz;
+        if (!msg->defaultPath.empty()) {
+            SQWARN("ignoring patch def = %s", msg->defaultPath.c_str());
+        }
         WaveLoader::makeAllSeparatorsNative(fullPath);
 
         const auto pos = fullPath.rfind(WaveLoader::nativeSeparator());
@@ -322,6 +330,15 @@ private:
 
         samplePath = fullPath.substr(0, pos) + WaveLoader::nativeSeparator();
         SQINFO("sample base path %s", samplePath.c_str());
+
+        // If the patch had a path, add that
+     //   samplePath += cinst->getDefaultPath();
+     //   SQINFO("after def sample base path %s", samplePath.c_str());
+      //     std::string composedPath = samplePath
+      //  SQINFO("about to set waves to %s. default = %s global = %s\n", samplePath.c_str(), cinst->getDefaultPath().c_str(), globalPath.c_str());
+        //if (!cinst->defaultPath())
+
+     
     }
 };
 

@@ -41,7 +41,8 @@ public:
         LO_RAND,
         HI_RAND,
         SEQ_LENGTH,
-        SEQ_POSITION
+        SEQ_POSITION,
+        DEFAULT_PATH
     };
 
     enum class DiscreteValue {
