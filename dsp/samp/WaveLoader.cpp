@@ -35,20 +35,25 @@ void WaveLoader::addNextSample(const std::string& fileName) {
     filesToLoad.push_back(fileName);
 }
 
-void WaveLoader::load() {
+bool WaveLoader::load() {
     // printf("waveLoader::load %lld\n", filesToLoad.size());
     assert(!didLoad);
     didLoad = true;
     for (std::string& file : filesToLoad) {
         WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
-        waveInfo->load();
+        const bool b = waveInfo->load();
+        if (!b) {
+            // bail on first error
+            return false;
+        }
 
         finalInfo.push_back(waveInfo);
         //printf("adding one\n");
     }
+    return true;
 }
 
-void WaveLoader::WaveInfo::load() {
+bool WaveLoader::WaveInfo::load() {
     // printf("loading: %s\n", fileName.c_str());
 
     auto x = fileName.find(foreignSeparator());
@@ -58,7 +63,7 @@ void WaveLoader::WaveInfo::load() {
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
         SQWARN("error opening wave %s", fileName.c_str());
-        return;
+        return false;
     }
     //SQINFO("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
     if (numChannels > 1) {
@@ -67,6 +72,7 @@ void WaveLoader::WaveInfo::load() {
     }
     data = pSampleData;
     valid = true;
+    return true;
 }
 
 float* WaveLoader::WaveInfo::convertToMono(float* data, uint64_t frames, int channels) {

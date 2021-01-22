@@ -5,8 +5,6 @@
 
 #include <memory>
 
-#include "SqPort.h"
-
 #include "CompiledInstrument.h"
 #include "Divider.h"
 #include "IComposite.h"
@@ -15,7 +13,7 @@
 #include "Sampler4vx.h"
 #include "SimdBlocks.h"
 #include "SqLog.h"
-
+#include "SqPort.h"
 #include "ThreadClient.h"
 #include "ThreadServer.h"
 #include "ThreadSharedState.h"
@@ -167,13 +165,17 @@ inline void Samp<TBase>::init() {
     //  setupSamplesDummy();
 }
 
-
 // Called when a patch has come back from thread server
 template <class TBase>
 inline void Samp<TBase>::setNewPatch() {
     assert(currentPatchMessage);
     if (!currentPatchMessage->instrument || !currentPatchMessage->waves) {
-        SQWARN("Patch Loader could not load path");
+        if (!currentPatchMessage->instrument) {
+            SQWARN("Patch Loader could not load patch.");
+        }
+        if (!currentPatchMessage->waves) {
+            SQWARN("Patch Loader could not load waves.");
+        }
         _isSampleLoaded = false;
         return;
     }
@@ -294,13 +296,11 @@ public:
         // TODO: errors from wave loader
 
         // TODO: need a way for wave loader to return error/
-        waves->load();
-        WaveLoader::WaveInfoPtr info = waves->getInfo(1);
-        assert(info->valid);
+        const bool loadedOK = waves->load();
 
         smsg->instrument = cinst;
-        smsg->waves = waves;
-        SQINFO("loader thread returning happy");
+        smsg->waves = loadedOK ? waves : nullptr;
+        SQINFO("loader thread returning %d", loadedOK);
 
         sendMessageToClient(msg);
     }
@@ -370,10 +370,10 @@ void Samp<TBase>::serviceMessagesReturnedToComposite() {
         SampMessage* smsg = static_cast<SampMessage*>(newMsg);
         if (currentPatchMessage) {
             messagePool.push(currentPatchMessage);
-            fflush(stderr); fflush(stdout);
+            fflush(stderr);
+            fflush(stdout);
         }
-        currentPatchMessage = smsg;        
+        currentPatchMessage = smsg;
         setNewPatch();
     }
 }
-

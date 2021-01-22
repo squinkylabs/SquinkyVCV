@@ -13,44 +13,40 @@
 
 #include "SqLog.h"
 
-//#include "SParse.h"
-
 static const char* tinnyPiano = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
 const char* tinnyPianoRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
-
 static const char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo";
 
 static void testWaveLoader0() {
     WaveLoader w;
     w.addNextSample("fake file name");
-    w.load();
-    auto x = w.getInfo(1);
-    assert(!x->valid);
+    const bool b = w.load();
+    assert(!b);
 
-    x = w.getInfo(0);
-    assert(!x);
 }
 
 static void testWaveLoader1() {
     WaveLoader w;
     w.addNextSample("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav");
-    w.load();
+    const bool b = w.load();
+    assert(b);
     auto x = w.getInfo(1);
     assert(x->valid);
+    x = w.getInfo(0);
+    assert(!x);
 }
 
 static void testWaveLoaderNot44() {
-    printf("******************************** put this test back when samples put back\n");
-#if 0
     WaveLoader w;
-    w.addNextSample("D:\\samples\\K18-Upright-Piano\\K18_orig\\A0.f.wav");
+    w.addNextSample("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav");
   
-    w.load();
+    const bool b = w.load();
+    assert(b);
+
     auto x = w.getInfo(1);
     assert(x->valid);
-    assertEQ(x->sampleRate, 48000);
-    assertEQ(x->numChannels, 2);
-#endif
+    assertEQ(x->sampleRate, 48000);     // we keep the input sample rate
+    assertEQ(x->numChannels, 1);        // but we convert to mono
 }
 
 static void testWaveLoaderNotMono() {
