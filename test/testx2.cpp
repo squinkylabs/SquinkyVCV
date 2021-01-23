@@ -373,6 +373,13 @@ static void testParseControl() {
     assertEQ(inst->control.compiledValues->_size(), 1);
 }
 
+static void testParseLabel() {
+    const char* data = R"foo(<region>sw_label=abd def ghi)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+    assert(err.empty());
+}
+
 
 static void testCompileInst0() {
     printf("\n-- test comp inst 1\n");
@@ -1265,6 +1272,7 @@ void testx2() {
     testParseGlobalWithKVAndRegionCompiled();
     testParseGlobalWitRegionKVCompiled();
     testParseControl();
+    testParseLabel();
    
 
 

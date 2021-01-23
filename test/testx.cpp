@@ -271,6 +271,15 @@ static void testLexSpaces2() {
     testLexSpaces2d();
 }
 
+static void testLexLabel() {
+    auto lex = SLex::go("\nsw_label=abc def ghi");
+    assert(lex);
+    lex->validate();
+    SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
+    assertEQ(fname->idName, "abc def ghi");
+
+}
+
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -416,6 +425,10 @@ extern int compileCount;
 void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
+
+
+    //move me after I work
+    testLexLabel();
 
     testx0();
     testx1();

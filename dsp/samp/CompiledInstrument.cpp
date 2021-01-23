@@ -43,7 +43,7 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
     std::vector<CompiledRegionPtr> regions;
     getAllRegions(regions);
     int x = removeOverlaps(regions);
-    printf("overlapts removed %d\n", x);
+    SQINFO("overlaps removed\n", x);
 
     // now we need to build the player tree
     player = buildPlayerVelLayers(regions, 0);
@@ -498,7 +498,7 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
  * Will also fix up the tree to the top level groups are right by 
  */
 bool CompiledInstrument::fixupOneRandomGrouping(int groupStartIndex) {
-    SQINFO("---- fixupOneRandomGrouping\n");
+  //  SQINFO("---- fixupOneRandomGrouping\n");
     this->_dump(0);
     const int gpp = int(groups.size());
 
@@ -512,9 +512,9 @@ bool CompiledInstrument::fixupOneRandomGrouping(int groupStartIndex) {
     // search through all the input, picking stuff that belongs together
     // for now, let's take all the random groups
     GroupIter inputIter = groups.begin() + groupStartIndex;
-    SQINFO("going into first loop wiht gp sz = %d, start = %d", gpp, groupStartIndex);
+   // SQINFO("going into first loop with gp sz = %d, start = %d", gpp, groupStartIndex);
     for (bool done = false; !done;) {
-        SQINFO("found one");
+      //  SQINFO("found one");
         CompiledGroupPtr gp = *inputIter;
         if (gp->lorand < 0) {
             done = true;

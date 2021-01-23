@@ -70,7 +70,7 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
         if (type == SLexItem::Type::Identifier) {
             SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
             // printf("id name is %s\n", id->idName.c_str());
-            errorStream.add("id name is ");
+            errorStream.add(" id name is ");
             errorStream.add(id->idName);
         }
         return errorStream.str();

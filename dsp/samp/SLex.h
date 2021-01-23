@@ -1,4 +1,6 @@
 #pragma once
+
+#include "SamplerSchema.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -72,7 +74,8 @@ private:
     bool inTag = false;
     bool inIdentifier = false;
     std::string curItem;
-    std::string lastIdentifier;
+  //  std::string lastIdentifier;
+    SamplerSchema::OpcodeType lastIdentifierType;
 
     int currentIndex = 0;
     int currentLine = 0;

@@ -27,16 +27,12 @@ WaveLoader::WaveInfo::WaveInfo(const std::string& path) : fileName(path) {
 
 void WaveLoader::addNextSample(const std::string& fileName) {
     assert(!didLoad);
-    // printf("adding %s\n", fileName.c_str());
-
     auto x = fileName.find(foreignSeparator());
     assert(x == std::string::npos);
-
     filesToLoad.push_back(fileName);
 }
 
 bool WaveLoader::load() {
-    // printf("waveLoader::load %lld\n", filesToLoad.size());
     assert(!didLoad);
     didLoad = true;
     for (std::string& file : filesToLoad) {
@@ -48,14 +44,11 @@ bool WaveLoader::load() {
         }
 
         finalInfo.push_back(waveInfo);
-        //printf("adding one\n");
     }
     return true;
 }
 
 bool WaveLoader::WaveInfo::load() {
-    // printf("loading: %s\n", fileName.c_str());
-
     auto x = fileName.find(foreignSeparator());
     assert(x == std::string::npos);
 
@@ -66,15 +59,42 @@ bool WaveLoader::WaveInfo::load() {
         return false;
     }
     //SQINFO("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
-    if (numChannels > 1) {
-        pSampleData = convertToMono(pSampleData, totalFrameCount, numChannels);
-        numChannels = 1;
-    }
     data = pSampleData;
+    if (numChannels > 1) {
+       // pSampleData = convertToMono(pSampleData, totalFrameCount, numChannels);
+      //  numChannels = 1;
+        convertToMono();
+    }
+    //data = pSampleData;
     valid = true;
     return true;
 }
 
+void WaveLoader::WaveInfo::convertToMono() {
+    SQINFO("converting to mono from %d %d", numChannels, sampleRate);
+    const int origChannels = numChannels;
+    uint64_t newBufferSize = 1 + totalFrameCount / origChannels;
+    void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
+    float* dest = reinterpret_cast<float*>(x);
+    for (uint64_t i = 0; i < totalFrameCount / origChannels; ++i) {
+        float temp = 0;
+        for (int ch = 0; ch < origChannels; ++ch) {
+            temp += data[i + ch];
+        }
+        temp /= origChannels;
+        assert(temp <= 1);
+        assert(temp >= -1);
+        dest[i] = temp;
+    }
+
+    totalFrameCount /= origChannels;
+    numChannels = 1;
+
+    DRWAV_FREE(data);
+    data = dest;
+}
+
+#if 0
 float* WaveLoader::WaveInfo::convertToMono(float* data, uint64_t frames, int channels) {
     uint64_t newBufferSize = 1 + frames / channels;
     void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
@@ -93,6 +113,7 @@ float* WaveLoader::WaveInfo::convertToMono(float* data, uint64_t frames, int cha
     DRWAV_FREE(data);
     return dest;
 }
+#endif
 
 char WaveLoader::nativeSeparator() {
 #ifdef ARCH_WIN

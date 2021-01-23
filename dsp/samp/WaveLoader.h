@@ -20,7 +20,8 @@ public:
         const std::string fileName;
 
     private:
-        static float* convertToMono(float* data, uint64_t frames, int channels);
+        // static float* convertToMono(float* data, uint64_t frames, int channels);
+        void convertToMono();
     };
     using WaveInfoPtr = std::shared_ptr<WaveInfo>;
 
@@ -44,6 +45,7 @@ public:
     static char nativeSeparator();
     static char foreignSeparator();
     static void makeAllSeparatorsNative(std::string& s);
+
 private:
     std::vector<std::string> filesToLoad;
     std::vector<WaveInfoPtr> finalInfo;
