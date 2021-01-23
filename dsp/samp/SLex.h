@@ -12,10 +12,6 @@ using SLexPtr = std::shared_ptr<SLex>;
 
 class SLexItem {
 public:
-    ~SLexItem() {
-        // just for debug
-        SQINFO("dtor of slex item");
-    }
     enum class Type {
         Tag,
         Identifier,

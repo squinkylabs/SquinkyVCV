@@ -305,11 +305,14 @@ static void testparse2() {
 }
 
 static void testParseGlobal() {
-    printf("start test parse global\n");
+    SQINFO("---- start test parse global\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global>", inst);
-    // no regions - that's not legal
-    assert(!err.empty());
+    // no regions - that's not legal, but we make up groups if there aren't any,
+    // so we don't consider it an error.
+    assert(err.empty());
+    assert(inst->groups.size() == 1);
+    assert(inst->groups[0]->regions.empty());
 }
 
 static void testParseGlobalGroupAndRegion() {
@@ -436,6 +439,7 @@ void testx() {
 
 
     //move me after I work
+    testParseGlobal();
     testParseGlobalGroupAndRegion();
     testParseGlobalAndRegion();
     

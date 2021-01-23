@@ -93,8 +93,9 @@ private:
     //  static std::string matchHeadings(SInstrumentPtr, SLexPtr lex);
     // a"heading group" is a series of headings followed by all regions that belong to it
     static std::string matchHeadingGroups(SInstrumentPtr, SLexPtr lex);
+
     static Result matchHeadingGroup(SInstrumentPtr, SLexPtr);
-    static std::string matchHeadingsOrRegions(SInstrumentPtr, SLexPtr lex);
+  //  static std::string matchHeadingsOrRegions(SInstrumentPtr, SLexPtr lex);
 
     // return.second is true it heading it a group
     static std::pair<Result, bool> matchSingleHeading(SInstrumentPtr, SLexPtr);

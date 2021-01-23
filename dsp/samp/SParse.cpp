@@ -71,7 +71,7 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
         return sError;
     }
 #endif
-    std::string sError = matchHeadingsOrRegions(inst, lex);
+    std::string sError = matchHeadingGroups(inst, lex);
     if (!sError.empty()) {
         return sError;
     }
@@ -103,6 +103,7 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
 
 // try to make a list of groups. If not possible,
 // make a dummy group and put the regions inside
+#if 0
 std::string SParse::matchHeadingsOrRegions(SInstrumentPtr inst, SLexPtr lex) {
     SQINFO("matchHeadingsOrRegions");
     auto token = lex->next();
@@ -139,6 +140,7 @@ std::string SParse::matchHeadingsOrRegions(SInstrumentPtr inst, SLexPtr lex) {
 
     return "";
 }
+#endif
 
 std::string SParse::matchHeadingGroups(SInstrumentPtr inst, SLexPtr lex) {
     for (bool done = false; !done;) {
@@ -177,7 +179,7 @@ static bool isHeadingName(const std::string& s) {
 std::pair<SParse::Result, bool> SParse::matchSingleHeading(SInstrumentPtr inst, SLexPtr lex) {
     Result result;
 
-    SQINFO(" SParse::matchSingleHeading");
+    SQINFO("SParse::matchSingleHeading");
     auto tok = lex->next();
 
     // if this cant match a heading, the give up
@@ -195,6 +197,7 @@ std::pair<SParse::Result, bool> SParse::matchSingleHeading(SInstrumentPtr inst, 
     // and consume the [heading] token.
     const std::string tagName = getTagName(tok);
     lex->consume();
+    SQINFO("SParse::matchSingleHeading found tag %s", tagName.c_str());
 
     // now extract out all the keys and values for this heading
     SKeyValueList keysAndValues;
@@ -250,6 +253,7 @@ SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
                 if (!matchedOne) {
                     return temp.first;
                 }
+                done = true;
                 // if some matched, then that just means we are done matching
         }
     }
