@@ -77,6 +77,7 @@ struct SampWidget : ModuleWidget {
             sfile->text = "Load Sample file";
             theMenu->addChild(sfile);
         }
+#if 0   // add the root folder
         {
             SqMenuItem* spath = new SqMenuItem(
                 []() { return false; },
@@ -84,6 +85,7 @@ struct SampWidget : ModuleWidget {
             spath->text = "Set default sample path";
             theMenu->addChild(spath);
         }
+#endif
     }
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK) {

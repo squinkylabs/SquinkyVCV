@@ -32,19 +32,29 @@ public:
 using SRegionPtr = std::shared_ptr<SRegion>;
 using SRegionList = std::vector<SRegionPtr>;
 
+// A heading represents a <global> simiar
+// It doesn't have much, other than a list of value
+class SHeading {
+public:
+    SKeyValueList values;
+    SamplerSchema::KeysAndValuesPtr compiledValues;
+    static void dumpKeysAndValues(const SKeyValueList& v);
+};
+
 // Groups have a list of values
 // and they usually have children.
-class SGroup {
+// they are a type of heading, but they are special
+class SGroup : public SHeading {
 public:
     SGroup(int line) : lineNumber(line) {}
     SGroup() = delete;
 
-    SKeyValueList values;
-    SamplerSchema::KeysAndValuesPtr compiledValues;
+  //  SKeyValueList values;
+  //  SamplerSchema::KeysAndValuesPtr compiledValues;
     SRegionList regions;
     const int lineNumber;
     void _dump();
-    static void dumpKeysAndValues(const SKeyValueList& v);
+  //  static void dumpKeysAndValues(const SKeyValueList& v);
 };
 using SGroupPtr = std::shared_ptr<SGroup>;
 using SGroupList = std::vector<SGroupPtr>;
@@ -89,19 +99,21 @@ private:
     };
 
     /* What is a "heading"?
-     * it's somehting that can modify following regions: group, control, etc...
+     * it's something that can modify following regions: group, control, etc...
      * we will treat these all pretty much the same
      */
-  //  static std::string matchGlobal(SGlobal&, SLexPtr);
- //   static std::string matchControl(SControl&, SLexPtr);
+
     static std::string matchRegions(SRegionList&, SLexPtr);
     static Result matchRegion(SRegionList&, SLexPtr);
- //   static std::string F(SGroupList&, SLexPtr lex);
-    static std::string matchHeadings(SInstrumentPtr, SLexPtr lex);
-  //  static Result matchGroup(SGroupList&, SLexPtr);
-  // static std::string matchGroupsOrRegions(SGroupList&, SLexPtr lex);
+
+    //  static std::string matchHeadings(SInstrumentPtr, SLexPtr lex);
+    // a"heading group" is a series of headings followed by all regions that belong to it
+    static std::string matchHeadingGroups(SInstrumentPtr, SLexPtr lex);
+    static Result matchHeadingGroup(SInstrumentPtr, SLexPtr);
     static std::string matchHeadingsOrRegions(SInstrumentPtr, SLexPtr lex);
-    static Result matchHeading(SInstrumentPtr, SLexPtr);
+
+    // return.second is true it heading it a group
+    static std::pair<Result, bool> matchSingleHeading(SInstrumentPtr, SLexPtr);
 
     static std::string matchKeyValuePairs(SKeyValueList&, SLexPtr);
     static Result matchKeyValuePair(SKeyValueList&, SLexPtr);

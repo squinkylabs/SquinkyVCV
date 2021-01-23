@@ -312,6 +312,14 @@ static void testParseGlobal() {
     assert(!err.empty());
 }
 
+static void testParseGlobalGroupAndRegion() {
+    SQINFO("\n-- start testParseGlobalAndRegion\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<global><group><region>", inst);
+
+    assert(err.empty());   
+}
+
 static void testParseGlobalAndRegion() {
     SQINFO("\n-- start testParseGlobalAndRegion\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -428,7 +436,9 @@ void testx() {
 
 
     //move me after I work
-    testLexLabel();
+    testParseGlobalGroupAndRegion();
+    testParseGlobalAndRegion();
+    
 
     testx0();
     testx1();
@@ -450,6 +460,7 @@ void testx() {
     testLex5();
     testLexSpaces();
     testLexSpaces2();
+    testLexLabel();
 
     testparse1();
     testparse2();
