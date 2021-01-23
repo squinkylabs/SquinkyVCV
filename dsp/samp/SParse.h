@@ -50,6 +50,7 @@ using SGroupPtr = std::shared_ptr<SGroup>;
 using SGroupList = std::vector<SGroupPtr>;
 
 // Eventually we will need more complex top level objects
+#if 0
 class SGlobal {
 public:
     SKeyValueList values;
@@ -61,6 +62,7 @@ public:
     SKeyValueList values;
     SamplerSchema::KeysAndValuesPtr compiledValues;
 };
+#endif
 
 class SLex;
 class SLexItem;
@@ -86,13 +88,20 @@ private:
         Res res = Res::ok;
     };
 
-    static std::string matchGlobal(SGlobal&, SLexPtr);
-    static std::string matchControl(SControl&, SLexPtr);
+    /* What is a "heading"?
+     * it's somehting that can modify following regions: group, control, etc...
+     * we will treat these all pretty much the same
+     */
+  //  static std::string matchGlobal(SGlobal&, SLexPtr);
+ //   static std::string matchControl(SControl&, SLexPtr);
     static std::string matchRegions(SRegionList&, SLexPtr);
     static Result matchRegion(SRegionList&, SLexPtr);
-    static std::string matchGroups(SGroupList&, SLexPtr lex);
-    static Result matchGroup(SGroupList&, SLexPtr);
-    static std::string matchGroupsOrRegions(SGroupList&, SLexPtr lex);
+ //   static std::string F(SGroupList&, SLexPtr lex);
+    static std::string matchHeadings(SInstrumentPtr, SLexPtr lex);
+  //  static Result matchGroup(SGroupList&, SLexPtr);
+  // static std::string matchGroupsOrRegions(SGroupList&, SLexPtr lex);
+    static std::string matchHeadingsOrRegions(SInstrumentPtr, SLexPtr lex);
+    static Result matchHeading(SInstrumentPtr, SLexPtr);
 
     static std::string matchKeyValuePairs(SKeyValueList&, SLexPtr);
     static Result matchKeyValuePair(SKeyValueList&, SLexPtr);

@@ -1,9 +1,11 @@
 
+
 #include "SParse.h"
 
 #include <assert.h>
 
 #include <fstream>
+#include <set>
 #include <streambuf>
 #include <string>
 
@@ -12,8 +14,24 @@
 #include "SqLog.h"
 #include "SqStream.h"
 
-// globals for mem leak detection
+// global for mem leak detection
 int parseCount = 0;
+
+/*
+poassible way to parse non-standard control blocks:
+
+do it mostly in the parser.
+always keep a "current" global, control, midi, master
+when we match "group" : match any order of "non region" things
+when we make a group, put all attributes from the other "things" into it
+
+Do we take the   SControl control and SGlobal global out of SInstrument? if so we need some persistent
+parse state to hold onto... I guess we could continue to use sINst, but it's a bit of a kludge...
+
+only non-parser thing:
+    put the paths together when we make the compiled regions.
+    eliminate the getPath accessor from ci.
+*/
 
 std::string SParse::goFile(const std::string& sPath, SInstrumentPtr inst) {
 #if 0
@@ -43,6 +61,7 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
         return "";
     }
 
+#if 0
     std::string sError = matchControl(inst->control, lex);
     if (!sError.empty()) {
         return sError;
@@ -51,7 +70,8 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
     if (!sError.empty()) {
         return sError;
     }
-    sError = matchGroupsOrRegions(inst->groups, lex);
+#endif
+    std::string sError = matchHeadingsOrRegions(inst, lex);
     if (!sError.empty()) {
         return sError;
     }
@@ -83,32 +103,46 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
 
 // try to make a list of groups. If not possible,
 // make a dummy group and put the regions inside
-std::string SParse::matchGroupsOrRegions(SGroupList& groups, SLexPtr lex) {
+std::string SParse::matchHeadingsOrRegions(SInstrumentPtr inst, SLexPtr lex) {
+    SQINFO("matchHeadingsOrRegions");
     auto token = lex->next();
     if (!token) {
+        SQINFO("leave early no tokens");
         return "";  // nothing left to match
     }
     if (getTagName(token) == "region") {
+        SQINFO("matchHeadingsOrRegions is region 114");
         // OK, the first thing is a region. To let's put it in a group, and continue
         SGroupPtr fakeGroup = std::make_shared<SGroup>(token->lineNumber);
-        groups.push_back(fakeGroup);
+        inst->groups.push_back(fakeGroup);
         auto resultString = matchRegions(fakeGroup->regions, lex);
         if (!resultString.empty()) {
+            SQINFO("120 match regions fail");
             return resultString;
         }
+        SQINFO("matchHeadingsOrRegions will call matchHeadings");
         // now continue on adding more groups, if present
-        return matchGroups(groups, lex);
+        return matchHeadings(inst, lex);
     }
-    if (getTagName(token) == "group") {
-        return matchGroups(groups, lex);
+    // compare to groups? that doesn't seem right
+    // SQWARN("why are we looking for tag name??");
+    //  assert(false);
+    //  if (getTagName(token) == "group") {
+    //       return matchHeadings(inst, lex);
+    //   }
+
+    // does this check do anything??
+    if (!getTagName(token).empty()) {
+        SQINFO("calling matchHeadings, since not region");
+        return matchHeadings(inst, lex);
     }
 
     return "";
 }
 
-std::string SParse::matchGroups(SGroupList& groups, SLexPtr lex) {
+std::string SParse::matchHeadings(SInstrumentPtr inst, SLexPtr lex) {
     for (bool done = false; !done;) {
-        auto result = matchGroup(groups, lex);
+        auto result = matchHeading(inst, lex);
         if (result.res == Result::error) {
             return result.errorMessage;
         }
@@ -118,6 +152,7 @@ std::string SParse::matchGroups(SGroupList& groups, SLexPtr lex) {
 }
 
 std::string SParse::matchRegions(SRegionList& regions, SLexPtr lex) {
+    SQINFO("matchRegions size=%d", regions.size());
     for (bool done = false; !done;) {
         auto result = matchRegion(regions, lex);
         if (result.res == Result::error) {
@@ -128,20 +163,41 @@ std::string SParse::matchRegions(SRegionList& regions, SLexPtr lex) {
     return "";
 }
 
-SParse::Result SParse::matchGroup(SGroupList& groups, SLexPtr lex) {
+static std::set<std::string> headingTags = {
+    {"group"},
+    {"global"},
+    {"control"},
+    {"master"}
+};
+
+static bool isHeadingName(const std::string& s) {
+    SQINFO("call isHeadingNanme on %s", s.c_str());
+    return headingTags.find(s) != headingTags.end();
+}
+
+SParse::Result SParse::matchHeading(SInstrumentPtr inst, SLexPtr lex) {
+    SQINFO(" SParse::matchHeading");
     Result result;
     auto tok = lex->next();
-    if (!tok || (getTagName(tok) != "group")) {
+
+    // if this cant match a heading, the give up
+    if (!tok || !isHeadingName(getTagName(tok))) {
         result.res = Result::Res::no_match;
+        if (!tok) 
+            SQINFO("match heading exit early out of tokens ");
+        else    
+            SQINFO("match heading exit early on tag %s", getTagName(tok));
+
         return result;
     }
 
-    // consume the <group> tag
+    const std::string tagName = getTagName(tok);
+    // consume the [heading] tag
     lex->consume();
 
-    // make a new group to hold this one, and put it into the groups
+    // make a new group to hold this one. If the tag isn't for a 
+    // group, then we will copy it.
     SGroupPtr newGroup = std::make_shared<SGroup>(tok->lineNumber);
-    groups.push_back(newGroup);
 
     // add all the key-values that belong to the group
     std::string s = matchKeyValuePairs(newGroup->values, lex);
@@ -151,6 +207,49 @@ SParse::Result SParse::matchGroup(SGroupList& groups, SLexPtr lex) {
         result.errorMessage = s;
     }
 
+    // now stash all the key values where they really belong
+    SKeyValueList* dest = nullptr;
+
+
+    if (tagName == "global") {
+        dest = &inst->currentGlobal;
+    } else if  (tagName == "control") {
+        dest = &inst->currentControl;
+    } else if (tagName == "master") {
+        dest = &inst->currentMaster;
+    }
+
+    // if it's a "global" heading, then copy the values for later.
+    // if it's a real group, then save it off and terminate everything
+    if (dest) {
+        *dest = newGroup->values;
+        newGroup = nullptr;
+        SQINFO("match headling  non group %s", tagName.c_str());
+
+        auto tok = lex->next();
+        if (!tok || getTagName(tok) != "region") {
+            SQINFO("match heading leaving early = not group or region");
+            return result;
+        }
+    }
+
+    // here it is either a region or a group
+         
+     // if it's a real group, then we need to compbine all the temporary data into this group
+    
+ 
+
+    if (newGroup) {
+        // now we need to coelesce all the global props into this group
+        SQINFO("!!242 finish");
+        inst->groups.push_back(newGroup);
+    }
+
+
+    SQINFO("continue on to reading the region children");
+
+    // and continue an get all the region children
+    assert(newGroup);
     std::string regionsError = matchRegions(newGroup->regions, lex);
     if (!regionsError.empty()) {
         result.res = Result::Res::error;
@@ -160,6 +259,7 @@ SParse::Result SParse::matchGroup(SGroupList& groups, SLexPtr lex) {
 }
 
 SParse::Result SParse::matchRegion(SRegionList& regions, SLexPtr lex) {
+    SQINFO("matchRegion regions size = %d", regions.size());
     Result result;
     auto tok = lex->next();
     if (!tok || (getTagName(tok) != "region")) {
@@ -172,6 +272,8 @@ SParse::Result SParse::matchRegion(SRegionList& regions, SLexPtr lex) {
 
     // consume the <region> tag
     lex->consume();
+
+    // does this invalidate/ free tok??
 
     // make a new region to hold this one, and put it into the group
 
@@ -187,6 +289,7 @@ SParse::Result SParse::matchRegion(SRegionList& regions, SLexPtr lex) {
     return result;
 }
 
+#if 0
 std::string SParse::matchGlobal(SGlobal& g, SLexPtr lex) {
     auto token = lex->next();
     std::string sError;
@@ -208,6 +311,8 @@ std::string SParse::matchControl(SControl& c, SLexPtr lex) {
 
     return sError;
 }
+#endif
+
 std::string SParse::matchKeyValuePairs(SKeyValueList& values, SLexPtr lex) {
     for (bool done = false; !done;) {
         auto result = matchKeyValuePair(values, lex);

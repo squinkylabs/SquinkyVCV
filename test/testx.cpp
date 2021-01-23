@@ -313,7 +313,7 @@ static void testParseGlobal() {
 }
 
 static void testParseGlobalAndRegion() {
-    printf("start test parse global\n");
+    SQINFO("\n-- start testParseGlobalAndRegion\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><region>", inst);
 

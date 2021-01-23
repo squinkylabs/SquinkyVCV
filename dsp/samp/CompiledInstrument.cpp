@@ -53,6 +53,10 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
     return ret;
 }
 
+void CompiledInstrument::extractDefaultPath(const SInstrumentPtr in) {
+    assert(false);
+}
+#if 0
  void CompiledInstrument::extractDefaultPath(const SInstrumentPtr in) {
     auto value = in->control.compiledValues->get(Opcode::DEFAULT_PATH);
     if (value) {
@@ -60,6 +64,7 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
         this->defaultPath = value->string;
     }
  }
+#endif
 
 int CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions) {
 #ifdef _LOGOV
@@ -476,8 +481,8 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootP
 
 void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
     assert(!inst->wasExpanded);
-    inst->global.compiledValues = SamplerSchema::compile(inst->global.values);
-    inst->control.compiledValues = SamplerSchema::compile(inst->control.values);
+  //  inst->global.compiledValues = SamplerSchema::compile(inst->global.values);
+ //   inst->control.compiledValues = SamplerSchema::compile(inst->control.values);
 
     for (auto group : inst->groups) {
         group->compiledValues = SamplerSchema::compile(group->values);

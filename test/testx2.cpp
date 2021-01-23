@@ -300,8 +300,10 @@ static void testParseGlobalAndRegionCompiled() {
 
     assert(err.empty());
     CompiledInstrument::expandAllKV(inst);
-    assert(inst->global.compiledValues);
-    assertEQ(inst->global.compiledValues->_size(), 0);
+
+  //  assert(inst->global.compiledValues);
+    assert(false);
+ //   assertEQ(inst->global.compiledValues->_size(), 0);
 
     SGroupPtr group = inst->groups[0];
     assert(group);
@@ -315,10 +317,12 @@ static void testParseGlobalWithKVAndRegionCompiled() {
 
     assert(err.empty());
     CompiledInstrument::expandAllKV(inst);
-    assert(inst->global.compiledValues);
-    assertEQ(inst->global.compiledValues->_size(), 1);
-    auto val = inst->global.compiledValues->get(SamplerSchema::Opcode::HI_KEY);
-    assertEQ(val->numericInt, 57);
+
+    assert(false);
+  //  assert(inst->global.compiledValues);
+ //   assertEQ(inst->global.compiledValues->_size(), 1);
+ //   auto val = inst->global.compiledValues->get(SamplerSchema::Opcode::HI_KEY);
+  //  assertEQ(val->numericInt, 57);
 
     SGroupPtr group = inst->groups[0];
     assert(group);
@@ -332,8 +336,10 @@ static void testParseGlobalWitRegionKVCompiled() {
 
     assert(err.empty());
     CompiledInstrument::expandAllKV(inst);
-    assert(inst->global.compiledValues);
-    assertEQ(inst->global.compiledValues->_size(), 0);
+
+    assert(false);
+  //  assert(inst->global.compiledValues);
+ //   assertEQ(inst->global.compiledValues->_size(), 0);
 
     SGroupPtr group = inst->groups[0];
     assert(group);
@@ -366,11 +372,12 @@ static void testParseControl() {
     auto err = SParse::go(data, inst);
     assert(err.empty());
 
-    assertEQ(inst->control.values.size(), 1);
+    assert(false);
+ //   assertEQ(inst->control.values.size(), 1);
 
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
-    assert(inst->control.compiledValues);
-    assertEQ(inst->control.compiledValues->_size(), 1);
+  //  CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+ //   assert(inst->control.compiledValues);
+ //   assertEQ(inst->control.compiledValues->_size(), 1);
 }
 
 static void testParseLabel() {

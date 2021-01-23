@@ -1,6 +1,8 @@
 #pragma once
 
 #include "SamplerSchema.h"
+#include "SqLog.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -10,6 +12,10 @@ using SLexPtr = std::shared_ptr<SLex>;
 
 class SLexItem {
 public:
+    ~SLexItem() {
+        // just for debug
+        SQINFO("dtor of slex item");
+    }
     enum class Type {
         Tag,
         Identifier,
