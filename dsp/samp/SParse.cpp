@@ -208,20 +208,20 @@ std::pair<SParse::Result, bool> SParse::matchSingleHeading(SInstrumentPtr inst, 
     SQINFO("matchSingleHeading got keys and values");
 
     // now stash all the key values where they really belong
-    SKeyValueList* dest = nullptr;
+    SHeading* dest = nullptr;
     bool isGroup = false;
     if (tagName == "global") {
-        dest = &inst->global.values;
+        dest = &inst->global;
     } else if (tagName == "control") {
-        dest = &inst->currentControl.values;
+        dest = &inst->currentControl;
     } else if (tagName == "master") {
-        dest = &inst->master.values;
+        dest = &inst->master;
     } else if (tagName == "group") {
-        dest = &inst->currentGroup.values;
+        dest = &inst->currentGroup;
         isGroup = true;
     }
 
-    *dest = std::move(keysAndValues);
+    dest->values = std::move(keysAndValues);
     return std::make_pair(result, isGroup);
 }
 
@@ -229,10 +229,46 @@ std::pair<SParse::Result, bool> SParse::matchSingleHeading(SInstrumentPtr inst, 
 // (for now?) assume each series of headings ends with a group
 
 SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
-    std::pair<Result, bool> temp = matchSingleHeading(inst, lex);
+    bool matchedOne = false;
+    for (bool done=false; !done; ) {
+        std::pair<Result, bool> temp = matchSingleHeading(inst, lex);
 
+        switch (temp.first.res) {
+            case Result::ok:
+                matchedOne = true;
+                if (temp.second) {
+                    // here we assume that the last heading will be a group
+                    // maybe we should relax this so we can use this in the non-group case?
+                    done = true;
+                }
+                break;
+            case Result::error:
+                return temp.first;
+                break;
+            case Result::no_match:
+                // if we match no headings, then we failed the match
+                if (!matchedOne) {
+                    return temp.first;
+                }
+                // if some matched, then that just means we are done matching
+        }
+    }
+
+    // Getting here means we have successfully parsed at least one
+    // heading, and we are done with them. Now we just need to round up the regions
+
+    // and continue an get all the region children
+    // TODO: copy all the data into the new group!!
     Result result;
-    assert(false);
+    SGroupPtr newGroup = std::make_shared<SGroup>(inst->currentGroup.lineNumber);
+    inst->groups.push_back(newGroup);
+    assert(newGroup);
+    std::string regionsError = matchRegions(newGroup->regions, lex);
+    if (!regionsError.empty()) {
+        result.res = Result::Res::error;
+        result.errorMessage = regionsError;
+    }
+
     return result;
 }
 // Matches headings followed by a region list

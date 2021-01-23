@@ -39,6 +39,7 @@ public:
     SKeyValueList values;
     SamplerSchema::KeysAndValuesPtr compiledValues;
     static void dumpKeysAndValues(const SKeyValueList& v);
+    int lineNumber = 0;
 };
 
 // Groups have a list of values
@@ -49,30 +50,13 @@ public:
     SGroup(int line) : lineNumber(line) {}
     SGroup() = delete;
 
-  //  SKeyValueList values;
-  //  SamplerSchema::KeysAndValuesPtr compiledValues;
     SRegionList regions;
     const int lineNumber;
     void _dump();
-  //  static void dumpKeysAndValues(const SKeyValueList& v);
 };
+
 using SGroupPtr = std::shared_ptr<SGroup>;
 using SGroupList = std::vector<SGroupPtr>;
-
-// Eventually we will need more complex top level objects
-#if 0
-class SGlobal {
-public:
-    SKeyValueList values;
-    SamplerSchema::KeysAndValuesPtr compiledValues;
-};
-
-class SControl {
-public:
-    SKeyValueList values;
-    SamplerSchema::KeysAndValuesPtr compiledValues;
-};
-#endif
 
 class SLex;
 class SLexItem;
