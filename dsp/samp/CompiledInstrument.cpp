@@ -481,7 +481,8 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootP
 
 void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
     assert(!inst->wasExpanded);
-  //  inst->global.compiledValues = SamplerSchema::compile(inst->global.values);
+    inst->global.compiledValues = SamplerSchema::compile(inst->global.values);
+    inst->master.compiledValues = SamplerSchema::compile(inst->master.values);
  //   inst->control.compiledValues = SamplerSchema::compile(inst->control.values);
 
     for (auto group : inst->groups) {

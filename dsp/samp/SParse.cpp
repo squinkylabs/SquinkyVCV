@@ -61,16 +61,6 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
         return "";
     }
 
-#if 0
-    std::string sError = matchControl(inst->control, lex);
-    if (!sError.empty()) {
-        return sError;
-    }
-    sError = matchGlobal(inst->global, lex);
-    if (!sError.empty()) {
-        return sError;
-    }
-#endif
     std::string sError = matchHeadingGroups(inst, lex);
     if (!sError.empty()) {
         return sError;
@@ -100,47 +90,6 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
     }
     return sError;
 }
-
-// try to make a list of groups. If not possible,
-// make a dummy group and put the regions inside
-#if 0
-std::string SParse::matchHeadingsOrRegions(SInstrumentPtr inst, SLexPtr lex) {
-    SQINFO("matchHeadingsOrRegions");
-    auto token = lex->next();
-    if (!token) {
-        SQINFO("leave early no tokens");
-        return "";  // nothing left to match
-    }
-    if (getTagName(token) == "region") {
-        SQINFO("matchHeadingsOrRegions is region 114");
-        // OK, the first thing is a region. To let's put it in a group, and continue
-        SGroupPtr fakeGroup = std::make_shared<SGroup>(token->lineNumber);
-        inst->groups.push_back(fakeGroup);
-        auto resultString = matchRegions(fakeGroup->regions, lex);
-        if (!resultString.empty()) {
-            SQINFO("120 match regions fail");
-            return resultString;
-        }
-        SQINFO("matchHeadingsOrRegions will call matchHeadings");
-        // now continue on adding more groups, if present
-        return matchHeadingGroups(inst, lex);
-    }
-    // compare to groups? that doesn't seem right
-    // SQWARN("why are we looking for tag name??");
-    //  assert(false);
-    //  if (getTagName(token) == "group") {
-    //       return matchHeadings(inst, lex);
-    //   }
-
-    // does this check do anything??
-    if (!getTagName(token).empty()) {
-        SQINFO("calling matchHeadings, since not region");
-        return matchHeadingGroups(inst, lex);
-    }
-
-    return "";
-}
-#endif
 
 std::string SParse::matchHeadingGroups(SInstrumentPtr inst, SLexPtr lex) {
     for (bool done = false; !done;) {
@@ -232,13 +181,13 @@ std::pair<SParse::Result, bool> SParse::matchSingleHeading(SInstrumentPtr inst, 
 // (for now?) assume each series of headings ends with a group
 
 SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
-    bool matchedOne = false;
+    bool matchedOneHeading = false;
     for (bool done=false; !done; ) {
         std::pair<Result, bool> temp = matchSingleHeading(inst, lex);
 
         switch (temp.first.res) {
             case Result::ok:
-                matchedOne = true;
+                matchedOneHeading = true;
                 if (temp.second) {
                     // here we assume that the last heading will be a group
                     // maybe we should relax this so we can use this in the non-group case?
@@ -249,12 +198,9 @@ SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
                 return temp.first;
                 break;
             case Result::no_match:
-                // if we match no headings, then we failed the match
-                if (!matchedOne) {
-                    return temp.first;
-                }
+                // if we match no headings, then we don't look for more,
+                // but it's not an error. region with no headings is ok
                 done = true;
-                // if some matched, then that just means we are done matching
         }
     }
 
@@ -263,14 +209,25 @@ SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
 
     // and continue an get all the region children
     // TODO: copy all the data into the new group!!
+
     Result result;
     SGroupPtr newGroup = std::make_shared<SGroup>(inst->currentGroup.lineNumber);
-    inst->groups.push_back(newGroup);
+
     assert(newGroup);
     std::string regionsError = matchRegions(newGroup->regions, lex);
     if (!regionsError.empty()) {
         result.res = Result::Res::error;
         result.errorMessage = regionsError;
+    }
+
+    if (!matchedOneHeading && newGroup->regions.empty()) {
+        result.res = Result::no_match;
+        SQINFO("matchHeadingGroup found no match");
+    }
+
+    // if we found regions, then this group is "real"
+    if (result.res == Result::ok) {
+        inst->groups.push_back(newGroup);
     }
 
     return result;
