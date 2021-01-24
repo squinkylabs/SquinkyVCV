@@ -1,8 +1,9 @@
 
 #include "FilePath.h"
 
-#include <algorithm>
 #include <assert.h>
+
+#include <algorithm>
 
 FilePath::FilePath(const char* s) : data(s) {
     fixSeparators();
@@ -20,18 +21,39 @@ void FilePath::fixSeparators() {
     std::replace(data.begin(), data.end(), foreignSeparator(), nativeSeparator());
 }
 
-void FilePath::concat(const FilePath& other) {
-    const bool firstEndsWithSeparator = this->endsWithSeparator();
-    const bool secondStartsWithSeparator = other.startsWithSeparator();
-    if (firstEndsWithSeparator && secondStartsWithSeparator) {
-        data.pop_back();
-        data += other.data;
-    } else if (firstEndsWithSeparator || secondStartsWithSeparator) {
-        data += other.data;
-    } else {
-        data += nativeSeparator();
+void FilePath::concat(const FilePath& _other) {
+    FilePath other = _other;
+   // std::string otherData = _other.data;
+ 
+    // remove and leading dots from other
+    const bool secondStartsWithDot = other.startsWithDot();
+    if (secondStartsWithDot) {
+        other = FilePath(other.toString().substr(1));
+       // otherData = otherData.substr(1);
+    }
+
+    // if second was just a dot, do nothing
+    if (other.empty()) {
+        return;
+    }
+    
+
+    {
+        const bool firstEndsWithSeparator = this->endsWithSeparator();
+        const bool secondStartsWithSeparator = other.startsWithSeparator();
+
+        if (firstEndsWithSeparator && secondStartsWithSeparator) {
+            data.pop_back();
+        } else if (firstEndsWithSeparator || secondStartsWithSeparator) {
+        } else {
+            data += nativeSeparator();
+        }
         data += other.data;
     }
+}
+
+bool FilePath::empty() const {
+    return data.empty();
 }
 
 bool FilePath::startsWithSeparator() const {
@@ -41,12 +63,18 @@ bool FilePath::startsWithSeparator() const {
     return data.at(0) == nativeSeparator();
 }
 
-bool FilePath::endsWithSeparator() const
-{
-     if (data.empty()) {
+bool FilePath::endsWithSeparator() const {
+    if (data.empty()) {
         return false;
     }
     return data.back() == nativeSeparator();
+}
+
+bool FilePath::startsWithDot() const {
+    if (data.empty()) {
+        return false;
+    }
+    return data.at(0) == '.';
 }
 
 char FilePath::nativeSeparator() {
