@@ -54,7 +54,8 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
 }
 
 void CompiledInstrument::extractDefaultPath(const SInstrumentPtr in) {
-    assert(false);
+    SQWARN("get rid of old extract path");
+    // assert(false);
 }
 #if 0
  void CompiledInstrument::extractDefaultPath(const SInstrumentPtr in) {

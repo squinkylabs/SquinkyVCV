@@ -2,6 +2,7 @@
 #include "SqLog.h"
 #include "asserts.h"
 #include "samplerTests.h"
+#include "FilePath.h"
 
 static void testRandomPlayerEmpty() {
     VoicePlayInfo info;
@@ -163,6 +164,33 @@ static void testRRPlayerCrazyPos() {
 
 }
 
+static void testFilePath0() {
+    FilePath f("abc");
+    assertEQ(f.toString(), "abc");
+
+    assertNE(FilePath::nativeSeparator(), FilePath::foreignSeparator());
+}
+
+static void testFilePathFixup() {
+    std::string input("\\\\////\\\\\\");
+    FilePath f(input);
+    const std::string s = f.toString();
+    assertNE(s, input);
+
+    bool b = s.find(FilePath::foreignSeparator()) != std::string::npos;
+    assert(!b);
+}
+
+static void testFilePathFixup2() {
+    const char* input ="\\\\////\\\\\\";
+    FilePath f(input);
+    const std::string s = f.toString();
+    assertNE(s, input);
+
+    bool b = s.find(FilePath::foreignSeparator()) != std::string::npos;
+    assert(!b);
+}
+
 void testx4() {
     testRandomPlayerEmpty();
     testRandomPlayerOneEntry();
@@ -171,4 +199,7 @@ void testx4() {
     testRandomPlayerBadData();
 
     testRRPlayerCrazyPos();
+    testFilePath0();
+    testFilePathFixup();
+    testFilePathFixup2();
 }

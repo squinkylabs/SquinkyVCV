@@ -6,12 +6,11 @@
 #include "SInstrument.h"
 #include "Sampler4vx.h"
 #include "SamplerSchema.h"
+#include "SqLog.h"
 #include "Streamer.h"
 #include "WaveLoader.h"
 #include "asserts.h"
 #include "samplerTests.h"
-
-#include "SqLog.h"
 
 static const char* tinnyPiano = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
 const char* tinnyPianoRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
@@ -22,7 +21,6 @@ static void testWaveLoader0() {
     w.addNextSample("fake file name");
     const bool b = w.load();
     assert(!b);
-
 }
 
 static void testWaveLoader1() {
@@ -39,14 +37,14 @@ static void testWaveLoader1() {
 static void testWaveLoaderNot44() {
     WaveLoader w;
     w.addNextSample("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav");
-  
+
     const bool b = w.load();
     assert(b);
 
     auto x = w.getInfo(1);
     assert(x->valid);
-    assertEQ(x->sampleRate, 48000);     // we keep the input sample rate
-    assertEQ(x->numChannels, 1);        // but we convert to mono
+    assertEQ(x->sampleRate, 48000);  // we keep the input sample rate
+    assertEQ(x->numChannels, 1);     // but we convert to mono
 }
 
 static void testWaveLoaderNotMono() {
@@ -317,7 +315,6 @@ static void testParseGlobalWithKVAndRegionCompiled() {
     assert(err.empty());
     CompiledInstrument::expandAllKV(inst);
 
-
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 1);
     auto val = inst->global.compiledValues->get(SamplerSchema::Opcode::HI_KEY);
@@ -335,7 +332,6 @@ static void testParseGlobalWitRegionKVCompiled() {
 
     assert(err.empty());
     CompiledInstrument::expandAllKV(inst);
-
 
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 0);
@@ -358,25 +354,40 @@ static void testParseGlobalWitRegionKVCompiled() {
 }
 
 static void testParseControl() {
-  SQINFO("------------- testParseControl");
-  const char* data = R"foo(<control>
+    SQINFO("------------- testParseControl");
+    const char* data = R"foo(<control>
         default_path=Woodwinds\Bassoon\stac\
         <global>ampeg_attack=0.001 ampeg_release=3 ampeg_dynamic=1 volume=0
         <group> //Begin Group 1
         lorand=0.0 hirand=0.5 group_label=gr_1
         <region>sample=PSBassoon_A1_v1_rr1.wav lokey=43 hikey=46 pitch_keycenter=45 lovel=0 hivel=62 volume=12
         )foo";
-  
+
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
     assert(err.empty());
 
-    assert(false);
- //   assertEQ(inst->control.values.size(), 1);
+    assertEQ(inst->groups.size(), 1);
+    assertEQ(inst->groups[0]->regions.size(), 1);
+#if 0
+    SRegionPtr region = inst->groups[0]->regions[0];
 
-  //  CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
- //   assert(inst->control.compiledValues);
- //   assertEQ(inst->control.compiledValues->_size(), 1);
+    bool foundSample = false;
+    std::string sample;
+    for (int i = 0; i < region.values.size(); ++i) {
+        SKeyValuePairPtr kv = region->values[i];
+        if (kb->key == "sample")
+    }
+#endif
+
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    std::vector<CompiledRegionPtr> regions;
+    cinst->getAllRegions(regions);
+    assertEQ(regions.size(), 1);
+    CompiledRegionPtr creg = regions[0];
+    assertEQ(creg->lokey, 43);
+
+    assert(false);
 }
 
 static void testParseLabel() {
@@ -385,7 +396,6 @@ static void testParseLabel() {
     auto err = SParse::go(data, inst);
     assert(err.empty());
 }
-
 
 static void testCompileInst0() {
     printf("\n-- test comp inst 1\n");
@@ -1126,20 +1136,19 @@ static void testComp(const std::string& path) {
         SQWARN("parse ret %s", err.c_str());
     }
     assert(err.empty());
-  //  go(data, inst);
+    //  go(data, inst);
 
     auto ci = CompiledInstrument::make(inst);
     assert(ci);
     // ci->_dump(0);
     VoicePlayInfo info;
-      VoicePlayParameter params;
-        params.midiPitch = 40;
-        params.midiVelocity = 110;
+    VoicePlayParameter params;
+    params.midiPitch = 40;
+    params.midiVelocity = 110;
     ci->play(info, params, nullptr, 0);
 }
 
-static void testCompileBassoon()
-{
+static void testCompileBassoon() {
     SQINFO("testCompileBassoon");
     testComp(R"foo(D:\samples\VSCO-2-CE-1.1.0\VSCO-2-CE-1.1.0\BassoonStac.sfz)foo");
 }
@@ -1189,7 +1198,6 @@ volume=12
     auto ci = CompiledInstrument::make(inst);
     assert(ci);
 }
-
 
 static void testCompileGroupProbability2() {
     const char* data = R"foo(
@@ -1279,8 +1287,6 @@ void testx2() {
     testParseGlobalWitRegionKVCompiled();
     testParseControl();
     testParseLabel();
-   
-
 
     testCompiledRegion();
     testCompiledRegionInherit();
