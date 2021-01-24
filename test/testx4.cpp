@@ -191,6 +191,42 @@ static void testFilePathFixup2() {
     assert(!b);
 }
 
+static void testFilePathConcat1() {
+    FilePath a("a");
+    FilePath b("b");
+    a.concat(b);
+
+    std::string s = a.toString();
+    assertEQ(s.size(), 3);
+    assertEQ(s.at(0), 'a');
+    assertEQ(s.at(1), FilePath::nativeSeparator());
+    assertEQ(s.at(2), 'b');
+}
+
+static void testFilePathConcat2() {
+    FilePath a("a/");
+    FilePath b("b");
+    a.concat(b);
+
+    std::string s = a.toString();
+    assertEQ(s.size(), 3);
+    assertEQ(s.at(0), 'a');
+    assertEQ(s.at(1), FilePath::nativeSeparator());
+    assertEQ(s.at(2), 'b');
+}
+
+static void testFilePathConcat3() {
+    FilePath a("a\\");
+    FilePath b("/b");
+    a.concat(b);
+
+    std::string s = a.toString();
+    assertEQ(s.size(), 3);
+    assertEQ(s.at(0), 'a');
+    assertEQ(s.at(1), FilePath::nativeSeparator());
+    assertEQ(s.at(2), 'b');
+}
+
 void testx4() {
     testRandomPlayerEmpty();
     testRandomPlayerOneEntry();
@@ -202,4 +238,7 @@ void testx4() {
     testFilePath0();
     testFilePathFixup();
     testFilePathFixup2();
+    testFilePathConcat1();
+    testFilePathConcat2();
+    testFilePathConcat3();
 }
