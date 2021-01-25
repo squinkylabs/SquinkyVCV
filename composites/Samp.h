@@ -174,8 +174,7 @@ inline void Samp<TBase>::setNewPatch() {
     if (!currentPatchMessage->instrument || !currentPatchMessage->waves) {
         if (!currentPatchMessage->instrument) {
             SQWARN("Patch Loader could not load patch.");
-        }
-        if (!currentPatchMessage->waves) {
+        } else if (!currentPatchMessage->waves) {
             SQWARN("Patch Loader could not load waves.");
         }
         _isSampleLoaded = false;
@@ -314,6 +313,10 @@ private:
     std::string fullPath;
     std::string globalPath;
 
+    /** parse out the original file location and other info
+     * to find the path to the folder containing the samples.
+     * this path will then be used to locate all samples.
+     */
     void parsePath(SampMessage* msg) {
         fullPath = msg->pathToSfz;
         if (!msg->defaultPath.empty()) {

@@ -74,7 +74,9 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
         float_4 envelopes = adsr.step(gates, sampleTime);
         float_4 samples = player.step();
         //printf("eg0 = %f samp0 = %f\n", envelopes[0], samples[0]);
-        return envelopes * samples;
+
+        // apply envelope and boost level
+        return envelopes * samples * float_4(5);
 #else
         float_4 samples = player.step();
         return samples;

@@ -49,6 +49,7 @@ bool WaveLoader::load() {
 }
 
 bool WaveLoader::WaveInfo::load() {
+    SQINFO("loader started loading waves");
     auto x = fileName.find(foreignSeparator());
     assert(x == std::string::npos);
 
@@ -67,11 +68,12 @@ bool WaveLoader::WaveInfo::load() {
     }
     //data = pSampleData;
     valid = true;
+    SQINFO("loader loaded all wave files");
     return true;
 }
 
 void WaveLoader::WaveInfo::convertToMono() {
-    SQINFO("converting to mono from %d %d", numChannels, sampleRate);
+   // SQINFO("converting to mono from %d %d", numChannels, sampleRate);
     const int origChannels = numChannels;
     uint64_t newBufferSize = 1 + totalFrameCount / origChannels;
     void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));

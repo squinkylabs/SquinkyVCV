@@ -624,19 +624,19 @@ static bool remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
     for (auto region : cGroup->regions) {
 #if 1   // TODO: move this somewhere so we can re-uses it with GRandom
         if (region->lokey != prototype->lokey) {
-            SQWARN("prototype lokey mismatch at #%d", region->lineNumber);
+            SQFATAL("prototype lokey mismatch at reg#%d proto#%d", region->lineNumber, prototype->lineNumber);
             return false;
         }
         if (region->hikey != prototype->hikey) {
-            SQWARN("prototype hikey mismatch at #%d", region->lineNumber);
+            SQFATAL("prototype hikey mismatch at #%d", region->lineNumber);
             return false;
         }
         if (region->lovel != prototype->lovel) {
-            SQWARN("prototype lovel mismatch at #%d", region->lineNumber);
+            SQFATAL("prototype lovel mismatch at #%d", region->lineNumber);
             return false;
         }
         if (region->hivel != prototype->hivel) {
-            SQWARN("prototype hivel mismatch at #%d", region->lineNumber);
+            SQFATAL("prototype hivel mismatch at #%d", region->lineNumber);
             return false;
         }
 
