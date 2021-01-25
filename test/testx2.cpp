@@ -13,8 +13,6 @@
 #include "asserts.h"
 #include "samplerTests.h"
 
-// bring in string literal def
-using namespace std::literals::string_literals;
 
 static const char* tinnyPiano = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
 const char* tinnyPianoRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
@@ -525,7 +523,7 @@ static void testCompiledRegion() {
     assertEQ(cr->hivel, 22);
     assertEQ(cr->lokey, 95);
     assertEQ(cr->hikey, 97);
-    std::string expected = "K18"s + FilePath::nativeSeparator() + "C7.pp.wav";
+    std::string expected = std::string("K18") + FilePath::nativeSeparator() + std::string("C7.pp.wav");
     assertEQ(cr->sampleFile, expected);
 }
 
@@ -544,6 +542,7 @@ static void testCompiledRegionKey() {
     CompiledRegionPtr cr = st::makeRegion(R"foo(<region>key=32)foo");
     assertEQ(cr->lokey, 32);
     assertEQ(cr->hikey, 32);
+    assertEQ(cr->keycenter, 32);
 }
 
 static void testCompiledRegionVel() {
@@ -633,10 +632,23 @@ static void testCompileMutliControls() {
     CompiledRegionPtr r1 = gps[1]->regions[0];
     assert(r1);
 
-    std::string expected = "a"s + FilePath::nativeSeparator() + "r1"s;
+    std::string expected = std::string("a") + FilePath::nativeSeparator() + std::string("r1");
+#if 0
+    std::string xx = std::string("a");
+    fprintf(stderr, "xx=%s\n", xx.c_str());
+     xx += FilePath::nativeSeparator();
+    fprintf(stderr, "xx=%s\n", xx.c_str());
+ xx += std::string("r1");
+    fprintf(stderr, "xx=%s\n", xx.c_str());
+    #endif
+
+   // SQINFO("at 635, exp=%s", expected.c_str());
+    fprintf(stderr, "at 635, exp=%s", expected.c_str());
+
+    fflush(stderr); fflush(stdout);
     assertEQ(r0->sampleFile, expected);
     
-    expected = "b"s + FilePath::nativeSeparator() + "r2"s;
+    expected = std::string("b") + FilePath::nativeSeparator() + std::string("r2");
     assertEQ(r1->sampleFile, expected);
 }
 
