@@ -22,7 +22,7 @@ public:
         HI_VEL,
         LO_VEL,
         AMPEG_RELEASE,
-        LOOP_CONTINUOUS,
+     //   LOOP_CONTINUOUS,
         LOOP_MODE,
         LOOP_START,
         LOOP_END,

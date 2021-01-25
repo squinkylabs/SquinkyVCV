@@ -52,7 +52,7 @@ using SRegionList = std::vector<SRegionPtr>;
 // they are a type of heading, but they are special
 class SGroup : public SHeading {
 public:
-    SGroup(int line) : lineNumber(line) { SQINFO("const of SGroup"); }
+    SGroup(int line) : lineNumber(line) {}
     SGroup() = delete;
 
     SRegionList regions;

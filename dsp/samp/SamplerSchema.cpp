@@ -21,6 +21,7 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::SAMPLE, OpcodeType::String},
     {Opcode::AMPEG_RELEASE, OpcodeType::Float},
     {Opcode::LOOP_MODE, OpcodeType::Discrete},
+  //  {Opcode::LOOP_CONTINUOUS, OpcodeType::}
     {Opcode::PITCH_KEYCENTER, OpcodeType::Int},
     {Opcode::LOOP_START, OpcodeType::Int},
     {Opcode::LOOP_END, OpcodeType::Int},
@@ -50,7 +51,7 @@ static std::map<std::string, Opcode> opcodes = {
     {"pitch_keycenter", Opcode::PITCH_KEYCENTER},
     {"ampeg_release", Opcode::AMPEG_RELEASE},
     {"loop_mode", Opcode::LOOP_MODE},
-    {"loop_continuous", Opcode::LOOP_CONTINUOUS},
+ //   {"loop_continuous", Opcode::LOOP_CONTINUOUS},
     {"loop_start", Opcode::LOOP_START},
     {"loop_end", Opcode::LOOP_END},
     {"sample", Opcode::SAMPLE},

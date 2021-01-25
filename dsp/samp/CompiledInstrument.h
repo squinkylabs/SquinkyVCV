@@ -126,7 +126,7 @@ private:
 
     ISamplerPlaybackPtr playbackMapVelocities(const std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
 
-    void extractDefaultPath(const SInstrumentPtr in);
+   // void extractDefaultPath(const SInstrumentPtr in);
 };
 
 //KeysAndValuesPtr compile(const SKeyValueList&);

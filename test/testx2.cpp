@@ -1123,7 +1123,7 @@ static void testCompileSimpleDrum() {
 
         assert(info.valid);
         assert(info.sampleIndex > 0);
-        printf("sample index = %d\n", info.sampleIndex);
+     //   printf("sample index = %d\n", info.sampleIndex);
         waves.insert(info.sampleIndex);
     }
 

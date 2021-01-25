@@ -80,6 +80,7 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     if (key >= 0) {
         lokey = hikey = keycenter = key;
     }
+#if 0
     {
         SQINFO("in cr::cr of region %p) here is parent:", this);
         parsedParent->_dump();
@@ -87,6 +88,7 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
         region->_dump();
 
     }
+#endif
     findValue(seq_position, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
     findValue(keycenter, SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
     findValue(lovel, SamplerSchema::Opcode::LO_VEL, *parsedParent, reg);

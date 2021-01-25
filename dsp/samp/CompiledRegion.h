@@ -33,7 +33,7 @@ class CompiledRegion {
 public:
     CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
     CompiledRegion() {
-        SQINFO("Compiled REgion def ctor %p", this);
+       // SQINFO("Compiled REgion def ctor %p", this);
         ++compileCount;
     }
     virtual ~CompiledRegion() { compileCount--; }

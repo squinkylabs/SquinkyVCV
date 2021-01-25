@@ -1,5 +1,4 @@
 
-
 #include "SParse.h"
 
 #include <assert.h>
@@ -18,7 +17,7 @@
 int parseCount = 0;
 
 /*
-poassible way to parse non-standard control blocks:
+possible way to parse non-standard control blocks:
 
 do it mostly in the parser.
 always keep a "current" global, control, midi, master
@@ -103,7 +102,7 @@ std::string SParse::matchHeadingGroups(SInstrumentPtr inst, SLexPtr lex) {
 }
 
 std::string SParse::matchRegions(SRegionList& regions, SLexPtr lex, const SHeading& controlBlock) {
-    SQINFO("matchRegions size=%d", regions.size());
+    // SQINFO("matchRegions size=%d", regions.size());
     for (bool done = false; !done;) {
         auto result = matchRegion(regions, lex, controlBlock);
         if (result.res == Result::error) {
@@ -121,22 +120,24 @@ static std::set<std::string> headingTags = {
     {"master"}};
 
 static bool isHeadingName(const std::string& s) {
-    SQINFO("call isHeadingNanme on %s", s.c_str());
+    // SQINFO("call isHeadingNanme on %s", s.c_str());
     return headingTags.find(s) != headingTags.end();
 }
 
 std::pair<SParse::Result, bool> SParse::matchSingleHeading(SInstrumentPtr inst, SLexPtr lex) {
     Result result;
 
-    SQINFO("SParse::matchSingleHeading");
+    // SQINFO("SParse::matchSingleHeading");
     auto tok = lex->next();
 
     // if this cant match a heading, the give up
     if (!tok || !isHeadingName(getTagName(tok))) {
+#if 0
         if (!tok)
             SQINFO("matchSingleHeading exit early out of tokens ");
         else
             SQINFO("matchSingleHeading exit early on tag %s", getTagName(tok));
+#endif
 
         result.res = Result::no_match;
         return std::make_pair(result, false);
@@ -146,7 +147,7 @@ std::pair<SParse::Result, bool> SParse::matchSingleHeading(SInstrumentPtr inst, 
     // and consume the [heading] token.
     const std::string tagName = getTagName(tok);
     lex->consume();
-    SQINFO("SParse::matchSingleHeading found tag %s", tagName.c_str());
+    // SQINFO("SParse::matchSingleHeading found tag %s", tagName.c_str());
 
     // now extract out all the keys and values for this heading
     SKeyValueList keysAndValues;
@@ -157,7 +158,7 @@ std::pair<SParse::Result, bool> SParse::matchSingleHeading(SInstrumentPtr inst, 
         result.errorMessage = s;
         return std::make_pair(result, false);
     }
-    SQINFO("matchSingleHeading got keys and values there are %d\n", int(keysAndValues.size()));
+    // SQINFO("matchSingleHeading got keys and values there are %d\n", int(keysAndValues.size()));
 
     // now stash all the key values where they really belong
     SHeading* dest = nullptr;
@@ -171,7 +172,7 @@ std::pair<SParse::Result, bool> SParse::matchSingleHeading(SInstrumentPtr inst, 
     } else if (tagName == "group") {
         dest = &inst->currentGroup;
         isGroup = true;
-        SQINFO("copy to group currentGroup in matchSingleHeading\n");
+        // SQINFO("copy to group currentGroup in matchSingleHeading\n");
     }
 
 
@@ -215,9 +216,9 @@ SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
     Result result;
     SGroupPtr newGroup = std::make_shared<SGroup>(inst->currentGroup.lineNumber);
     newGroup->values = inst->currentGroup.values;
-    SQINFO("set new group values to %d values", int(newGroup->values.size()));
+    // SQINFO("set new group values to %d values", int(newGroup->values.size()));
     inst->currentGroup.values.clear();
-    SQINFO("just make new group in matchHeadingGroup now %d",  int(newGroup->values.size()));
+    // SQINFO("just make new group in matchHeadingGroup now %d",  int(newGroup->values.size()));
 
     assert(newGroup);
     // TODO: clean out control when appropriate
@@ -229,7 +230,7 @@ SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
 
     if (!matchedOneHeading && newGroup->regions.empty()) {
         result.res = Result::no_match;
-        SQINFO("matchHeadingGroup found no match");
+        // SQINFO("matchHeadingGroup found no match");
     }
 
     // if we found regions, then this group is "real"
@@ -241,7 +242,7 @@ SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
 }
 
 SParse::Result SParse::matchRegion(SRegionList& regions, SLexPtr lex, const SHeading& controlBlock) {
-    SQINFO("matchRegion regions size = %d", regions.size());
+    // SQINFO("matchRegion regions size = %d", regions.size());
     Result result;
     auto tok = lex->next();
     if (!tok || (getTagName(tok) != "region")) {

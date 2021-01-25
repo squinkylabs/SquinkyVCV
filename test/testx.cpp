@@ -312,7 +312,7 @@ static void testparse2() {
 }
 
 static void testParseMutliControls() {
-    SQINFO("--- start testParseMutliControls");
+   // SQINFO("--- start testParseMutliControls");
 
     const char* test = R"foo(
         <control>
@@ -355,7 +355,7 @@ static void testParseMutliControls() {
 }
 
 static void testParseGroupAndValues() {
-    SQINFO("---- start testParseGroupAndValues");
+    //SQINFO("---- start testParseGroupAndValues");
  //   const char* test = R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo";
     const char* test = R"foo(<group>a=b<region>)foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -373,7 +373,7 @@ static void testParseGroupAndValues() {
 }
 
 static void testParseGlobal() {
-    SQINFO("---- start test parse global\n");
+   // SQINFO("---- start test parse global\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global>", inst);
     // no regions - that's not legal, but we make up groups if there aren't any,
@@ -384,7 +384,7 @@ static void testParseGlobal() {
 }
 
 static void testParseGlobalGroupAndRegion() {
-    SQINFO("\n-- start testParseGlobalAndRegion\n");
+   // SQINFO("\n-- start testParseGlobalAndRegion\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><group><region>", inst);
 
@@ -392,7 +392,7 @@ static void testParseGlobalGroupAndRegion() {
 }
 
 static void testParseGlobalAndRegion() {
-    SQINFO("\n-- start testParseGlobalAndRegion\n");
+  //  SQINFO("\n-- start testParseGlobalAndRegion\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><region>", inst);
 
@@ -406,14 +406,12 @@ static void testParseComment() {
 }
 
 static void testParseGroups() {
-    printf("testParseGroups\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><region><region>", inst);
     assert(err.empty());
 }
 
 static void testParseTwoGroupsA() {
-    printf("\ntestParseTwoGroups\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><group>", inst);
     assert(err.empty());
@@ -421,7 +419,6 @@ static void testParseTwoGroupsA() {
 }
 
 static void testParseTwoGroupsB() {
-    printf("\ntestParseTwoGroups\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><region><region><group><region>", inst);
     assert(err.empty());
@@ -429,7 +426,6 @@ static void testParseTwoGroupsB() {
 }
 
 static void testParseGlobalWithData() {
-    printf("testParseGlobalWithData\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global>ampeg_release=0.6<region>", inst);
     assert(err.empty());
@@ -438,7 +434,6 @@ static void testParseGlobalWithData() {
 static void testparse_piano1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
-    printf("p=%s\n", p);
     auto err = SParse::goFile(p, inst);
     assert(err.empty());
 }
@@ -446,7 +441,6 @@ static void testparse_piano1() {
 static void testparse_piano2() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     const char* p = R"foo(D:\samples\k18-Upright-Piano\k18-Upright-Piano.sfz)foo";
-    printf("p=%s\n", p);
     auto err = SParse::goFile(p, inst);
     assert(err.empty());
 }

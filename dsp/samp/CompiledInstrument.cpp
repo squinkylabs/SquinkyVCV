@@ -37,7 +37,7 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
         return false;
     }
 
-    extractDefaultPath(in);
+   // extractDefaultPath(in);
 
     // here we can prune the tree - removing regions that map to the same thing
     std::vector<CompiledRegionPtr> regions;
@@ -53,10 +53,7 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
     return ret;
 }
 
-void CompiledInstrument::extractDefaultPath(const SInstrumentPtr in) {
-    SQWARN("get rid of old extract path");
-    // assert(false);
-}
+
 #if 0
  void CompiledInstrument::extractDefaultPath(const SInstrumentPtr in) {
     auto value = in->control.compiledValues->get(Opcode::DEFAULT_PATH);
@@ -506,7 +503,7 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
  */
 bool CompiledInstrument::fixupOneRandomGrouping(int groupStartIndex) {
   //  SQINFO("---- fixupOneRandomGrouping\n");
-    this->_dump(0);
+  //  this->_dump(0);
     const int gpp = int(groups.size());
 
     //GroupIter originalIter = inputIter;
