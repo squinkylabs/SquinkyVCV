@@ -5,6 +5,7 @@
 #include <set>
 
 #include "CompiledInstrument.h"
+#include "FilePath.h"
 #include "SParse.h"
 #include "SqLog.h"
 #include "SamplerSchema.h"
@@ -79,9 +80,14 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     if (key >= 0) {
         lokey = hikey = keycenter = key;
     }
+    {
+        SQINFO("in cr::cr of region %p) here is parent:", this);
+        parsedParent->_dump();
+        SQINFO(" and here is reg (still in ctor)");
+        region->_dump();
 
+    }
     findValue(seq_position, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
-    findValue(sampleFile, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
     findValue(keycenter, SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
     findValue(lovel, SamplerSchema::Opcode::LO_VEL, *parsedParent, reg);
     findValue(hivel, SamplerSchema::Opcode::HI_VEL, *parsedParent, reg);
@@ -91,6 +97,18 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
 
     findValue(amp_veltrack, SamplerSchema::Opcode::AMP_VELTRACK, *parsedParent, reg);
     findValue(ampeg_release, SamplerSchema::Opcode::AMPEG_RELEASE, *parsedParent, reg);
+
+    std::string baseFileName;
+    std::string defaultPathName;
+    findValue(baseFileName, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
+    findValue(defaultPathName, SamplerSchema::Opcode::DEFAULT_PATH, *parsedParent, reg);
+
+    FilePath def(defaultPathName);
+    FilePath base(baseFileName);
+    def.concat(base);
+    this->sampleFile = def.toString();
+
+   // findValue(sampleFile, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
 }
 
 static bool overlapRange(int alo, int ahi, int blo, int bhi) {

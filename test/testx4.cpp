@@ -249,6 +249,15 @@ static void testFilePathConcat5() {
     assertEQ(s.at(0), 'a');
 }
 
+static void testFilePathConcat6() {
+    FilePath a("");
+    FilePath b("abc");
+    a.concat(b);
+    std::string s = a.toString();
+    assertEQ(s, "abc");
+}
+
+
 void testx4() {
     testRandomPlayerEmpty();
     testRandomPlayerOneEntry();
@@ -265,4 +274,5 @@ void testx4() {
     testFilePathConcat3();
     testFilePathConcat4();
     testFilePathConcat5();
+    testFilePathConcat6();
 }

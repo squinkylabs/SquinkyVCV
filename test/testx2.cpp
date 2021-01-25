@@ -3,6 +3,7 @@
 #include "CompiledInstrument.h"
 #include "CompiledRegion.h"
 #include "CubicInterpolator.h"
+#include "FilePath.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
 #include "SamplerSchema.h"
@@ -11,6 +12,9 @@
 #include "WaveLoader.h"
 #include "asserts.h"
 #include "samplerTests.h"
+
+// bring in string literal def
+using namespace std::literals::string_literals;
 
 static const char* tinnyPiano = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
 const char* tinnyPianoRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
@@ -359,16 +363,21 @@ static void testParseControl() {
         default_path=Woodwinds\Bassoon\stac\
         <global>ampeg_attack=0.001 ampeg_release=3 ampeg_dynamic=1 volume=0
         <group> //Begin Group 1
-        lorand=0.0 hirand=0.5 group_label=gr_1
+        // lorand=0.0 hirand=0.5 
+        group_label=gr_1
         <region>sample=PSBassoon_A1_v1_rr1.wav lokey=43 hikey=46 pitch_keycenter=45 lovel=0 hivel=62 volume=12
         )foo";
 
+    SQINFO("took out random group. does that still work?");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
     assert(err.empty());
 
     assertEQ(inst->groups.size(), 1);
     assertEQ(inst->groups[0]->regions.size(), 1);
+
+    auto gp = inst->groups[0];
+    auto rg =inst->groups[0]->regions[0];
 #if 0
     SRegionPtr region = inst->groups[0]->regions[0];
 
@@ -385,9 +394,9 @@ static void testParseControl() {
     cinst->getAllRegions(regions);
     assertEQ(regions.size(), 1);
     CompiledRegionPtr creg = regions[0];
+    SQINFO("IN test, creg = %p\n", creg.get());
     assertEQ(creg->lokey, 43);
-
-    assert(false);
+    // TODO: does this test work?
 }
 
 static void testParseLabel() {
@@ -509,16 +518,19 @@ static void testCubicInterp() {
 }
 
 static void testCompiledRegion() {
+    SQINFO("---- starting testCompiledRegion");
     CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200)foo");
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
     assertEQ(cr->hivel, 22);
     assertEQ(cr->lokey, 95);
     assertEQ(cr->hikey, 97);
-    assertEQ(cr->sampleFile, "K18\\C7.pp.wav");
+    std::string expected = "K18"s + FilePath::nativeSeparator() + "C7.pp.wav";
+    assertEQ(cr->sampleFile, expected);
 }
 
 static void testCompiledRegionInherit() {
+    SQINFO("---- starting testCompiledRegionInherit");
     CompiledRegionPtr cr = st::makeRegion(R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo");
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
@@ -590,6 +602,42 @@ static void testCompiledGroup1() {
 
 static void testCompiledGroup2() {
     testCompiledGroupSub(R"foo(<group>trigger=release)foo", true);
+}
+
+static void testCompileMutliControls() {
+    SQINFO("--- start testCompileMutliControls");
+
+    const char* test = R"foo(
+        <control>
+        default_path=a
+        <region>
+        sample=r1
+        <control>
+        default_path=b
+        <region>
+        sample=r2
+    )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(test, inst);
+    assert(err.empty());
+    auto ci = CompiledInstrument::make(inst);
+    assert(ci);
+
+    auto gps = ci->_groups();
+    assertEQ(gps.size(), 2);
+    assertEQ(gps[0]->regions.size(), 1);
+
+    CompiledRegionPtr r0 = gps[0]->regions[0];
+    assert(r0);
+    CompiledRegionPtr r1 = gps[1]->regions[0];
+    assert(r1);
+
+    std::string expected = "a"s + FilePath::nativeSeparator() + "r1"s;
+    assertEQ(r0->sampleFile, expected);
+    
+    expected = "b"s + FilePath::nativeSeparator() + "r2"s;
+    assertEQ(r1->sampleFile, expected);
 }
 
 static void testCompileTreeOne() {
@@ -1270,6 +1318,9 @@ void testx2() {
     testWaveLoaderNot44();
     testPlayInfo();
 
+    // put here just for now
+    testCompileMutliControls();
+
     testCubicInterp();
 
     testStream();
@@ -1303,6 +1354,8 @@ void testx2() {
     testCompiledGroup0();
     testCompiledGroup1();
     testCompiledGroup2();
+
+    testCompileMutliControls();
 
     // Let' put lots of very basic compilation tests here
     testCompileTreeOne();

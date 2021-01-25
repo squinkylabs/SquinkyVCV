@@ -277,7 +277,6 @@ static void testLexLabel() {
     lex->validate();
     SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
     assertEQ(fname->idName, "abc def ghi");
-
 }
 
 static void testparse1() {
@@ -290,7 +289,7 @@ static void testparse1() {
 static void testParseRegion() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>", inst);
-    assert(err.empty()); 
+    assert(err.empty());
     assertEQ(inst->groups.size(), 1);
     assertEQ(inst->groups[0]->regions.size(), 1);
 }
@@ -300,7 +299,7 @@ static void testparse2() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>pitch_keycenter=24", inst);
     assert(err.empty());
-  
+
     assertEQ(inst->groups.size(), 1);
     SGroupPtr group = inst->groups[0];
     assert(group->values.empty());
@@ -310,6 +309,67 @@ static void testparse2() {
     SKeyValuePairPtr kv = region->values[0];
     assertEQ(kv->key, "pitch_keycenter");
     assertEQ(kv->value, "24");
+}
+
+static void testParseMutliControls() {
+    SQINFO("--- start testParseMutliControls");
+
+    const char* test = R"foo(
+        <control>
+        default_path=a
+        <region>
+        sample=r1
+        <control>
+        default_path=b
+        <region>
+        sample=r2
+    )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(test, inst);
+    assert(err.empty());
+
+    // we should end up with two regions in two groups
+    // we always make a new group when we hit a new heading,
+    // in this case <control>
+    assertEQ(inst->groups.size(), 2);
+    assertEQ(inst->groups[0]->regions.size(), 1);
+    assertEQ(inst->groups[1]->regions.size(), 1);
+
+    // each regions should have the 'sample' key, as well as the 'default_path' key
+
+    SKeyValueList kv = inst->groups[0]->regions[0]->values;
+    assertEQ(kv.size(), 2);
+
+    assertEQ(kv[0]->key, "default_path");
+    assertEQ(kv[0]->value, "a");
+    assertEQ(kv[1]->key, "sample");
+    assertEQ(kv[1]->value, "r1");
+    //
+    kv = inst->groups[1]->regions[0]->values;
+    assertEQ(kv.size(), 2);
+    assertEQ(kv[0]->key, "default_path");
+    assertEQ(kv[0]->value, "b");
+    assertEQ(kv[1]->key, "sample");
+    assertEQ(kv[1]->value, "r2");
+}
+
+static void testParseGroupAndValues() {
+    SQINFO("---- start testParseGroupAndValues");
+ //   const char* test = R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo";
+    const char* test = R"foo(<group>a=b<region>)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(test, inst);
+    assert(err.empty());
+
+    assertEQ(inst->groups.size(), 1);
+    assertEQ(inst->groups[0]->regions.size(), 1);
+
+    inst->groups[0]->_dump();
+    inst->groups[0]->regions[0]->_dump();
+
+    assertEQ(inst->groups[0]->values.size(), 1);
+    assertEQ(inst->groups[0]->regions[0]->values.size(), 0);
 }
 
 static void testParseGlobal() {
@@ -328,7 +388,7 @@ static void testParseGlobalGroupAndRegion() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><group><region>", inst);
 
-    assert(err.empty());   
+    assert(err.empty());
 }
 
 static void testParseGlobalAndRegion() {
@@ -445,7 +505,6 @@ void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
 
-
     testx0();
     testx1();
     testx2();
@@ -476,6 +535,8 @@ void testx() {
     testParseGlobalGroupAndRegion();
     testParseComment();
     testParseGroups();
+    testParseMutliControls();
+    testParseGroupAndValues();
 
     testParseGlobalWithData();
     testParseTwoGroupsA();

@@ -22,14 +22,19 @@ void FilePath::fixSeparators() {
 }
 
 void FilePath::concat(const FilePath& _other) {
+
+    // slihgtly special case / bug if we are empty
+    if (this->empty()) {
+        this->data = _other.data;
+        return;
+    }
+
     FilePath other = _other;
-   // std::string otherData = _other.data;
  
-    // remove and leading dots from other
+    // remove any leading dots from other
     const bool secondStartsWithDot = other.startsWithDot();
     if (secondStartsWithDot) {
         other = FilePath(other.toString().substr(1));
-       // otherData = otherData.substr(1);
     }
 
     // if second was just a dot, do nothing
@@ -37,7 +42,6 @@ void FilePath::concat(const FilePath& _other) {
         return;
     }
     
-
     {
         const bool firstEndsWithSeparator = this->endsWithSeparator();
         const bool secondStartsWithSeparator = other.startsWithSeparator();

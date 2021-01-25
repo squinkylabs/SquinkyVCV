@@ -14,7 +14,8 @@ extern void testPlayInfoSmallPiano();
 static void testVelSwitch1() {
     VelSwitch v(1234);
 
-    SRegionPtr sr = std::make_shared<SRegion>(1234);
+    SHeading h;
+    SRegionPtr sr = std::make_shared<SRegion>(1234, h);
     SGroupPtr gp = std::make_shared<SGroup>(4567);
     gp->regions.push_back(sr);
 
@@ -65,7 +66,8 @@ static void testVelSwitch1() {
 // We may need a test halper for this if we plan on doing it much.
 
 static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::string& minVal, const std::string& maxVal) {
-    SRegionPtr sr = std::make_shared<SRegion>(1234);
+    SHeading h;
+    SRegionPtr sr = std::make_shared<SRegion>(1234, h);
     gp->regions.push_back(sr);
 
     SKeyValuePairPtr kv;
