@@ -37,6 +37,43 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
         return false;
     }
 
+    // extractDefaultPath(in);
+
+    // here we can prune the tree - removing regions that map to the same thing
+    // this should go into RegionPool
+#if 0
+    std::vector<CompiledRegionPtr> regions;
+    getAllRegions(regions);
+    int x = removeOverlaps(regions);
+    SQINFO("overlaps removed\n", x);
+#endif
+
+    SQWARN("compile is not finished");
+    return true;
+}
+
+bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr i) {
+    assert(false);
+    return false;
+}
+bool CompiledInstrument::fixupCompiledTree() {
+    assert(false);
+    return false;
+}
+
+#if 0
+bool CompiledInstrument::compileOld(const SInstrumentPtr in) {
+    assert(in->wasExpanded);
+    bool ret = buildCompiledTree(in);
+    if (!ret) {
+        return false;
+    }
+
+    ret = fixupCompiledTree();
+    if (!ret) {
+        return false;
+    }
+
    // extractDefaultPath(in);
 
     // here we can prune the tree - removing regions that map to the same thing
@@ -52,7 +89,7 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
     }
     return ret;
 }
-
+#endif
 
 #if 0
  void CompiledInstrument::extractDefaultPath(const SInstrumentPtr in) {
@@ -64,6 +101,7 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
  }
 #endif
 
+#if 0
 int CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions) {
 #ifdef _LOGOV
     printf("enter remove overlaps\n");
@@ -117,6 +155,7 @@ int CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions) 
     }
     return removed;
 }
+#endif
 
 /** build up the tree using the original algorithm that worked for small piano
  * we don't need structure here, to flattened region list is find
@@ -137,7 +176,9 @@ static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions) {
     }
 }
 
+#if 0
 ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth) {
+    assert(false);
     std::vector<RegionBin> bins;
 #ifdef _LOG
     printf("enter buildPlayerVelLayers depth = %d numRegsions = %d\n", depth, int(inputRegions.size()));
@@ -290,6 +331,7 @@ void CompiledInstrument::addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, IS
 }
 
 ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth) {
+    assert(false);
 #ifdef _LOG
     printf("enter buildPlayerPitchSwitch depth = %d numRegsions = %d\n", depth, int(inputRegions.size()));
     dumpRegions(inputRegions);
@@ -355,6 +397,7 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<Compi
     }
     return playerToReturn;
 }
+#endif
 
 void CompiledInstrument::_dump(int depth) const {
     indent(depth);
@@ -368,8 +411,7 @@ void CompiledInstrument::_dump(int depth) const {
     }
 }
 
-
-
+#if 0
 void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array) {
     assert(array.empty());
     for (auto group : groups) {
@@ -410,6 +452,7 @@ void CompiledInstrument::sortByPitchAndVelocity(std::vector<CompiledRegionPtr>& 
         return less;
     });
 }
+#endif
 
 int CompiledInstrument::addSampleFile(const std::string& s) {
     int ret = 0;
@@ -481,7 +524,7 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
     assert(!inst->wasExpanded);
     inst->global.compiledValues = SamplerSchema::compile(inst->global.values);
     inst->master.compiledValues = SamplerSchema::compile(inst->master.values);
- //   inst->control.compiledValues = SamplerSchema::compile(inst->control.values);
+    //   inst->control.compiledValues = SamplerSchema::compile(inst->control.values);
 
     for (auto group : inst->groups) {
         group->compiledValues = SamplerSchema::compile(group->values);
@@ -501,6 +544,7 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
  * 
  * Will also fix up the tree to the top level groups are right by 
  */
+#if 0
 bool CompiledInstrument::fixupOneRandomGrouping(int groupStartIndex) {
   //  SQINFO("---- fixupOneRandomGrouping\n");
   //  this->_dump(0);
@@ -622,7 +666,7 @@ static bool remakeTreeForMultiRegion(CompiledRegion::Type type, CompiledGroupPtr
     // validate assumptions about the schema
     CompiledRegionPtr prototype = cGroup->regions[0];
     for (auto region : cGroup->regions) {
-#if 1   // TODO: move this somewhere so we can re-uses it with GRandom
+#if 1  // TODO: move this somewhere so we can re-uses it with GRandom
         if (region->lokey != prototype->lokey) {
             SQFATAL("prototype lokey mismatch at reg#%d proto#%d", region->lineNumber, prototype->lineNumber);
             return false;
@@ -720,3 +764,4 @@ bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr in) {
     }
     return true;
 }
+#endif

@@ -17,7 +17,8 @@ public:
         assert(!test);
         pitchMap[pitch] = data;
     }
-    PitchSwitch(int line) : lineNumber(line) {}
+    // if we get rid of these....
+    PitchSwitch(int line) : lineNumber(line) { assert(false); }
 
 private:
     bool testMode = false;

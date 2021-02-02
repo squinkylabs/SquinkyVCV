@@ -389,7 +389,8 @@ static void testParseControl() {
 
     CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
     std::vector<CompiledRegionPtr> regions;
-    cinst->getAllRegions(regions);
+   // cinst->getAllRegions(regions);
+    cinst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);
     CompiledRegionPtr creg = regions[0];
     SQINFO("IN test, creg = %p\n", creg.get());
@@ -623,7 +624,7 @@ static void testCompileMutliControls() {
     auto ci = CompiledInstrument::make(inst);
     assert(ci);
 
-    auto gps = ci->_groups();
+    auto gps = (ci->_pool())._groups();
     assertEQ(gps.size(), 2);
     assertEQ(gps[0]->regions.size(), 1);
 
@@ -659,7 +660,7 @@ static void testCompileTreeOne() {
     auto err = SParse::go(data, inst);
 
     auto ci = CompiledInstrument::make(inst);
-    auto gps = ci->_groups();
+    auto gps = ci->_pool()._groups();
     assertEQ(gps.size(), 1);
     assertEQ(gps[0]->regions.size(), 1);
 
@@ -682,7 +683,7 @@ static void testCompileTreeTwo() {
     auto err = SParse::go(data, inst);
 
     auto ci = CompiledInstrument::make(inst);
-    auto gps = ci->_groups();
+    auto gps = ci->_pool()._groups();
     assertEQ(gps.size(), 3);
     assertEQ(gps[0]->regions.size(), 2);
     assertEQ(gps[1]->regions.empty(), true);
@@ -1175,8 +1176,8 @@ static void testCompileSort() {
 
     auto ci = CompiledInstrument::make(inst);
     std::vector<CompiledRegionPtr> regions;
-    ci->getAllRegions(regions);
-    ci->sortByVelocity(regions);
+    ci->_pool()._getAllRegions(regions);
+    ci->_pool().sortByVelocity(regions);
 
     assertEQ(regions.size(), 3);
     assertEQ(regions[0]->lovel, 1);

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "PitchSwitch.h"
+#include "RegionPool.h"
 #include "SamplerPlayback.h"
 
 class SInstrument;
@@ -80,19 +81,23 @@ public:
      */
     static void expandAllKV(SInstrumentPtr);
 
-    void getAllRegions(std::vector<CompiledRegionPtr>&);
+    //  void getAllRegions(std::vector<CompiledRegionPtr>&);
     int removeOverlaps(std::vector<CompiledRegionPtr>&);
 
-    static void sortByVelocity(std::vector<CompiledRegionPtr>&);
-    static void sortByPitch(std::vector<CompiledRegionPtr>&);
-    static void sortByPitchAndVelocity(std::vector<CompiledRegionPtr>&);
+    //   static void sortByVelocity(std::vector<CompiledRegionPtr>&);
+    //   static void sortByPitch(std::vector<CompiledRegionPtr>&);
+    //   static void sortByPitchAndVelocity(std::vector<CompiledRegionPtr>&);
 
     // test accessor
-    const std::vector<CompiledGroupPtr>& _groups() { return groups; }
+    //  const std::vector<CompiledGroupPtr>& _groups();
+    const RegionPool& _pool() { return regionPool; }
 
-    using GroupIter = std::vector<CompiledGroupPtr>::iterator; 
+    using GroupIter = std::vector<CompiledGroupPtr>::iterator;
+
 private:
-    std::vector<CompiledGroupPtr> groups;
+    RegionPool regionPool;
+    // all this goes into region pol
+    // std::vector<CompiledGroupPtr> groups;
     bool testMode = false;
 
     ISamplerPlaybackPtr player;
@@ -107,6 +112,7 @@ private:
     int nextIndex = 1;
 
     bool compile(const SInstrumentPtr);
+    bool compileOld(const SInstrumentPtr);
     bool buildCompiledTree(const SInstrumentPtr i);
     bool fixupCompiledTree();
     bool fixupOneRandomGrouping(int groupStartIndex);
@@ -126,7 +132,7 @@ private:
 
     ISamplerPlaybackPtr playbackMapVelocities(const std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
 
-   // void extractDefaultPath(const SInstrumentPtr in);
+    // void extractDefaultPath(const SInstrumentPtr in);
 };
 
 //KeysAndValuesPtr compile(const SKeyValueList&);
