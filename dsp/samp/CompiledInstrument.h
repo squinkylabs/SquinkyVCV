@@ -134,7 +134,11 @@ private:
 
     ISamplerPlaybackPtr playbackMapVelocities(const std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
 
-    // void extractDefaultPath(const SInstrumentPtr in);
+    /**
+     * these helpers help fill in VoicePlayInfo
+     */
+    void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate);
+    void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack);
 };
 
 //KeysAndValuesPtr compile(const SKeyValueList&);

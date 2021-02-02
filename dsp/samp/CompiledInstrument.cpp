@@ -473,13 +473,46 @@ int CompiledInstrument::addSampleFile(const std::string& s) {
     return ret;
 }
 
-
 CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPtr inst) {
     assert(!inst->wasExpanded);
     expandAllKV(inst);
     CompiledInstrumentPtr instOut = std::make_shared<CompiledInstrument>();
     const bool result = instOut->compile(inst);
     return result ? instOut : nullptr;
+}
+
+void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack) {
+    const float v = float(midiVelocity);
+    const float t = regionVeltrack;
+    const float x = (v * t / 100.f) + (100.f - t) * (127.f / 100.f);
+
+    // then taper it
+    auto temp = float(x) / 127.f;
+    temp *= temp;
+    info.gain = temp;
+}
+
+void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate) {
+    // first base pitch
+    const int semiOffset = midiPitch - regionKeyCenter;
+    if (semiOffset == 0) {
+        info.needsTranspose = false;
+        info.transposeAmt = 1;
+    } else {
+        const float pitchMul = float(std::pow(2, semiOffset / 12.0));
+        info.needsTranspose = true;
+        info.transposeAmt = pitchMul;
+    }
+
+    // then sample rate correction
+    if (loader) {
+        // do we need to adapt to changed sample rate?
+        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->sampleRate;
+        if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
+            info.needsTranspose = true;
+            info.transposeAmt *= sampleRate / float(waveSampleRate);
+        }
+    }
 }
 
 void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
@@ -490,11 +523,13 @@ void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
         // const int sampleIndex = addSampleFile(region->sampleFile);
         info.sampleIndex = region->sampleIndex;
         info.valid = true;
+        info.ampeg_release = region->ampeg_release;
+        getPlayPitch(info, params.midiPitch, region->keycenter, loader, sampleRate);
+        getGain(info, params.midiVelocity, region->amp_veltrack);
 
-        // jam in fakes for now
-        info.needsTranspose = false;
-        info.transposeAmt = 1;
-        info.ampeg_release = .001f;
+        // jam in fake for now
+        // SQWARN("why can't get handle real release");
+        // info.ampeg_release = .001f;
     }
 }
 
@@ -537,7 +572,6 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
     }
     inst->wasExpanded = true;
 }
-
 
 #if 0  // unused
 bool CompiledInstrument::shouldIgnoreGroup(SGroupPtr group) {
