@@ -100,7 +100,9 @@ private:
     // std::vector<CompiledGroupPtr> groups;
     bool testMode = false;
 
-    ISamplerPlaybackPtr player;
+    AudioMath::RandomUniformFunc rand = AudioMath::random();
+
+   // ISamplerPlaybackPtr player;
     std::string defaultPath;
 
     /**

@@ -80,6 +80,10 @@ public:
     int lineNumber = -1;
     ;
 
+    /** valid sample index starts at 1
+     */
+    int sampleIndex = 0;
+
 protected:
     CompiledRegion(CompiledRegionPtr);
     CompiledRegion& operator=(const CompiledRegion&) = default;

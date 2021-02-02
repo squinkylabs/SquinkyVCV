@@ -404,6 +404,7 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<Compi
 #endif
 
 void CompiledInstrument::_dump(int depth) const {
+#if 0
     indent(depth);
     if (player) {
         printf("Compiled Instrument dump follows:\n\n");
@@ -413,6 +414,8 @@ void CompiledInstrument::_dump(int depth) const {
     } else {
         printf("Compiled Instrument has nothing to dump\n");
     }
+#endif
+    SQINFO("CompiledInstrument::_dump no longder does anything");
 }
 
 #if 0
@@ -470,18 +473,6 @@ int CompiledInstrument::addSampleFile(const std::string& s) {
     return ret;
 }
 
-#if 0  // unused
-bool CompiledInstrument::shouldIgnoreGroup(SGroupPtr group) {
-    bool ignore = false;
-    auto value = group->compiledValues->get(Opcode::TRIGGER);
-    if (value) {
-        assert(value->type == OpcodeType::Discrete);
-        auto trigger = value->discrete;
-        ignore = (trigger != DiscreteValue::ATTACK);
-    }
-    return ignore;
-}
-#endif
 
 CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPtr inst) {
     assert(!inst->wasExpanded);
@@ -492,11 +483,19 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPt
 }
 
 void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
-    if (!player) {
-        printf("ci can't play yet\n");
-        return;
+    float r = rand();
+    const CompiledRegion* region = regionPool.play(params, r);
+    if (region) {
+        SQWARN("finish compiled play! we need to do the add sample file stuff, pitch, etc");
+        // const int sampleIndex = addSampleFile(region->sampleFile);
+        info.sampleIndex = region->sampleIndex;
+        info.valid = true;
+
+        // jam in fakes for now
+        info.needsTranspose = false;
+        info.transposeAmt = 1;
+        info.ampeg_release = .001f;
     }
-    player->play(info, params, loader, sampleRate);
 }
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootPath) {
@@ -538,6 +537,20 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
     }
     inst->wasExpanded = true;
 }
+
+
+#if 0  // unused
+bool CompiledInstrument::shouldIgnoreGroup(SGroupPtr group) {
+    bool ignore = false;
+    auto value = group->compiledValues->get(Opcode::TRIGGER);
+    if (value) {
+        assert(value->type == OpcodeType::Discrete);
+        auto trigger = value->discrete;
+        ignore = (trigger != DiscreteValue::ATTACK);
+    }
+    return ignore;
+}
+#endif
 
 /**
  * Inputs: a sequential list of 'n' groups with random probabilities on them.
