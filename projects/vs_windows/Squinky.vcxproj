@@ -29,6 +29,7 @@
     <ClCompile Include="..\..\dsp\filters\HilbertFilterDesigner.cpp" />
     <ClCompile Include="..\..\dsp\samp\CompiledInstrument.cpp" />
     <ClCompile Include="..\..\dsp\samp\CompiledRegion.cpp" />
+    <ClCompile Include="..\..\dsp\samp\FilePath.cpp" />
     <ClCompile Include="..\..\dsp\samp\Sampler4vx.cpp" />
     <ClCompile Include="..\..\dsp\samp\SamplerPlayback.cpp" />
     <ClCompile Include="..\..\dsp\samp\SamplerSchema.cpp" />
@@ -95,6 +96,7 @@
     <ClCompile Include="..\..\test\perfTest2.cpp" />
     <ClCompile Include="..\..\test\simd_testBiquad.cpp" />
     <ClCompile Include="..\..\test\SqWaveFile.cpp" />
+    <ClCompile Include="..\..\test\testACDetector.cpp" />
     <ClCompile Include="..\..\test\testADSR.cpp" />
     <ClCompile Include="..\..\test\testWavThread.cpp" />
     <ClCompile Include="..\..\test\testx3.cpp" />

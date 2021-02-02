@@ -14,8 +14,9 @@ extern void testPlayInfoSmallPiano();
 static void testVelSwitch1() {
     VelSwitch v(1234);
 
-    SRegionPtr sr = std::make_shared<SRegion>(1234);
-    SGroupPtr gp = std::make_shared<SGroup>();
+    SHeading h;
+    SRegionPtr sr = std::make_shared<SRegion>(1234, h);
+    SGroupPtr gp = std::make_shared<SGroup>(4567);
     gp->regions.push_back(sr);
 
     gp->compiledValues = SamplerSchema::compile(gp->values);
@@ -65,7 +66,8 @@ static void testVelSwitch1() {
 // We may need a test halper for this if we plan on doing it much.
 
 static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::string& minVal, const std::string& maxVal) {
-    SRegionPtr sr = std::make_shared<SRegion>(1234);
+    SHeading h;
+    SRegionPtr sr = std::make_shared<SRegion>(1234, h);
     gp->regions.push_back(sr);
 
     SKeyValuePairPtr kv;
@@ -87,7 +89,7 @@ static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::
 
 static void testOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, bool shouldOverlap) {
     assert(mina <= maxa);
-    SGroupPtr gp = std::make_shared<SGroup>();
+    SGroupPtr gp = std::make_shared<SGroup>(1234);
     gp->compiledValues = SamplerSchema::compile(gp->values);
     auto regionA = makeTestRegion(gp, testPitch, std::to_string(mina), std::to_string(maxa));
     auto regionB = makeTestRegion(gp, testPitch, std::to_string(minb), std::to_string(maxb));

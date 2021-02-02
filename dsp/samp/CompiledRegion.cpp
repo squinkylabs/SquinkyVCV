@@ -1,12 +1,14 @@
 
 #include "CompiledRegion.h"
-#include "SamplerSchema.h"
 
 #include <functional>
 #include <set>
 
 #include "CompiledInstrument.h"
+#include "FilePath.h"
 #include "SParse.h"
+#include "SqLog.h"
+#include "SamplerSchema.h"
 
 int compileCount = 0;
 
@@ -15,9 +17,9 @@ void CompiledRegion::findValue(int& intValue, SamplerSchema::Opcode opcode, cons
     auto value = reg.compiledValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Int);
-         intValue = value->numericInt;
-         return;
-     }
+        intValue = value->numericInt;
+        return;
+    }
     value = parent.compiledValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Int);
@@ -28,7 +30,6 @@ void CompiledRegion::findValue(int& intValue, SamplerSchema::Opcode opcode, cons
 }
 
 void CompiledRegion::findValue(float& floatValue, SamplerSchema::Opcode opcode, const SGroup& parent, const SRegion& reg) {
-
     auto value = reg.compiledValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Float);
@@ -45,13 +46,12 @@ void CompiledRegion::findValue(float& floatValue, SamplerSchema::Opcode opcode, 
 }
 
 void CompiledRegion::findValue(std::string& strValue, SamplerSchema::Opcode opcode, const SGroup& parent, const SRegion& reg) {
-
     auto value = reg.compiledValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::String);
-         strValue = value->string;
-         return;
-     }
+        strValue = value->string;
+        return;
+    }
     value = parent.compiledValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::String);
@@ -80,18 +80,37 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     if (key >= 0) {
         lokey = hikey = keycenter = key;
     }
-   
+#if 0
+    {
+        SQINFO("in cr::cr of region %p) here is parent:", this);
+        parsedParent->_dump();
+        SQINFO(" and here is reg (still in ctor)");
+        region->_dump();
+
+    }
+#endif
     findValue(seq_position, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
-    findValue(sampleFile,  SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
-    findValue(keycenter,  SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
-    findValue(lovel,  SamplerSchema::Opcode::LO_VEL, *parsedParent, reg);
-    findValue(hivel,  SamplerSchema::Opcode::HI_VEL, *parsedParent, reg);
+    findValue(keycenter, SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
+    findValue(lovel, SamplerSchema::Opcode::LO_VEL, *parsedParent, reg);
+    findValue(hivel, SamplerSchema::Opcode::HI_VEL, *parsedParent, reg);
 
     findValue(lorand, SamplerSchema::Opcode::LO_RAND, *parsedParent, reg);
     findValue(hirand, SamplerSchema::Opcode::HI_RAND, *parsedParent, reg);
 
     findValue(amp_veltrack, SamplerSchema::Opcode::AMP_VELTRACK, *parsedParent, reg);
     findValue(ampeg_release, SamplerSchema::Opcode::AMPEG_RELEASE, *parsedParent, reg);
+
+    std::string baseFileName;
+    std::string defaultPathName;
+    findValue(baseFileName, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
+    findValue(defaultPathName, SamplerSchema::Opcode::DEFAULT_PATH, *parsedParent, reg);
+
+    FilePath def(defaultPathName);
+    FilePath base(baseFileName);
+    def.concat(base);
+    this->sampleFile = def.toString();
+
+   // findValue(sampleFile, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
 }
 
 static bool overlapRange(int alo, int ahi, int blo, int bhi) {
@@ -139,18 +158,19 @@ CompiledMultiRegion::CompiledMultiRegion(CompiledGroupPtr parent) : CompiledRegi
     }
 }
 
-CompiledRoundRobinRegion::CompiledRoundRobinRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {
-};
+void CompiledMultiRegion::addChild(CompiledRegionPtr child)
+{
+    originalRegions.push_back(child);
+}
+
+CompiledRoundRobinRegion::CompiledRoundRobinRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent){};
 
 CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {
 }
 
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-CompiledGroup::CompiledGroup(SGroupPtr group) {
+CompiledGroup::CompiledGroup(SGroupPtr group) : lineNumber(group->lineNumber) {
     compileCount++;
 
     auto value = group->compiledValues->get(Opcode::TRIGGER);
@@ -164,7 +184,21 @@ CompiledGroup::CompiledGroup(SGroupPtr group) {
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Int);
         sequence_length = value->numericInt;
-     }
+    }
+    value = group->compiledValues->get(Opcode::LO_RAND);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Float);
+        lorand = value->numericFloat;
+    }
+    value = group->compiledValues->get(Opcode::HI_RAND);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Float);
+        hirand = value->numericFloat;
+    }
+}
+
+CompiledGroup::CompiledGroup(int line) : lineNumber(line) {
+    compileCount++;
 }
 
 bool CompiledGroup::shouldIgnore() const {
@@ -176,19 +210,21 @@ CompiledRegion::Type CompiledGroup::type() const {
     CompiledRegion::Type theType = CompiledRegion::Type::Base;
     if (this->sequence_length > 0) {
         theType = CompiledRegion::Type::RoundRobin;
-    }
-    else {
-        bool isProbabilty = !regions.empty();   // assume if any regions we are a probability group
+    } else if (this->lorand >= 0) {
+       // the group has prob on it.
+        theType = CompiledRegion::Type::GRandom;
+    } else {
+        bool isProbabilty = !regions.empty();  // assume if any regions we are a probability group
         for (auto child : regions) {
             // lorand=0 hirand=0.3
             if (child->lorand < 0) {
                 isProbabilty = false;
             }
-
         }
         if (isProbabilty) {
             theType = CompiledRegion::Type::Random;
-            assert(regions.size() > 1);
+            if (regions.size() < 2) SQWARN("rand region no options");
+            //assert(regions.size() > 1);
         }
     }
     return theType;

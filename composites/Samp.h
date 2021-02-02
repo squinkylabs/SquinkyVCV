@@ -5,8 +5,6 @@
 
 #include <memory>
 
-#include "SqPort.h"
-
 #include "CompiledInstrument.h"
 #include "Divider.h"
 #include "IComposite.h"
@@ -15,7 +13,7 @@
 #include "Sampler4vx.h"
 #include "SimdBlocks.h"
 #include "SqLog.h"
-
+#include "SqPort.h"
 #include "ThreadClient.h"
 #include "ThreadServer.h"
 #include "ThreadSharedState.h"
@@ -39,7 +37,9 @@ public:
     SampMessage() : ThreadMessage(Type::SAMP) {
     }
 
-    std::string pathToSfz;
+    std::string pathToSfz;          // full path to sfz file from user
+    std::string globalBase;         // aria base path from user
+    std::string defaultPath;        // override from the patch
 
     // returned to the composite
     CompiledInstrumentPtr instrument;
@@ -117,6 +117,10 @@ public:
     //void step() override;
     void process(const typename TBase::ProcessArgs& args) override;
 
+    void setSamplePath(const std::string& path) {
+        SQWARN("Samp::setSamplePath unused");
+    }
+
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
                              // SInstrumentPtr instrument;
@@ -163,13 +167,16 @@ inline void Samp<TBase>::init() {
     //  setupSamplesDummy();
 }
 
-
 // Called when a patch has come back from thread server
 template <class TBase>
 inline void Samp<TBase>::setNewPatch() {
     assert(currentPatchMessage);
     if (!currentPatchMessage->instrument || !currentPatchMessage->waves) {
-        SQWARN("Patch Loader could not load path");
+        if (!currentPatchMessage->instrument) {
+            SQWARN("Patch Loader could not load patch.");
+        } else if (!currentPatchMessage->waves) {
+            SQWARN("Patch Loader could not load waves.");
+        }
         _isSampleLoaded = false;
         return;
     }
@@ -265,7 +272,7 @@ public:
     void handleMessage(ThreadMessage* msg) override {
         assert(msg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(msg);
-        // SQINFO("server got a message!\n");
+         SQINFO("server got a message!\n");
         parsePath(smsg);
 
         SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -280,18 +287,23 @@ public:
 
         // TODO: need a way for compiler to return error;
         CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+        if (!cinst) {
+            sendMessageToClient(msg);
+            return;
+        }
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
 
+
+        samplePath += cinst->getDefaultPath();
         cinst->setWaves(waves, samplePath);
+        // TODO: errors from wave loader
 
         // TODO: need a way for wave loader to return error/
-        waves->load();
-        WaveLoader::WaveInfoPtr info = waves->getInfo(1);
-        assert(info->valid);
+        const bool loadedOK = waves->load();
 
         smsg->instrument = cinst;
-        smsg->waves = waves;
-        SQINFO("loader thread returning happy");
+        smsg->waves = loadedOK ? waves : nullptr;
+        SQINFO("** loader thread returning %d", loadedOK);
 
         sendMessageToClient(msg);
     }
@@ -299,9 +311,17 @@ public:
 private:
     std::string samplePath;
     std::string fullPath;
+    std::string globalPath;
 
+    /** parse out the original file location and other info
+     * to find the path to the folder containing the samples.
+     * this path will then be used to locate all samples.
+     */
     void parsePath(SampMessage* msg) {
         fullPath = msg->pathToSfz;
+        if (!msg->defaultPath.empty()) {
+            SQWARN("ignoring patch def = %s", msg->defaultPath.c_str());
+        }
         WaveLoader::makeAllSeparatorsNative(fullPath);
 
         const auto pos = fullPath.rfind(WaveLoader::nativeSeparator());
@@ -313,6 +333,15 @@ private:
 
         samplePath = fullPath.substr(0, pos) + WaveLoader::nativeSeparator();
         SQINFO("sample base path %s", samplePath.c_str());
+
+        // If the patch had a path, add that
+     //   samplePath += cinst->getDefaultPath();
+     //   SQINFO("after def sample base path %s", samplePath.c_str());
+      //     std::string composedPath = samplePath
+      //  SQINFO("about to set waves to %s. default = %s global = %s\n", samplePath.c_str(), cinst->getDefaultPath().c_str(), globalPath.c_str());
+        //if (!cinst->defaultPath())
+
+     
     }
 };
 
@@ -361,10 +390,10 @@ void Samp<TBase>::serviceMessagesReturnedToComposite() {
         SampMessage* smsg = static_cast<SampMessage*>(newMsg);
         if (currentPatchMessage) {
             messagePool.push(currentPatchMessage);
-            fflush(stderr); fflush(stdout);
+            fflush(stderr);
+            fflush(stdout);
         }
-        currentPatchMessage = smsg;        
+        currentPatchMessage = smsg;
         setNewPatch();
     }
 }
-

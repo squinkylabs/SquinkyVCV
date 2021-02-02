@@ -1,6 +1,7 @@
 #pragma once
 
 #include <assert.h>
+
 #include <map>
 #include <memory>
 #include <string>
@@ -21,7 +22,7 @@ public:
         HI_VEL,
         LO_VEL,
         AMPEG_RELEASE,
-        LOOP_CONTINUOUS,
+     //   LOOP_CONTINUOUS,
         LOOP_MODE,
         LOOP_START,
         LOOP_END,
@@ -40,7 +41,9 @@ public:
         LO_RAND,
         HI_RAND,
         SEQ_LENGTH,
-        SEQ_POSITION
+        SEQ_POSITION,
+        DEFAULT_PATH,
+        SW_LABEL
     };
 
     enum class DiscreteValue {
@@ -55,6 +58,7 @@ public:
     };
 
     enum class OpcodeType {
+        Unknown,
         String,
         Int,
         Float,
@@ -105,7 +109,9 @@ public:
 
     // doesn't really belong here, but better there than some places...
     static KeysAndValuesPtr compile(const SKeyValueList&);
-    static Opcode translate(const std::string& s);
+  //  static Opcode translate(const std::string& s);
+    static Opcode translate(const std::string& key, bool suppressErrorMessages);
+    static OpcodeType keyTextToType(const std::string& key, bool suppressErrorMessages);
 
 private:
     static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input);

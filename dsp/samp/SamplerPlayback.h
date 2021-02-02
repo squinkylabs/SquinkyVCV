@@ -4,8 +4,8 @@
 
 #include <cmath>
 
-#include "RandomRange.h"
 #include "CompiledRegion.h"
+#include "RandomRange.h"
 
 class WaveLoader;
 
@@ -21,7 +21,7 @@ public:
     int sampleIndex = 0;
     bool needsTranspose = false;
     float transposeAmt = 1;
-    float gain = 1;             // assume full volume
+    float gain = 1;  // assume full volume
     float ampeg_release = .001f;
 
     bool canPlay() const {
@@ -116,7 +116,7 @@ inline void cachedInfoToPlayInfo(VoicePlayInfo& playInfo, const VoicePlayParamet
         auto temp = float(x) / 127.f;
         temp *= temp;
         playInfo.gain = temp;
-      
+
         // printf("doing vel comp veloc=%d, track=%f x=%f, gain=%f\n", params.midiVelocity, t, x, playInfo.gain);
     }
 }
@@ -124,11 +124,9 @@ inline void cachedInfoToPlayInfo(VoicePlayInfo& playInfo, const VoicePlayParamet
 class SimpleVoicePlayer : public ISamplerPlayback {
 public:
     SimpleVoicePlayer() = delete;
-    SimpleVoicePlayer(CompiledRegionPtr reg, int midiPitch, int sampleIndex) :
-        data(reg, midiPitch, sampleIndex),
-        lineNumber(reg->lineNumber) {
+    SimpleVoicePlayer(CompiledRegionPtr reg, int midiPitch, int sampleIndex) : data(reg, midiPitch, sampleIndex),
+                                                                               lineNumber(reg->lineNumber) {
         assert(sampleIndex > 0);
-
     }
     void play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override {
@@ -157,7 +155,6 @@ public:
     }
 };
 
-
 class RandomVoicePlayer : public ISamplerPlayback {
 public:
     RandomVoicePlayer() : rand(0) {}
@@ -165,6 +162,7 @@ public:
     void _dump(int depth) const override;
     void addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch);
     void finalize();
+
 private:
     std::vector<CachedSamplerPlaybackInfoPtr> entries;
     RandomRange<float> rand;
@@ -193,11 +191,11 @@ public:
     void _dump(int depth) const override;
     void addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch);
     void finalize();
+
 private:
     std::vector<RRPlayInfoPtr> entries;
     int currentEntry = 0;
     int numEntries = 0;
-   
 };
 
 using RoundRobinVoicePlayerPtr = std::shared_ptr<RoundRobinVoicePlayer>;

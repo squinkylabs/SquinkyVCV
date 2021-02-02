@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "SamplerSchema.h"
+#include "SqLog.h"
 
 extern int parseCount;
 
@@ -19,10 +20,25 @@ public:
 using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>;
 using SKeyValueList = std::vector<SKeyValuePairPtr>;
 
+// A heading represents a <global> simiar
+// It doesn't have much, other than a list of value
+class SHeading {
+public:
+    SKeyValueList values;
+    SamplerSchema::KeysAndValuesPtr compiledValues;
+    static void dumpKeysAndValues(const SKeyValueList& v);
+    int lineNumber = 0;
+};
+
 class SRegion {
 public:
-    SRegion(int line) : lineNumber(line) { ++parseCount; }
+    // TODO: process cb contents
+    SRegion(int line, const SHeading& controlBlockContents) : lineNumber(line) {
+        ++parseCount;
+        values.insert(values.end(), controlBlockContents.values.begin(), controlBlockContents.values.end());
+    }
     ~SRegion() { --parseCount; }
+    SRegion(const SRegion&) = delete;
     SKeyValueList values;
     SamplerSchema::KeysAndValuesPtr compiledValues;
     const int lineNumber = 0;
@@ -33,24 +49,19 @@ using SRegionList = std::vector<SRegionPtr>;
 
 // Groups have a list of values
 // and they usually have children.
-class SGroup {
+// they are a type of heading, but they are special
+class SGroup : public SHeading {
 public:
-    SKeyValueList values;
-    SamplerSchema::KeysAndValuesPtr compiledValues;
-    SRegionList regions;
+    SGroup(int line) : lineNumber(line) {}
+    SGroup() = delete;
 
+    SRegionList regions;
+    const int lineNumber;
     void _dump();
-    static void dumpKeysAndValues(const SKeyValueList& v);
 };
+
 using SGroupPtr = std::shared_ptr<SGroup>;
 using SGroupList = std::vector<SGroupPtr>;
-
-// Eventually we will need more complex top level objects
-class SGlobal {
-public:
-    SKeyValueList values;
-    SamplerSchema::KeysAndValuesPtr compiledValues;
-};
 
 class SLex;
 class SLexItem;
@@ -76,12 +87,23 @@ private:
         Res res = Res::ok;
     };
 
-    static std::string matchGlobal(SGlobal&, SLexPtr);
-    static std::string matchRegions(SRegionList&, SLexPtr);
-    static Result matchRegion(SRegionList&, SLexPtr);
-    static std::string matchGroups(SGroupList&, SLexPtr lex);
-    static Result matchGroup(SGroupList&, SLexPtr);
-    static std::string matchGroupsOrRegions(SGroupList&, SLexPtr lex);
+    /* What is a "heading"?
+     * it's something that can modify following regions: group, control, etc...
+     * we will treat these all pretty much the same
+     */
+
+    static std::string matchRegions(SRegionList&, SLexPtr, const SHeading& controlBlock);
+    static Result matchRegion(SRegionList&, SLexPtr, const SHeading& controlBlock);
+
+    //  static std::string matchHeadings(SInstrumentPtr, SLexPtr lex);
+    // a"heading group" is a series of headings followed by all regions that belong to it
+    static std::string matchHeadingGroups(SInstrumentPtr, SLexPtr lex);
+
+    static Result matchHeadingGroup(SInstrumentPtr, SLexPtr);
+    //  static std::string matchHeadingsOrRegions(SInstrumentPtr, SLexPtr lex);
+
+    // return.second is true it heading it a group
+    static std::pair<Result, bool> matchSingleHeading(SInstrumentPtr, SLexPtr);
 
     static std::string matchKeyValuePairs(SKeyValueList&, SLexPtr);
     static Result matchKeyValuePair(SKeyValueList&, SLexPtr);

@@ -5,6 +5,7 @@
 #include <set>
 
 #include "SParse.h"
+#include "SqLog.h"
 
 using Opcode = SamplerSchema::Opcode;
 using OpcodeType = SamplerSchema::OpcodeType;
@@ -20,6 +21,7 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::SAMPLE, OpcodeType::String},
     {Opcode::AMPEG_RELEASE, OpcodeType::Float},
     {Opcode::LOOP_MODE, OpcodeType::Discrete},
+  //  {Opcode::LOOP_CONTINUOUS, OpcodeType::}
     {Opcode::PITCH_KEYCENTER, OpcodeType::Int},
     {Opcode::LOOP_START, OpcodeType::Int},
     {Opcode::LOOP_END, OpcodeType::Int},
@@ -35,7 +37,9 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::LO_RAND, OpcodeType::Float},
     {Opcode::HI_RAND, OpcodeType::Float},
     {Opcode::SEQ_LENGTH, OpcodeType::Int},
-    {Opcode::SEQ_POSITION, OpcodeType::Int}};
+    {Opcode::SEQ_POSITION, OpcodeType::Int},
+    {Opcode::DEFAULT_PATH, OpcodeType::String},
+    {Opcode::SW_LABEL, OpcodeType::String}};
 
 static std::map<std::string, Opcode> opcodes = {
     {"hivel", Opcode::HI_VEL},
@@ -47,7 +51,7 @@ static std::map<std::string, Opcode> opcodes = {
     {"pitch_keycenter", Opcode::PITCH_KEYCENTER},
     {"ampeg_release", Opcode::AMPEG_RELEASE},
     {"loop_mode", Opcode::LOOP_MODE},
-    {"loop_continuous", Opcode::LOOP_CONTINUOUS},
+ //   {"loop_continuous", Opcode::LOOP_CONTINUOUS},
     {"loop_start", Opcode::LOOP_START},
     {"loop_end", Opcode::LOOP_END},
     {"sample", Opcode::SAMPLE},
@@ -62,7 +66,9 @@ static std::map<std::string, Opcode> opcodes = {
     {"amp_veltrack", Opcode::AMP_VELTRACK},
     {"key", Opcode::KEY},
     {"seq_length", Opcode::SEQ_LENGTH},
-    {"seq_position", Opcode::SEQ_POSITION}};
+    {"seq_position", Opcode::SEQ_POSITION},
+    {"default_path", Opcode::DEFAULT_PATH},
+    {"sw_label", Opcode::SW_LABEL}};
 
 static std::set<std::string> unrecognized;
 
@@ -84,23 +90,39 @@ DiscreteValue SamplerSchema::translated(const std::string& s) {
     return it->second;
 }
 
-void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
-    //printf("translating opcode: %s\n", input->key.c_str());
-    Opcode opcode = translate(input->key);
+OpcodeType SamplerSchema::keyTextToType(const std::string& key, bool suppressErrorMessages) {
+    Opcode opcode = SamplerSchema::translate(key, suppressErrorMessages);
     if (opcode == Opcode::NONE) {
-        printf("could not translate opcode %s\n", input->key.c_str());
-        fflush(stdout);
+        if (!suppressErrorMessages) {
+            SQINFO("unknown opcode type %s", key.c_str());
+        }
+        return OpcodeType::Unknown;
+    }
+    auto typeIter = keyType.find(opcode);
+    // OpcodeType type = keyType(opcode);
+    if (typeIter == keyType.end()) {
+        SQFATAL("unknown type for key %s", key.c_str());
+        return OpcodeType::Unknown;
+    }
+    return typeIter->second;
+}
+
+void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
+
+    Opcode opcode = translate(input->key, false);
+    if (opcode == Opcode::NONE) {
+        SQWARN("could not translate opcode %s", input->key.c_str());
         return;
     }
     auto typeIter = keyType.find(opcode);
     if (typeIter == keyType.end()) {
-        printf("could not find type for %s\n", input->key.c_str());
-        fflush(stdout);
+        SQFATAL("could not find type for %s", input->key.c_str());
         assert(false);
         return;
     }
 
     const OpcodeType type = typeIter->second;
+ 
     ValuePtr vp = std::make_shared<Value>();
     vp->type = type;
     bool isValid = true;
@@ -149,13 +171,15 @@ SamplerSchema::KeysAndValuesPtr SamplerSchema::compile(const SKeyValueList& inpu
     return results;
 }
 
-SamplerSchema::Opcode SamplerSchema::translate(const std::string& s) {
+SamplerSchema::Opcode SamplerSchema::translate(const std::string& s, bool suppressErrors) {
     auto entry = opcodes.find(s);
     if (entry == opcodes.end()) {
         auto find2 = unrecognized.find(s);
         if (find2 == unrecognized.end()) {
             unrecognized.insert({s});
-            printf("!! unrecognized opcode %s\n", s.c_str());
+            if (!suppressErrors) {
+                SQWARN("!! unrecognized opcode %s\n", s.c_str());
+            }
         }
 
         return Opcode::NONE;

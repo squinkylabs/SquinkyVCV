@@ -271,6 +271,14 @@ static void testLexSpaces2() {
     testLexSpaces2d();
 }
 
+static void testLexLabel() {
+    auto lex = SLex::go("\nsw_label=abc def ghi");
+    assert(lex);
+    lex->validate();
+    SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
+    assertEQ(fname->idName, "abc def ghi");
+}
+
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -278,12 +286,20 @@ static void testparse1() {
     assert(!err.empty());
 }
 
+static void testParseRegion() {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<region>", inst);
+    assert(err.empty());
+    assertEQ(inst->groups.size(), 1);
+    assertEQ(inst->groups[0]->regions.size(), 1);
+}
+
 static void testparse2() {
     printf("\nstart testprse2\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>pitch_keycenter=24", inst);
     assert(err.empty());
-  
+
     assertEQ(inst->groups.size(), 1);
     SGroupPtr group = inst->groups[0];
     assert(group->values.empty());
@@ -295,16 +311,88 @@ static void testparse2() {
     assertEQ(kv->value, "24");
 }
 
+static void testParseMutliControls() {
+   // SQINFO("--- start testParseMutliControls");
+
+    const char* test = R"foo(
+        <control>
+        default_path=a
+        <region>
+        sample=r1
+        <control>
+        default_path=b
+        <region>
+        sample=r2
+    )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(test, inst);
+    assert(err.empty());
+
+    // we should end up with two regions in two groups
+    // we always make a new group when we hit a new heading,
+    // in this case <control>
+    assertEQ(inst->groups.size(), 2);
+    assertEQ(inst->groups[0]->regions.size(), 1);
+    assertEQ(inst->groups[1]->regions.size(), 1);
+
+    // each regions should have the 'sample' key, as well as the 'default_path' key
+
+    SKeyValueList kv = inst->groups[0]->regions[0]->values;
+    assertEQ(kv.size(), 2);
+
+    assertEQ(kv[0]->key, "default_path");
+    assertEQ(kv[0]->value, "a");
+    assertEQ(kv[1]->key, "sample");
+    assertEQ(kv[1]->value, "r1");
+    //
+    kv = inst->groups[1]->regions[0]->values;
+    assertEQ(kv.size(), 2);
+    assertEQ(kv[0]->key, "default_path");
+    assertEQ(kv[0]->value, "b");
+    assertEQ(kv[1]->key, "sample");
+    assertEQ(kv[1]->value, "r2");
+}
+
+static void testParseGroupAndValues() {
+    //SQINFO("---- start testParseGroupAndValues");
+ //   const char* test = R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo";
+    const char* test = R"foo(<group>a=b<region>)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(test, inst);
+    assert(err.empty());
+
+    assertEQ(inst->groups.size(), 1);
+    assertEQ(inst->groups[0]->regions.size(), 1);
+
+    inst->groups[0]->_dump();
+    inst->groups[0]->regions[0]->_dump();
+
+    assertEQ(inst->groups[0]->values.size(), 1);
+    assertEQ(inst->groups[0]->regions[0]->values.size(), 0);
+}
+
 static void testParseGlobal() {
-    printf("start test parse global\n");
+   // SQINFO("---- start test parse global\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global>", inst);
-    // no regions - that's not legal
-    assert(!err.empty());
+    // no regions - that's not legal, but we make up groups if there aren't any,
+    // so we don't consider it an error.
+    assert(err.empty());
+    assert(inst->groups.size() == 1);
+    assert(inst->groups[0]->regions.empty());
+}
+
+static void testParseGlobalGroupAndRegion() {
+   // SQINFO("\n-- start testParseGlobalAndRegion\n");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("<global><group><region>", inst);
+
+    assert(err.empty());
 }
 
 static void testParseGlobalAndRegion() {
-    printf("start test parse global\n");
+  //  SQINFO("\n-- start testParseGlobalAndRegion\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><region>", inst);
 
@@ -318,14 +406,12 @@ static void testParseComment() {
 }
 
 static void testParseGroups() {
-    printf("testParseGroups\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><region><region>", inst);
     assert(err.empty());
 }
 
 static void testParseTwoGroupsA() {
-    printf("\ntestParseTwoGroups\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><group>", inst);
     assert(err.empty());
@@ -333,7 +419,6 @@ static void testParseTwoGroupsA() {
 }
 
 static void testParseTwoGroupsB() {
-    printf("\ntestParseTwoGroups\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><region><region><group><region>", inst);
     assert(err.empty());
@@ -341,7 +426,6 @@ static void testParseTwoGroupsB() {
 }
 
 static void testParseGlobalWithData() {
-    printf("testParseGlobalWithData\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global>ampeg_release=0.6<region>", inst);
     assert(err.empty());
@@ -350,7 +434,6 @@ static void testParseGlobalWithData() {
 static void testparse_piano1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
-    printf("p=%s\n", p);
     auto err = SParse::goFile(p, inst);
     assert(err.empty());
 }
@@ -358,7 +441,6 @@ static void testparse_piano1() {
 static void testparse_piano2() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     const char* p = R"foo(D:\samples\k18-Upright-Piano\k18-Upright-Piano.sfz)foo";
-    printf("p=%s\n", p);
     auto err = SParse::goFile(p, inst);
     assert(err.empty());
 }
@@ -437,13 +519,18 @@ void testx() {
     testLex5();
     testLexSpaces();
     testLexSpaces2();
+    testLexLabel();
 
     testparse1();
+    testParseRegion();
     testparse2();
     testParseGlobal();
     testParseGlobalAndRegion();
+    testParseGlobalGroupAndRegion();
     testParseComment();
     testParseGroups();
+    testParseMutliControls();
+    testParseGroupAndValues();
 
     testParseGlobalWithData();
     testParseTwoGroupsA();

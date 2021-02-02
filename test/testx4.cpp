@@ -2,6 +2,7 @@
 #include "SqLog.h"
 #include "asserts.h"
 #include "samplerTests.h"
+#include "FilePath.h"
 
 static void testRandomPlayerEmpty() {
     VoicePlayInfo info;
@@ -163,6 +164,100 @@ static void testRRPlayerCrazyPos() {
 
 }
 
+static void testFilePath0() {
+    FilePath f("abc");
+    assertEQ(f.toString(), "abc");
+
+    assertNE(FilePath::nativeSeparator(), FilePath::foreignSeparator());
+}
+
+static void testFilePathFixup() {
+    std::string input("\\\\////\\\\\\");
+    FilePath f(input);
+    const std::string s = f.toString();
+    assertNE(s, input);
+
+    bool b = s.find(FilePath::foreignSeparator()) != std::string::npos;
+    assert(!b);
+}
+
+static void testFilePathFixup2() {
+    const char* input ="\\\\////\\\\\\";
+    FilePath f(input);
+    const std::string s = f.toString();
+    assertNE(s, input);
+
+    bool b = s.find(FilePath::foreignSeparator()) != std::string::npos;
+    assert(!b);
+}
+
+static void testFilePathConcat1() {
+    FilePath a("a");
+    FilePath b("b");
+    a.concat(b);
+
+    std::string s = a.toString();
+    assertEQ(s.size(), 3);
+    assertEQ(s.at(0), 'a');
+    assertEQ(s.at(1), FilePath::nativeSeparator());
+    assertEQ(s.at(2), 'b');
+}
+
+static void testFilePathConcat2() {
+    FilePath a("a/");
+    FilePath b("b");
+    a.concat(b);
+
+    std::string s = a.toString();
+    assertEQ(s.size(), 3);
+    assertEQ(s.at(0), 'a');
+    assertEQ(s.at(1), FilePath::nativeSeparator());
+    assertEQ(s.at(2), 'b');
+}
+
+static void testFilePathConcat3() {
+    FilePath a("a\\");
+    FilePath b("/b");
+    a.concat(b);
+
+    std::string s = a.toString();
+    assertEQ(s.size(), 3);
+    assertEQ(s.at(0), 'a');
+    assertEQ(s.at(1), FilePath::nativeSeparator());
+    assertEQ(s.at(2), 'b');
+}
+
+static void testFilePathConcat4() {
+    FilePath a("a");
+    FilePath b("./b");
+    a.concat(b);
+
+    std::string s = a.toString();
+    assertEQ(s.size(), 3);
+    assertEQ(s.at(0), 'a');
+    assertEQ(s.at(1), FilePath::nativeSeparator());
+    assertEQ(s.at(2), 'b');
+}
+
+static void testFilePathConcat5() {
+    FilePath a("a");
+    FilePath b(".");
+    a.concat(b);
+
+    std::string s = a.toString();
+    assertEQ(s.size(), 1);
+    assertEQ(s.at(0), 'a');
+}
+
+static void testFilePathConcat6() {
+    FilePath a("");
+    FilePath b("abc");
+    a.concat(b);
+    std::string s = a.toString();
+    assertEQ(s, "abc");
+}
+
+
 void testx4() {
     testRandomPlayerEmpty();
     testRandomPlayerOneEntry();
@@ -171,4 +266,13 @@ void testx4() {
     testRandomPlayerBadData();
 
     testRRPlayerCrazyPos();
+    testFilePath0();
+    testFilePathFixup();
+    testFilePathFixup2();
+    testFilePathConcat1();
+    testFilePathConcat2();
+    testFilePathConcat3();
+    testFilePathConcat4();
+    testFilePathConcat5();
+    testFilePathConcat6();
 }

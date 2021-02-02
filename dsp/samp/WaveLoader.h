@@ -10,7 +10,7 @@ public:
     public:
         WaveInfo(const std::string& fileName);
         ~WaveInfo();
-        void load();
+        bool load();
 
         bool valid = false;
         float* data = nullptr;
@@ -18,13 +18,24 @@ public:
         unsigned int sampleRate = 0;
         uint64_t totalFrameCount = 0;
         const std::string fileName;
+
     private:
-        static float* convertToMono(float* data, uint64_t frames, int channels);
+        // static float* convertToMono(float* data, uint64_t frames, int channels);
+        void convertToMono();
     };
     using WaveInfoPtr = std::shared_ptr<WaveInfo>;
 
+    /** Sample files are added one at a time until "all"
+     * are loaded.
+     */
     void addNextSample(const std::string& fileName);
-    void load();
+
+    /**
+     * load() is called one - after all the samples have been added.
+     * load will load all of them.
+     * will return true is they all load.
+     */
+    bool load();
 
     /**
      * Index is one based. 

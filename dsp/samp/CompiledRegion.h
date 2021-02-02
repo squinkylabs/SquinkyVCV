@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "SamplerSchema.h"
+#include "SqLog.h"
 
 class SRegion;
 class SGroup;
@@ -31,12 +32,18 @@ extern int compileCount;
 class CompiledRegion {
 public:
     CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
+    CompiledRegion() {
+       // SQINFO("Compiled REgion def ctor %p", this);
+        ++compileCount;
+    }
     virtual ~CompiledRegion() { compileCount--; }
 
     enum class Type {
         Base,
-        RoundRobin,
-        Random
+        RoundRobin,     // group and regions where we RR between the regions in the one group.
+        Random,         // group and regions where we random between the regions in the one group.
+        GRandom,        // probability is on each group, so multiple groups involved.
+        GRoundRobbin
     };
     virtual Type type() const { return Type::Base; }
 
@@ -70,15 +77,17 @@ public:
     float ampeg_release = .001f;
 
     CompiledGroupPtrWeak weakParent;
-    int lineNumber = -1;;
+    int lineNumber = -1;
+    ;
+
 protected:
     CompiledRegion(CompiledRegionPtr);
-    CompiledRegion& operator = (const CompiledRegion&) = default;
+    CompiledRegion& operator=(const CompiledRegion&) = default;
 
 private:
-    static void findValue (int& returnValue, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
-    static void findValue (float&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
-    static void findValue (std::string&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+    static void findValue(int& returnValue, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+    static void findValue(float&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+    static void findValue(std::string&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
 };
 
 /**
@@ -87,8 +96,20 @@ private:
  */
 class CompiledMultiRegion : public CompiledRegion {
 public:
+    /** This constructor makes a multi-region from a group.
+     * copies over all the children so that multi region has the same children as the group.
+     */
     CompiledMultiRegion(CompiledGroupPtr parent);
+    CompiledMultiRegion() {
+
+    }
     const std::vector<CompiledRegionPtr>& getRegions() { return originalRegions; }
+
+    /** can add more regions this way.
+     * Usually used with the default constructor.
+     */
+    void addChild(CompiledRegionPtr);
+
 protected:
     std::vector<CompiledRegionPtr> originalRegions;
 };
@@ -104,6 +125,7 @@ public:
 class CompiledRandomRegion : public CompiledMultiRegion {
 public:
     CompiledRandomRegion(CompiledGroupPtr parent);
+    CompiledRandomRegion() = default;
     Type type() const override { return Type::Random; }
 };
 
@@ -112,14 +134,30 @@ public:
  */
 class CompiledGroup {
 public:
+    /** This is the normal constructor.
+     * create a new compiled group from a parsed group.
+     */
     CompiledGroup(SGroupPtr);
+
+    /**
+     * This constructor only for makins "synthetic" groups.
+     * line number may not be exactly right
+     */
+    CompiledGroup(int line);
     ~CompiledGroup() { compileCount--; }
 
     bool shouldIgnore() const;
     void addChild(CompiledRegionPtr child) { regions.push_back(child); }
     std::vector<CompiledRegionPtr> regions;
     CompiledRegion::Type type() const;
+
     int sequence_length = 0;
+    // assume no valid random data
+    float lorand = -1;
+    float hirand = -1;
+
+    const int lineNumber;
+
 private:
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
 };

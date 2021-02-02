@@ -246,6 +246,14 @@ void F2Widget::addKnobs(F2Module *module, std::shared_ptr<IComposite> icomp)
     p->text = "12dB";
     p->setLabels( {"12dB", "24dB", "Par", "Par -"});
     addParam(p);
+
+    // just for test
+#if 0
+    addChild(createLight<MediumLight<GreenLight>>(
+            Vec(40, 18),
+            module,
+            Comp::LIGHT_TEST));
+#endif
 }
 
 void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
@@ -286,7 +294,7 @@ void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
         Vec(jackX2, jackY + 2 * dy),
         module,
         Comp::R_INPUT));
-
+#if 0   // normal
     addLabel(
         Vec(jackX , labelY + 3 * dy),
         "In");
@@ -302,6 +310,25 @@ void F2Widget::addJacks(F2Module *module, std::shared_ptr<IComposite> icomp)
         Vec(jackX2, jackY + 3 * dy - .5),
         module,
         Comp::AUDIO_OUTPUT));
+#else       // move the jacks up for easier viewing
+  addLabel(
+        Vec(jackX , labelY + 2.5 * dy),
+        "In");
+    addInput(createInput<PJ301MPort>(
+        Vec(jackX, jackY + 2.5 * dy),
+        module,
+        Comp::AUDIO_INPUT));
+
+    addLabel(
+        Vec(jackX2 - 5 , labelY + 3.5 * dy),
+        "Out");
+    addOutput(createOutput<PJ301MPort>(
+        Vec(jackX2, jackY + 2.5 * dy - .5),
+        module,
+        Comp::AUDIO_OUTPUT));
+
+#endif
+
 };
 
 

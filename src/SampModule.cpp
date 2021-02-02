@@ -31,6 +31,10 @@ public:
         samp->setNewSamples(s);
     }
 
+    void setSamplePath(const std::string& s) {
+        samp->setSamplePath(s);
+    }
+
 private:
 };
 
@@ -66,11 +70,22 @@ struct SampWidget : ModuleWidget {
         ManualMenuItem* manual = new ManualMenuItem("Samp manual", helpUrl);
         theMenu->addChild(manual);
 
-        SqMenuItem* sfile = new SqMenuItem(
-            []() { return false; },
-            [this]() { this->loadSamplerFile(); });
-        sfile->text = "Load Sample file";
-        theMenu->addChild(sfile);
+        {
+            SqMenuItem* sfile = new SqMenuItem(
+                []() { return false; },
+                [this]() { this->loadSamplerFile(); });
+            sfile->text = "Load Sample file";
+            theMenu->addChild(sfile);
+        }
+#if 0   // add the root folder
+        {
+            SqMenuItem* spath = new SqMenuItem(
+                []() { return false; },
+                [this]() { this->getRootFolder(); });
+            spath->text = "Set default sample path";
+            theMenu->addChild(spath);
+        }
+#endif
     }
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK) {
@@ -82,9 +97,15 @@ struct SampWidget : ModuleWidget {
         return label;
     }
     void loadSamplerFile();
+    void getRootFolder();
     void addJacks(SampModule* module, std::shared_ptr<IComposite> icomp);
+    void setSamplePath(const std::string& s) {
+        _module->setSamplePath(s);
+        pathLabel->text = s;
+    }
 
     SampModule* _module;
+    Label* pathLabel = nullptr;
 };
 
 void SampWidget::loadSamplerFile() {
@@ -114,6 +135,30 @@ void SampWidget::loadSamplerFile() {
     if (pathC) {
         _module->setNewSamples(pathC);
     }
+}
+
+void SampWidget::getRootFolder() {
+    static const char SMF_FILTERS[] = "Standard Sfz file (.sfz):sfz";
+    osdialog_filters* filters = osdialog_filters_parse(SMF_FILTERS);
+    std::string filename;
+
+    // std::string dir = _module->sequencer->context->settings()->getMidiFilePath();
+    std::string dir = "";
+    DEFER({
+        osdialog_filters_free(filters);
+    });
+
+    char* pathC = osdialog_file(OSDIALOG_OPEN_DIR, dir.c_str(), filename.c_str(), filters);
+
+    if (!pathC) {
+        // Fail silently
+        return;
+    }
+    DEFER({
+        std::free(pathC);
+    });
+    SQINFO("got %s", pathC);
+    this->setSamplePath(pathC);
 }
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
@@ -167,6 +212,7 @@ SampWidget::SampWidget(SampModule* module) {
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
     addLabel(Vec(100, 50), "Sssssss");
+    pathLabel = addLabel(Vec(50, 70), "");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);

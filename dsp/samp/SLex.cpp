@@ -183,7 +183,8 @@ bool SLex::proxNextIdentifierChar(char c) {
         return procFreshChar(c);
     }
 
-    const bool terminatingSpace = isspace(c) && (lastIdentifier != "sample");
+    // We only terminate on a space if we are not parsing a String type opcode
+    const bool terminatingSpace = isspace(c) && (lastIdentifierType != SamplerSchema::OpcodeType::String);
     // terminate on these, but don't proc
     if (terminatingSpace) {
         addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
@@ -197,8 +198,8 @@ bool SLex::proxNextIdentifierChar(char c) {
 }
 
 bool SLex::procEqualsSignInIdentifier() {
-    if (lastIdentifier == "sample") {
-        // If we get an equals sign in the middle of a sample file name, then we need to adjust.
+    if (lastIdentifierType == SamplerSchema::OpcodeType::String) {
+        // If we get an equals sign in the middle of a sample file name (or other string), then we need to adjust.
         // for things other than sample we don't accept spaces, so there is no issue.
 
         // The last space is going to the the character right before the next identifier.
@@ -239,14 +240,15 @@ void SLex::addCompletedItem(SLexItemPtr item, bool clearCurItem) {
     }
     if (item->itemType == SLexItem::Type::Identifier) {
         SLexIdentifier* ident = static_cast<SLexIdentifier*>(item.get());
-        lastIdentifier = ident->idName;
+       // lastIdentifier = ident->idName;
+        lastIdentifierType = SamplerSchema::keyTextToType(ident->idName, true);
         // printf("just pushed new id : >%s<\n", lastIdentifier.c_str());
     }
 }
 
 std::string SLexItem::lineNumberAsString() const {
     char buf[100];
-   // sprintf_s(buf, "%d", lineNumber);
+    // sprintf_s(buf, "%d", lineNumber);
     snprintf(buf, sizeof(buf), "%d", lineNumber);
     return buf;
 }
