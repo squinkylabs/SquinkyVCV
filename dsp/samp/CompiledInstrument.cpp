@@ -27,15 +27,17 @@ using Value = SamplerSchema::Value;
 
 bool CompiledInstrument::compile(const SInstrumentPtr in) {
     assert(in->wasExpanded);
-    bool ret = buildCompiledTree(in);
+    bool ret = regionPool.buildCompiledTree(in);
     if (!ret) {
         return false;
     }
 
+#if 0
     ret = fixupCompiledTree();
     if (!ret) {
         return false;
     }
+#endif
 
     // extractDefaultPath(in);
 
@@ -52,14 +54,16 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
     return true;
 }
 
+#if 0
 bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr i) {
-    assert(false);
-    return false;
+    SQWARN("build compiled tree does nothing");
+    return true;
 }
 bool CompiledInstrument::fixupCompiledTree() {
-    assert(false);
-    return false;
+    SQWARN("fixup compiled tree does nothing");
+    return true;
 }
+#endif
 
 #if 0
 bool CompiledInstrument::compileOld(const SInstrumentPtr in) {

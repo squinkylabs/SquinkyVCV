@@ -113,8 +113,8 @@ private:
 
     bool compile(const SInstrumentPtr);
     bool compileOld(const SInstrumentPtr);
-    bool buildCompiledTree(const SInstrumentPtr i);
-    bool fixupCompiledTree();
+   // bool buildCompiledTree(const SInstrumentPtr i);
+  //  bool fixupCompiledTree();
     bool fixupOneRandomGrouping(int groupStartIndex);
 
     ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);

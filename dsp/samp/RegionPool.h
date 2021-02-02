@@ -5,9 +5,11 @@
 
 class CompiledRegion;
 class CompiledGroup;
+class SInstrument;
 
 using CompiledRegionPtr = std::shared_ptr<CompiledRegion>;
 using CompiledGroupPtr = std::shared_ptr<CompiledGroup>;
+using SInstrumentPtr = std::shared_ptr<SInstrument>;
 
 class RegionPool {
 public:
@@ -17,6 +19,10 @@ public:
     static void sortByPitch(std::vector<CompiledRegionPtr>&);
     static void sortByPitchAndVelocity(std::vector<CompiledRegionPtr>&);
 
+    bool buildCompiledTree(const SInstrumentPtr i);
+    
 private:
      std::vector<CompiledGroupPtr> groups;
+     bool fixupCompiledTree();
+
 };
