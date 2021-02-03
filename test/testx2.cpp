@@ -1070,6 +1070,11 @@ static void testCompileMulPitchAndVelComplex2() {
     params.midiPitch = 10;
     params.midiVelocity = 91;
     ci->play(info, params, nullptr, 0);
+    assert(!info.valid);
+
+    params.midiPitch = 10;
+    params.midiVelocity = 95;
+    ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
@@ -1383,7 +1388,9 @@ void testx2() {
     testCompileBassoon();
     testGroupInherit();
     assertEQ(compileCount, 0);
+#ifdef _SFZ_RANDOM
     testCompileSimpleDrum();
+#endif
     assertEQ(compileCount, 0);
 
     testCompileSort();

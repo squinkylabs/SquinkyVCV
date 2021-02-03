@@ -100,6 +100,13 @@ void RegionPool::fillRegionLookup() {
     std::vector<CompiledRegionPtr> regions;
     _getAllRegions(regions);
 
+    // TODO: sort them by pitch and vel
+    sortByPitchAndVelocity(regions);
+
+    // TODO: remove overlap
+
+    // TODO: what about bad groups?
+
     assert(keyToRegionLookup.size() == 128);
 
     for (auto region : regions) {
