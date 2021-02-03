@@ -32,6 +32,8 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
         return false;
     }
 
+    addSampleIndexes();
+
 #if 0
     ret = fixupCompiledTree();
     if (!ret) {
@@ -53,6 +55,157 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
     SQWARN("compile is not finished");
     return true;
 }
+
+void CompiledInstrument::addSampleIndexes() {
+    assert(false);
+}
+
+/** build up the tree using the original algorithm that worked for small piano
+ * we don't need structure here, to flattened region list is find
+ */
+
+class RegionBin {
+public:
+    int loVal = -1;
+    int hiVal = -1;
+    std::vector<CompiledRegionPtr> regions;
+};
+
+static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions) {
+    int x = 0;
+    for (auto reg : inputRegions) {
+        printf("    reg[%d] #%d pitch=%d,%d vel=%d,%d\n", x, reg->lineNumber, reg->lokey, reg->hikey, reg->lovel, reg->hivel);
+        ++x;
+    }
+}
+
+void CompiledInstrument::_dump(int depth) const {
+#if 0
+    indent(depth);
+    if (player) {
+        printf("Compiled Instrument dump follows:\n\n");
+        player->_dump(depth);
+        indent(depth);
+        printf("End compiled instrument dump\n\n");
+    } else {
+        printf("Compiled Instrument has nothing to dump\n");
+    }
+#endif
+    SQINFO("CompiledInstrument::_dump no longder does anything");
+}
+
+int CompiledInstrument::addSampleFile(const std::string& s) {
+    int ret = 0;
+    auto it = relativeFilePaths.find(s);
+    if (it != relativeFilePaths.end()) {
+        ret = it->second;
+    } else {
+        relativeFilePaths.insert({s, nextIndex});
+        ret = nextIndex++;
+    }
+    return ret;
+}
+
+CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPtr inst) {
+    assert(!inst->wasExpanded);
+    expandAllKV(inst);
+    CompiledInstrumentPtr instOut = std::make_shared<CompiledInstrument>();
+    const bool result = instOut->compile(inst);
+    return result ? instOut : nullptr;
+}
+
+void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack) {
+    const float v = float(midiVelocity);
+    const float t = regionVeltrack;
+    const float x = (v * t / 100.f) + (100.f - t) * (127.f / 100.f);
+
+    // then taper it
+    auto temp = float(x) / 127.f;
+    temp *= temp;
+    info.gain = temp;
+}
+
+void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate) {
+    // first base pitch
+    const int semiOffset = midiPitch - regionKeyCenter;
+    if (semiOffset == 0) {
+        info.needsTranspose = false;
+        info.transposeAmt = 1;
+    } else {
+        const float pitchMul = float(std::pow(2, semiOffset / 12.0));
+        info.needsTranspose = true;
+        info.transposeAmt = pitchMul;
+    }
+
+    // then sample rate correction
+    if (loader) {
+        // do we need to adapt to changed sample rate?
+        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->sampleRate;
+        if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
+            info.needsTranspose = true;
+            info.transposeAmt *= sampleRate / float(waveSampleRate);
+        }
+    }
+}
+
+void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
+    float r = rand();
+    const CompiledRegion* region = regionPool.play(params, r);
+    if (region) {
+        SQWARN("finish compiled play! we need to do the add sample file stuff, pitch, etc");
+        // const int sampleIndex = addSampleFile(region->sampleFile);
+        info.sampleIndex = region->sampleIndex;
+        info.valid = true;
+        info.ampeg_release = region->ampeg_release;
+        getPlayPitch(info, params.midiPitch, region->keycenter, loader, sampleRate);
+        getGain(info, params.midiVelocity, region->amp_veltrack);
+
+        // jam in fake for now
+        // SQWARN("why can't get handle real release");
+        // info.ampeg_release = .001f;
+    }
+}
+
+void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootPath) {
+    std::vector<std::string> tempPaths;
+    assert(!rootPath.empty());
+
+    auto num = relativeFilePaths.size();
+    tempPaths.resize(num);
+    // index is 1..
+    for (auto pathEntry : relativeFilePaths) {
+        std::string path = pathEntry.first;
+
+        int waveIndex = pathEntry.second;
+        //printf("in setWaves, entry has %s index = %d\n", path.c_str(), waveIndex);
+        // tempPaths.resize(waveIndex);
+        assert(waveIndex > 0);
+        assert(!path.empty());
+        tempPaths[waveIndex - 1] = path;
+    }
+
+    for (auto path : tempPaths) {
+        assert(!path.empty());
+        WaveLoader::makeAllSeparatorsNative(path);
+        loader->addNextSample(rootPath + path);
+    }
+}
+
+void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
+    assert(!inst->wasExpanded);
+    inst->global.compiledValues = SamplerSchema::compile(inst->global.values);
+    inst->master.compiledValues = SamplerSchema::compile(inst->master.values);
+    //   inst->control.compiledValues = SamplerSchema::compile(inst->control.values);
+
+    for (auto group : inst->groups) {
+        group->compiledValues = SamplerSchema::compile(group->values);
+        for (auto region : group->regions) {
+            region->compiledValues = SamplerSchema::compile(region->values);
+        }
+    }
+    inst->wasExpanded = true;
+}
+
 
 #if 0
 bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr i) {
@@ -161,24 +314,7 @@ int CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions) 
 }
 #endif
 
-/** build up the tree using the original algorithm that worked for small piano
- * we don't need structure here, to flattened region list is find
- */
 
-class RegionBin {
-public:
-    int loVal = -1;
-    int hiVal = -1;
-    std::vector<CompiledRegionPtr> regions;
-};
-
-static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions) {
-    int x = 0;
-    for (auto reg : inputRegions) {
-        printf("    reg[%d] #%d pitch=%d,%d vel=%d,%d\n", x, reg->lineNumber, reg->lokey, reg->hikey, reg->lovel, reg->hivel);
-        ++x;
-    }
-}
 
 #if 0
 ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth) {
@@ -403,20 +539,6 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<Compi
 }
 #endif
 
-void CompiledInstrument::_dump(int depth) const {
-#if 0
-    indent(depth);
-    if (player) {
-        printf("Compiled Instrument dump follows:\n\n");
-        player->_dump(depth);
-        indent(depth);
-        printf("End compiled instrument dump\n\n");
-    } else {
-        printf("Compiled Instrument has nothing to dump\n");
-    }
-#endif
-    SQINFO("CompiledInstrument::_dump no longder does anything");
-}
 
 #if 0
 void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array) {
@@ -461,117 +583,7 @@ void CompiledInstrument::sortByPitchAndVelocity(std::vector<CompiledRegionPtr>& 
 }
 #endif
 
-int CompiledInstrument::addSampleFile(const std::string& s) {
-    int ret = 0;
-    auto it = relativeFilePaths.find(s);
-    if (it != relativeFilePaths.end()) {
-        ret = it->second;
-    } else {
-        relativeFilePaths.insert({s, nextIndex});
-        ret = nextIndex++;
-    }
-    return ret;
-}
 
-CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPtr inst) {
-    assert(!inst->wasExpanded);
-    expandAllKV(inst);
-    CompiledInstrumentPtr instOut = std::make_shared<CompiledInstrument>();
-    const bool result = instOut->compile(inst);
-    return result ? instOut : nullptr;
-}
-
-void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack) {
-    const float v = float(midiVelocity);
-    const float t = regionVeltrack;
-    const float x = (v * t / 100.f) + (100.f - t) * (127.f / 100.f);
-
-    // then taper it
-    auto temp = float(x) / 127.f;
-    temp *= temp;
-    info.gain = temp;
-}
-
-void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate) {
-    // first base pitch
-    const int semiOffset = midiPitch - regionKeyCenter;
-    if (semiOffset == 0) {
-        info.needsTranspose = false;
-        info.transposeAmt = 1;
-    } else {
-        const float pitchMul = float(std::pow(2, semiOffset / 12.0));
-        info.needsTranspose = true;
-        info.transposeAmt = pitchMul;
-    }
-
-    // then sample rate correction
-    if (loader) {
-        // do we need to adapt to changed sample rate?
-        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->sampleRate;
-        if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
-            info.needsTranspose = true;
-            info.transposeAmt *= sampleRate / float(waveSampleRate);
-        }
-    }
-}
-
-void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
-    float r = rand();
-    const CompiledRegion* region = regionPool.play(params, r);
-    if (region) {
-        SQWARN("finish compiled play! we need to do the add sample file stuff, pitch, etc");
-        // const int sampleIndex = addSampleFile(region->sampleFile);
-        info.sampleIndex = region->sampleIndex;
-        info.valid = true;
-        info.ampeg_release = region->ampeg_release;
-        getPlayPitch(info, params.midiPitch, region->keycenter, loader, sampleRate);
-        getGain(info, params.midiVelocity, region->amp_veltrack);
-
-        // jam in fake for now
-        // SQWARN("why can't get handle real release");
-        // info.ampeg_release = .001f;
-    }
-}
-
-void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootPath) {
-    std::vector<std::string> tempPaths;
-    assert(!rootPath.empty());
-
-    auto num = relativeFilePaths.size();
-    tempPaths.resize(num);
-    // index is 1..
-    for (auto pathEntry : relativeFilePaths) {
-        std::string path = pathEntry.first;
-
-        int waveIndex = pathEntry.second;
-        //printf("in setWaves, entry has %s index = %d\n", path.c_str(), waveIndex);
-        // tempPaths.resize(waveIndex);
-        assert(waveIndex > 0);
-        assert(!path.empty());
-        tempPaths[waveIndex - 1] = path;
-    }
-
-    for (auto path : tempPaths) {
-        assert(!path.empty());
-        WaveLoader::makeAllSeparatorsNative(path);
-        loader->addNextSample(rootPath + path);
-    }
-}
-
-void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
-    assert(!inst->wasExpanded);
-    inst->global.compiledValues = SamplerSchema::compile(inst->global.values);
-    inst->master.compiledValues = SamplerSchema::compile(inst->master.values);
-    //   inst->control.compiledValues = SamplerSchema::compile(inst->control.values);
-
-    for (auto group : inst->groups) {
-        group->compiledValues = SamplerSchema::compile(group->values);
-        for (auto region : group->regions) {
-            region->compiledValues = SamplerSchema::compile(region->values);
-        }
-    }
-    inst->wasExpanded = true;
-}
 
 #if 0  // unused
 bool CompiledInstrument::shouldIgnoreGroup(SGroupPtr group) {

@@ -131,6 +131,7 @@ private:
     /** Returns wave index
      */
     int addSampleFile(const std::string& s);
+    void addSampleIndexes();
 
     ISamplerPlaybackPtr playbackMapVelocities(const std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
 
