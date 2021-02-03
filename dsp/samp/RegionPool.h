@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -23,6 +24,11 @@ public:
     static void sortByPitchAndVelocity(std::vector<CompiledRegionPtr>&);
 
     bool buildCompiledTree(const SInstrumentPtr i);
+
+
+    using RegionVisitor = std::function <void(CompiledRegion*)>;
+
+    void visitRegions(RegionVisitor) const;
 
 private:
     std::vector<CompiledGroupPtr> groups;

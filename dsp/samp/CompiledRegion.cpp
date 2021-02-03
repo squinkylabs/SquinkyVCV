@@ -93,6 +93,9 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     findValue(keycenter, SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
     findValue(lovel, SamplerSchema::Opcode::LO_VEL, *parsedParent, reg);
     findValue(hivel, SamplerSchema::Opcode::HI_VEL, *parsedParent, reg);
+    assert(lovel >= 0); // some idiot instruments use zero, even though it is not logal
+    assert(hivel >= lovel);
+    assert(hivel <= 127);
 
     findValue(lorand, SamplerSchema::Opcode::LO_RAND, *parsedParent, reg);
     findValue(hirand, SamplerSchema::Opcode::HI_RAND, *parsedParent, reg);

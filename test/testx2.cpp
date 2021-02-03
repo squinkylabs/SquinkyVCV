@@ -363,7 +363,7 @@ static void testParseControl() {
         <group> //Begin Group 1
         // lorand=0.0 hirand=0.5 
         group_label=gr_1
-        <region>sample=PSBassoon_A1_v1_rr1.wav lokey=43 hikey=46 pitch_keycenter=45 lovel=0 hivel=62 volume=12
+        <region>sample=PSBassoon_A1_v1_rr1.wav lokey=43 hikey=46 pitch_keycenter=45 lovel=1 hivel=62 volume=12
         )foo";
 
     SQINFO("took out random group. does that still work?");
@@ -1224,14 +1224,14 @@ sample=a.wav
 lokey=43
 hikey=46
 pitch_keycenter=45
-lovel=0
+lovel=1
 hivel=62
 volume=12
 
 <region>
 sample=c.wav
 key=100
-lovel=0
+lovel=1
 hivel=62
 volume=12
 
@@ -1242,14 +1242,14 @@ sample=b.wav
 lokey=43
 hikey=46
 pitch_keycenter=45
-lovel=0
+lovel=1
 hivel=62
 volume=12
 
 <region>
 sample=d.wav
 key=100
-lovel=0
+lovel=1
 hivel=62
 volume=12
 )foo";
@@ -1270,7 +1270,7 @@ sample=a.wav
 lokey=43
 hikey=46
 pitch_keycenter=45
-lovel=0
+lovel=1
 hivel=62
 volume=12
 <group> 
@@ -1280,7 +1280,7 @@ sample=b.wav
 lokey=43
 hikey=46
 pitch_keycenter=45
-lovel=0
+lovel=1
 hivel=62
 volume=12
 )foo";

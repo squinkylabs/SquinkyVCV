@@ -15,7 +15,7 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
         assert(params.midiPitch >= region->lokey);
         assert(params.midiPitch <= region->hikey);
 
-        assert(region->lovel >= 1);
+        assert(region->lovel >= 0);
         assert(region->hivel <= 127);
         if ((params.midiVelocity >= region->lovel) &&
             (params.midiVelocity <= region->hivel)) {
@@ -25,11 +25,20 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
     return nullptr;
 }
 
+// TODO: reduce code with the visitor
 void RegionPool::_getAllRegions(std::vector<CompiledRegionPtr>& array) const {
     assert(array.empty());
     for (auto group : groups) {
         for (auto region : group->regions) {
             array.push_back(region);
+        }
+    }
+}
+
+void RegionPool::visitRegions(RegionVisitor visitor) const {
+     for (auto group : groups) {
+        for (auto region : group->regions) {
+            visitor(region.get());
         }
     }
 }

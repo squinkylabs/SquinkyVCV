@@ -57,7 +57,11 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
 }
 
 void CompiledInstrument::addSampleIndexes() {
-    assert(false);
+    regionPool.visitRegions([this](CompiledRegion* region) {
+        int index = this->addSampleFile(region->sampleFile);
+        assert(0 == region->sampleIndex);
+        region->sampleIndex = index;
+    });
 }
 
 /** build up the tree using the original algorithm that worked for small piano
@@ -149,6 +153,7 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
 }
 
 void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
+    info.valid = false;
     float r = rand();
     const CompiledRegion* region = regionPool.play(params, r);
     if (region) {
