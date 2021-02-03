@@ -36,6 +36,7 @@ bool WaveLoader::load() {
     assert(!didLoad);
     didLoad = true;
     for (std::string& file : filesToLoad) {
+        SQINFO("wave loader loading %s", file.c_str());
         WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
         const bool b = waveInfo->load();
         if (!b) {

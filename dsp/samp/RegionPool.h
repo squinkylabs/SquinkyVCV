@@ -18,7 +18,7 @@ public:
     const CompiledRegion* play(const VoicePlayParameter& params, float random);
 
     void _getAllRegions(std::vector<CompiledRegionPtr>&) const;
-    const std::vector<CompiledGroupPtr>& _groups() const;
+  //  const std::vector<CompiledGroupPtr>& _groups() const;
     static void sortByVelocity(std::vector<CompiledRegionPtr>&);
     static void sortByPitch(std::vector<CompiledRegionPtr>&);
     static void sortByPitchAndVelocity(std::vector<CompiledRegionPtr>&);
@@ -31,7 +31,8 @@ public:
     void visitRegions(RegionVisitor) const;
 
 private:
-    std::vector<CompiledGroupPtr> groups;
+  //  std::vector<CompiledGroupPtr> groups;
+    std::vector<CompiledRegionPtr> regions;
     bool fixupCompiledTree();
 
     // we use raw pointers here. 
@@ -41,4 +42,5 @@ private:
     std::vector<CompiledRegionList> keyToRegionLookup {128};
 
     void fillRegionLookup();
+    void removeOverlaps();
 };
