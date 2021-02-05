@@ -9,8 +9,6 @@
 #include "RegionPool.h"
 #include "SamplerPlayback.h"
 
-// #define _SFZ_RANDOM
-// #define _SFZ_RR
 
 class SInstrument;
 class SRegion;

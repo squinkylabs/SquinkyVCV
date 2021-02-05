@@ -109,11 +109,11 @@ public:
 
     // doesn't really belong here, but better there than some places...
     static KeysAndValuesPtr compile(const SKeyValueList&);
-  //  static Opcode translate(const std::string& s);
     static Opcode translate(const std::string& key, bool suppressErrorMessages);
     static OpcodeType keyTextToType(const std::string& key, bool suppressErrorMessages);
 
 private:
+    static std::pair<bool, int> convertToInt(const std::string& s);
     static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input);
     static DiscreteValue translated(const std::string& s);
 };

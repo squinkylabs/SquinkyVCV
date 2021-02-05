@@ -10,17 +10,27 @@
 const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random) {
     SQWARN("RegionPool::play does nothing");
 
-    auto regions = keyToRegionLookup[params.midiPitch];
+    const CompiledRegionList& regions = keyToRegionLookup[params.midiPitch];
     for (CompiledRegion* region : regions) {
         assert(params.midiPitch >= region->lokey);
         assert(params.midiPitch <= region->hikey);
 
         assert(region->lovel >= 0);
         assert(region->hivel <= 127);
+
+#ifdef _SFZ_RANDOM
+        if ((params.midiVelocity >= region->lovel) &&
+            (params.midiVelocity <= region->hivel) &&
+            (random >= region->lorand) &&
+            (random <= region->hirand)) {
+                  return region;
+            }
+#else
         if ((params.midiVelocity >= region->lovel) &&
             (params.midiVelocity <= region->hivel)) {
             return region;
         }
+#endif
     }
     return nullptr;
 }
@@ -43,12 +53,6 @@ void RegionPool::visitRegions(RegionVisitor visitor) const {
         visitor(region.get());
     }
 }
-
-#if 0
-const std::vector<CompiledGroupPtr>& RegionPool::_groups() const {
-    return groups;
-}
-#endif
 
 void RegionPool::sortByVelocity(std::vector<CompiledRegionPtr>& array) {
     std::sort(array.begin(), array.end(), [](const CompiledRegionPtr a, const CompiledRegionPtr b) -> bool {
@@ -83,8 +87,8 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
             //this->groups.push_back(cGroup);
             for (auto reg : group->regions) {
                 auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
-               // cGroup->addChild(cReg);
-               regions.push_back(cReg);
+                // cGroup->addChild(cReg);
+                regions.push_back(cReg);
             }
         }
     }
@@ -92,48 +96,6 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
     fillRegionLookup();
     return bRet;
 }
-
-#if 0
-bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
-    for (auto group : in->groups) {
-        auto cGroup = std::make_shared<CompiledGroup>(group);
-        if (!cGroup->shouldIgnore()) {
-            this->groups.push_back(cGroup);
-            for (auto reg : group->regions) {
-                auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
-                cGroup->addChild(cReg);
-            }
-            // we that the tree is build, ask the group it it's special
-
-            const CompiledRegion::Type type = cGroup->type();
-            switch (type) {
-                case CompiledRegion::Type::Base:
-                    // nothing to do - tree is good
-                    break;
-                case CompiledRegion::Type::Random:
-                case CompiledRegion::Type::RoundRobin: {
-                    //  cGroup->regions.clear();
-                    //  CompiledRegionPtr newRegion = std::make_shared < CompiledRoundRobbinRegion>();
-                    //  cGroup->regions.push_back(newRegion);
-                    //  bool b = remakeTreeForMultiRegion(type, cGroup);
-                    //   if (!b) {
-                    //        return false;
-                } break;
-                case CompiledRegion::Type::GRandom: {
-                    // do nothing, we will fixup in a second pass.
-                    //bool b = remakeTreeForGMultiRegion();
-                } break;
-                default:
-                    assert(false);
-                    return false;
-            }
-        }
-    }
-    bool bRet = fixupCompiledTree();
-    fillRegionLookup();
-    return bRet;
-}
-#endif
 
 void RegionPool::fillRegionLookup() {
     sortByPitchAndVelocity(regions);
@@ -214,7 +176,6 @@ void RegionPool::removeOverlaps() {
     //return removed;
     return;
 }
-
 
 bool RegionPool::fixupCompiledTree() {
     SQWARN("fixup compiled tree does nothing");

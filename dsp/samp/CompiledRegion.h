@@ -24,6 +24,9 @@ using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
 
 extern int compileCount;
 
+#define _SFZ_RANDOM
+// #define _SFZ_RR
+
 /**
  * All the data that we care about, pulled out of the SRegion we parsed.
  * These live throughout the duration of a compile, and are the basic structures
@@ -69,8 +72,10 @@ public:
     int hivel = 127;
 
     // assume no valid random data
-    float lorand = -1;
-    float hirand = -1;
+    float lorand = 0;
+    float hirand = 1;
+    //float lorand = -1;
+    //float hirand = -1;
 
     int seq_position = -1;
     float amp_veltrack = 100;

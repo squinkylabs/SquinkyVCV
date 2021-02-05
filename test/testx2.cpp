@@ -280,18 +280,34 @@ static void testSamplerRealSound() {
     assert(x[0] != 0);
 }
 
-static void testCIKeysAndValues() {
-    SKeyValuePair p2 = {"hikey", "12"};
+static void testCIKeysAndValues(const std::string& pitch, int expectedPitch) {
 
-    SKeyValuePairPtr p = std::make_shared<SKeyValuePair>("hikey", "12");
+    SKeyValuePairPtr p = std::make_shared<SKeyValuePair>("hikey", pitch);
     SKeyValueList l = {p};
 
     auto output = SamplerSchema::compile(l);
     assertEQ(output->_size(), 1);
     SamplerSchema::ValuePtr vp = output->get(SamplerSchema::Opcode::HI_KEY);
     assert(vp);
-    assertEQ(vp->numericInt, 12);
+    assertEQ(vp->numericInt, expectedPitch);    
 }
+
+static void testCIKeysAndValues() {
+    testCIKeysAndValues("12", 12);
+}
+
+static void testCIKeysAndValuesNotes()  {
+        // c0 = 12
+    // c6 - 84
+    testCIKeysAndValues("c6",  12 * (6 + 1));
+}
+
+static void testCIKeysAndValuesNotesSharp()  {
+    int expectedPitch = 12 * (4 + 1) + 2;
+     testCIKeysAndValues("d#4", expectedPitch);
+}
+
+ 
 
 static void testParseGlobalAndRegionCompiled() {
     printf("start test parse global\n");
@@ -1366,6 +1382,8 @@ void testx2() {
     //testStreamXpose2();
 
     testCIKeysAndValues();
+    testCIKeysAndValuesNotes();
+    testCIKeysAndValuesNotesSharp();
     testParseGlobalAndRegionCompiled();
     testParseGlobalWithKVAndRegionCompiled();
     testParseGlobalWitRegionKVCompiled();
