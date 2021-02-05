@@ -40,7 +40,9 @@ public:
         ++compileCount;
     }
     virtual ~CompiledRegion() { compileCount--; }
+    void _dump(int depth) const;
 
+// still used??
     enum class Type {
         Base,
         RoundRobin,     // group and regions where we RR between the regions in the one group.
@@ -55,16 +57,13 @@ public:
     bool overlapsVelocityButNotEqual(const CompiledRegion&) const;
     bool velocityRangeEqual(const CompiledRegion&) const;
     bool pitchRangeEqual(const CompiledRegion&) const;
+    bool overlapsRand(const CompiledRegion&) const;
+    bool sameSequence(const CompiledRegion&) const;
 
-    // Keys were defaulting to -1, -1, but for drums with no
-    // keys at all they were skipped. Better default is "all keys".
-#if 1
+
     int lokey = 0;
     int hikey = 127;
-#else
-    int lokey = -1;
-    int hikey = -1;
-#endif
+
     // int onlykey = -1;           // can't lokey and hikey represent this just fine?
     int keycenter = -1;
     std::string sampleFile;
@@ -74,10 +73,7 @@ public:
     // assume no valid random data
     float lorand = 0;
     float hirand = 1;
-    //float lorand = -1;
-    //float hirand = -1;
 
-    int seq_position = -1;
     float amp_veltrack = 100;
     float ampeg_release = .001f;
 
@@ -88,6 +84,16 @@ public:
     /** valid sample index starts at 1
      */
     int sampleIndex = 0;
+
+    /**
+     * Member variable to control round robbing selection
+     * of regions. Variable are named after the corresponding variables
+     * from sfizz. . Def to true, set to false for sequence groups.
+     */
+    bool sequenceSwitched = true;
+    int sequenceCounter = 0;        //: int region member, init to zero.
+    int sequenceLength = 1;         // uint8_t init to 1, set  from sfz data
+    int sequencePostition = -1;
 
 protected:
     CompiledRegion(CompiledRegionPtr);

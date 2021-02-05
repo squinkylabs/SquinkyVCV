@@ -7,8 +7,8 @@
 #include "CompiledInstrument.h"
 #include "FilePath.h"
 #include "SParse.h"
-#include "SqLog.h"
 #include "SamplerSchema.h"
+#include "SqLog.h"
 
 int compileCount = 0;
 
@@ -89,11 +89,13 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
 
     }
 #endif
-    findValue(seq_position, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
+    findValue(sequencePostition, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
+    findValue(sequenceLength, SamplerSchema::Opcode::SEQ_LENGTH, *parsedParent, reg);
+
     findValue(keycenter, SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
     findValue(lovel, SamplerSchema::Opcode::LO_VEL, *parsedParent, reg);
     findValue(hivel, SamplerSchema::Opcode::HI_VEL, *parsedParent, reg);
-    assert(lovel >= 0); // some idiot instruments use zero, even though it is not logal
+    assert(lovel >= 0);  // some idiot instruments use zero, even though it is not logal
     assert(hivel >= lovel);
     assert(hivel <= 127);
 
@@ -113,27 +115,42 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     def.concat(base);
     this->sampleFile = def.toString();
 
-   // findValue(sampleFile, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
+    // findValue(sampleFile, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
 }
 
+#if 0
 static bool overlapRange(int alo, int ahi, int blo, int bhi) {
     assert(alo <= ahi);
     assert(blo <= bhi);
-#if 0  // original version
-    return (blo >= alo && blo <= ahi) ||   // blo is in A
-        (bhi >= alo && bhi <= ahi);         // or bhi is in A
-#else
     return (blo <= ahi && bhi >= alo) ||
            (alo <= bhi && ahi >= blo);
+
+}
 #endif
+
+// Int version: if ranges have a value in common, they overlap
+static bool overlapRangeInt(int alo, int ahi, int blo, int bhi) {
+    assert(alo <= ahi);
+    assert(blo <= bhi);
+    return (blo <= ahi && bhi >= alo) ||
+           (alo <= bhi && ahi >= blo);
+}
+
+
+// float version: if ranges have a value in common, they don't necessarily overlap
+static bool overlapRangeFloat(float alo, float ahi, float blo, float bhi) {
+    assert(alo <= ahi);
+    assert(blo <= bhi);
+    return (blo < ahi && bhi > alo) ||
+           (alo < bhi && ahi > blo);
 }
 
 bool CompiledRegion::overlapsPitch(const CompiledRegion& that) const {
-    return overlapRange(this->lokey, this->hikey, that.lokey, that.hikey);
+    return overlapRangeInt(this->lokey, this->hikey, that.lokey, that.hikey);
 }
 
 bool CompiledRegion::overlapsVelocity(const CompiledRegion& that) const {
-    return overlapRange(this->lovel, this->hivel, that.lovel, that.hivel);
+    return overlapRangeInt(this->lovel, this->hivel, that.lovel, that.hivel);
 }
 
 bool CompiledRegion::overlapsVelocityButNotEqual(const CompiledRegion& that) const {
@@ -146,6 +163,13 @@ bool CompiledRegion::velocityRangeEqual(const CompiledRegion& that) const {
 
 bool CompiledRegion::pitchRangeEqual(const CompiledRegion& that) const {
     return (this->lokey == that.lokey) && (this->hikey == that.hikey);
+}
+
+bool CompiledRegion::overlapsRand(const CompiledRegion& that) const {
+    return overlapRangeFloat(this->lorand, this->hirand, that.lorand, that.hirand);
+}
+bool CompiledRegion::sameSequence(const CompiledRegion& that) const {
+    return this->sequencePostition == that.sequencePostition;
 }
 
 CompiledRegion::CompiledRegion(CompiledRegionPtr prototype) {
@@ -161,8 +185,7 @@ CompiledMultiRegion::CompiledMultiRegion(CompiledGroupPtr parent) : CompiledRegi
     }
 }
 
-void CompiledMultiRegion::addChild(CompiledRegionPtr child)
-{
+void CompiledMultiRegion::addChild(CompiledRegionPtr child) {
     originalRegions.push_back(child);
 }
 
@@ -176,6 +199,8 @@ CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMu
 CompiledGroup::CompiledGroup(SGroupPtr group) : lineNumber(group->lineNumber) {
     compileCount++;
 
+    // do we still need all these members in groups?
+    // do they really do something anymore?
     auto value = group->compiledValues->get(Opcode::TRIGGER);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Discrete);
@@ -214,7 +239,7 @@ CompiledRegion::Type CompiledGroup::type() const {
     if (this->sequence_length > 0) {
         theType = CompiledRegion::Type::RoundRobin;
     } else if (this->lorand >= 0) {
-       // the group has prob on it.
+        // the group has prob on it.
         theType = CompiledRegion::Type::GRandom;
     } else {
         bool isProbabilty = !regions.empty();  // assume if any regions we are a probability group
@@ -231,4 +256,14 @@ CompiledRegion::Type CompiledGroup::type() const {
         }
     }
     return theType;
+}
+
+void CompiledRegion::_dump(int depth) const {
+    // for (int i=0; i<depth; ++i) {
+    //    printf(" ");
+    //}
+    printf("switched = %d seqCtr = %d, seqLen=%d, seqPos=%d\n", sequenceSwitched, sequenceCounter, sequenceLength, sequencePostition);
+    printf("lorand=%.2f hirand=%.2f\n", lorand, hirand);
+    printf("lokey=%d hikey=%d lovel=%d hivel=%d\n", lokey, hikey, lovel, hivel);
+    printf("\n");
 }

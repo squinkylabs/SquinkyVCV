@@ -84,18 +84,7 @@ static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions) {
 }
 
 void CompiledInstrument::_dump(int depth) const {
-#if 0
-    indent(depth);
-    if (player) {
-        printf("Compiled Instrument dump follows:\n\n");
-        player->_dump(depth);
-        indent(depth);
-        printf("End compiled instrument dump\n\n");
-    } else {
-        printf("Compiled Instrument has nothing to dump\n");
-    }
-#endif
-    SQINFO("CompiledInstrument::_dump no longder does anything");
+    regionPool._dump(depth);
 }
 
 int CompiledInstrument::addSampleFile(const std::string& s) {

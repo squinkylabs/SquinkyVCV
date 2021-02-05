@@ -10,7 +10,7 @@
 const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random) {
     SQWARN("RegionPool::play does nothing");
 
-    const CompiledRegionList& regions = keyToRegionLookup[params.midiPitch];
+    const CompiledRegionList& regions = noteActivationLists_[params.midiPitch];
     for (CompiledRegion* region : regions) {
         assert(params.midiPitch >= region->lokey);
         assert(params.midiPitch <= region->hikey);
@@ -23,8 +23,8 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
             (params.midiVelocity <= region->hivel) &&
             (random >= region->lorand) &&
             (random <= region->hirand)) {
-                  return region;
-            }
+            return region;
+        }
 #else
         if ((params.midiVelocity >= region->lovel) &&
             (params.midiVelocity <= region->hivel)) {
@@ -105,7 +105,7 @@ void RegionPool::fillRegionLookup() {
 
     // TODO: what about bad groups?
 
-    assert(keyToRegionLookup.size() == 128);
+    assert(noteActivationLists_.size() == 128);
 
     for (auto region : regions) {
         const int low = region->lokey;
@@ -115,17 +115,23 @@ void RegionPool::fillRegionLookup() {
 
         // map this region to very key it contains
         for (int i = low; i <= high; ++i) {
-            keyToRegionLookup[i].push_back(region.get());
+            noteActivationLists_[i].push_back(region.get());
         }
     }
 }
 
+#define _LOGOV
+
 void RegionPool::removeOverlaps() {
 #ifdef _LOGOV
-    printf("enter remove overlaps\n");
+    printf("enter remove overlaps there are %d regions\n",
+           (int)regions.size());
+    _dump(0);
+    printf("\n\n");
 #endif
     int removed = 0;
     if (regions.size() < 2) {
+        printf("leaving early, not enough regions\n");
         return;
         //return removed;
     }
@@ -135,6 +141,7 @@ void RegionPool::removeOverlaps() {
         iterator itNext = it + 1;
         if (itNext == regions.end()) {
             //return removed;
+            printf("leaving remove at 143 with %d regions", (int)regions.size());
             return;
         }
         CompiledRegionPtr first = *it;
@@ -145,7 +152,10 @@ void RegionPool::removeOverlaps() {
         printf("  second pitch=%d,%d, vel=%d,%d\n", second->lokey, second->hikey, second->lovel, second->hivel);
         printf("  overlap pitch = %d, overlap vel = %d\n", first->overlapsPitch(*second), first->overlapsVelocity(*second));
 #endif
-        if (first->overlapsPitch(*second) && first->overlapsVelocity(*second)) {
+        if (first->overlapsPitch(*second) &&
+            first->overlapsVelocity(*second) &&
+            first->overlapsRand(*second) &&
+            first->sameSequence(*second)) {
             // keep the region with the smallest pitch range
             const int firstPitchRange = first->hikey - first->lokey;
             const int secondPitchRange = second->hikey - second->lokey;
@@ -174,10 +184,22 @@ void RegionPool::removeOverlaps() {
         }
     }
     //return removed;
+#ifdef _LOGOV
+    printf("leaving remove overlaps there are %d regions\n", (int)regions.size());
+#endif
     return;
 }
 
 bool RegionPool::fixupCompiledTree() {
     SQWARN("fixup compiled tree does nothing");
     return true;
+}
+
+void RegionPool::_dump(int depth) const {
+    for (int i = 0; i < depth; ++i) {
+        printf(" ");
+    }
+    for (auto region : regions) {
+        region->_dump(depth + 4);
+    }
 }

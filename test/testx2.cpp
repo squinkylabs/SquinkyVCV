@@ -588,12 +588,12 @@ static void testCompiledRegionsRand() {
 
 static void testCompiledRegionSeqIndex1() {
     CompiledRegionPtr cr = st::makeRegion(R"foo(<region>seq_position=11)foo");
-    assertEQ(cr->seq_position, 11);
+    assertEQ(cr->sequencePostition, 11);
 }
 
 static void testCompiledRegionSeqIndex2() {
     CompiledRegionPtr cr = st::makeRegion(R"foo(<group>seq_position=11<region>)foo");
-    assertEQ(cr->seq_position, 11);
+    assertEQ(cr->sequencePostition, 11);
 }
 static void testCompiledGroupSub(const char* data, bool shouldIgnore) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -1141,7 +1141,7 @@ static void testGroupInherit() {
 }
 
 static void testCompileSimpleDrum() {
-    printf("\n----- testCompileSimpleDrum\n");
+    printf("\n\n----- testCompileSimpleDrum\n");
     const char* data = R"foo(
         //snare =====================================
         <group> amp_veltrack=98 key=40 loop_mode=one_shot lovel=101 hivel=127  // snare1 /////
@@ -1160,7 +1160,7 @@ static void testCompileSimpleDrum() {
     auto err = SParse::go(data, inst);
 
     auto ci = CompiledInstrument::make(inst);
-    // ci->_dump(0);
+     ci->_dump(0);
     VoicePlayInfo info;
 
     std::set<int> waves;
@@ -1421,9 +1421,7 @@ void testx2() {
     testCompileBassoon();
     testGroupInherit();
     assertEQ(compileCount, 0);
-#ifdef _SFZ_RANDOM
-    testCompileSimpleDrum();
-#endif
+
     assertEQ(compileCount, 0);
 
     testCompileSort();
@@ -1440,6 +1438,10 @@ void testx2() {
     //testSamplerRealSound();
 
     testSampleRate();
+
+#ifdef _SFZ_RANDOM
+    testCompileSimpleDrum();
+#endif
     assertEQ(parseCount, 0);
     assertEQ(compileCount, 0);
 }
