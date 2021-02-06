@@ -146,17 +146,11 @@ void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
     float r = rand();
     const CompiledRegion* region = regionPool.play(params, r);
     if (region) {
-        SQWARN("finish compiled play! we need to do the add sample file stuff, pitch, etc");
-        // const int sampleIndex = addSampleFile(region->sampleFile);
         info.sampleIndex = region->sampleIndex;
         info.valid = true;
         info.ampeg_release = region->ampeg_release;
         getPlayPitch(info, params.midiPitch, region->keycenter, loader, sampleRate);
         getGain(info, params.midiVelocity, region->amp_veltrack);
-
-        // jam in fake for now
-        // SQWARN("why can't get handle real release");
-        // info.ampeg_release = .001f;
     }
 }
 
@@ -199,7 +193,6 @@ void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
     }
     inst->wasExpanded = true;
 }
-
 
 #if 0
 bool CompiledInstrument::buildCompiledTree(const SInstrumentPtr i) {
@@ -307,8 +300,6 @@ int CompiledInstrument::removeOverlaps(std::vector<CompiledRegionPtr>& regions) 
     return removed;
 }
 #endif
-
-
 
 #if 0
 ISamplerPlaybackPtr CompiledInstrument::buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth) {
@@ -533,7 +524,6 @@ ISamplerPlaybackPtr CompiledInstrument::buildPlayerPitchSwitch(std::vector<Compi
 }
 #endif
 
-
 #if 0
 void CompiledInstrument::getAllRegions(std::vector<CompiledRegionPtr>& array) {
     assert(array.empty());
@@ -576,8 +566,6 @@ void CompiledInstrument::sortByPitchAndVelocity(std::vector<CompiledRegionPtr>& 
     });
 }
 #endif
-
-
 
 #if 0  // unused
 bool CompiledInstrument::shouldIgnoreGroup(SGroupPtr group) {

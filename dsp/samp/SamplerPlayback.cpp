@@ -146,7 +146,7 @@ void RoundRobinVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& 
 void RoundRobinVoicePlayer::addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch) {
     CachedSamplerPlaybackInfoPtr info = std::make_shared<CachedSamplerPlaybackInfo>(region, midiPitch, sampleIndex);
     RRPlayInfoPtr rr_info = std::make_shared<RRPlayInfo>(*info);
-    rr_info->seq_position = region->sequencePostition;
+    rr_info->seq_position = region->sequencePosition;
     entries.push_back(rr_info);
     numEntries = int(entries.size());
 }

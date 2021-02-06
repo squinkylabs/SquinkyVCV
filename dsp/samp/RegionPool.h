@@ -46,4 +46,5 @@ private:
 
     void fillRegionLookup();
     void removeOverlaps();
+    static bool checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random);
 };

@@ -89,7 +89,7 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
 
     }
 #endif
-    findValue(sequencePostition, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
+    findValue(sequencePosition, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
     findValue(sequenceLength, SamplerSchema::Opcode::SEQ_LENGTH, *parsedParent, reg);
 
     findValue(keycenter, SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
@@ -114,6 +114,14 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     FilePath base(baseFileName);
     def.concat(base);
     this->sampleFile = def.toString();
+
+    // if not position set in region, fix it up so it will
+    // not be part of sequence logic.
+    if (sequencePosition < 0) {
+        assert(sequenceLength == 1);
+        sequenceLength = 1;
+        sequencePosition = 1;
+    }
 
     // findValue(sampleFile, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
 }
@@ -169,7 +177,7 @@ bool CompiledRegion::overlapsRand(const CompiledRegion& that) const {
     return overlapRangeFloat(this->lorand, this->hirand, that.lorand, that.hirand);
 }
 bool CompiledRegion::sameSequence(const CompiledRegion& that) const {
-    return this->sequencePostition == that.sequencePostition;
+    return this->sequencePosition == that.sequencePosition;
 }
 
 CompiledRegion::CompiledRegion(CompiledRegionPtr prototype) {
@@ -262,7 +270,7 @@ void CompiledRegion::_dump(int depth) const {
     // for (int i=0; i<depth; ++i) {
     //    printf(" ");
     //}
-    printf("switched = %d seqCtr = %d, seqLen=%d, seqPos=%d\n", sequenceSwitched, sequenceCounter, sequenceLength, sequencePostition);
+    printf("switched = %d seqCtr = %d, seqLen=%d, seqPos=%d\n", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
     printf("lorand=%.2f hirand=%.2f\n", lorand, hirand);
     printf("lokey=%d hikey=%d lovel=%d hivel=%d\n", lokey, hikey, lovel, hivel);
     printf("\n");

@@ -79,7 +79,6 @@ public:
 
     CompiledGroupPtrWeak weakParent;
     int lineNumber = -1;
-    ;
 
     /** valid sample index starts at 1
      */
@@ -93,7 +92,7 @@ public:
     bool sequenceSwitched = true;
     int sequenceCounter = 0;        //: int region member, init to zero.
     int sequenceLength = 1;         // uint8_t init to 1, set  from sfz data
-    int sequencePostition = -1;
+    int sequencePosition = -1;
 
 protected:
     CompiledRegion(CompiledRegionPtr);

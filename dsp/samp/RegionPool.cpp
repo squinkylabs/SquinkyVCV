@@ -7,30 +7,54 @@
 #include "SParse.h"
 #include "SamplerPlayback.h"
 
-const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random) {
-    SQWARN("RegionPool::play does nothing");
+bool RegionPool::checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random) {
 
-    const CompiledRegionList& regions = noteActivationLists_[params.midiPitch];
-    for (CompiledRegion* region : regions) {
-        assert(params.midiPitch >= region->lokey);
-        assert(params.midiPitch <= region->hikey);
-
-        assert(region->lovel >= 0);
-        assert(region->hivel <= 127);
-
+    bool passesCheck = false;
 #ifdef _SFZ_RANDOM
         if ((params.midiVelocity >= region->lovel) &&
             (params.midiVelocity <= region->hivel) &&
             (random >= region->lorand) &&
             (random <= region->hirand)) {
-            return region;
+            passesCheck = true;
         }
 #else
         if ((params.midiVelocity >= region->lovel) &&
             (params.midiVelocity <= region->hivel)) {
-            return region;
+            passesCheck = true;
         }
 #endif
+    return passesCheck;
+}
+
+const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random) {
+    fprintf(stderr, "\n-- play\n");
+    const CompiledRegionList& regions = noteActivationLists_[params.midiPitch];
+    for (CompiledRegion* region : regions) {
+        assert(params.midiPitch >= region->lokey);
+        assert(params.midiPitch <= region->hikey);
+        assert(region->lovel >= 0);
+        assert(region->hivel <= 127);
+
+        {
+            // Sequence activation
+            // TODO: do we really need to use sequenceSwitched? might have no use for us
+            fprintf(stderr, "region %p", region);
+            fprintf(stderr, "looking for seq ctr=%d len=%d pos=%d\n", region->sequenceCounter, region->sequenceLength, region->sequencePosition);
+           // region->sequenceSwitched =
+            bool regionMatch =
+                ((region->sequenceCounter++ % region->sequenceLength) == region->sequencePosition - 1);
+            fprintf(stderr, "result: sw=%d ctr=%d\n", regionMatch, region->sequenceCounter);
+
+            if (!regionMatch) {
+                // if we are a sequence region that should not play, skip it
+                continue;
+            }
+        }
+
+        if (checkPitchAndVel(params, region, random)) {
+            // leaving early like this will mess up sequence increments...
+            return region;
+        }
     }
     return nullptr;
 }
@@ -120,7 +144,7 @@ void RegionPool::fillRegionLookup() {
     }
 }
 
-#define _LOGOV
+// #define _LOGOV
 
 void RegionPool::removeOverlaps() {
 #ifdef _LOGOV

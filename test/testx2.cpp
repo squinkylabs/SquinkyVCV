@@ -588,12 +588,12 @@ static void testCompiledRegionsRand() {
 
 static void testCompiledRegionSeqIndex1() {
     CompiledRegionPtr cr = st::makeRegion(R"foo(<region>seq_position=11)foo");
-    assertEQ(cr->sequencePostition, 11);
+    assertEQ(cr->sequencePosition, 11);
 }
 
 static void testCompiledRegionSeqIndex2() {
     CompiledRegionPtr cr = st::makeRegion(R"foo(<group>seq_position=11<region>)foo");
-    assertEQ(cr->sequencePostition, 11);
+    assertEQ(cr->sequencePosition, 11);
 }
 static void testCompiledGroupSub(const char* data, bool shouldIgnore) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -1016,6 +1016,8 @@ static void testCompileAmpVel() {
     assert(err.empty());
     auto ci = CompiledInstrument::make(inst);
 
+    ci->_dump(0);
+
     VoicePlayInfo info;
     VoicePlayParameter params;
 
@@ -1160,7 +1162,9 @@ static void testCompileSimpleDrum() {
     auto err = SParse::go(data, inst);
 
     auto ci = CompiledInstrument::make(inst);
-     ci->_dump(0);
+    SQINFO("dumping drum patch");
+    ci->_dump(0);
+    SQINFO("done with dump");
     VoicePlayInfo info;
 
     std::set<int> waves;
@@ -1180,6 +1184,8 @@ static void testCompileSimpleDrum() {
 
     waves.clear();
     assertEQ(waves.size(), 0);
+
+    SQWARN("--- done with rand, now seq");
 
     VoicePlayParameter params;
     params.midiPitch = 41;
