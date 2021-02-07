@@ -77,7 +77,6 @@ static void testxKVP2() {
 }
 
 static void testLexComment() {
-    printf("\n---- testLexComment\n");
     SLexPtr lex = SLex::go("// comment\n<global>");
     assert(lex);
     lex->validate();
@@ -131,7 +130,6 @@ static void testLexMultiLine2() {
 }
 
 static void testLexGlobalWithData() {
-    printf("testParseGlobalWithData\n");
     SLexPtr lex = SLex::go("<global>ampeg_release=0.6<region>");
     assert(lex);
     lex->validate();
@@ -142,7 +140,6 @@ static void testLexGlobalWithData() {
 }
 
 static void testLexTwoRegions() {
-    printf("testLexTwoRegions\n");
     SLexPtr lex = SLex::go("<region><region>");
     assert(lex);
     lex->validate();
@@ -154,7 +151,6 @@ static void testLexTwoRegions() {
 }
 
 static void testLexTwoKeys() {
-    printf("testLexTwoRegionsValues\n");
     SLexPtr lex = SLex::go("a=b\nc=d");
     assert(lex);
     lex->validate();
@@ -179,7 +175,6 @@ static void testLexTwoKeysOneLine() {
 }
 
 static void testLexTwoRegionsWithKeys() {
-    printf("testLexTwoRegionsValues\n");
     SLexPtr lex = SLex::go("<region>a=b\nc=d<region>q=w\ne=r");
     assert(lex);
     lex->validate();
@@ -198,13 +193,11 @@ static void testLexMangledId() {
 }
 
 static void testLex4() {
-    printf("\ntestLex5s\n");
     auto lex = SLex::go("<group><region><region><group><region.");
     assert(!lex);
 }
 
 static void testLex5() {
-    printf("\ntestLex5\n");
     auto lex = SLex::go("\n<group>");
     assert(lex);
     lex->validate();
@@ -213,7 +206,6 @@ static void testLex5() {
 }
 
 static void testLexSpaces() {
-    SQWARN("staring test lex spaces");
     auto lex = SLex::go("\nsample=a b c");
     assert(lex);
     lex->validate();
@@ -242,22 +234,18 @@ static void testLexSpaces2Sub(const std::string& testString, const std::string& 
 }
 
 static void testLexSpaces2a() {
-    SQWARN("staring test lex spaces 2");
     testLexSpaces2Sub("sample=abc x=y", "abc");
 }
 
 static void testLexSpaces2b() {
-    SQWARN("staring test lex spaces 2b");
     testLexSpaces2Sub("sample=abc  x=y", "abc");
 }
 
 static void testLexSpaces2c() {
-    SQWARN("staring test lex spaces 2b");
     testLexSpaces2Sub("sample=a b c    x=y", "a b c");
 }
 
 static void testLexSpaces2d() {
-    SQWARN("staring test lex spaces 2D");
     const char* pAllDrum = R"foo(sample=a
 //comm
     x = y
@@ -295,7 +283,6 @@ static void testParseRegion() {
 }
 
 static void testparse2() {
-    printf("\nstart testprse2\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>pitch_keycenter=24", inst);
     assert(err.empty());
@@ -365,8 +352,8 @@ static void testParseGroupAndValues() {
     assertEQ(inst->groups.size(), 1);
     assertEQ(inst->groups[0]->regions.size(), 1);
 
-    inst->groups[0]->_dump();
-    inst->groups[0]->regions[0]->_dump();
+   // inst->groups[0]->_dump();
+   // inst->groups[0]->regions[0]->_dump();
 
     assertEQ(inst->groups[0]->values.size(), 1);
     assertEQ(inst->groups[0]->regions[0]->values.size(), 0);

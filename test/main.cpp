@@ -186,9 +186,9 @@ if (runShaperGen) {
         return 0;
     }
   
-    testx3();  
     testx();
     testx2();
+    testx3();
     testx4();
    
     testADSR();
