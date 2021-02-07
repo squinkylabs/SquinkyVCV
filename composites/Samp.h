@@ -11,6 +11,7 @@
 #include "ManagedPool.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
+#include "SamplerErrorContext.h"
 #include "SimdBlocks.h"
 #include "SqLog.h"
 #include "SqPort.h"
@@ -286,7 +287,9 @@ public:
         }
 
         // TODO: need a way for compiler to return error;
-        CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+        SamplerErrorContext errc;
+        CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+        errc.dump();
         if (!cinst) {
             sendMessageToClient(msg);
             return;

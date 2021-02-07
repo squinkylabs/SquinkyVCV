@@ -1,4 +1,5 @@
 #include "SamplerSchema.h"
+#include "SamplerErrorContext.h"
 
 #include <assert.h>
 
@@ -165,10 +166,12 @@ std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
     }
 }
 
-void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
+void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
     Opcode opcode = translate(input->key, false);
     if (opcode == Opcode::NONE) {
-        SQWARN("could not translate opcode %s", input->key.c_str());
+      //  std::string e = std::string("could not translate opcode ") + input->key.c_str();
+        err.unrecognizedOpcodes.insert(input->key);
+        //SQWARN("could not translate opcode %s", input->key.c_str());
         return;
     }
     auto typeIter = keyType.find(opcode);
@@ -228,10 +231,10 @@ void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePa
     }
 }
 
-SamplerSchema::KeysAndValuesPtr SamplerSchema::compile(const SKeyValueList& inputs) {
+SamplerSchema::KeysAndValuesPtr SamplerSchema::compile(SamplerErrorContext& err, const SKeyValueList& inputs) {
     SamplerSchema::KeysAndValuesPtr results = std::make_shared<SamplerSchema::KeysAndValues>();
     for (auto input : inputs) {
-        compile(results, input);
+        compile(err, results, input);
     }
     return results;
 }

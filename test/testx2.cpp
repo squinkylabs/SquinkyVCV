@@ -64,7 +64,9 @@ static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) {
     auto err = SParse::goFile(patch, inst);
     assert(err.empty());
 
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    // assert(errc.empty());
     VoicePlayInfo info;
     VoicePlayParameter params;
     params.midiPitch = 60;
@@ -115,7 +117,8 @@ static void testLoadWavesPiano() {
     auto err = SParse::goFile(tinnyPiano, inst);
     assert(err.empty());
 
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     WaveLoaderPtr loader = std::make_shared<WaveLoader>();
 
     // const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
@@ -234,7 +237,9 @@ static void testStreamRetrigger() {
 static void testSampler() {
     Sampler4vx s;
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
 
     s.setLoader(w);
@@ -254,7 +259,8 @@ static void testSamplerRealSound() {
     Sampler4vx s;
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
     cinst->_setTestMode();
 
@@ -285,7 +291,9 @@ static void testCIKeysAndValues(const std::string& pitch, int expectedPitch) {
     SKeyValuePairPtr p = std::make_shared<SKeyValuePair>("hikey", pitch);
     SKeyValueList l = {p};
 
-    auto output = SamplerSchema::compile(l);
+    SamplerErrorContext errc;
+    auto output = SamplerSchema::compile(errc, l);
+    assert(errc.empty());
     assertEQ(output->_size(), 1);
     SamplerSchema::ValuePtr vp = output->get(SamplerSchema::Opcode::HI_KEY);
     assert(vp);
@@ -315,7 +323,9 @@ static void testParseGlobalAndRegionCompiled() {
     auto err = SParse::go("<global><region>", inst);
 
     assert(err.empty());
-    CompiledInstrument::expandAllKV(inst);
+    SamplerErrorContext errc;
+    CompiledInstrument::expandAllKV(errc, inst);
+    assert(errc.empty());
 
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 0);
@@ -331,7 +341,9 @@ static void testParseGlobalWithKVAndRegionCompiled() {
     auto err = SParse::go("<global>hikey=57<region>", inst);
 
     assert(err.empty());
-    CompiledInstrument::expandAllKV(inst);
+    SamplerErrorContext errc;
+    CompiledInstrument::expandAllKV(errc, inst);
+    assert(errc.empty());
 
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 1);
@@ -349,7 +361,9 @@ static void testParseGlobalWitRegionKVCompiled() {
     auto err = SParse::go("<global><region><region>lokey=57<region>", inst);
 
     assert(err.empty());
-    CompiledInstrument::expandAllKV(inst);
+    SamplerErrorContext errc;
+    CompiledInstrument::expandAllKV(errc, inst);
+    assert(errc.empty());
 
     assert(inst->global.compiledValues);
     assertEQ(inst->global.compiledValues->_size(), 0);
@@ -403,7 +417,9 @@ static void testParseControl() {
     }
 #endif
 
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
     std::vector<CompiledRegionPtr> regions;
    // cinst->getAllRegions(regions);
     cinst->_pool()._getAllRegions(regions);
@@ -427,7 +443,9 @@ static void testCompileInst0() {
     auto err = SParse::go("<global><region>lokey=50 hikey=50", inst);
     assert(err.empty());
 
-    CompiledInstrumentPtr i = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr i = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
 
     VoicePlayInfo info;
     VoicePlayParameter params;
@@ -446,7 +464,9 @@ static void testCompileInst1() {
     auto err = SParse::go("<global><region>lokey=50\nhikey=50\nsample=foo<region>lokey=60\nhikey=60\nsample=bar<region>lokey=70\nhikey=70\nsample=baz", inst);
     assert(err.empty());
 
-    CompiledInstrumentPtr i = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr i = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
 
     VoicePlayInfo info;
     info.sampleIndex = 0;
@@ -468,7 +488,9 @@ static void testCompileOverlap() {
                           inst);
     assert(err.empty());
 
-    CompiledInstrumentPtr ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr ci = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
     VoicePlayInfo info;
     VoicePlayParameter params;
     params.midiPitch = 60;
@@ -494,7 +516,9 @@ static void testTranspose1() {
     auto inst = std::make_shared<SInstrument>();
     auto err = SParse::go(R"foo(<region> sample=K18\D#1.pp.wav lovel=1 hivel=65 lokey=26 hikey=28 pitch_keycenter=27)foo", inst);
     assert(err.empty());
-    auto cinst = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto cinst = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
     VoicePlayInfo info;
     printf("about to fetch ifo for key = 26\n");
 
@@ -600,7 +624,9 @@ static void testCompiledGroupSub(const char* data, bool shouldIgnore) {
     auto err = SParse::go(data, inst);
 
     SGroupPtr group = inst->groups[0];
-    CompiledInstrument::expandAllKV(inst);
+    SamplerErrorContext errc;
+    CompiledInstrument::expandAllKV(errc, inst);
+    assert(errc.empty());
 
     assert(inst->wasExpanded);
 
@@ -683,7 +709,9 @@ static void testCompileTreeOne() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
 #if 0
     auto gps = ci->_pool()._groups();
     assertEQ(gps.size(), 1);
@@ -709,8 +737,10 @@ static void testCompileTreeTwo() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
-   // assert(false);  // make this work
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
+
     SQWARN("need to re-write testCompileTreeTwo");
 #if 0
     auto gps = ci->_pool()._groups();
@@ -726,7 +756,8 @@ static void testCompileKey() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
     VoicePlayInfo info;
     VoicePlayParameter params;
     params.midiPitch = 12;
@@ -745,7 +776,8 @@ static void testCompileMultiPitch() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
     VoicePlayInfo info;
 
     VoicePlayParameter params;
@@ -820,7 +852,8 @@ static void testCompileMultiVel() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
     // ci->_dump(0);
     VoicePlayInfo info;
     VoicePlayParameter params;
@@ -854,7 +887,8 @@ static void testCompileMulPitchAndVelSimple() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
     VoicePlayInfo info;
 
     std::set<int> sampleIndicies;
@@ -941,7 +975,8 @@ static void testCompileMulPitchAndVelComplex1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
     VoicePlayInfo info;
     std::set<int> sampleIndicies;
 
@@ -976,7 +1011,10 @@ static void testCompileAmpegRelease() {
         )foo";
     auto err = SParse::go(data, inst);
     assert(err.empty());
-    auto ci = CompiledInstrument::make(inst);
+
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
 
     VoicePlayInfo info;
     VoicePlayParameter params;
@@ -1014,7 +1052,10 @@ static void testCompileAmpVel() {
         )foo";
     auto err = SParse::go(data, inst);
     assert(err.empty());
-    auto ci = CompiledInstrument::make(inst);
+
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
 
     ci->_dump(0);
 
@@ -1080,7 +1121,8 @@ static void testCompileMulPitchAndVelComplex2() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
     VoicePlayInfo info;
     std::set<int> sampleIndicies;
     // ci->_dump(0);
@@ -1123,7 +1165,8 @@ static void testGroupInherit() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
     // ci->_dump(0);
     VoicePlayInfo info;
     VoicePlayParameter params;
@@ -1161,10 +1204,11 @@ static void testCompileSimpleDrum() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
-    SQINFO("dumping drum patch");
-    ci->_dump(0);
-    SQINFO("done with dump");
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+   // SQINFO("dumping drum patch");
+   // ci->_dump(0);
+  //  SQINFO("done with dump");
     VoicePlayInfo info;
 
     std::set<int> waves;
@@ -1216,7 +1260,8 @@ static void testCompileSort() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
     std::vector<CompiledRegionPtr> regions;
     ci->_pool()._getAllRegions(regions);
     ci->_pool().sortByVelocity(regions);
@@ -1241,7 +1286,8 @@ static void testComp(const std::string& path) {
     assert(err.empty());
     //  go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
     assert(ci);
     // ci->_dump(0);
     VoicePlayInfo info;
@@ -1298,7 +1344,9 @@ volume=12
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
     assert(ci);
 }
 
@@ -1329,7 +1377,9 @@ volume=12
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    auto ci = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
     assert(ci);
 }
 

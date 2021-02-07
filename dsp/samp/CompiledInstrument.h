@@ -14,13 +14,14 @@ class SInstrument;
 class SRegion;
 class WaveLoader;
 class SGroup;
-class VelSwitch;
+//class VelSwitch;
+class SamplerErrorContext;
 
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
 using SRegionPtr = std::shared_ptr<SRegion>;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 using SGroupPtr = std::shared_ptr<SGroup>;
-using VelSwitchPtr = std::shared_ptr<VelSwitch>;
+//using VelSwitchPtr = std::shared_ptr<VelSwitch>;
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 
 /**
@@ -62,7 +63,7 @@ public:
      * high level entry point to compile an instrument.
      * will return null if error, and log the error cause as best it can.
      */
-    static CompiledInstrumentPtr make(const SInstrumentPtr);
+    static CompiledInstrumentPtr make(SamplerErrorContext&, const SInstrumentPtr);
     void play(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
     void _setTestMode() {
@@ -80,7 +81,7 @@ public:
     /**
      * finds all the key/value pairs in a parse tree and expands them in place.
      */
-    static void expandAllKV(SInstrumentPtr);
+    static void expandAllKV(SamplerErrorContext&, SInstrumentPtr);
 
     //  void getAllRegions(std::vector<CompiledRegionPtr>&);
     int removeOverlaps(std::vector<CompiledRegionPtr>&);

@@ -99,9 +99,9 @@ int CompiledInstrument::addSampleFile(const std::string& s) {
     return ret;
 }
 
-CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SInstrumentPtr inst) {
+CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SamplerErrorContext& err,SInstrumentPtr inst) {
     assert(!inst->wasExpanded);
-    expandAllKV(inst);
+    expandAllKV(err,inst);
     CompiledInstrumentPtr instOut = std::make_shared<CompiledInstrument>();
     const bool result = instOut->compile(inst);
     return result ? instOut : nullptr;
@@ -179,16 +179,16 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootP
     }
 }
 
-void CompiledInstrument::expandAllKV(SInstrumentPtr inst) {
+void CompiledInstrument::expandAllKV(SamplerErrorContext& err, SInstrumentPtr inst) {
     assert(!inst->wasExpanded);
-    inst->global.compiledValues = SamplerSchema::compile(inst->global.values);
-    inst->master.compiledValues = SamplerSchema::compile(inst->master.values);
+    inst->global.compiledValues = SamplerSchema::compile(err, inst->global.values);
+    inst->master.compiledValues = SamplerSchema::compile(err, inst->master.values);
     //   inst->control.compiledValues = SamplerSchema::compile(inst->control.values);
 
     for (auto group : inst->groups) {
-        group->compiledValues = SamplerSchema::compile(group->values);
+        group->compiledValues = SamplerSchema::compile(err, group->values);
         for (auto region : group->regions) {
-            region->compiledValues = SamplerSchema::compile(region->values);
+            region->compiledValues = SamplerSchema::compile(err, region->values);
         }
     }
     inst->wasExpanded = true;

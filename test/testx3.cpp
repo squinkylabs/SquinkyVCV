@@ -6,11 +6,13 @@
 #include "SLex.h"
 #include "SParse.h"
 #include "SqLog.h"
-#include "VelSwitch.h"
+#include "SamplerErrorContext.h"
+//#include "VelSwitch.h"
 
 extern void testPlayInfoTinnyPiano();
 extern void testPlayInfoSmallPiano();
 
+#if 0
 static void testVelSwitch1() {
     VelSwitch v(1234);
 
@@ -60,6 +62,7 @@ static void testVelSwitch1() {
     test->play(info, params, nullptr, 0);
     assertEQ(info.sampleIndex, 103);
 }
+#endif
 
 
 // Note that making a region out of the context of an insturment is now quite involved.
@@ -82,7 +85,9 @@ static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::
         kv = std::make_shared<SKeyValuePair>("hivel", maxVal);
         sr->values.push_back(kv);
     }
-    sr->compiledValues = SamplerSchema::compile(sr->values);
+    SamplerErrorContext errc;
+    sr->compiledValues = SamplerSchema::compile(errc, sr->values);
+    assert(errc.empty());
     CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
     return r0;
 }
@@ -90,7 +95,8 @@ static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::
 static void testOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, bool shouldOverlap) {
     assert(mina <= maxa);
     SGroupPtr gp = std::make_shared<SGroup>(1234);
-    gp->compiledValues = SamplerSchema::compile(gp->values);
+    SamplerErrorContext errc;
+    gp->compiledValues = SamplerSchema::compile(errc, gp->values);
     auto regionA = makeTestRegion(gp, testPitch, std::to_string(mina), std::to_string(maxa));
     auto regionB = makeTestRegion(gp, testPitch, std::to_string(minb), std::to_string(maxb));
     bool overlap = testPitch ? regionA->overlapsPitch(*regionB) : regionA->overlapsVelocity(*regionB);
@@ -134,7 +140,8 @@ static void testSmallPianoVelswitch() {
     auto err = SParse::goFile(smallPiano, inst);
     assert(err.empty());
 
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     VoicePlayInfo info;
     VoicePlayParameter params;
     params.midiPitch = 60;
@@ -196,7 +203,8 @@ static void testSnareBasic() {
     auto err = SParse::goFile(snare, inst);
     assert(err.empty());
 
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     VoicePlayInfo info;
     // cinst->_dump(0);
 }
@@ -210,7 +218,8 @@ static void testAllSal() {
     if (!err.empty()) SQFATAL(err.c_str());
     assert(err.empty());
 
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     VoicePlayInfo info;
     // cinst->_dump(0);
 }
@@ -232,15 +241,21 @@ static void testKeyswitch() {
         <region>
         )foo";
 
-     SInstrumentPtr inst = std::make_shared<SInstrument>();
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     auto err = SParse::go(patch, inst);
     if (!err.empty()) SQFATAL(err.c_str());
     assert(err.empty());
 
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    assert(errc.empty());
     assert(false);
+;
 }
 
 void testx3() {
@@ -248,7 +263,7 @@ void testx3() {
     // work up to these
     assert(parseCount == 0);
 
-    testVelSwitch1();
+  //  testVelSwitch1();
     testOverlap();
 
     testSmallPianoVelswitch();
