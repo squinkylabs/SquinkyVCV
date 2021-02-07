@@ -43,7 +43,11 @@ public:
         SEQ_LENGTH,
         SEQ_POSITION,
         DEFAULT_PATH,
-        SW_LABEL
+        SW_LABEL,
+        SW_LAST,
+        SW_LOKEY,
+        SW_HIKEY,
+        SW_DEFAULT
     };
 
     enum class DiscreteValue {

@@ -27,7 +27,8 @@ bool RegionPool::checkPitchAndVel(const VoicePlayParameter& params, const Compil
 }
 
 const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random) {
-    fprintf(stderr, "\n-- play\n");
+
+    CompiledRegion* foundRegion = nullptr;
     const CompiledRegionList& regions = noteActivationLists_[params.midiPitch];
     for (CompiledRegion* region : regions) {
         assert(params.midiPitch >= region->lokey);
@@ -35,28 +36,27 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
         assert(region->lovel >= 0);
         assert(region->hivel <= 127);
 
-        {
+
+        bool sequenceMatch = true;
+        if (region->sequenceLength > 1) {
             // Sequence activation
             // TODO: do we really need to use sequenceSwitched? might have no use for us
-            fprintf(stderr, "region %p", region);
-            fprintf(stderr, "looking for seq ctr=%d len=%d pos=%d\n", region->sequenceCounter, region->sequenceLength, region->sequencePosition);
-           // region->sequenceSwitched =
-            bool regionMatch =
-                ((region->sequenceCounter++ % region->sequenceLength) == region->sequencePosition - 1);
-            fprintf(stderr, "result: sw=%d ctr=%d\n", regionMatch, region->sequenceCounter);
+            // WE need to do the calculation for all seq regions, or else they will never come on
 
-            if (!regionMatch) {
-                // if we are a sequence region that should not play, skip it
-                continue;
-            }
+           // fprintf(stderr, "region %p", region);
+           // fprintf(stderr, "looking for seq ctr=%d len=%d pos=%d\n", region->sequenceCounter, region->sequenceLength, region->sequencePosition);
+ 
+            sequenceMatch =
+                ((region->sequenceCounter++ % region->sequenceLength) == region->sequencePosition - 1);
+            // fprintf(stderr, "result: sw=%d ctr=%d\n", sequenceMatch, region->sequenceCounter);
         }
 
-        if (checkPitchAndVel(params, region, random)) {
-            // leaving early like this will mess up sequence increments...
-            return region;
+        if (sequenceMatch && !foundRegion && checkPitchAndVel(params, region, random)) {
+           
+            foundRegion = region;
         }
     }
-    return nullptr;
+    return foundRegion;
 }
 
 // TODO: reduce code with the visitor
@@ -155,7 +155,7 @@ void RegionPool::removeOverlaps() {
 #endif
     int removed = 0;
     if (regions.size() < 2) {
-        printf("leaving early, not enough regions\n");
+        //printf("leaving early, not enough regions\n");
         return;
         //return removed;
     }
@@ -165,7 +165,7 @@ void RegionPool::removeOverlaps() {
         iterator itNext = it + 1;
         if (itNext == regions.end()) {
             //return removed;
-            printf("leaving remove at 143 with %d regions", (int)regions.size());
+            //printf("leaving remove at 143 with %d regions", (int)regions.size());
             return;
         }
         CompiledRegionPtr first = *it;

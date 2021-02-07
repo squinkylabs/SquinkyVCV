@@ -214,6 +214,35 @@ static void testAllSal() {
     VoicePlayInfo info;
     // cinst->_dump(0);
 }
+
+static void testKeyswitch() {
+    SQINFO("\n------ testKeyswitch");
+#if 0 // this one made the lexer freak out. Let's investigage (later)
+    static char* patch = R"foo(
+        <group> sw_last=10 sw_label=key switch label
+        sw_lokey=5 swhikey=15
+        sw_default=10
+        <region>
+        z)foo";
+#endif
+    static char* patch = R"foo(
+       <group> sw_last=10 sw_label=key switch label
+        sw_lokey=5 sw_hikey=15
+        sw_default=10
+        <region>
+        )foo";
+
+     SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(patch, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(inst);
+    assert(cinst);
+    assert(false);
+}
+
 void testx3() {
     testAllSal();
     // work up to these
@@ -230,6 +259,8 @@ void testx3() {
     testPlayInfoSmallPiano();
     testSnareBasic();
     testAllSal();
+
+    testKeyswitch();
 
     assert(parseCount == 0);
     assert(compileCount == 0);

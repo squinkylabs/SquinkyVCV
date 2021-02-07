@@ -118,7 +118,7 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     // if not position set in region, fix it up so it will
     // not be part of sequence logic.
     if (sequencePosition < 0) {
-        assert(sequenceLength == 1);
+        // assert(sequenceLength == 1);
         sequenceLength = 1;
         sequencePosition = 1;
     }

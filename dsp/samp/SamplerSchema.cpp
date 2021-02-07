@@ -39,7 +39,12 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::SEQ_LENGTH, OpcodeType::Int},
     {Opcode::SEQ_POSITION, OpcodeType::Int},
     {Opcode::DEFAULT_PATH, OpcodeType::String},
-    {Opcode::SW_LABEL, OpcodeType::String}};
+    {Opcode::SW_LABEL, OpcodeType::String},
+    {Opcode::SW_LAST, OpcodeType::Int},
+    {Opcode::SW_LOKEY, OpcodeType::Int},
+    {Opcode::SW_HIKEY, OpcodeType::Int},
+    {Opcode::SW_DEFAULT, OpcodeType::Int}
+};
 
 static std::map<std::string, Opcode> opcodes = {
     {"hivel", Opcode::HI_VEL},
@@ -68,7 +73,12 @@ static std::map<std::string, Opcode> opcodes = {
     {"seq_length", Opcode::SEQ_LENGTH},
     {"seq_position", Opcode::SEQ_POSITION},
     {"default_path", Opcode::DEFAULT_PATH},
-    {"sw_label", Opcode::SW_LABEL}};
+    {"sw_label", Opcode::SW_LABEL},
+    {"sw_last", Opcode::SW_LAST},
+    {"sw_lokey", Opcode::SW_LOKEY},
+    {"sw_hikey", Opcode::SW_HIKEY},
+    {"sw_default", Opcode::SW_DEFAULT}
+};
 
 static std::set<std::string> unrecognized;
 
@@ -107,7 +117,6 @@ OpcodeType SamplerSchema::keyTextToType(const std::string& key, bool suppressErr
     return typeIter->second;
 }
 
-
 // TODO: octaves
 // TODO: IPN octaves
 // TODO: upper case
@@ -120,7 +129,7 @@ std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
         const int firstChar = s[0];
         if (firstChar >= 'a' && firstChar <= 'g') {
             noteName = firstChar - 'a';
-            noteName -= 2;          // c is zero
+            noteName -= 2;  // c is zero
             if (noteName < 0) {
                 noteName += 2;
             }
@@ -135,17 +144,16 @@ std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
 
     if (noteName >= 0 && sharp) {
         s = s.substr(2);
-    }
-    else if (noteName >= 0) {
+    } else if (noteName >= 0) {
         s = s.substr(1);
     }
 
     try {
         int x = std::stoi(s);
         if (noteName >= 0) {
-            x *= 12;                    // number part is octave in this form
-            x += (12 + noteName);       // 12 is c0 in midi
-     
+            x *= 12;               // number part is octave in this form
+            x += (12 + noteName);  // 12 is c0 in midi
+
             if (sharp) {
                 x += 1;
             }
@@ -155,7 +163,6 @@ std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
         printf("could not convert %s to Int. \n", s.c_str());
         return std::make_pair(false, 0);
     }
-
 }
 
 void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
@@ -188,14 +195,13 @@ void SamplerSchema::compile(SamplerSchema::KeysAndValuesPtr results, SKeyValuePa
                 return;
             }
 #endif
-            {
-                auto foo = convertToInt(input->value);
-                if (!foo.first) {
-                    return;
-                }
-                vp->numericInt = foo.second;
+        {
+            auto foo = convertToInt(input->value);
+            if (!foo.first) {
+                return;
             }
-            break;
+            vp->numericInt = foo.second;
+        } break;
         case OpcodeType::Float:
             try {
                 float x = std::stof(input->value);
