@@ -419,9 +419,8 @@ static void testParseControl() {
 
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
-    assert(errc.empty());
+
     std::vector<CompiledRegionPtr> regions;
-   // cinst->getAllRegions(regions);
     cinst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);
     CompiledRegionPtr creg = regions[0];

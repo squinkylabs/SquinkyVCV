@@ -254,8 +254,110 @@ static void testKeyswitch() {
         errc.dump();
     }
     assert(errc.empty());
-    assert(false);
-;
+}
+
+// this one has not default
+static void testKeyswitch15() {
+    static char* patch = R"foo(
+        <group> sw_last=11 sw_label=key switch label 11
+        sw_lokey=5 sw_hikey=15
+        <region> key=50
+       <group> sw_last=10 sw_label=key switch label
+        sw_lokey=5 sw_hikey=15
+        <region> key=50
+        )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(patch, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    assert(errc.empty());
+
+
+// no selection
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    info.sampleIndex = 0;
+    params.midiPitch = 50;
+    params.midiVelocity = 60;
+    cinst->play(info, params, nullptr, 0);
+
+    assert(!info.valid);
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
+
+// keyswitch
+    params.midiPitch = 11;
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
+
+// other one
+    params.midiPitch = 50;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+}
+
+static void testKeyswitch2() {
+    static char* patch = R"foo(
+        <group> sw_last=11 sw_label=key switch label 11
+        sw_lokey=5 sw_hikey=15
+        sw_default=10
+        <region> key=50
+       <group> sw_last=10 sw_label=key switch label
+        sw_lokey=5 sw_hikey=15
+        sw_default=10
+        <region> key=50
+        )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(patch, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    assert(errc.empty());
+
+
+// default keyswitch
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    info.sampleIndex = 0;
+    assert(!info.valid);
+    params.midiPitch = 50;
+    params.midiVelocity = 60;
+    cinst->play(info, params, nullptr, 0);
+
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+
+// keyswitch
+    params.midiPitch = 11;
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
+
+// other one
+    params.midiPitch = 50;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
 }
 
 void testx3() {
@@ -276,6 +378,8 @@ void testx3() {
     testAllSal();
 
     testKeyswitch();
+     testKeyswitch15();
+    testKeyswitch2();
 
     assert(parseCount == 0);
     assert(compileCount == 0);
