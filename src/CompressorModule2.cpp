@@ -224,7 +224,7 @@ void CompressorWidget2::addControls(Compressor2Module *module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(knobX - 10, labelY + 1 * dy),
+        Vec(knobX - 10, 121 - 20),
         "Thrsh");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -236,7 +236,7 @@ void CompressorWidget2::addControls(Compressor2Module *module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(knobX2 - 2, labelY + 1 * dy),
+        Vec(knobX - 2, 225-20),
         "Mix");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -248,7 +248,7 @@ void CompressorWidget2::addControls(Compressor2Module *module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(knobX - 10, labelY + 2 * dy),
+        Vec(knobX2 - 10, 121 - 20),
         "Makeup");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -258,7 +258,7 @@ void CompressorWidget2::addControls(Compressor2Module *module, std::shared_ptr<I
         module,  Comp::MAKEUPGAIN_PARAM)); 
 
 #ifdef _LAB
-   addLabel(Vec(knobX2, labelY + 2 * dy),"1/0");
+   addLabel(Vec(knobX2, 229-20),"1/0");
 #endif
 #if 0
     addParam(SqHelper::createParam<CKSS>(
@@ -297,19 +297,19 @@ void CompressorWidget2::addJacks(Compressor2Module *module, std::shared_ptr<ICom
     const float labelX = jackX - 6;
     const float label2X = jackX2 - 6;
 
-    const float jackY = 288;
+    const float jackY = 288 + 44;
     const float labelY = jackY - 18;
-    const float dy = 44;
+  //  const float dy = 44;
 
 
 
     addLabel(
-        Vec(labelX+4, labelY + 0 * dy),
-        "InL");
+        Vec(labelX+4, labelY ),
+        "In");
 #endif
     addInput(createInput<PJ301MPort>(
         //Vec(jackX, jackY),
-        Vec(11, 280),
+        Vec(11, jackY),
         module,
         Comp::AUDIO_INPUT));
 
@@ -329,12 +329,12 @@ void CompressorWidget2::addJacks(Compressor2Module *module, std::shared_ptr<ICom
 
 #ifdef _LAB
     addLabel(
-        Vec(label2X - 2, labelY + 0 * dy),
-        "OutL");
+        Vec(label2X - 2, labelY),
+        "Out");
 #endif
     addOutput(createOutput<PJ301MPort>(
         //Vec(jackX2, jackY + 0 * dy),
-        Vec(55, 280),
+        Vec(55, jackY),
         module,
         Comp::AUDIO_OUTPUT));
 
@@ -376,7 +376,7 @@ CompressorWidget2::CompressorWidget2(Compressor2Module *module)
 #ifdef _LAB
     addLabel(
         Vec(4, 17),
-        "Compressor");
+        "Compressor II");
 #endif
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
