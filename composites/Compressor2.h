@@ -20,7 +20,7 @@ struct Module;
 using Module = ::rack::engine::Module;
 
 template <class TBase>
-class CompressorDescription : public IComposite {
+class Compressor2Description : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -76,7 +76,7 @@ public:
     /** Implement IComposite
      */
     static std::shared_ptr<IComposite> getDescription() {
-        return std::make_shared<CompressorDescription<TBase>>();
+        return std::make_shared<Compressor2Description<TBase>>();
     }
 
     /**
@@ -317,12 +317,12 @@ inline void Compressor2<TBase>::onSampleRateChange() {
 }
 
 template <class TBase>
-int CompressorDescription<TBase>::getNumParams() {
+int Compressor2Description<TBase>::getNumParams() {
     return Compressor2<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config CompressorDescription<TBase>::getParam(int i) {
+inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case Compressor2<TBase>::ATTACK_PARAM:

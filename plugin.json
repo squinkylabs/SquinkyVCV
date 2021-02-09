@@ -271,6 +271,18 @@
 			"disabled": false,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/samp.md",
 			"tags": ["Polyphonic"]
+		},
+		{
+			"slug": "squinkylabs-comp2",
+			"name": "Comp II",
+			"disabled": false,
+			"description": "Compressor",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md",
+			"tags": [
+				"Compressor",
+				"Dynamics",
+				"Polyphonic"
+			  ]
 		}
 	]
 }

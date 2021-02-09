@@ -44,6 +44,7 @@
 #define _SUB
 #define _SINES
 // #define _F4
+#define _COMP2
 
 using namespace ::rack;
 
@@ -63,6 +64,9 @@ extern Model *modelF2Module;
 
 extern Model *modelCompressorModule;
 
+#ifdef _COMP2
+extern Model *modelCompressor2Module;
+#endif
 #ifdef _F4
     extern Model *modelF4Module;
 #endif
