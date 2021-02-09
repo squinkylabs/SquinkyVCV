@@ -17,12 +17,13 @@
 
 using Comp = Compressor2<WidgetComposite>;
 
+
 /**
  */
-struct CompressorModule2 : Module
+struct Compressor2Module : Module
 {
 public:
-    CompressorModule2();
+    Compressor2Module();
     /**
      *
      * Overrides of Module functions
@@ -32,10 +33,16 @@ public:
     float getGainReductionDb();
 
     std::shared_ptr<Comp> compressor;
+    int getNumChannels() {
+        return 4;
+    }
+    float getChannelGain(int channel) {
+        return .5f;
+    }
 private:
 };
 
-CompressorModule2::CompressorModule2()
+Compressor2Module::Compressor2Module()
 {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     compressor = std::make_shared<Comp>(this);
@@ -55,18 +62,18 @@ CompressorModule2::CompressorModule2()
     compressor->init();
 }
 
-float CompressorModule2::getGainReductionDb()
+float Compressor2Module::getGainReductionDb()
 {
     return compressor->getGainReductionDb();
 }
 
 
-void CompressorModule2::process(const ProcessArgs& args)
+void Compressor2Module::process(const ProcessArgs& args)
 {
     compressor->process(args);
 }
 
-void CompressorModule2::onSampleRateChange()
+void Compressor2Module::onSampleRateChange()
 {
     compressor->onSampleRateChange();
 }
@@ -75,9 +82,77 @@ void CompressorModule2::onSampleRateChange()
 // module widget
 ////////////////////
 
+#define _LAB
+
+
+#if 1
+// this control adapted from Fundamental VCA 16 channel level meter
+class VCA_1VUKnob : public SliderKnob {
+public:
+
+    Compressor2Module* module;
+
+	VCA_1VUKnob() {
+		box.size = mm2px(Vec(10, 46));
+	}
+
+	void draw(const DrawArgs& args) override {
+		nvgBeginPath(args.vg);
+		nvgRoundedRect(args.vg, 0, 0, box.size.x, box.size.y, 2.0);
+		nvgFillColor(args.vg, nvgRGB(0, 0, 0));
+		nvgFill(args.vg);
+
+		const Vec margin = Vec(3, 3);
+		Rect r = box.zeroPos().grow(margin.neg());
+
+		int channels = module ? module->getNumChannels() : 1;
+	//	float value = paramQuantity ? paramQuantity->getValue() : 1.f;
+
+		// Segment value
+        const float value = 1;
+		nvgBeginPath(args.vg);		nvgRect(args.vg,
+		        r.pos.x,
+		        r.pos.y + r.size.y * (1 - value),
+		        r.size.x,
+		        r.size.y * value);
+		nvgFillColor(args.vg, color::mult(color::WHITE, 0.33));
+		nvgFill(args.vg);
+
+		// Segment gain
+		nvgBeginPath(args.vg);
+		for (int c = 0; c < channels; c++) {
+			float gain = module ? module->getChannelGain(c) : 1.f;
+			if (gain >= 0.005f) {
+				nvgRect(args.vg,
+				        r.pos.x + r.size.x * c / channels,
+				        r.pos.y + r.size.y * (1 - gain),
+				        r.size.x / channels,
+				        r.size.y * gain);
+			}
+		}
+		nvgFillColor(args.vg, SCHEME_GREEN);
+		nvgFill(args.vg);
+
+		// Invisible separators
+		const int segs = 25;
+		nvgBeginPath(args.vg);
+		for (int i = 1; i <= segs; i++) {
+			nvgRect(args.vg,
+			        r.pos.x - 1.0,
+			        r.pos.y + r.size.y * i / segs,
+			        r.size.x + 2.0,
+			        1.0);
+		}
+		nvgFillColor(args.vg, color::BLACK);
+		nvgFill(args.vg);
+	}
+};
+
+#endif
+
 struct CompressorWidget2 : ModuleWidget
 {
-    CompressorWidget2(CompressorModule2 *);
+    CompressorWidget2(Compressor2Module *);
     DECLARE_MANUAL("Comp Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md");
 
 #ifdef _LAB
@@ -92,13 +167,17 @@ struct CompressorWidget2 : ModuleWidget
     }
 #endif
 
-    void addJacks(CompressorModule2 *module, std::shared_ptr<IComposite> icomp);
-    void addControls(CompressorModule2 *module, std::shared_ptr<IComposite> icomp);
-    void addVu(CompressorModule2 *module);
+    void addJacks(Compressor2Module *module, std::shared_ptr<IComposite> icomp);
+    void addControls(Compressor2Module *module, std::shared_ptr<IComposite> icomp);
+    void addVu(Compressor2Module *module);
 };
 
-void CompressorWidget2::addVu(CompressorModule2 *module)
+void CompressorWidget2::addVu(Compressor2Module *module)
 {
+    VCA_1VUKnob* levelParam = createParam<VCA_1VUKnob>(Vec(90, 40), module, Comp::RELEASE_PARAM);
+	levelParam->module = module;
+	addParam(levelParam);
+        #if 0
     auto vu = new SqVuMeter();
     vu->box.size = Vec(72, 14);
     //vu->box.pos = Vec(10, 254);
@@ -107,9 +186,10 @@ void CompressorWidget2::addVu(CompressorModule2 *module)
         return module ? module->getGainReductionDb() : 4;
     });
     addChild(vu);
+    #endif
 }
 
-void CompressorWidget2::addControls(CompressorModule2 *module, std::shared_ptr<IComposite> icomp)
+void CompressorWidget2::addControls(Compressor2Module *module, std::shared_ptr<IComposite> icomp)
 {
 #ifdef _LAB
     const float knobX = 10;
@@ -122,7 +202,7 @@ void CompressorWidget2::addControls(CompressorModule2 *module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(knobX - 4, labelY + 0 * dy),
+        Vec(knobX - 4, 174 - 20),
         "Atck");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -133,7 +213,7 @@ void CompressorWidget2::addControls(CompressorModule2 *module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(knobX2 - 1, labelY + 0 * dy),
+        Vec(knobX2 - 1, 174 - 20),
         "Rel");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -209,7 +289,7 @@ void CompressorWidget2::addControls(CompressorModule2 *module, std::shared_ptr<I
     addParam(p);
 }
 
-void CompressorWidget2::addJacks(CompressorModule2 *module, std::shared_ptr<IComposite> icomp)
+void CompressorWidget2::addJacks(Compressor2Module *module, std::shared_ptr<IComposite> icomp)
 {
 #ifdef _LAB
     const float jackX = 10;
@@ -231,8 +311,9 @@ void CompressorWidget2::addJacks(CompressorModule2 *module, std::shared_ptr<ICom
         //Vec(jackX, jackY),
         Vec(11, 280),
         module,
-        Comp::LAUDIO_INPUT));
+        Comp::AUDIO_INPUT));
 
+#if 0
 #ifdef _LAB
     addLabel(
         Vec(labelX+4, labelY + 1 * dy),
@@ -243,6 +324,7 @@ void CompressorWidget2::addJacks(CompressorModule2 *module, std::shared_ptr<ICom
         Vec(11, 323),
         module,
         Comp::RAUDIO_INPUT));
+#endif
 
 
 #ifdef _LAB
@@ -254,8 +336,9 @@ void CompressorWidget2::addJacks(CompressorModule2 *module, std::shared_ptr<ICom
         //Vec(jackX2, jackY + 0 * dy),
         Vec(55, 280),
         module,
-        Comp::LAUDIO_OUTPUT));
+        Comp::AUDIO_OUTPUT));
 
+#if 0
 #ifdef _LAB
     addLabel(
         Vec(label2X - 2, labelY + 1 * dy),
@@ -266,6 +349,7 @@ void CompressorWidget2::addJacks(CompressorModule2 *module, std::shared_ptr<ICom
         Vec(55, 323),
         module,
         Comp::RAUDIO_OUTPUT));
+#endif
 #if 0
     addLabel(
         Vec(labelX, labelY + 2 * dy),
@@ -284,7 +368,7 @@ void CompressorWidget2::addJacks(CompressorModule2 *module, std::shared_ptr<ICom
  * This is not shared by all modules in the DLL, just one
  */
 
-CompressorWidget2::CompressorWidget2(CompressorModule2 *module)
+CompressorWidget2::CompressorWidget2(Compressor2Module *module)
 {
     setModule(module);
     SqHelper::setPanel(this, "res/compressor2_panel.svg");
@@ -299,6 +383,7 @@ CompressorWidget2::CompressorWidget2(CompressorModule2 *module)
     addControls(module, icomp);
     addJacks(module, icomp);
     addVu(module);
+
     
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
@@ -307,6 +392,6 @@ CompressorWidget2::CompressorWidget2(CompressorModule2 *module)
     addChild( createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-Model *modelCompressor2Module = createModel<CompressorModule2, CompressorWidget2>("squinkylabs-comp2");
+Model *modelCompressor2Module = createModel<Compressor2Module, CompressorWidget2>("squinkylabs-comp2");
 
 
