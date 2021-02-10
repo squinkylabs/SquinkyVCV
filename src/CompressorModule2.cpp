@@ -34,10 +34,10 @@ public:
 
     std::shared_ptr<Comp> compressor;
     int getNumChannels() {
-        return 4;
+        return compressor->getNumChannels();
     }
     float getChannelGain(int channel) {
-        return .5f;
+        return compressor->getChannelGain(channel);
     }
 private:
 };
@@ -87,7 +87,8 @@ void Compressor2Module::onSampleRateChange()
 
 #if 1
 // this control adapted from Fundamental VCA 16 channel level meter
-class VCA_1VUKnob : public SliderKnob {
+// widget::TransparentWidget
+class VCA_1VUKnob : public widget::TransparentWidget {
 public:
 
     Compressor2Module* module;
@@ -123,6 +124,7 @@ public:
 		for (int c = 0; c < channels; c++) {
 			float gain = module ? module->getChannelGain(c) : 1.f;
 			if (gain >= 0.005f) {
+               // INFO("c=%d va = %.2f gain=%.2f", c, gain);
 				nvgRect(args.vg,
 				        r.pos.x + r.size.x * c / channels,
 				        r.pos.y + r.size.y * (1 - gain),
@@ -174,10 +176,16 @@ struct CompressorWidget2 : ModuleWidget
 
 void CompressorWidget2::addVu(Compressor2Module *module)
 {
-    VCA_1VUKnob* levelParam = createParam<VCA_1VUKnob>(Vec(90, 40), module, Comp::RELEASE_PARAM);
-	levelParam->module = module;
-	addParam(levelParam);
-        #if 0
+  // VCA_1VUKnob* levelParam = createChild<VCA_1VUKnob>(Vec(90, 40), module, Comp::RELEASE_PARAM);
+//	levelParam->module = module;
+//	addChild(levelParam);
+    auto vu = new VCA_1VUKnob();
+    vu->box.pos = Vec(90, 140);
+    vu->module = module;
+    addChild(vu);
+
+
+#if 0
     auto vu = new SqVuMeter();
     vu->box.size = Vec(72, 14);
     //vu->box.pos = Vec(10, 254);

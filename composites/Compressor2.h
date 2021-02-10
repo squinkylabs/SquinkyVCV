@@ -102,6 +102,11 @@ public:
         return AudioMath::makeFunc_Exp(0, 10, .1, 10);
     }
 
+    int getNumChannels() const {
+        return numChannels_m;
+    }
+    float getChannelGain(int ch) const;
+
 private:
   //  Cmprsr compressorsL[4];
     Cmprsr compressors[4];
@@ -158,6 +163,15 @@ inline void Compressor2<TBase>::init() {
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
 }
 
+
+template <class TBase>
+inline float  Compressor2<TBase>::getChannelGain(int ch) const {
+    const int bank = ch / 4;
+    const int subChan = ch - bank * 4;
+    float_4 g = compressors[bank].getGain();
+    return g[subChan];
+}
+
 template <class TBase>
 inline float Compressor2<TBase>::getGainReductionDb() const {
     float_4 minGain_4 = 1;
@@ -168,10 +182,7 @@ inline float Compressor2<TBase>::getGainReductionDb() const {
     for (int bank = 0; bank < numBanks_m; ++bank) {
         minGain_4 = SimdBlocks::min(minGain_4, compressors[bank].getGain());
     }
-  //  for (int bank = 0; bank < numBanksR_m; ++bank) {
-  //      minGain_4 = SimdBlocks::min(minGain_4, compressorsR[bank].getGain());
-  //  }
-
+  
     float minGain = minGain_4[0];
     minGain = std::min(minGain, minGain_4[1]);
     minGain = std::min(minGain, minGain_4[2]);
