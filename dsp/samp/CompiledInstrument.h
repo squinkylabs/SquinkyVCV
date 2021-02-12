@@ -68,7 +68,6 @@ public:
     void _dump(int depth) const override;
     void _setTestMode() {
         testMode = true;
-        //pitchMap._setTestMode();
     }
 
     /**
@@ -83,28 +82,15 @@ public:
      */
     static void expandAllKV(SamplerErrorContext&, SInstrumentPtr);
 
-    //  void getAllRegions(std::vector<CompiledRegionPtr>&);
     int removeOverlaps(std::vector<CompiledRegionPtr>&);
-
-    //   static void sortByVelocity(std::vector<CompiledRegionPtr>&);
-    //   static void sortByPitch(std::vector<CompiledRegionPtr>&);
-    //   static void sortByPitchAndVelocity(std::vector<CompiledRegionPtr>&);
-
-    // test accessor
-    //  const std::vector<CompiledGroupPtr>& _groups();
     const RegionPool& _pool() { return regionPool; }
-
-    using GroupIter = std::vector<CompiledGroupPtr>::iterator;
 
 private:
     RegionPool regionPool;
-    // all this goes into region pol
-    // std::vector<CompiledGroupPtr> groups;
     bool testMode = false;
 
     AudioMath::RandomUniformFunc rand = AudioMath::random();
 
-   // ISamplerPlaybackPtr player;
     std::string defaultPath;
 
     /**
@@ -117,8 +103,6 @@ private:
 
     bool compile(const SInstrumentPtr);
     bool compileOld(const SInstrumentPtr);
-   // bool buildCompiledTree(const SInstrumentPtr i);
-  //  bool fixupCompiledTree();
     bool fixupOneRandomGrouping(int groupStartIndex);
 
     ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);
@@ -144,4 +128,3 @@ private:
     void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack);
 };
 
-//KeysAndValuesPtr compile(const SKeyValueList&);

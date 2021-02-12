@@ -3,6 +3,7 @@
 #include <functional>
 #include <memory>
 #include <vector>
+#include <array>
 
 class CompiledRegion;
 class CompiledGroup;
@@ -49,6 +50,7 @@ private:
     */
     using CompiledRegionList = std::vector<CompiledRegion*>;
     std::vector<CompiledRegionList> noteActivationLists_{128};
+    std::array<CompiledRegionList, 128> lastKeyswitchLists_;  
 
     void fillRegionLookup();
     void removeOverlaps();

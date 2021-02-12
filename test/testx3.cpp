@@ -1,13 +1,11 @@
 
 #include <asserts.h>
-
 #include "CompiledInstrument.h"
 #include "SInstrument.h"
 #include "SLex.h"
 #include "SParse.h"
 #include "SqLog.h"
 #include "SamplerErrorContext.h"
-//#include "VelSwitch.h"
 
 extern void testPlayInfoTinnyPiano();
 extern void testPlayInfoSmallPiano();
