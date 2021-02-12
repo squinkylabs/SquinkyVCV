@@ -132,7 +132,8 @@ public:
 				        r.size.y * gain);
 			}
 		}
-		nvgFillColor(args.vg, SCHEME_GREEN);
+        const NVGcolor blue =  nvgRGB(48, 125, 238);
+		nvgFillColor(args.vg, blue);
 		nvgFill(args.vg);
 
 		// Invisible separators
@@ -141,7 +142,7 @@ public:
 		for (int i = 1; i <= segs; i++) {
 			nvgRect(args.vg,
 			        r.pos.x - 1.0,
-			        r.pos.y + r.size.y * i / segs,
+			        r.pos.y + r.size.y * i / float(segs),
 			        r.size.x + 2.0,
 			        1.0);
 		}
@@ -202,9 +203,9 @@ void CompressorWidget2::addControls(Compressor2Module *module, std::shared_ptr<I
 #ifdef _LAB
     const float knobX = 10;
     const float knobX2 = 50;
-    const float knobY = 58;
-    const float labelY = knobY - 20;
-    const float dy = 56;
+   // const float knobY = 58;
+   // const float labelY = knobY - 20;
+   // const float dy = 56;
 #endif
 
 
@@ -307,9 +308,6 @@ void CompressorWidget2::addJacks(Compressor2Module *module, std::shared_ptr<ICom
 
     const float jackY = 288 + 44;
     const float labelY = jackY - 18;
-  //  const float dy = 44;
-
-
 
     addLabel(
         Vec(labelX+4, labelY ),
@@ -319,7 +317,7 @@ void CompressorWidget2::addJacks(Compressor2Module *module, std::shared_ptr<ICom
         //Vec(jackX, jackY),
         Vec(11, jackY),
         module,
-        Comp::AUDIO_INPUT));
+        Comp::LAUDIO_INPUT));
 
 #if 0
 #ifdef _LAB
@@ -344,7 +342,7 @@ void CompressorWidget2::addJacks(Compressor2Module *module, std::shared_ptr<ICom
         //Vec(jackX2, jackY + 0 * dy),
         Vec(55, jackY),
         module,
-        Comp::AUDIO_OUTPUT));
+        Comp::LAUDIO_OUTPUT));
 
 #if 0
 #ifdef _LAB

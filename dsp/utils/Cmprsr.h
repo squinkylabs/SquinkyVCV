@@ -6,6 +6,7 @@
 #include "MultiLag2.h"
 #include "SqMath.h"
 
+#include <atomic>
 #include <stdint.h>
 #include <assert.h>
 
@@ -50,7 +51,8 @@ private:
     int ratioIndex = 0;
     Ratios ratio = Ratios::HardLimit;
     int maxChannel = 3;
-    float_4 gain;
+    //float_4 gain;
+    std::atomic<float_4> gain_;
 
     static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
   
@@ -65,7 +67,7 @@ private:
 
 inline float_4 Cmprsr::getGain() const
 {
-    return gain;
+    return gain_;
 }
 
 inline void Cmprsr::setNumChannels(int ch)
@@ -76,6 +78,7 @@ inline void Cmprsr::setNumChannels(int ch)
 
 inline void Cmprsr::updateProcFun()
 {
+   // printf("in update, max = %d\n", maxChannel);
     procFun = &Cmprsr::stepGeneric;
     if (maxChannel == 0 && (ratio != Ratios::HardLimit)) {
         if (reduceDistortion) {
@@ -100,32 +103,38 @@ inline float_4 Cmprsr::step(float_4 input)
 inline float_4 Cmprsr::step1Comp(float_4 input)
 {
     assert(wasInit());
-
+//printf("step1Comp gain = %s\n", toStr(gain_).c_str());
     lag.step( rack::simd::abs(input));
     float_4 envelope = lag.get();
 
     CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
-    gain = float_4(1);
+ //   gain = float_4(1);
     const float_4 level = envelope * invThreshold;
 
-    gain[0] = CompCurves::lookup(table, level[0]);
-    return gain * input;
+   // gain[0] = CompCurves::lookup(table, level[0]);
+    float_4 t = gain_;
+    t[0] = CompCurves::lookup(table, level[0]);
+    gain_ = t;
+    return gain_ * input;
 }
 
 inline float_4 Cmprsr::step1NoDistComp(float_4 input)
 {
     assert(wasInit());
-
+    
+//printf("step1NoDist gain = %s\n", toStr(gain_).c_str());
     lag.step( rack::simd::abs(input));
     attackFilter.step(lag.get());
     float_4 envelope = attackFilter.get();
 
     CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
-    gain = float_4(1);
+
     const float_4 level = envelope * invThreshold;
 
-    gain[0] = CompCurves::lookup(table, level[0]);
-    return gain * input;
+    float_4 t = gain_;
+    t[0] = CompCurves::lookup(table, level[0]);
+    gain_ = t;
+    return gain_ * input;
 }
 
 inline float_4 Cmprsr::stepGeneric(float_4 input)
@@ -144,18 +153,21 @@ inline float_4 Cmprsr::stepGeneric(float_4 input)
 
     if (ratio == Ratios::HardLimit) {
         float_4 reductionGain = threshold / envelope;
-        gain = SimdBlocks::ifelse( envelope > threshold, reductionGain, 1);
-        return gain * input;
+        gain_ = SimdBlocks::ifelse( envelope > threshold, reductionGain, 1);
+        return gain_ * input;
     } else {
         CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
-        gain = float_4(1);
+     //   gain = float_4(1);
         const float_4 level = envelope * invThreshold;
+
+        float_4 t = gain_;
         for (int i=0; i<4; ++i) {
             if (i <= maxChannel) {
-                gain[i] = CompCurves::lookup(table, level[i]);
+                t[i] = CompCurves::lookup(table, level[i]);
             }
         }
-        return gain * input;
+        gain_ = t;
+        return gain_ * input;
     }
 }
 
@@ -191,6 +203,9 @@ inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, 
 inline Cmprsr::Cmprsr()
 {
     const float softKnee = 12;
+
+    gain_ = float_4(1);
+
     if (wasInit()) {
         return;
     }

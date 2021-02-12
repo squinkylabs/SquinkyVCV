@@ -186,10 +186,14 @@ if (runShaperGen) {
         return 0;
     }
   
+  #if 0
     testx();
     testx2();
     testx3();
     testx4();
+#else
+    printf("------ sampl tests diabled\n");
+#endif
    
     testADSR();
     testWavThread();

@@ -33,7 +33,7 @@
 #include "WVCO.h"
 #include "Basic.h"
 #include "Compressor.h"
-
+#include "Compressor2.h"
 
 #include "Sub.h"
 
@@ -99,6 +99,7 @@ void testIComposite()
     test<Sub<TestComposite>>();
     test<Basic<TestComposite>>();
     test<Compressor<TestComposite>>();
+    test<Compressor2<TestComposite>>();
     test<DividerX<TestComposite>>();
     test<F2_Poly<TestComposite>>();
     test<Samp<TestComposite>>();

@@ -58,14 +58,14 @@ public:
     };
 
     enum InputIds {
-        AUDIO_INPUT,
-       // RAUDIO_INPUT,
+        LAUDIO_INPUT,
+        // RAUDIO_INPUT,
         NUM_INPUTS
     };
 
     enum OutputIds {
-        AUDIO_OUTPUT,
-      //  RAUDIO_OUTPUT,
+        LAUDIO_OUTPUT,
+        //  RAUDIO_OUTPUT,
         DEBUG_OUTPUT,
         NUM_OUTPUTS
     };
@@ -108,7 +108,7 @@ public:
     float getChannelGain(int ch) const;
 
 private:
-  //  Cmprsr compressorsL[4];
+    //  Cmprsr compressorsL[4];
     Cmprsr compressors[4];
     void setupLimiter();
     void stepn();
@@ -116,8 +116,7 @@ private:
 
     int numChannels_m = 0;
     int numBanks_m = 0;
-  //  int numChannelsR_m = 0;
- //   int numBanksR_m = 0;
+
 
     float_4 wetLevel = 0;
     float_4 dryLevel = 0;
@@ -138,6 +137,7 @@ private:
     float lastRawR = -1;
     float lastThreshold = -1;
     float lastRatio = -1;
+    int lastNumChannels = -1;
     bool bypassed = false;
 };
 
@@ -163,13 +163,35 @@ inline void Compressor2<TBase>::init() {
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
 }
 
-
+/*
+ * call chain:
+ *      Compressor2
+ *      Cmprsr
+ *      Cmprsr::gain
+ */
 template <class TBase>
-inline float  Compressor2<TBase>::getChannelGain(int ch) const {
+inline float Compressor2<TBase>::getChannelGain(int ch) const {
     const int bank = ch / 4;
     const int subChan = ch - bank * 4;
+    // TODO:db
     float_4 g = compressors[bank].getGain();
-    return g[subChan];
+    float gainReduction = g[subChan];
+#if 0
+    if (ch == 0) {
+        {
+            static int count = 0;
+            static float lastReduction = 0;
+            if (!AudioMath::closeTo(gainReduction, lastReduction, .05)) {
+                lastReduction = gainReduction;
+                printf("%d gain r [0] = %f full sse=%s\n", count++, gainReduction, toStr(g).c_str());
+                fflush(stdout);
+            }
+        }
+    }
+#endif
+ printf("gain r [%d] = %f\n",  ch, gainReduction);
+                fflush(stdout);
+    return gainReduction;
 }
 
 template <class TBase>
@@ -182,7 +204,7 @@ inline float Compressor2<TBase>::getGainReductionDb() const {
     for (int bank = 0; bank < numBanks_m; ++bank) {
         minGain_4 = SimdBlocks::min(minGain_4, compressors[bank].getGain());
     }
-  
+
     float minGain = minGain_4[0];
     minGain = std::min(minGain, minGain_4[1]);
     minGain = std::min(minGain, minGain_4[2]);
@@ -193,19 +215,14 @@ inline float Compressor2<TBase>::getGainReductionDb() const {
 
 template <class TBase>
 inline void Compressor2<TBase>::stepn() {
-    SqInput& inPort = TBase::inputs[AUDIO_INPUT];
-    SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-   // SqInput& inPortR = TBase::inputs[RAUDIO_INPUT];
-  //  SqOutput& outPortR = TBase::outputs[RAUDIO_OUTPUT];
+    SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
+    SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
+
 
     numChannels_m = inPort.channels;
-   // numChannelsR_m = inPortR.channels;
     outPort.setChannels(numChannels_m);
- //   outPortR.setChannels(numChannelsR_m);
 
     numBanks_m = (numChannels_m / 4) + ((numChannels_m % 4) ? 1 : 0);
-  //  numBanksR_m = (numChannelsR_m / 4) + ((numChannelsR_m % 4) ? 1 : 0);
-    // printf("\n****** after stepm banks = %d numch=%d\n", numBanks_m, numChannels_m);
 
     pollAttackRelease();
 
@@ -226,28 +243,27 @@ inline void Compressor2<TBase>::stepn() {
 
     const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, Compressor2<TBase>::params[THRESHOLD_PARAM].value);
     const float rawRatio = Compressor2<TBase>::params[RATIO_PARAM].value;
-    if (lastThreshold != threshold || lastRatio != rawRatio) {
+    if (lastThreshold != threshold || lastRatio != rawRatio || lastNumChannels != numChannels_m) {
         lastThreshold = threshold;
         lastRatio = rawRatio;
+        lastNumChannels = numChannels_m;
         Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
         for (int i = 0; i < 4; ++i) {
             compressors[i].setThreshold(threshold);
-         //   compressorsR[i].setThreshold(threshold);
             compressors[i].setCurve(ratio);
-      //      compressorsR[i].setCurve(ratio);
 
             if (i < numBanks_m) {
                 const int baseChannel = i * 4;
                 const int chanThisBank = std::min(4, numChannels_m - baseChannel);
                 compressors[i].setNumChannels(chanThisBank);
             }
-    #if 0
+#if 0
             if (i < numBanksR_m) {
                 const int baseChannel = i * 4;
                 const int chanThisBankR = std::min(4, numChannelsR_m - baseChannel);
                 compressorsR[i].setNumChannels(chanThisBankR);
             }
-    #endif
+#endif
         }
     }
 
@@ -270,7 +286,7 @@ inline void Compressor2<TBase>::pollAttackRelease() {
 
         for (int i = 0; i < 4; ++i) {
             compressors[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
-       //     compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
+            //     compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
         }
     }
 }
@@ -279,10 +295,10 @@ template <class TBase>
 inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args) {
     divn.step();
 
-    SqInput& inPort = TBase::inputs[AUDIO_INPUT];
-    SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
- //   SqInput& inPortR = TBase::inputs[RAUDIO_INPUT];
- //   SqOutput& outPortR = TBase::outputs[RAUDIO_OUTPUT];
+    SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
+    SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
+    //   SqInput& inPortR = TBase::inputs[RAUDIO_INPUT];
+    //   SqOutput& outPortR = TBase::outputs[RAUDIO_OUTPUT];
 
     if (bypassed) {
         for (int bank = 0; bank < numBanks_m; ++bank) {
@@ -325,7 +341,7 @@ template <class TBase>
 inline void Compressor2<TBase>::setupLimiter() {
     for (int i = 0; i < 4; ++i) {
         compressors[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
-     //   compressorsR[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
+        //   compressorsR[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
     }
 }
 
@@ -367,7 +383,7 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             break;
         case Compressor2<TBase>::CHANNEL_PARAM:
             ret = {1, 16, 1, "edit channel"};
-            break;   
+            break;
         default:
             assert(false);
     }

@@ -186,6 +186,8 @@ private:
     float lastRawR = -1;
     float lastThreshold = -1;
     float lastRatio = -1;
+    int lastNumChannelsL = -1;
+    int lastNumChannelsR = -1;
     bool bypassed = false;
 };
 
@@ -268,9 +270,16 @@ inline void Compressor<TBase>::stepn() {
 
     const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, Compressor<TBase>::params[THRESHOLD_PARAM].value);
     const float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
-    if (lastThreshold != threshold || lastRatio != rawRatio) {
+    if (lastThreshold != threshold ||
+     lastRatio != rawRatio || 
+     lastNumChannelsL != numChannelsL_m || 
+     lastNumChannelsR != numChannelsR_m
+     
+     ) {
         lastThreshold = threshold;
         lastRatio = rawRatio;
+        lastNumChannelsL = numChannelsL_m;
+        lastNumChannelsR = numChannelsR_m;
         Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
         for (int i = 0; i < 4; ++i) {
             compressorsL[i].setThreshold(threshold);
