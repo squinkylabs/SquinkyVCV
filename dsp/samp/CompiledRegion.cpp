@@ -80,15 +80,14 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     if (key >= 0) {
         lokey = hikey = keycenter = key;
     }
-#if 0
-    {
-        SQINFO("in cr::cr of region %p) here is parent:", this);
-        parsedParent->_dump();
-        SQINFO(" and here is reg (still in ctor)");
-        region->_dump();
 
-    }
-#endif
+    // key switch variables
+    findValue(sw_lokey, SamplerSchema::Opcode::SW_LOKEY, *parsedParent, reg);
+    findValue(sw_hikey, SamplerSchema::Opcode::SW_HIKEY, *parsedParent, reg);
+    findValue(sw_last, SamplerSchema::Opcode::SW_LAST, *parsedParent, reg);
+
+    keySwitched = (sw_last < 0);            // if key switching in effect, default to off
+
     findValue(sequencePosition, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
     findValue(sequenceLength, SamplerSchema::Opcode::SEQ_LENGTH, *parsedParent, reg);
 
@@ -143,7 +142,6 @@ static bool overlapRangeInt(int alo, int ahi, int blo, int bhi) {
     return (blo <= ahi && bhi >= alo) ||
            (alo <= bhi && ahi >= blo);
 }
-
 
 // float version: if ranges have a value in common, they don't necessarily overlap
 static bool overlapRangeFloat(float alo, float ahi, float blo, float bhi) {

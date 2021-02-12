@@ -52,7 +52,6 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
     SQINFO("overlaps removed\n", x);
 #endif
 
-    SQWARN("compile is not finished");
     return true;
 }
 

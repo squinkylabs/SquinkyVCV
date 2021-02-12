@@ -36,18 +36,18 @@ class CompiledRegion {
 public:
     CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
     CompiledRegion() {
-       // SQINFO("Compiled REgion def ctor %p", this);
+        // SQINFO("Compiled REgion def ctor %p", this);
         ++compileCount;
     }
     virtual ~CompiledRegion() { compileCount--; }
     void _dump(int depth) const;
 
-// still used??
+    // still used??
     enum class Type {
         Base,
-        RoundRobin,     // group and regions where we RR between the regions in the one group.
-        Random,         // group and regions where we random between the regions in the one group.
-        GRandom,        // probability is on each group, so multiple groups involved.
+        RoundRobin,  // group and regions where we RR between the regions in the one group.
+        Random,      // group and regions where we random between the regions in the one group.
+        GRandom,     // probability is on each group, so multiple groups involved.
         GRoundRobbin
     };
     virtual Type type() const { return Type::Base; }
@@ -60,11 +60,9 @@ public:
     bool overlapsRand(const CompiledRegion&) const;
     bool sameSequence(const CompiledRegion&) const;
 
-
     int lokey = 0;
     int hikey = 127;
 
-    // int onlykey = -1;           // can't lokey and hikey represent this just fine?
     int keycenter = -1;
     std::string sampleFile;
     int lovel = 1;
@@ -85,14 +83,25 @@ public:
     int sampleIndex = 0;
 
     /**
-     * Member variable to control round robbing selection
+     * Member variable to control round robin selection
      * of regions. Variable are named after the corresponding variables
      * from sfizz. . Def to true, set to false for sequence groups.
      */
     bool sequenceSwitched = true;
-    int sequenceCounter = 0;        //: int region member, init to zero.
-    int sequenceLength = 1;         // uint8_t init to 1, set  from sfz data
+    int sequenceCounter = 0;  //: int region member, init to zero.
+    int sequenceLength = 1;   // uint8_t init to 1, set  from sfz data
     int sequencePosition = -1;
+
+    /**
+     * for key switching
+     */
+    bool keySwitched = true;  // by default, normal resions are on
+    int sw_last = -1;         // the pitch that turns on this region
+    int sw_lokey = -1;
+    int sw_hikey = -1;  // the range of pitches that are key-switches, not notes
+    bool isKeyswitched() const {
+        return keySwitched;
+    }
 
 protected:
     CompiledRegion(CompiledRegionPtr);
@@ -115,7 +124,6 @@ public:
      */
     CompiledMultiRegion(CompiledGroupPtr parent);
     CompiledMultiRegion() {
-
     }
     const std::vector<CompiledRegionPtr>& getRegions() { return originalRegions; }
 

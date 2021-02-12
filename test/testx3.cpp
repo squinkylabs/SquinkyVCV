@@ -224,6 +224,72 @@ static void testAllSal() {
     // cinst->_dump(0);
 }
 
+
+static void testKeswitchCompiled() {
+     SQINFO("\n------ testKeyswitchCompiled");
+     static char* patch = R"foo(
+       <group> sw_last=10 sw_label=key switch label
+        sw_lokey=5 sw_hikey=15
+        lokey=9
+        hikey=11
+        <region>
+        <group>
+        <region>key=100
+        )foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(patch, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    const RegionPool& pool = cinst->_pool();
+    std::vector<CompiledRegionPtr> regions;
+    pool._getAllRegions(regions);
+    assertEQ(regions.size(), 2);
+
+
+    // region with switch is not enabled yet
+    assertEQ(regions[0]->isKeyswitched(), false);
+
+    // second region doesn't have any ks, so it's on.
+    assertEQ(regions[1]->isKeyswitched(), true);
+}
+
+// two regions at same pitch, but never on at the same time
+static void testKeswitchCompiledOverlap() {
+      SQINFO("\n------ testKeyswitchCompiled");
+     static char* patch = R"foo(
+       <group>
+        lokey=9
+        hikey=11
+        sw_lastt=10
+        <region>
+        <group>
+        <region>
+        lokey=9
+        hikey=11
+        sw_lastt=11
+        )foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(patch, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    const RegionPool& pool = cinst->_pool();
+    std::vector<CompiledRegionPtr> regions;
+    pool._getAllRegions(regions);
+    assertEQ(regions.size(), 2);
+}
+
 static void testKeyswitch() {
     SQINFO("\n------ testKeyswitch");
 #if 0 // this one made the lexer freak out. Let's investigage (later)
@@ -238,7 +304,7 @@ static void testKeyswitch() {
        <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 sw_hikey=15
         sw_default=10
-        <region>
+        <region> low_key
         )foo";
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -258,6 +324,7 @@ static void testKeyswitch() {
 
 // this one has not default
 static void testKeyswitch15() {
+      SQINFO("\n------ testKeyswitch15");
     static char* patch = R"foo(
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15
@@ -307,6 +374,7 @@ static void testKeyswitch15() {
 }
 
 static void testKeyswitch2() {
+      SQINFO("\n------ testKeyswitch 2");
     static char* patch = R"foo(
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15
@@ -361,6 +429,14 @@ static void testKeyswitch2() {
 }
 
 void testx3() {
+
+    // TODO: move these back to the bottom when done
+    testKeswitchCompiled();
+    testKeswitchCompiledOverlap();
+    testKeyswitch();
+    testKeyswitch15();
+    testKeyswitch2();
+
     testAllSal();
     // work up to these
     assert(parseCount == 0);
@@ -377,9 +453,7 @@ void testx3() {
     testSnareBasic();
     testAllSal();
 
-    testKeyswitch();
-     testKeyswitch15();
-    testKeyswitch2();
+  
 
     assert(parseCount == 0);
     assert(compileCount == 0);

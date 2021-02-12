@@ -186,10 +186,11 @@ if (runShaperGen) {
         return 0;
     }
   
-  #if 0
+#if 1
+ testx3();
     testx();
     testx2();
-    testx3();
+   
     testx4();
 #else
     printf("------ sampl tests diabled\n");

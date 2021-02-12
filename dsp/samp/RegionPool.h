@@ -15,23 +15,29 @@ using SInstrumentPtr = std::shared_ptr<SInstrument>;
 
 class RegionPool {
 public:
-    void _dump(int depth) const;
+    /**
+     * this is the main "do everything" function
+     * that builds up the pool.
+     */
+    bool buildCompiledTree(const SInstrumentPtr i);
+
+    /** 
+     * After the pool is built, this function is called 
+     * every time a note needs to be played.
+     */
     const CompiledRegion* play(const VoicePlayParameter& params, float random);
 
+    void _dump(int depth) const;
     void _getAllRegions(std::vector<CompiledRegionPtr>&) const;
-    //  const std::vector<CompiledGroupPtr>& _groups() const;
     static void sortByVelocity(std::vector<CompiledRegionPtr>&);
     static void sortByPitch(std::vector<CompiledRegionPtr>&);
     static void sortByPitchAndVelocity(std::vector<CompiledRegionPtr>&);
-
-    bool buildCompiledTree(const SInstrumentPtr i);
 
     using RegionVisitor = std::function<void(CompiledRegion*)>;
 
     void visitRegions(RegionVisitor) const;
 
 private:
-    //  std::vector<CompiledGroupPtr> groups;
     std::vector<CompiledRegionPtr> regions;
     bool fixupCompiledTree();
     /**

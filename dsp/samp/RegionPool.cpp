@@ -7,6 +7,8 @@
 #include "SParse.h"
 #include "SamplerPlayback.h"
 
+#define _LOGOV
+
 bool RegionPool::checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random) {
 
     bool passesCheck = false;
@@ -215,7 +217,8 @@ void RegionPool::removeOverlaps() {
 }
 
 bool RegionPool::fixupCompiledTree() {
-    SQWARN("fixup compiled tree does nothing");
+    // TODO: do we need this function any more?
+   // SQWARN("fixup compiled tree does nothing");
     return true;
 }
 
