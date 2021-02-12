@@ -126,11 +126,6 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
 void RegionPool::fillRegionLookup() {
     sortByPitchAndVelocity(regions);
     removeOverlaps();
-
-    // TODO: remove overlap
-
-    // TODO: what about bad groups?
-
     assert(noteActivationLists_.size() == 128);
 
     for (auto region : regions) {
@@ -176,6 +171,7 @@ void RegionPool::removeOverlaps() {
         printf("overlap comparing line %d with %d\n", first->lineNumber, second->lineNumber);
         printf("  first pitch=%d,%d, vel=%d,%d\n", first->lokey, first->hikey, first->lovel, first->hivel);
         printf("  second pitch=%d,%d, vel=%d,%d\n", second->lokey, second->hikey, second->lovel, second->hivel);
+        printf("  sw_last =%d,%d\n", first->sw_last, second->sw_last);
         printf("  overlap pitch = %d, overlap vel = %d\n", first->overlapsPitch(*second), first->overlapsVelocity(*second));
 #endif
         if (first->overlapsPitch(*second) &&

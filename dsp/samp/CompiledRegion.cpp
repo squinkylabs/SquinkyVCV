@@ -152,6 +152,13 @@ static bool overlapRangeFloat(float alo, float ahi, float blo, float bhi) {
 }
 
 bool CompiledRegion::overlapsPitch(const CompiledRegion& that) const {
+    if (sw_last >= 0 && that.sw_last >= 0) {
+        // If they are both keyswitch ranges
+        if (sw_last != that.sw_last) {
+            // They can never overlap if they aren't on at the same time.
+            return false;
+        }
+    }
     return overlapRangeInt(this->lokey, this->hikey, that.lokey, that.hikey);
 }
 

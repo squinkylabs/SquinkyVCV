@@ -12,59 +12,6 @@
 extern void testPlayInfoTinnyPiano();
 extern void testPlayInfoSmallPiano();
 
-#if 0
-static void testVelSwitch1() {
-    VelSwitch v(1234);
-
-    SHeading h;
-    SRegionPtr sr = std::make_shared<SRegion>(1234, h);
-    SGroupPtr gp = std::make_shared<SGroup>(4567);
-    gp->regions.push_back(sr);
-
-    gp->compiledValues = SamplerSchema::compile(gp->values);
-    sr->compiledValues = SamplerSchema::compile(sr->values);
-    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
-
-    // Need to make some "test" sample playback ptrs. just need to be able to recognize them later
-    ISamplerPlaybackPtr p0 = std::make_shared<SimpleVoicePlayer>(r0, 0, 100);
-    ISamplerPlaybackPtr p1 = std::make_shared<SimpleVoicePlayer>(r0, 0, 101);
-    ISamplerPlaybackPtr p2 = std::make_shared<SimpleVoicePlayer>(r0, 0, 102);
-    ISamplerPlaybackPtr p3 = std::make_shared<SimpleVoicePlayer>(r0, 0, 103);
-
-    v.addVelocityRange(1, p0);  // index 1 starts at vel 1 (0 illegal
-    v.addVelocityRange(2, p1);
-    v.addVelocityRange(99, p2);
-    v.addVelocityRange(100, p3);
-
-    VoicePlayInfo info;
-    ISamplerPlaybackPtr test = v.mapVelToPlayer(1);
-    VoicePlayParameter params;
-    params.midiPitch = 0;
-    params.midiVelocity = 1;
-
-  
-    test->play(info, params, nullptr, 0);
-    assertEQ(info.sampleIndex, 100);
-
-    test = v.mapVelToPlayer(2);
-    test->play(info, params, nullptr, 0);
-    assertEQ(info.sampleIndex, 101);
-
-    test = v.mapVelToPlayer(99);
-    test->play(info, params, nullptr, 0);
-    assertEQ(info.sampleIndex, 102);
-
-    test = v.mapVelToPlayer(100);
-    test->play(info, params, nullptr, 0);
-    assertEQ(info.sampleIndex, 103);
-
-    test = v.mapVelToPlayer(101);
-    test->play(info, params, nullptr, 0);
-    assertEQ(info.sampleIndex, 103);
-}
-#endif
-
-
 // Note that making a region out of the context of an insturment is now quite involved.
 // We may need a test halper for this if we plan on doing it much.
 
@@ -254,9 +201,14 @@ static void testKeswitchCompiled() {
 
     // region with switch is not enabled yet
     assertEQ(regions[0]->isKeyswitched(), false);
+    assertEQ(regions[0]->sw_last, 10);
+    assertEQ(regions[0]->sw_lokey, 5);
+    assertEQ(regions[0]->sw_hikey, 15);
 
     // second region doesn't have any ks, so it's on.
     assertEQ(regions[1]->isKeyswitched(), true);
+    assertEQ(regions[1]->sw_last, -1);
+
 }
 
 // two regions at same pitch, but never on at the same time
@@ -266,13 +218,13 @@ static void testKeswitchCompiledOverlap() {
        <group>
         lokey=9
         hikey=11
-        sw_lastt=10
+        sw_last=10
         <region>
         <group>
         <region>
         lokey=9
         hikey=11
-        sw_lastt=11
+        sw_last=11
         )foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(patch, inst);
@@ -304,7 +256,7 @@ static void testKeyswitch() {
        <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 sw_hikey=15
         sw_default=10
-        <region> low_key
+        <region> lokey=30 hikey=30
         )foo";
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();

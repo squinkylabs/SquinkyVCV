@@ -300,6 +300,11 @@ SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
     lex->consume();
 
     keyToken = lex->next();
+    if (!keyToken) {
+        result.errorMessage = "= unexpected end of tokens" ;
+        result.res = Result::error;
+        return result;
+    }
     if (keyToken->itemType != SLexItem::Type::Equal) {
         result.errorMessage = "= in kvp missing equal sign at file line# " + keyToken->lineNumberAsString();
         result.res = Result::error;
