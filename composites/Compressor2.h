@@ -188,9 +188,10 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
             }
         }
     }
-#endif
+
  printf("gain r [%d] = %f\n",  ch, gainReduction);
                 fflush(stdout);
+#endif
     return gainReduction;
 }
 

@@ -181,7 +181,7 @@ void CompressorWidget2::addVu(Compressor2Module *module)
 //	levelParam->module = module;
 //	addChild(levelParam);
     auto vu = new VCA_1VUKnob();
-    vu->box.pos = Vec(90, 140);
+    vu->box.pos = Vec(90, 190);
     vu->module = module;
     addChild(vu);
 
@@ -203,6 +203,7 @@ void CompressorWidget2::addControls(Compressor2Module *module, std::shared_ptr<I
 #ifdef _LAB
     const float knobX = 10;
     const float knobX2 = 50;
+    const float knobX3 = 90;
    // const float knobY = 58;
    // const float labelY = knobY - 20;
    // const float dy = 56;
@@ -241,6 +242,18 @@ void CompressorWidget2::addControls(Compressor2Module *module, std::shared_ptr<I
        // Vec(knobX, knobY + 1 * dy),
         Vec(8, 121),
         module,  Comp::THRESHOLD_PARAM));
+
+
+#ifdef _LAB
+    addLabel(
+        Vec(knobX3 - 10, 101 - 20),
+        "Chan");
+#endif
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
+        icomp,
+       // Vec(knobX, knobY + 1 * dy),
+        Vec(knobX3, 101),
+        module,  Comp::CHANNEL_PARAM));
     
 
 #ifdef _LAB

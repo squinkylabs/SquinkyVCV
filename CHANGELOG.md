@@ -1,5 +1,11 @@
 # Change log for Squinky Labs modules
 
+## 10.0.16
+
+Fixed bug in Comp where newly patched channels didn't have the correct settings until curve changed.
+
+Fixed bug in Comp where gain reduction meters would flicker.
+
 ## 10.0.15
 
 Re-coded some old modules to make them compatible with the new Library build system.
