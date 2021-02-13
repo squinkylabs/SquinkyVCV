@@ -7,7 +7,7 @@
 #include "SParse.h"
 #include "SamplerPlayback.h"
 
-#define _LOGOV
+// #define _LOGOV
 
 bool RegionPool::checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random) {
 
@@ -29,7 +29,7 @@ bool RegionPool::checkPitchAndVel(const VoicePlayParameter& params, const Compil
 }
 
 const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random) {
-    printf("\n... play(%d)\n", params.midiPitch);
+   // printf("\n... play(%d)\n", params.midiPitch);
     assert(params.midiPitch >= 0 && params.midiPitch <= 127 && params.midiVelocity > 0 && params.midiVelocity <= 127);
 
 
@@ -65,8 +65,8 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
         assert(region->lovel >= 0);
         assert(region->hivel <= 127);
 
-        printf("in play loop, looking at region: \n");
-        region->_dump(0);
+       // printf("in play loop, looking at region: \n");
+       // region->_dump(0);
 
 
         bool sequenceMatch = true;
@@ -143,6 +143,9 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
             for (auto reg : group->regions) {
                 auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
                 maybeAddToKeyswitchList(cReg);
+                if (cReg->sw_default >= 0) {
+                    currentSwitch_ = cReg->sw_default;
+                }
                 regions.push_back(cReg);
             }
         }

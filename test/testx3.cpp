@@ -179,7 +179,7 @@ static void testKeswitchCompiled() {
         hikey=11
         <region>
         <group>
-        <region>key=100
+        <region>key=100 sw_default=100;
         )foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(patch, inst);
@@ -203,11 +203,13 @@ static void testKeswitchCompiled() {
     assertEQ(regions[0]->sw_hilast, 10);
     assertEQ(regions[0]->sw_lokey, 5);
     assertEQ(regions[0]->sw_hikey, 15);
+    assertEQ(regions[0]->sw_default, -1);
 
     // second region doesn't have any ks, so it's on.
     assertEQ(regions[1]->isKeyswitched(), true);
     assertEQ(regions[1]->sw_lolast, -1);
     assertEQ(regions[1]->sw_hilast, -1);
+    assertEQ(regions[1]->sw_default, 100);
 }
 
 // two regions at same pitch, but never on at the same time
@@ -343,11 +345,11 @@ static void testKeyswitch2() {
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15
         sw_default=10
-        <region> key=50
+        <region> key=50 sample=foo
        <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 sw_hikey=15
         sw_default=10
-        <region> key=50
+        <region> key=50 sample=bar
         )foo";
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -363,6 +365,11 @@ static void testKeyswitch2() {
         errc.dump();
     }
     assert(errc.empty());
+    std::vector<CompiledRegionPtr> regions;
+    cinst->_pool()._getAllRegions(regions);
+    assertEQ(regions.size(), 2);
+    assertEQ(regions[0]->sw_default, 10);
+    assertEQ(regions[1]->sw_default, 10);
 
 
 // default keyswitch
@@ -370,6 +377,8 @@ static void testKeyswitch2() {
     VoicePlayParameter params;
     info.sampleIndex = 0;
     assert(!info.valid);
+
+    // play pitch 50
     params.midiPitch = 50;
     params.midiVelocity = 60;
     cinst->play(info, params, nullptr, 0);
@@ -389,7 +398,7 @@ static void testKeyswitch2() {
     params.midiPitch = 50;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
-    assertEQ(info.sampleIndex, 2);
+    assertEQ(info.sampleIndex, 1);
 }
 
 void testx3() {

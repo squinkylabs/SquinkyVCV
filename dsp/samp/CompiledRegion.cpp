@@ -98,11 +98,18 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     }
 
 
-    keySwitched = (sw_last < 0);            // if key switching in effect, default to off
+
+
 
     // key switch range variables
     findValue(sw_lokey, SamplerSchema::Opcode::SW_LOKEY, *parsedParent, reg);
     findValue(sw_hikey, SamplerSchema::Opcode::SW_HIKEY, *parsedParent, reg);
+    findValue(sw_default, SamplerSchema::Opcode::SW_DEFAULT, *parsedParent, reg);
+
+    keySwitched = (sw_lolast < 0);            // if key switching in effect, default to off
+    if (!keySwitched && sw_default >= sw_lolast && sw_default <= sw_hilast) {
+        keySwitched = true;
+    }
 
 
 
