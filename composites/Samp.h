@@ -42,7 +42,9 @@ public:
     std::string globalBase;         // aria base path from user
     std::string defaultPath;        // override from the patch
 
-    // returned to the composite
+    // used in both directions.
+    // plugin->server: these are the old values to be disposed of by server.
+    // server->plugin: new values from parsed and loaded patch.
     CompiledInstrumentPtr instrument;
     WaveLoaderPtr waves;
 };
@@ -126,7 +128,10 @@ private:
     Sampler4vx playback[4];  // 16 voices of polyphony
                              // SInstrumentPtr instrument;
                              // WaveLoaderPtr waves;
-    SampMessage* currentPatchMessage = nullptr;
+
+    // here we hold onto a reference to these so we can give it back
+    WaveLoaderPtr gcWaveLoader;
+    CompiledInstrumentPtr gcInstrument;
 
     float_4 lastGate4[4];
     Divider divn;
@@ -152,10 +157,7 @@ private:
     void commonConstruct();
     void servicePendingPatchRequest();
     void serviceMessagesReturnedToComposite();
-    void setNewPatch();
-    void _dumpObjects(const char* msg) {
-        SQDEBUG("%s: obj=%d, %d", msg, parseCount, compileCount);
-    }
+    void setNewPatch(SampMessage*);
 
     // server thread stuff
     // void servicePatchLoader();
@@ -170,29 +172,31 @@ inline void Samp<TBase>::init() {
     for (int i = 0; i < 4; ++i) {
         lastGate4[i] = float_4(0);
     }
-    //  setupSamplesDummy();
 }
 
 // Called when a patch has come back from thread server
 template <class TBase>
-inline void Samp<TBase>::setNewPatch() {
-    _dumpObjects("set new patch");
-    assert(currentPatchMessage);
-    if (!currentPatchMessage->instrument || !currentPatchMessage->waves) {
-        if (!currentPatchMessage->instrument) {
+inline void Samp<TBase>::setNewPatch(SampMessage* newMessage) {
+    assert(newMessage);
+    if (!newMessage->instrument || !newMessage->waves) {
+        if (!newMessage->instrument) {
             SQWARN("Patch Loader could not load patch.");
-        } else if (!currentPatchMessage->waves) {
+        } else if (!newMessage->waves) {
             SQWARN("Patch Loader could not load waves.");
         }
         _isSampleLoaded = false;
         return;
     }
     for (int i = 0; i < 4; ++i) {
-        playback[i].setPatch(currentPatchMessage->instrument);
-        playback[i].setLoader(currentPatchMessage->waves);
+        playback[i].setPatch(newMessage->instrument);
+        playback[i].setLoader(newMessage->waves);
         playback[i].setNumVoices(4);
     }
     _isSampleLoaded = true;
+    this->gcWaveLoader = newMessage->waves;
+    this->gcInstrument = newMessage->instrument;
+    newMessage->waves.reset();
+    newMessage->instrument.reset();
 }
 
 template <class TBase>
@@ -279,7 +283,10 @@ public:
     void handleMessage(ThreadMessage* msg) override {
         assert(msg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(msg);
-         SQINFO("server got a message!\n");
+
+        smsg->waves.reset();
+        smsg->instrument.reset();
+
         parsePath(smsg);
 
         SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -373,14 +380,26 @@ void Samp<TBase>::servicePendingPatchRequest() {
     }
 
     if (messagePool.empty()) {
-        SQWARN("message pool empty at 346");
+        patchRequest.clear();
         return;
     }
 
     // OK, we are ready to send a message!
     SampMessage* msg = messagePool.pop();
     msg->pathToSfz = this->patchRequest;
+    msg->instrument = this->gcInstrument;
+    msg->waves = this->gcWaveLoader;
+
+    // Now that we have put together our patch request,
+    // and memory deletion request, we can let go
+    // of shared resources that we hold.
     patchRequest.clear();
+    gcInstrument.reset();
+    gcWaveLoader.reset();
+    for (int i=0; i<4; ++i) {
+        playback[i].setPatch(nullptr);
+        playback[i].setLoader(nullptr);
+    }
 
     bool sent = thread->sendMessage(msg);
     if (sent) {
@@ -397,12 +416,7 @@ void Samp<TBase>::serviceMessagesReturnedToComposite() {
     if (newMsg) {
         assert(newMsg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(newMsg);
-        if (currentPatchMessage) {
-            messagePool.push(currentPatchMessage);
-            fflush(stderr);
-            fflush(stdout);
-        }
-        currentPatchMessage = smsg;
-        setNewPatch();
+        setNewPatch(smsg);
+        messagePool.push(smsg);
     }
 }

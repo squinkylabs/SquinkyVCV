@@ -35,8 +35,9 @@ void WaveLoader::addNextSample(const std::string& fileName) {
 bool WaveLoader::load() {
     assert(!didLoad);
     didLoad = true;
+    SQINFO("loader started loading waves");
     for (std::string& file : filesToLoad) {
-        SQINFO("wave loader loading %s", file.c_str());
+       // SQINFO("wave loader loading %s", file.c_str());
         WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
         const bool b = waveInfo->load();
         if (!b) {
@@ -46,11 +47,12 @@ bool WaveLoader::load() {
 
         finalInfo.push_back(waveInfo);
     }
+    SQINFO("loader loaded all wave files");
     return true;
 }
 
 bool WaveLoader::WaveInfo::load() {
-    SQINFO("loader started loading waves");
+
     auto x = fileName.find(foreignSeparator());
     assert(x == std::string::npos);
 
@@ -63,13 +65,12 @@ bool WaveLoader::WaveInfo::load() {
     //SQINFO("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
     data = pSampleData;
     if (numChannels > 1) {
-       // pSampleData = convertToMono(pSampleData, totalFrameCount, numChannels);
-      //  numChannels = 1;
+
         convertToMono();
     }
     //data = pSampleData;
     valid = true;
-    SQINFO("loader loaded all wave files");
+
     return true;
 }
 
