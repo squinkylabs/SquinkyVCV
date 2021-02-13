@@ -56,13 +56,12 @@ static void testADSR_lin()
         float r = measureRelease(x, true);
         printf("r(%f) = %f seconds ratio = %f\n", x, r, r / x);
     }
-
 }
 
 
 static void testADRS4_1()
 {
-    // These values are just "known goods" from origina ADSR4.
+    // These values are just "known goods" from original ADSR4.
     // But we want to preserve these for existing ADSR4 clients
     float r = measureRelease(.8f, false);
     assertClose(r, 2.2, .1);

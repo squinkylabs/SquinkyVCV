@@ -667,12 +667,11 @@ void testMultiLag2() {
 #endif
 
 // finish this??
-#if 0
+#if 1
     testCompZeroAttack();
     testLimiterZeroAttack();
     testLagZeroAttack();
 #endif
-    printf("why is test comp zero attack failing now?\n");
     testCompRatio8();
 
     // testCompPolyOrig();

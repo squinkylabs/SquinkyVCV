@@ -21,7 +21,7 @@ void Sampler4vx::setLoader(WaveLoaderPtr loader) {
 
 void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
     if (!patch || !waves) {
-        printf("4vx not intit\n");
+        SQDEBUG("4vx not intit");
         return;
     }
     VoicePlayInfo patchInfo;

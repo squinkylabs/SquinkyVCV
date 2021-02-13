@@ -30,6 +30,13 @@ public:
     void setTimes(float attackMs, float releaseMs, float sampleTime, bool enableDistortionReduction);
     void setThreshold(float th);
     void setCurve(Ratios);
+
+
+    // @param enableDistortionReduction is a 4 value mask
+    void setTimesSIMD(float_4 attackMs, float_4 releaseMs, float sampleTime, float_4 enableDistortionReduction);
+    void setThresholdSIMD(float_4 th);
+    void setCurveSIMD(const Ratios*);
+
     void setNumChannels(int);
 
     const MultiLag2& _lag() const;
@@ -157,7 +164,6 @@ inline float_4 Cmprsr::stepGeneric(float_4 input)
         return gain_ * input;
     } else {
         CompCurves::LookupPtr table =  ratioCurves[ratioIndex];
-     //   gain = float_4(1);
         const float_4 level = envelope * invThreshold;
 
         float_4 t = gain_;
@@ -308,9 +314,13 @@ inline const MultiLag2& Cmprsr::_lag() const
 
 inline void Cmprsr::setThreshold(float th)
 {
-    threshold = float_4(th);
-    invThreshold = 1.f / threshold;
+    setThresholdSIMD(float_4(th));
 }
 
+inline void Cmprsr::setThresholdSIMD(float_4 th)
+{
+    threshold = th;
+    invThreshold = 1.f / threshold;
+}
 
 

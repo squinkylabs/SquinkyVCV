@@ -133,6 +133,8 @@ private:
     int numChannels_m = 1;
 
     std::unique_ptr<ThreadClient> thread;
+
+    // sent in on UI thread (should be atomic)
     std::string patchRequest;
     bool _isSampleLoaded = false;
 
@@ -151,6 +153,9 @@ private:
     void servicePendingPatchRequest();
     void serviceMessagesReturnedToComposite();
     void setNewPatch();
+    void _dumpObjects(const char* msg) {
+        SQDEBUG("%s: obj=%d, %d", msg, parseCount, compileCount);
+    }
 
     // server thread stuff
     // void servicePatchLoader();
@@ -171,6 +176,7 @@ inline void Samp<TBase>::init() {
 // Called when a patch has come back from thread server
 template <class TBase>
 inline void Samp<TBase>::setNewPatch() {
+    _dumpObjects("set new patch");
     assert(currentPatchMessage);
     if (!currentPatchMessage->instrument || !currentPatchMessage->waves) {
         if (!currentPatchMessage->instrument) {
