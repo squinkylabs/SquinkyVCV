@@ -199,14 +199,15 @@ static void testKeswitchCompiled() {
 
     // region with switch is not enabled yet
     assertEQ(regions[0]->isKeyswitched(), false);
-    assertEQ(regions[0]->sw_last, 10);
+    assertEQ(regions[0]->sw_lolast, 10);
+    assertEQ(regions[0]->sw_hilast, 10);
     assertEQ(regions[0]->sw_lokey, 5);
     assertEQ(regions[0]->sw_hikey, 15);
 
     // second region doesn't have any ks, so it's on.
     assertEQ(regions[1]->isKeyswitched(), true);
-    assertEQ(regions[1]->sw_last, -1);
-
+    assertEQ(regions[1]->sw_lolast, -1);
+    assertEQ(regions[1]->sw_hilast, -1);
 }
 
 // two regions at same pitch, but never on at the same time
@@ -278,10 +279,10 @@ static void testKeyswitch15() {
     static char* patch = R"foo(
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15
-        <region> key=50
+        <region> key=50 sample=foo
        <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 sw_hikey=15
-        <region> key=50
+        <region> key=50 sample=bar
         )foo";
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -299,7 +300,7 @@ static void testKeyswitch15() {
     assert(errc.empty());
 
 
-// no selection
+// no selection, won't play
     VoicePlayInfo info;
     VoicePlayParameter params;
     info.sampleIndex = 0;
@@ -311,16 +312,29 @@ static void testKeyswitch15() {
     cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
-// keyswitch
+// keyswitch with pitch 11
     params.midiPitch = 11;
     cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
-// other one
+// now play 50 again, should play first region
+    params.midiPitch = 50;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 1);
+
+// keyswitch with pitch 10
+    params.midiPitch = 10;
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
+
+// now play 50 again, should play second region
     params.midiPitch = 50;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
+
+
 }
 
 static void testKeyswitch2() {

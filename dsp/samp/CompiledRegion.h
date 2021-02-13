@@ -95,10 +95,14 @@ public:
     /**
      * for key switching
      */
-    bool keySwitched = true;  // by default, normal resions are on
-    int sw_last = -1;         // the pitch that turns on this region
+    bool keySwitched = true;    // by default, normal regions are on
+  //  int sw_last = -1;         // the pitch that turns on this region
+    int sw_lolast = -1;         // the range of pitches that turn this region on
+    int sw_hilast = -1; 
+
     int sw_lokey = -1;
-    int sw_hikey = -1;  // the range of pitches that are key-switches, not notes
+    int sw_hikey = -1;        // the range of pitches that are key-switches, not notes
+    
     bool isKeyswitched() const {
         return keySwitched;
     }

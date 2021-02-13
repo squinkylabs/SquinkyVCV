@@ -81,12 +81,30 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
         lokey = hikey = keycenter = key;
     }
 
-    // key switch variables
-    findValue(sw_lokey, SamplerSchema::Opcode::SW_LOKEY, *parsedParent, reg);
-    findValue(sw_hikey, SamplerSchema::Opcode::SW_HIKEY, *parsedParent, reg);
+    // key switch trigger variables
+  
+    findValue(sw_lolast, SamplerSchema::Opcode::SW_LOLAST, *parsedParent, reg);
+    findValue(sw_hilast, SamplerSchema::Opcode::SW_HILAST, *parsedParent, reg);
+
+    int sw_last = -1;
     findValue(sw_last, SamplerSchema::Opcode::SW_LAST, *parsedParent, reg);
+    if (sw_last >= 0) {
+        if (sw_lolast < 0) {
+            sw_lolast = sw_last;
+        }
+         if (sw_hilast < 0) {
+            sw_hilast = sw_last;
+        }
+    }
+
 
     keySwitched = (sw_last < 0);            // if key switching in effect, default to off
+
+    // key switch range variables
+    findValue(sw_lokey, SamplerSchema::Opcode::SW_LOKEY, *parsedParent, reg);
+    findValue(sw_hikey, SamplerSchema::Opcode::SW_HIKEY, *parsedParent, reg);
+
+
 
     findValue(sequencePosition, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
     findValue(sequenceLength, SamplerSchema::Opcode::SEQ_LENGTH, *parsedParent, reg);
@@ -152,13 +170,17 @@ static bool overlapRangeFloat(float alo, float ahi, float blo, float bhi) {
 }
 
 bool CompiledRegion::overlapsPitch(const CompiledRegion& that) const {
-    if (sw_last >= 0 && that.sw_last >= 0) {
-        // If they are both keyswitch ranges
-        if (sw_last != that.sw_last) {
-            // They can never overlap if they aren't on at the same time.
+
+    // of both regions have valid sw_last info
+    if (sw_lolast >= 0 && sw_hilast >= 0 && that.sw_lolast >= 0 && that.sw_hilast >= 0) {
+        // and the ranges don't overlap
+        bool switchesOverlap = overlapRangeInt(sw_lolast, sw_hilast, that.sw_lolast, that.sw_hilast);
+        if (!switchesOverlap) {
+            // ... then there can't be a pitch conflict
             return false;
-        }
+        } 
     }
+
     return overlapRangeInt(this->lokey, this->hikey, that.lokey, that.hikey);
 }
 
@@ -275,7 +297,8 @@ void CompiledRegion::_dump(int depth) const {
     // for (int i=0; i<depth; ++i) {
     //    printf(" ");
     //}
-    printf("switched = %d seqCtr = %d, seqLen=%d, seqPos=%d\n", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
+    printf("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d\n", isKeyswitched(), sw_lolast, sw_hilast);
+    printf("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d\n", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
     printf("lorand=%.2f hirand=%.2f\n", lorand, hirand);
     printf("lokey=%d hikey=%d lovel=%d hivel=%d\n", lokey, hikey, lovel, hivel);
     printf("\n");

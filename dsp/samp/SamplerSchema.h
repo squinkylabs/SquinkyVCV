@@ -48,6 +48,8 @@ public:
         SW_LAST,
         SW_LOKEY,
         SW_HIKEY,
+        SW_LOLAST,
+        SW_HILAST,
         SW_DEFAULT
     };
 

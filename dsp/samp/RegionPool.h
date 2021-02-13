@@ -52,7 +52,12 @@ private:
     std::vector<CompiledRegionList> noteActivationLists_{128};
     std::array<CompiledRegionList, 128> lastKeyswitchLists_;  
 
+    /** current keyswitch value, or -1 if none
+     */
+    int currentSwitch_ = -1;
+
     void fillRegionLookup();
     void removeOverlaps();
+    void maybeAddToKeyswitchList(CompiledRegionPtr);
     static bool checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random);
 };
