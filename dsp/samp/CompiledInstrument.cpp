@@ -9,6 +9,7 @@
 #include <string>
 
 #include "CompiledRegion.h"
+#include "InstrumentInfo.h"
 #include "SInstrument.h"
 #include "SParse.h"
 #include "SamplerPlayback.h"
@@ -33,6 +34,8 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
     }
 
     addSampleIndexes();
+    deriveInfo();
+    assert(info);
     return true;
 }
 
@@ -42,6 +45,10 @@ void CompiledInstrument::addSampleIndexes() {
         assert(0 == region->sampleIndex);
         region->sampleIndex = index;
     });
+}
+
+void CompiledInstrument::deriveInfo() {
+    info = std::make_shared<InstrumentInfo>();
 }
 
 /** build up the tree using the original algorithm that worked for small piano

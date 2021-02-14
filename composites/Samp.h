@@ -108,14 +108,28 @@ public:
         return std::make_shared<SampDescription<TBase>>();
     }
 
+    InstrumentInfoPtr getInstrumentInfo() {
+        SQINFO("getinst 112");
+        CompiledInstrumentPtr inst = gcInstrument;
+        InstrumentInfoPtr ret;
+         SQINFO("getinst 115");
+        if (inst) {
+             SQINFO("getinst 117");
+            ret = inst->getInfo();
+             SQINFO("getinst 119");
+        }
+        return ret;
+    }
+
     void setNewSamples(const std::string& s) {
         std::string* newValue = new std::string(s);
-        SQINFO("allocated new string %p at 113", newValue);
-     //   std::string* oldValue = std::atomic<std::string*>::exchange(newValue);
         std::string* oldValue = patchRequestFromUI.exchange(newValue);
-        SQINFO("delete %p at 116", oldValue);
         delete oldValue;
-       // patchRequest = s;
+    }
+
+    bool isNewInstrument() {
+        bool ret = _isNewInstrument.exchange(false);
+        return ret;
     }
 
     bool _sampleLoaded() {
@@ -149,6 +163,7 @@ private:
     //std::string patchRequest;
     std::atomic<std::string*> patchRequestFromUI = {nullptr};
     bool _isSampleLoaded = false;
+    std::atomic<bool> _isNewInstrument = {false};
 
     bool lastGate = false;  // just for test now
 
@@ -172,7 +187,6 @@ private:
 
 template <class TBase>
 inline void Samp<TBase>::init() {
-    SQINFO("init");
     divn.setup(32, [this]() {
         this->step_n();
     });
@@ -201,6 +215,7 @@ inline void Samp<TBase>::setNewPatch(SampMessage* newMessage) {
         playback[i].setNumVoices(4);
     }
     _isSampleLoaded = true;
+    _isNewInstrument = true;
     this->gcWaveLoader = newMessage->waves;
     this->gcInstrument = newMessage->instrument;
     newMessage->waves.reset();
@@ -288,27 +303,22 @@ public:
     }
 
     void handleMessage(ThreadMessage* msg) override {
-        SQINFO("handle message 290");
         assert(msg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(msg);
 
         smsg->waves.reset();
         smsg->instrument.reset();
 
-     SQINFO("handle message 297");
         parsePath(smsg);
-             SQINFO("handle message 299");
 
         SInstrumentPtr inst = std::make_shared<SInstrument>();
 
         // now load it, and then return it.
         auto err = SParse::goFile(fullPath.c_str(), inst);
         if (!err.empty()) {
-            SQWARN("parsing error in sfz: %s\n", err.c_str());
             sendMessageToClient(msg);
             return;
-        }
-             SQINFO("handle message 310");
+        };
 
         // TODO: need a way for compiler to return error;
         SamplerErrorContext errc;
@@ -319,8 +329,6 @@ public:
             return;
         }
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
-             SQINFO("handle message 321");
-
 
         samplePath += cinst->getDefaultPath();
         cinst->setWaves(waves, samplePath);

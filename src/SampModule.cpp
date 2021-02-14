@@ -7,6 +7,7 @@
 #ifdef _SAMP
 #include <osdialog.h>
 
+#include "InstrumentInfo.h"
 #include "Samp.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
@@ -35,8 +36,19 @@ public:
         samp->setSamplePath(s);
     }
 
+    InstrumentInfoPtr getInstrumentInfo();
+    bool isNewInstrument();
+
 private:
 };
+
+InstrumentInfoPtr SampModule::getInstrumentInfo() {
+    return samp->getInstrumentInfo();
+}
+
+bool SampModule::isNewInstrument() {
+    return samp->isNewInstrument();
+}
 
 void SampModule::onSampleRateChange() {
 }
@@ -77,7 +89,7 @@ struct SampWidget : ModuleWidget {
             sfile->text = "Load Sample file";
             theMenu->addChild(sfile);
         }
-#if 0   // add the root folder
+#if 0  // add the root folder
         {
             SqMenuItem* spath = new SqMenuItem(
                 []() { return false; },
@@ -87,6 +99,8 @@ struct SampWidget : ModuleWidget {
         }
 #endif
     }
+
+    void step() override;
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK) {
         Label* label = new Label();
@@ -107,6 +121,14 @@ struct SampWidget : ModuleWidget {
     SampModule* _module;
     Label* pathLabel = nullptr;
 };
+
+void SampWidget::step() {
+    ModuleWidget::step();
+    if (_module && _module->isNewInstrument()) {
+        auto info = _module->getInstrumentInfo();
+        SQINFO("got info there are %d labels", info->keyswitchData.size());
+    }
+}
 
 void SampWidget::loadSamplerFile() {
     static const char SMF_FILTERS[] = "Standard Sfz file (.sfz):sfz";

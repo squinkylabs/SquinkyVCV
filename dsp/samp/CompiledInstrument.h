@@ -14,16 +14,15 @@ class SInstrument;
 class SRegion;
 class WaveLoader;
 class SGroup;
-//class VelSwitch;
 class SamplerErrorContext;
+class InstrumentInfo;
 
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
 using SRegionPtr = std::shared_ptr<SRegion>;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 using SGroupPtr = std::shared_ptr<SGroup>;
-//using VelSwitchPtr = std::shared_ptr<VelSwitch>;
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
-
+using InstrumentInfoPtr = std::shared_ptr<InstrumentInfo>;
 /**
  * How "Compiling" works.
  * 
@@ -84,10 +83,11 @@ public:
 
     int removeOverlaps(std::vector<CompiledRegionPtr>&);
     const RegionPool& _pool() { return regionPool; }
-
+    InstrumentInfoPtr getInfo() { return info; }
 private:
     RegionPool regionPool;
     bool testMode = false;
+    InstrumentInfoPtr info;
 
     AudioMath::RandomUniformFunc rand = AudioMath::random();
 
@@ -105,8 +105,8 @@ private:
     bool compileOld(const SInstrumentPtr);
     bool fixupOneRandomGrouping(int groupStartIndex);
 
-    ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);
-    ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth);
+   // ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);
+   // ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth);
     void addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region);
     /** add the passed player, which happens to be a vel switch,
      * to the passed destination play. Add it at every pitch where
@@ -118,6 +118,7 @@ private:
      */
     int addSampleFile(const std::string& s);
     void addSampleIndexes();
+    void deriveInfo();
 
     ISamplerPlaybackPtr playbackMapVelocities(const std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
 
