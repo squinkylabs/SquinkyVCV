@@ -98,9 +98,6 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     }
 
 
-
-
-
     // key switch range variables
     findValue(sw_lokey, SamplerSchema::Opcode::SW_LOKEY, *parsedParent, reg);
     findValue(sw_hikey, SamplerSchema::Opcode::SW_HIKEY, *parsedParent, reg);
@@ -111,7 +108,7 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
         keySwitched = true;
     }
 
-
+    findValue(sw_label, SamplerSchema::Opcode::SW_LABEL, *parsedParent, reg);
 
     findValue(sequencePosition, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
     findValue(sequenceLength, SamplerSchema::Opcode::SEQ_LENGTH, *parsedParent, reg);

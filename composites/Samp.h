@@ -38,9 +38,10 @@ public:
     SampMessage() : ThreadMessage(Type::SAMP) {
     }
 
-    std::string pathToSfz;          // full path to sfz file from user
-    std::string globalBase;         // aria base path from user
-    std::string defaultPath;        // override from the patch
+    std::string* pathToSfz;          // full path to sfz file from user
+  //  std::string pathToSfz;          // full path to sfz file from user
+  //  std::string globalBase;         // aria base path from user
+  //  std::string defaultPath;        // override from the patch
 
     // used in both directions.
     // plugin->server: these are the old values to be disposed of by server.
@@ -108,7 +109,13 @@ public:
     }
 
     void setNewSamples(const std::string& s) {
-        patchRequest = s;
+        std::string* newValue = new std::string(s);
+        SQINFO("allocated new string %p at 113", newValue);
+     //   std::string* oldValue = std::atomic<std::string*>::exchange(newValue);
+        std::string* oldValue = patchRequestFromUI.exchange(newValue);
+        SQINFO("delete %p at 116", oldValue);
+        delete oldValue;
+       // patchRequest = s;
     }
 
     bool _sampleLoaded() {
@@ -117,7 +124,6 @@ public:
     /**
      * Main processing entry point. Called every sample
      */
-    //void step() override;
     void process(const typename TBase::ProcessArgs& args) override;
 
     void setSamplePath(const std::string& path) {
@@ -140,7 +146,8 @@ private:
     std::unique_ptr<ThreadClient> thread;
 
     // sent in on UI thread (should be atomic)
-    std::string patchRequest;
+    //std::string patchRequest;
+    std::atomic<std::string*> patchRequestFromUI = {nullptr};
     bool _isSampleLoaded = false;
 
     bool lastGate = false;  // just for test now
@@ -165,6 +172,7 @@ private:
 
 template <class TBase>
 inline void Samp<TBase>::init() {
+    SQINFO("init");
     divn.setup(32, [this]() {
         this->step_n();
     });
@@ -212,7 +220,6 @@ inline void Samp<TBase>::step_n() {
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     divn.step();
-
     int numBanks = numChannels_m / 4;
     if (numBanks * 4 < numChannels_m) {
         numBanks++;
@@ -281,13 +288,16 @@ public:
     }
 
     void handleMessage(ThreadMessage* msg) override {
+        SQINFO("handle message 290");
         assert(msg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(msg);
 
         smsg->waves.reset();
         smsg->instrument.reset();
 
+     SQINFO("handle message 297");
         parsePath(smsg);
+             SQINFO("handle message 299");
 
         SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -298,6 +308,7 @@ public:
             sendMessageToClient(msg);
             return;
         }
+             SQINFO("handle message 310");
 
         // TODO: need a way for compiler to return error;
         SamplerErrorContext errc;
@@ -308,6 +319,7 @@ public:
             return;
         }
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
+             SQINFO("handle message 321");
 
 
         samplePath += cinst->getDefaultPath();
@@ -334,12 +346,22 @@ private:
      * this path will then be used to locate all samples.
      */
     void parsePath(SampMessage* msg) {
-        fullPath = msg->pathToSfz;
+        SQINFO("parse path 348");
+        if (msg->pathToSfz) {
+            fullPath = *(msg->pathToSfz);
+            SQINFO("parse path 351 %s", fullPath.c_str());
+            SQINFO("about to delete %p", msg->pathToSfz);
+            delete msg->pathToSfz;
+            msg->pathToSfz = nullptr;
+             SQINFO("parse path 354");
+        }
+#if 0   // when we add this back
         if (!msg->defaultPath.empty()) {
             SQWARN("ignoring patch def = %s", msg->defaultPath.c_str());
         }
+#endif
         WaveLoader::makeAllSeparatorsNative(fullPath);
-
+ SQINFO("parse path 362");
         const auto pos = fullPath.rfind(WaveLoader::nativeSeparator());
         if (pos == std::string::npos) {
             SQWARN("failed to parse path to samples: %s\n", fullPath.c_str());
@@ -375,25 +397,35 @@ void Samp<TBase>::commonConstruct() {
 
 template <class TBase>
 void Samp<TBase>::servicePendingPatchRequest() {
-    if (patchRequest.empty()) {
+    if (!patchRequestFromUI) {
         return;
     }
 
+
     if (messagePool.empty()) {
-        patchRequest.clear();
+        SQWARN("enable to request new patch will del");
+        auto value = patchRequestFromUI.exchange(nullptr);
+        delete value;
+        //patchRequest.clear();
         return;
     }
 
     // OK, we are ready to send a message!
     SampMessage* msg = messagePool.pop();
-    msg->pathToSfz = this->patchRequest;
+
+    msg->pathToSfz = patchRequestFromUI;
     msg->instrument = this->gcInstrument;
     msg->waves = this->gcWaveLoader;
 
     // Now that we have put together our patch request,
     // and memory deletion request, we can let go
     // of shared resources that we hold.
-    patchRequest.clear();
+
+    // we have passed ownership from Samp to message. So clear
+    // out the value in Samp, but don't delete it
+    patchRequestFromUI.exchange(nullptr);
+
+   
     gcInstrument.reset();
     gcWaveLoader.reset();
     for (int i=0; i<4; ++i) {

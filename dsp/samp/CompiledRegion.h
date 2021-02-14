@@ -103,6 +103,7 @@ public:
     int sw_lokey = -1;
     int sw_hikey = -1;          // the range of pitches that are key-switches, not notes
     int sw_default = -1;        // the keyswitch region to start with
+    std::string sw_label;
     
     bool isKeyswitched() const {
         return keySwitched;

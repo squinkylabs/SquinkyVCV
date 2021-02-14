@@ -204,6 +204,7 @@ static void testKeswitchCompiled() {
     assertEQ(regions[0]->sw_lokey, 5);
     assertEQ(regions[0]->sw_hikey, 15);
     assertEQ(regions[0]->sw_default, -1);
+    assertEQ(regions[0]->sw_label, "key switch label");
 
     // second region doesn't have any ks, so it's on.
     assertEQ(regions[1]->isKeyswitched(), true);
@@ -403,12 +404,7 @@ static void testKeyswitch2() {
 
 void testx3() {
 
-    // TODO: move these back to the bottom when done
-    testKeswitchCompiled();
-    testKeswitchCompiledOverlap();
-    testKeyswitch();
-    testKeyswitch15();
-    testKeyswitch2();
+  
 
     testAllSal();
     // work up to these
@@ -426,7 +422,13 @@ void testx3() {
     testSnareBasic();
     testAllSal();
 
-  
+
+    testKeswitchCompiled();
+    testKeswitchCompiledOverlap();
+    testKeyswitch();
+    testKeyswitch15();
+    testKeyswitch2();
+
 
     assert(parseCount == 0);
     assert(compileCount == 0);
