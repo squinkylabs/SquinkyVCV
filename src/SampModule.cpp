@@ -9,6 +9,7 @@
 
 #include "InstrumentInfo.h"
 #include "Samp.h"
+#include "SqStream.h"
 #include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
@@ -122,6 +123,7 @@ struct SampWidget : ModuleWidget {
     SampModule* _module;
     Label* pathLabel = nullptr;
     PopupMenuParamWidget* keyswitchPopup = {nullptr};
+    Label* pitchRangeLabel = {nullptr};
 };
 
 void SampWidget::step() {
@@ -147,6 +149,13 @@ void SampWidget::step() {
             keyswitchPopup->setLabels(labels);
             addParam(keyswitchPopup);
         }
+
+        SqStream s;
+        s.add("Pitch Range: ");
+        s.add(info->minPitch);
+        s.add("-");
+        s.add(info->maxPitch);
+        pitchRangeLabel->text = s.str();
     }
 }
 
@@ -258,6 +267,7 @@ SampWidget::SampWidget(SampModule* module) {
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
     addLabel(Vec(100, 50), "Sssssss");
+    pitchRangeLabel = addLabel(Vec(100, 150), "");
     pathLabel = addLabel(Vec(50, 70), "");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();

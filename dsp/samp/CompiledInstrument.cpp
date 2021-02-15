@@ -72,6 +72,9 @@ void CompiledInstrument::deriveInfo() {
                 SQINFO("added new entry for %s", label.c_str());
             }
         }
+
+        info->minPitch = (info->minPitch < 0) ? region->lokey : std::min(info->minPitch, region->lokey);
+        info->maxPitch = std::max(info->maxPitch, region->hikey);
     });
 }
 
