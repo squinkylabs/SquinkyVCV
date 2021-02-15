@@ -132,6 +132,8 @@ struct SampWidget : ModuleWidget {
     int lastKeySwitchSent = -1;
 };
 
+const float leftSide = 20;
+
 void SampWidget::step() {
     ModuleWidget::step();
     if (_module && _module->isNewInstrument()) {
@@ -157,10 +159,10 @@ void SampWidget::step() {
 
             keyswitchPopup = SqHelper::createParam<PopupMenuParamWidget>(
                 nullptr,
-                Vec(50, 80),
+                Vec(leftSide, 80),
                 _module,
                 Comp::DUMMYKS_PARAM);
-            keyswitchPopup->box.size.x = 120;  // width
+            keyswitchPopup->box.size.x = 160;  // width
             keyswitchPopup->box.size.y = 22;   // should set auto like button does
             keyswitchPopup->text = "noise";
             keyswitchPopup->setLabels(labels);
@@ -291,9 +293,9 @@ SampWidget::SampWidget(SampModule* module) {
     _module = module;
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
-    addLabel(Vec(100, 50), "Sssssss");
-    pitchRangeLabel = addLabel(Vec(100, 150), "");
-    pathLabel = addLabel(Vec(50, 70), "");
+    addLabel(Vec(leftSide, 50), "Sssssss");
+    pitchRangeLabel = addLabel(Vec(leftSide, 150), "");
+    pathLabel = addLabel(Vec(leftSide, 70), "");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
