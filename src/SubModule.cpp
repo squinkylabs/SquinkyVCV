@@ -8,7 +8,7 @@
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
-#include "ctrl/PopupMenuParamWidgetv1.h"
+#include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SemitoneDisplay.h"
 #include "ctrl/ToggleButton.h"
 

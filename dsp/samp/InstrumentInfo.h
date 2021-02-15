@@ -10,6 +10,5 @@ public:
     int minPitch = -1;
     int maxPitch = -1;
     KeyswitchData keyswitchData;
-
-
+    int defaultKeySwitch = -1;
 };

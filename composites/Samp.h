@@ -143,7 +143,7 @@ public:
     void setSamplePath_UI(const std::string& path) {
         SQWARN("Samp::setSamplePath unused");
     }
-    
+
     bool _sampleLoaded() {
         return _isSampleLoaded;
     }
@@ -293,7 +293,7 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case Samp<TBase>::DUMMYKS_PARAM:
-            ret = {.0f, 50.0f, 0, "Key Switch"};
+            ret = {-1, 127, -1, "Key Switch"};
             break;
         default:
             assert(false);

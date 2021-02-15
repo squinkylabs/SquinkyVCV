@@ -48,15 +48,13 @@ void CompiledInstrument::addSampleIndexes() {
 }
 
 void CompiledInstrument::deriveInfo() {
-    SQINFO("deriveInfo");
     info = std::make_shared<InstrumentInfo>();
     regionPool.visitRegions([this](CompiledRegion* region) {
         if (region->sw_lolast >= 0) {
-            SQINFO("found keyswitch");
             std::string label = region->sw_label.empty() ? "(untitled)" : region->sw_label;
             int low = region->sw_lolast;
             int hi = region->sw_hilast;
-            //  auto range = std::make_pair<int, int>(std::forward<int>(low), std::forward<int>(hi));
+
             InstrumentInfo::PitchRange range = std::pair<int, int>(low, hi);
             auto iter = info->keyswitchData.find(label); 
 
@@ -64,17 +62,19 @@ void CompiledInstrument::deriveInfo() {
                 InstrumentInfo::PitchRange existingRange = iter->second;
                 range.first = std::min(range.first, existingRange.first);
                 range.second = std::max(range.second, existingRange.second);
-                SQINFO("existing range was %d,%d  now %d,%d", existingRange.first, existingRange.second, range.first, range.second);
                 iter->second = range;
             } else {
                 // it's not there already. insert
                 info->keyswitchData.insert(std::pair<std::string, InstrumentInfo::PitchRange>(label, range));
-                SQINFO("added new entry for %s", label.c_str());
             }
         }
 
         info->minPitch = (info->minPitch < 0) ? region->lokey : std::min(info->minPitch, region->lokey);
         info->maxPitch = std::max(info->maxPitch, region->hikey);
+
+        if (region->sw_default >= 0) {
+            info->defaultKeySwitch = region->sw_default;
+        }
     });
 }
 

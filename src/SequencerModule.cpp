@@ -13,7 +13,7 @@
 #include "seq/ClockFinder.h"
 
 #include "ctrl/SqMenuItem.h"
-#include "ctrl/PopupMenuParamWidgetv1.h"
+#include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/ToggleButton.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SqToggleLED.h"

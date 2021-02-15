@@ -10,7 +10,7 @@
 #include "InstrumentInfo.h"
 #include "Samp.h"
 #include "SqStream.h"
-#include "ctrl/PopupMenuParamWidgetv1.h"
+#include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 
@@ -125,6 +125,7 @@ struct SampWidget : ModuleWidget {
     Label* pathLabel = nullptr;
     PopupMenuParamWidget* keyswitchPopup = {nullptr};
     Label* pitchRangeLabel = {nullptr};
+    std::vector<int> keySwitchForIndex;
 };
 
 void SampWidget::step() {
@@ -134,9 +135,20 @@ void SampWidget::step() {
         SQINFO("got info there are %d labels", info->keyswitchData.size());
 
         if (!info->keyswitchData.empty()) {
+            keySwitchForIndex.clear();
             std::vector<std::string> labels;
+            if (info->defaultKeySwitch < 0) {
+                labels.push_back("(no default key switch)");
+                 keySwitchForIndex.push_back(-1);
+            }
             for (auto it : info->keyswitchData) {
                 labels.push_back(it.first);
+                const int pitch = it.second.first;
+                if (pitch != it.second.second) {
+                    SQWARN("skipping ks range > 1");
+                }
+                SQINFO("pushing pitch %d", pitch);
+                keySwitchForIndex.push_back(pitch);
             }
 
             keyswitchPopup = SqHelper::createParam<PopupMenuParamWidget>(

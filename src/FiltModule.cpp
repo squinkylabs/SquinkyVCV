@@ -9,7 +9,7 @@
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqWidgets.h"
-#include "ctrl/PopupMenuParamWidgetv1.h"
+#include "ctrl/PopupMenuParamWidget.h"
 
 #ifdef _TIME_DRAWING
 static DrawTimer drawTimer("Filt");

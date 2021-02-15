@@ -1,7 +1,7 @@
 #pragma once
 
 #include "UIPrefs.h"
-#include "../ctrl/PopupMenuParamWidgetv1.h"
+#include "../ctrl/PopupMenuParamWidget.h"
 
 #include <functional>
 #include "rack.hpp"

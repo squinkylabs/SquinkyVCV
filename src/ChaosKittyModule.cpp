@@ -7,7 +7,7 @@
 #include "ChaosKitty.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
-#include "ctrl/PopupMenuParamWidgetv1.h"
+#include "ctrl/PopupMenuParamWidget.h"
 
 using Comp = ChaosKitty<WidgetComposite>;
 

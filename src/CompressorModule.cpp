@@ -6,7 +6,7 @@
 
 #include "Compressor.h"
 #include "CompressorTooltips.h"
-#include "ctrl/PopupMenuParamWidgetv1.h"
+#include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqTooltips.h"
