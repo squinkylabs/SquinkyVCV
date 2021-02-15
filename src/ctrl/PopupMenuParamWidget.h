@@ -3,6 +3,8 @@
 #include "SqUI.h"
 #include "rack.hpp"
 
+#include <functional>
+
 /**
  * UI Widget that does:
  *  functions as a parameter
@@ -21,11 +23,21 @@ public:
         onChange(e);
     }
 
+    using Callback = std::function<void(int index)>;
+    void setCallback(Callback);
+
     void draw(const DrawArgs &arg) override;
     void onButton(const ::rack::event::Button &e) override;
     void onChange(const ::rack::event::Change &e) override;
     void onAction(const ::rack::event::Action &e) override;
+private:
+
+    Callback optionalCallback = {nullptr};
 };
+
+inline void PopupMenuParamWidget::setCallback(Callback callback) {
+    optionalCallback = callback;
+}
 
 inline void PopupMenuParamWidget::onChange(const ::rack::event::Change &e) {
     if (!this->paramQuantity) {
@@ -34,6 +46,7 @@ inline void PopupMenuParamWidget::onChange(const ::rack::event::Change &e) {
 
     // process ourself to update the text label
     const int index = (int)std::round(this->paramQuantity->getValue());
+    INFO("raw index = %d", index);
     if (!labels.empty()) {
         if (index < 0 || index >= (int)labels.size()) {
             fprintf(stderr, "index is outside label ranges %d\n", index);
@@ -44,6 +57,9 @@ inline void PopupMenuParamWidget::onChange(const ::rack::event::Change &e) {
 
     // Delegate to base class to change param value
     ParamWidget::onChange(e);
+    if (optionalCallback) {
+        optionalCallback(index);
+    }
 }
 
 inline void PopupMenuParamWidget::draw(const DrawArgs &args) {

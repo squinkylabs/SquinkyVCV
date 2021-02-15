@@ -37,6 +37,9 @@ public:
     void setSamplePath(const std::string& s) {
         samp->setSamplePath_UI(s);
     }
+    void setKeySwitch(int pitch) {
+        samp->setKeySwitch_UI(pitch);
+    }
 
     InstrumentInfoPtr getInstrumentInfo();
     bool isNewInstrument();
@@ -126,6 +129,7 @@ struct SampWidget : ModuleWidget {
     PopupMenuParamWidget* keyswitchPopup = {nullptr};
     Label* pitchRangeLabel = {nullptr};
     std::vector<int> keySwitchForIndex;
+    int lastKeySwitchSent = -1;
 };
 
 void SampWidget::step() {
@@ -161,6 +165,13 @@ void SampWidget::step() {
             keyswitchPopup->text = "noise";
             keyswitchPopup->setLabels(labels);
             addParam(keyswitchPopup);
+            keyswitchPopup->setCallback( [this](int index) {
+                SQINFO("w00t! in callback index=%d", index);
+                if (index != lastKeySwitchSent) {
+                    _module->setKeySwitch(index);
+                    lastKeySwitchSent = index;
+                }
+            });
         }
 
         SqStream s;
@@ -201,6 +212,7 @@ void SampWidget::loadSamplerFile() {
             removeChild(keyswitchPopup);
             keyswitchPopup = nullptr;
         }
+        lastKeySwitchSent = -1;
         _module->setNewSamples(pathC);
     }
 }

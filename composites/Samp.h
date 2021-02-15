@@ -144,6 +144,12 @@ public:
         SQWARN("Samp::setSamplePath unused");
     }
 
+    void setKeySwitch_UI(int ks) {
+        //SQWARN("set keyswitch");
+       // _nextInstrumentRequest = ks;
+       _nextKeySwitchRequest = ks;
+    }
+
     bool _sampleLoaded() {
         return _isSampleLoaded;
     }
@@ -170,6 +176,7 @@ private:
     std::atomic<std::string*> patchRequestFromUI = {nullptr};
     bool _isSampleLoaded = false;
     std::atomic<bool> _isNewInstrument = {false};
+    std::atomic<int> _nextKeySwitchRequest = {-1};
 
     bool lastGate = false;  // just for test now
 
@@ -236,6 +243,15 @@ inline void Samp<TBase>::step_n() {
     outPort.setChannels(numChannels_m);
     servicePendingPatchRequest();
     serviceMessagesReturnedToComposite();
+
+    if (_nextKeySwitchRequest >= 1) {
+        int midiPitch = _nextKeySwitchRequest; 
+        _nextKeySwitchRequest = -1;
+        // we can send it to any sampler: ks is global
+        // can also use fake vel and fake sr
+        playback[0].note_on(0, midiPitch, 64, 44100.f);
+        playback[0].note_off(0);
+    }
 }
 
 template <class TBase>
