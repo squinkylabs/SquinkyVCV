@@ -82,7 +82,7 @@ public:
     void init();
 
     enum ParamIds {
-        TEST_PARAM,
+        DUMMYKS_PARAM,
         NUM_PARAMS
     };
 
@@ -286,8 +286,8 @@ template <class TBase>
 inline IComposite::Config SampDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
-        case Samp<TBase>::TEST_PARAM:
-            ret = {-1.0f, 1.0f, 0, "Test"};
+        case Samp<TBase>::DUMMYKS_PARAM:
+            ret = { .0f, 50.0f, 0, "Key Switch"};
             break;
         default:
             assert(false);

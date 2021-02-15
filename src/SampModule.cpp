@@ -9,6 +9,7 @@
 
 #include "InstrumentInfo.h"
 #include "Samp.h"
+#include "ctrl/PopupMenuParamWidgetv1.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 
@@ -120,6 +121,7 @@ struct SampWidget : ModuleWidget {
 
     SampModule* _module;
     Label* pathLabel = nullptr;
+    PopupMenuParamWidget* keyswitchPopup = {nullptr};
 };
 
 void SampWidget::step() {
@@ -127,6 +129,24 @@ void SampWidget::step() {
     if (_module && _module->isNewInstrument()) {
         auto info = _module->getInstrumentInfo();
         SQINFO("got info there are %d labels", info->keyswitchData.size());
+
+        if (!info->keyswitchData.empty()) {
+            std::vector<std::string> labels;
+            for (auto it : info->keyswitchData) {
+                labels.push_back(it.first);
+            }
+
+            keyswitchPopup = SqHelper::createParam<PopupMenuParamWidget>(
+                nullptr,
+                Vec(50, 80),
+                _module,
+                Comp::DUMMYKS_PARAM);
+            keyswitchPopup->box.size.x = 120;  // width
+            keyswitchPopup->box.size.y = 22;   // should set auto like button does
+            keyswitchPopup->text = "noise";
+            keyswitchPopup->setLabels(labels);
+            addParam(keyswitchPopup);
+        }
     }
 }
 
@@ -155,6 +175,10 @@ void SampWidget::loadSamplerFile() {
 
     FATAL("finish file load");
     if (pathC) {
+        if (keyswitchPopup) {
+            removeChild(keyswitchPopup);
+            keyswitchPopup = nullptr;
+        }
         _module->setNewSamples(pathC);
     }
 }
