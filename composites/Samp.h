@@ -38,10 +38,10 @@ public:
     SampMessage() : ThreadMessage(Type::SAMP) {
     }
 
-    std::string* pathToSfz;          // full path to sfz file from user
-  //  std::string pathToSfz;          // full path to sfz file from user
-  //  std::string globalBase;         // aria base path from user
-  //  std::string defaultPath;        // override from the patch
+    std::string* pathToSfz;  // full path to sfz file from user
+                             //  std::string pathToSfz;          // full path to sfz file from user
+                             //  std::string globalBase;         // aria base path from user
+                             //  std::string defaultPath;        // override from the patch
 
     // used in both directions.
     // plugin->server: these are the old values to be disposed of by server.
@@ -108,41 +108,47 @@ public:
         return std::make_shared<SampDescription<TBase>>();
     }
 
-    InstrumentInfoPtr getInstrumentInfo() {
-        SQINFO("getinst 112");
-        CompiledInstrumentPtr inst = gcInstrument;
-        InstrumentInfoPtr ret;
-         SQINFO("getinst 115");
-        if (inst) {
-             SQINFO("getinst 117");
-            ret = inst->getInfo();
-             SQINFO("getinst 119");
-        }
-        return ret;
-    }
-
-    void setNewSamples(const std::string& s) {
-        std::string* newValue = new std::string(s);
-        std::string* oldValue = patchRequestFromUI.exchange(newValue);
-        delete oldValue;
-    }
-
-    bool isNewInstrument() {
-        bool ret = _isNewInstrument.exchange(false);
-        return ret;
-    }
-
-    bool _sampleLoaded() {
-        return _isSampleLoaded;
-    }
     /**
      * Main processing entry point. Called every sample
      */
     void process(const typename TBase::ProcessArgs& args) override;
 
-    void setSamplePath(const std::string& path) {
+    /**
+     * functions called from the UI thread.
+     */
+    InstrumentInfoPtr getInstrumentInfo_UI() {
+        SQINFO("getinst 112");
+        CompiledInstrumentPtr inst = gcInstrument;
+        InstrumentInfoPtr ret;
+        SQINFO("getinst 115");
+        if (inst) {
+            SQINFO("getinst 117");
+            ret = inst->getInfo();
+            SQINFO("getinst 119");
+        }
+        return ret;
+    }
+
+    void setNewSamples_UI(const std::string& s) {
+        std::string* newValue = new std::string(s);
+        std::string* oldValue = patchRequestFromUI.exchange(newValue);
+        delete oldValue;
+    }
+
+    bool isNewInstrument_UI() {
+        bool ret = _isNewInstrument.exchange(false);
+        return ret;
+    }
+
+    void setSamplePath_UI(const std::string& path) {
         SQWARN("Samp::setSamplePath unused");
     }
+    
+    bool _sampleLoaded() {
+        return _isSampleLoaded;
+    }
+
+
 
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
@@ -287,7 +293,7 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
         case Samp<TBase>::DUMMYKS_PARAM:
-            ret = { .0f, 50.0f, 0, "Key Switch"};
+            ret = {.0f, 50.0f, 0, "Key Switch"};
             break;
         default:
             assert(false);
@@ -361,15 +367,15 @@ private:
             SQINFO("about to delete %p", msg->pathToSfz);
             delete msg->pathToSfz;
             msg->pathToSfz = nullptr;
-             SQINFO("parse path 354");
+            SQINFO("parse path 354");
         }
-#if 0   // when we add this back
+#if 0  // when we add this back
         if (!msg->defaultPath.empty()) {
             SQWARN("ignoring patch def = %s", msg->defaultPath.c_str());
         }
 #endif
         WaveLoader::makeAllSeparatorsNative(fullPath);
- SQINFO("parse path 362");
+        SQINFO("parse path 362");
         const auto pos = fullPath.rfind(WaveLoader::nativeSeparator());
         if (pos == std::string::npos) {
             SQWARN("failed to parse path to samples: %s\n", fullPath.c_str());
@@ -381,13 +387,11 @@ private:
         SQINFO("sample base path %s", samplePath.c_str());
 
         // If the patch had a path, add that
-     //   samplePath += cinst->getDefaultPath();
-     //   SQINFO("after def sample base path %s", samplePath.c_str());
-      //     std::string composedPath = samplePath
-      //  SQINFO("about to set waves to %s. default = %s global = %s\n", samplePath.c_str(), cinst->getDefaultPath().c_str(), globalPath.c_str());
+        //   samplePath += cinst->getDefaultPath();
+        //   SQINFO("after def sample base path %s", samplePath.c_str());
+        //     std::string composedPath = samplePath
+        //  SQINFO("about to set waves to %s. default = %s global = %s\n", samplePath.c_str(), cinst->getDefaultPath().c_str(), globalPath.c_str());
         //if (!cinst->defaultPath())
-
-     
     }
 };
 
@@ -408,7 +412,6 @@ void Samp<TBase>::servicePendingPatchRequest() {
     if (!patchRequestFromUI) {
         return;
     }
-
 
     if (messagePool.empty()) {
         SQWARN("enable to request new patch will del");
@@ -433,10 +436,9 @@ void Samp<TBase>::servicePendingPatchRequest() {
     // out the value in Samp, but don't delete it
     patchRequestFromUI.exchange(nullptr);
 
-   
     gcInstrument.reset();
     gcWaveLoader.reset();
-    for (int i=0; i<4; ++i) {
+    for (int i = 0; i < 4; ++i) {
         playback[i].setPatch(nullptr);
         playback[i].setLoader(nullptr);
     }

@@ -31,11 +31,11 @@ public:
     std::shared_ptr<Comp> samp;
 
     void setNewSamples(const std::string& s) {
-        samp->setNewSamples(s);
+        samp->setNewSamples_UI(s);
     }
 
     void setSamplePath(const std::string& s) {
-        samp->setSamplePath(s);
+        samp->setSamplePath_UI(s);
     }
 
     InstrumentInfoPtr getInstrumentInfo();
@@ -45,11 +45,11 @@ private:
 };
 
 InstrumentInfoPtr SampModule::getInstrumentInfo() {
-    return samp->getInstrumentInfo();
+    return samp->getInstrumentInfo_UI();
 }
 
 bool SampModule::isNewInstrument() {
-    return samp->isNewInstrument();
+    return samp->isNewInstrument_UI();
 }
 
 void SampModule::onSampleRateChange() {
@@ -73,7 +73,8 @@ void SampModule::process(const ProcessArgs& args) {
 // module widget
 ////////////////////
 
-static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/booty-shifter.md";
+// static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/booty-shifter.md";
+static const char* helpUrl = "https://docs.google.com/document/d/1u0aNMgU48jRmy7Hd8WDtvvvUDQd9pOlNtknvWKs5qf0";
 
 struct SampWidget : ModuleWidget {
     SampWidget(SampModule* m);
