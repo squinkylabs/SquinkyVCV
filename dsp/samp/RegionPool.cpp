@@ -10,51 +10,45 @@
 // #define _LOGOV
 
 bool RegionPool::checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random) {
-
     bool passesCheck = false;
 #ifdef _SFZ_RANDOM
-        if ((params.midiVelocity >= region->lovel) &&
-            (params.midiVelocity <= region->hivel) &&
-            (random >= region->lorand) &&
-            (random <= region->hirand)) {
-            passesCheck = true;
-        }
+    if ((params.midiVelocity >= region->lovel) &&
+        (params.midiVelocity <= region->hivel) &&
+        (random >= region->lorand) &&
+        (random <= region->hirand)) {
+        passesCheck = true;
+    }
 #else
-        if ((params.midiVelocity >= region->lovel) &&
-            (params.midiVelocity <= region->hivel)) {
-            passesCheck = true;
-        }
+    if ((params.midiVelocity >= region->lovel) &&
+        (params.midiVelocity <= region->hivel)) {
+        passesCheck = true;
+    }
 #endif
     return passesCheck;
 }
 
 const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random) {
-   // printf("\n... play(%d)\n", params.midiPitch);
+    // printf("\n... play(%d)\n", params.midiPitch);
     assert(params.midiPitch >= 0 && params.midiPitch <= 127 && params.midiVelocity > 0 && params.midiVelocity <= 127);
-
 
     // First the keyswitch logic from sfizz
     if (!lastKeyswitchLists_[params.midiPitch].empty()) {
-        printf("!lastKeyswitchLists_[%d].empty()\n", params.midiPitch);
-        
-        if (currentSwitch_>= 0 && currentSwitch_ != params.midiPitch) {
+        // printf("!lastKeyswitchLists_[%d].empty()\n", params.midiPitch);
+
+        if (currentSwitch_ >= 0 && currentSwitch_ != params.midiPitch) {
             for (auto& region : lastKeyswitchLists_[currentSwitch_]) {
-                printf("setting region->keySwitched = false (turning off regions from the old keyswitch set)\n");
+                // SQINFO("setting region->keySwitched = false (turning off regions from the old keyswitch set) r=%p", region);
                 region->keySwitched = false;
             }
         }
         currentSwitch_ = params.midiPitch;
-        printf("setting currentSwitch to %d\n", params.midiPitch);
+        // SQINFO("setting currentSwitch to %d", params.midiPitch);
     }
 
-    bool first = true;
     for (auto& region : lastKeyswitchLists_[params.midiPitch]) {
-        if (first)
-            printf("setting region keyswitched true becuase in lastKeySwitches\n");
+        // SQINFO("setting region keyswitched true because in lastKeySwitches");
         region->keySwitched = true;
-        first = false;
     }
-
 
     // now the region search logic we always had
     CompiledRegion* foundRegion = nullptr;
@@ -65,9 +59,8 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
         assert(region->lovel >= 0);
         assert(region->hivel <= 127);
 
-       // printf("in play loop, looking at region: \n");
-       // region->_dump(0);
-
+        // printf("in play loop, looking at region: \n");
+        // region->_dump(0);
 
         bool sequenceMatch = true;
         if (region->sequenceLength > 1) {
@@ -75,16 +68,16 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
             // TODO: do we really need to use sequenceSwitched? might have no use for us
             // WE need to do the calculation for all seq regions, or else they will never come on
 
-           // fprintf(stderr, "region %p", region);
-           // fprintf(stderr, "looking for seq ctr=%d len=%d pos=%d\n", region->sequenceCounter, region->sequenceLength, region->sequencePosition);
- 
+            // fprintf(stderr, "region %p", region);
+            // fprintf(stderr, "looking for seq ctr=%d len=%d pos=%d\n", region->sequenceCounter, region->sequenceLength, region->sequencePosition);
+
             sequenceMatch =
                 ((region->sequenceCounter++ % region->sequenceLength) == region->sequencePosition - 1);
             // fprintf(stderr, "result: sw=%d ctr=%d\n", sequenceMatch, region->sequenceCounter);
         }
 
         const bool keyswitched = region->isKeyswitched();
-        if (sequenceMatch && !foundRegion && keyswitched && checkPitchAndVel(params, region, random)) {     
+        if (sequenceMatch && !foundRegion && keyswitched && checkPitchAndVel(params, region, random)) {
             foundRegion = region;
         }
     }
@@ -155,13 +148,13 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
     return bRet;
 }
 
- void RegionPool::maybeAddToKeyswitchList(CompiledRegionPtr region) {
-     if (region->sw_lolast >= 0 && region->sw_hilast >= region->sw_lolast) {
-         for (int pitch = region->sw_lolast; pitch <= region->sw_hilast; ++pitch) {
-             lastKeyswitchLists_[pitch].push_back(region.get());
-         }
-     }
- }
+void RegionPool::maybeAddToKeyswitchList(CompiledRegionPtr region) {
+    if (region->sw_lolast >= 0 && region->sw_hilast >= region->sw_lolast) {
+        for (int pitch = region->sw_lolast; pitch <= region->sw_hilast; ++pitch) {
+            lastKeyswitchLists_[pitch].push_back(region.get());
+        }
+    }
+}
 
 void RegionPool::fillRegionLookup() {
     sortByPitchAndVelocity(regions);
@@ -255,7 +248,7 @@ void RegionPool::removeOverlaps() {
 
 bool RegionPool::fixupCompiledTree() {
     // TODO: do we need this function any more?
-   // SQWARN("fixup compiled tree does nothing");
+    // SQWARN("fixup compiled tree does nothing");
     return true;
 }
 

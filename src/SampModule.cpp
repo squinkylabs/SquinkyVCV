@@ -145,7 +145,7 @@ void SampWidget::step() {
             std::vector<std::string> labels;
             if (info->defaultKeySwitch < 0) {
                 labels.push_back("(no default key switch)");
-                 keySwitchForIndex.push_back(-1);
+                keySwitchForIndex.push_back(-1);
             }
             for (auto it : info->keyswitchData) {
                 labels.push_back(it.first);
@@ -153,7 +153,6 @@ void SampWidget::step() {
                 if (pitch != it.second.second) {
                     SQWARN("skipping ks range > 1");
                 }
-                SQINFO("pushing pitch %d", pitch);
                 keySwitchForIndex.push_back(pitch);
             }
 
@@ -167,11 +166,14 @@ void SampWidget::step() {
             keyswitchPopup->text = "noise";
             keyswitchPopup->setLabels(labels);
             addParam(keyswitchPopup);
-            keyswitchPopup->setCallback( [this](int index) {
-                SQINFO("w00t! in callback index=%d", index);
-                if (index != lastKeySwitchSent) {
-                    _module->setKeySwitch(index);
-                    lastKeySwitchSent = index;
+            keyswitchPopup->setCallback([this](int index) {
+                if (index < 0) {
+                    return;
+                }
+                const int pitch = keySwitchForIndex[index];
+                if (pitch != lastKeySwitchSent) {
+                    _module->setKeySwitch(pitch);
+                    lastKeySwitchSent = pitch;
                 }
             });
         }
@@ -190,7 +192,6 @@ void SampWidget::loadSamplerFile() {
     osdialog_filters* filters = osdialog_filters_parse(SMF_FILTERS);
     std::string filename;
 
-    // std::string dir = _module->sequencer->context->settings()->getMidiFilePath();
     std::string dir = "";
     DEFER({
         osdialog_filters_free(filters);

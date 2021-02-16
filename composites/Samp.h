@@ -117,14 +117,10 @@ public:
      * functions called from the UI thread.
      */
     InstrumentInfoPtr getInstrumentInfo_UI() {
-        SQINFO("getinst 112");
         CompiledInstrumentPtr inst = gcInstrument;
         InstrumentInfoPtr ret;
-        SQINFO("getinst 115");
         if (inst) {
-            SQINFO("getinst 117");
             ret = inst->getInfo();
-            SQINFO("getinst 119");
         }
         return ret;
     }
@@ -145,16 +141,12 @@ public:
     }
 
     void setKeySwitch_UI(int ks) {
-        //SQWARN("set keyswitch");
-       // _nextInstrumentRequest = ks;
        _nextKeySwitchRequest = ks;
     }
 
     bool _sampleLoaded() {
         return _isSampleLoaded;
     }
-
-
 
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
