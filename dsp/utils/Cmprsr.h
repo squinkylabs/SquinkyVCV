@@ -28,6 +28,7 @@ public:
 
     float_4 step(float_4);
     void setTimes(float attackMs, float releaseMs, float sampleTime, bool enableDistortionReduction);
+    void setTimes(float_4 attackMs, float_4 releaseMs, float sampleTime, float_4 enableDistortionReduction);
     void setThreshold(float th);
     void setCurve(Ratios);
 
