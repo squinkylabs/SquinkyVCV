@@ -253,10 +253,13 @@ bool RegionPool::fixupCompiledTree() {
 }
 
 void RegionPool::_dump(int depth) const {
+    SQINFO("dumping region pool");
     for (int i = 0; i < depth; ++i) {
         printf(" ");
     }
     for (auto region : regions) {
         region->_dump(depth + 4);
     }
+    fflush(stdout);
+    SQINFO("dunp dumping region pool");
 }

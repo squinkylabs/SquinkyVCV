@@ -304,6 +304,6 @@ void CompiledRegion::_dump(int depth) const {
     printf("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d\n", isKeyswitched(), sw_lolast, sw_hilast);
     printf("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d\n", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
     printf("lorand=%.2f hirand=%.2f\n", lorand, hirand);
-    printf("lokey=%d hikey=%d lovel=%d hivel=%d\n", lokey, hikey, lovel, hivel);
+    printf("lokey=%d hikey=%d center=%d lovel=%d hivel=%d\n", lokey, hikey, keycenter, lovel, hivel);
     printf("\n");
 }

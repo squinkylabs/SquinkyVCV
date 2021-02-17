@@ -308,10 +308,13 @@ static void testCIKeysAndValuesNotes()  {
         // c0 = 12
     // c6 - 84
     testCIKeysAndValues("c6",  12 * (6 + 1));
+    testCIKeysAndValues("b5", 12 * (6 + 1) - 1);
+
 }
 
 static void testCIKeysAndValuesNotesSharp()  {
-    int expectedPitch = 12 * (4 + 1) + 2;
+    // c c# d d# = 3 semis
+    int expectedPitch = 12 * (4 + 1) + 3;
      testCIKeysAndValues("d#4", expectedPitch);
 }
 

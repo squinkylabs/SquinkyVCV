@@ -275,7 +275,7 @@
 		{
 			"slug": "squinkylabs-comp2",
 			"name": "Comp II",
-			"disabled": false,
+			"disabled": true,
 			"description": "Compressor",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md",
 			"tags": [

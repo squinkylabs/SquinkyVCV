@@ -44,7 +44,7 @@
 #define _SUB
 #define _SINES
 // #define _F4
-#define _COMP2
+//#define _COMP2
 
 using namespace ::rack;
 

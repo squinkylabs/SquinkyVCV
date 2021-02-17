@@ -1,11 +1,11 @@
 #include "SamplerSchema.h"
-#include "SamplerErrorContext.h"
 
 #include <assert.h>
 
 #include <set>
 
 #include "SParse.h"
+#include "SamplerErrorContext.h"
 #include "SqLog.h"
 
 using Opcode = SamplerSchema::Opcode;
@@ -44,8 +44,7 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::SW_LAST, OpcodeType::Int},
     {Opcode::SW_LOKEY, OpcodeType::Int},
     {Opcode::SW_HIKEY, OpcodeType::Int},
-    {Opcode::SW_DEFAULT, OpcodeType::Int}
-};
+    {Opcode::SW_DEFAULT, OpcodeType::Int}};
 
 static std::map<std::string, Opcode> opcodes = {
     {"hivel", Opcode::HI_VEL},
@@ -78,8 +77,7 @@ static std::map<std::string, Opcode> opcodes = {
     {"sw_last", Opcode::SW_LAST},
     {"sw_lokey", Opcode::SW_LOKEY},
     {"sw_hikey", Opcode::SW_HIKEY},
-    {"sw_default", Opcode::SW_DEFAULT}
-};
+    {"sw_default", Opcode::SW_DEFAULT}};
 
 static std::set<std::string> unrecognized;
 
@@ -129,11 +127,36 @@ std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
     if (s.length() >= 2) {
         const int firstChar = s[0];
         if (firstChar >= 'a' && firstChar <= 'g') {
+            switch (firstChar) {
+                case 'a':
+                    noteName = 9;
+                    break;
+                case 'b':   
+                    noteName = 11;
+                    break;
+                case 'c':
+                    noteName = 0;
+                    break;
+                case 'd':
+                    noteName = 2;
+                    break;
+                case 'e':
+                    noteName = 4;
+                    break;
+                case 'f':
+                    noteName = 5;
+                    break;
+                case 'g':
+                    noteName = 7;
+                    break;
+            }
+#if 0
             noteName = firstChar - 'a';
             noteName -= 2;  // c is zero
             if (noteName < 0) {
-                noteName += 2;
+                noteName += 12;         // b3 + 1 = c4
             }
+#endif
         }
         if (noteName >= 0) {
             const int secondChar = s[1];
