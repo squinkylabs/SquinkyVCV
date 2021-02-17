@@ -20,6 +20,7 @@ public:
      * set cutoff, normalized freq
      */
     void setCutoff(float);
+    void setCutoffPoly(float_4);
 private:
     float_4 l = 0;
     float_4 k = 0;
@@ -47,6 +48,16 @@ inline void MultiLPF2::setCutoff(float fs)
     l = float_4(ls);
 }
 
+inline void MultiLPF2::setCutoffPoly(float_4 fs)
+{
+    for (int i = 0; i < 4; ++i) {
+        float ls = NonUniformLookupTable<float>::lookup(*lookup, fs[i]);
+        float ks = LowpassFilter<float>::computeKfromL(ls);
+        k[i] = ks;
+        l[i] = ls;
+    }
+}
+
 
 ///////////////////////////////////////////////////////////////////
 
@@ -60,6 +71,8 @@ public:
      */
     void setAttack(float);
     void setRelease(float);
+    void setAttackPoly(float_4);
+    void setReleasePoly(float_4);
 
     void setEnable(bool);
     void setInstantAttack(bool);

@@ -541,6 +541,27 @@ static void testCompPolyOrig() {
     assertLT(x3, 50);
 }
 
+
+static void testIndependentFc() {
+    MultiLPF2 lpf;
+    float_4 fc(.01f, .02f, .04f, .08f);
+
+    lpf.setCutoffPoly(fc);
+    lpf.step( float_4(1));
+    float_4 x = lpf.get();
+
+    printf("got %s\n", toStr(x).c_str());
+    fflush(stdout);
+
+    assertGT(x[1], x[0]);
+    assertGT(x[2], x[1]);
+    assertGT(x[3], x[2]);
+
+    assertClosePct(x[1], x[0] * 2, 20);
+    assertClosePct(x[2], x[1] * 2, 40);
+    assertClosePct(x[3], x[2] * 2, 40);   
+}
+
 void testMultiLag2() {
     //   testLowpassLookup();
     //   testLowpassLookup2();
@@ -571,4 +592,6 @@ void testMultiLag2() {
 
     // testCompPolyOrig();
     testCompPoly();
+    testIndependentFc();
+
 }

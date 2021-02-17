@@ -105,9 +105,28 @@ static void testCompZeroAttack() {
     testCompZeroAttack(true, 1);
 }
 
+static void testIndependentAttack(int indChan) {
+    Cmprsr cmp;
+
+    // attack will be the same, except independent channel will be much longer
+    float_4 attack = 0;
+    attack[indChan] = 1000;
+    float_4 release = 0;
+    float sampleTime = 1.f / 44100.f;
+    float_4 enableDistReduction = 0;
+
+    cmp.setTimesPoly(attack, release, sampleTime, enableDistReduction);
+
+} 
+
+static void  testIndependentAttack() {
+    testIndependentAttack(0);
+}
+
 
 void testCmprsr()
 {
     testCompZeroAttack();
     testLimiterZeroAttack();
+    testIndependentAttack();
 }
