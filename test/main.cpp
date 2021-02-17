@@ -112,6 +112,7 @@ extern void testADSR();
 extern void testWavThread();
 extern void testACDetector();
 extern void testCmprsr();
+extern void testCompressor();
 
 #if 0
 #include <sstream>
@@ -227,6 +228,7 @@ if (runShaperGen) {
     testWVCO();
     testMultiLag2();
     testCmprsr();
+    testCompressor();
     testFilterComposites();
     testSimpleQuantizer();
 

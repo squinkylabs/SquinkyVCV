@@ -100,6 +100,7 @@
     <ClCompile Include="..\..\test\testACDetector.cpp" />
     <ClCompile Include="..\..\test\testADSR.cpp" />
     <ClCompile Include="..\..\test\testCmprsr.cpp" />
+    <ClCompile Include="..\..\test\testCompressor.cpp" />
     <ClCompile Include="..\..\test\testWavThread.cpp" />
     <ClCompile Include="..\..\test\testx3.cpp" />
     <ClCompile Include="..\..\test\testAudioMath.cpp" />

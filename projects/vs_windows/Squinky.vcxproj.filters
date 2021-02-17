@@ -693,6 +693,9 @@
     <ClCompile Include="..\..\test\testCmprsr.cpp">
       <Filter>Header Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testCompressor.cpp">
+      <Filter>Header Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
