@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "Cmprsr.h"
+#include "CompressorParamHolder.h"
 #include "Divider.h"
 #include "IComposite.h"
 #include "LookupTableFactory.h"
@@ -17,6 +18,7 @@ namespace engine {
 struct Module;
 }
 }  // namespace rack
+
 using Module = ::rack::engine::Module;
 
 template <class TBase>
@@ -25,6 +27,8 @@ public:
     Config getParam(int i) override;
     int getNumParams() override;
 };
+
+
 
 /**
  */
@@ -108,7 +112,9 @@ public:
     float getChannelGain(int ch) const;
 
 private:
-    //  Cmprsr compressorsL[4];
+    CompressorParmHolder compParams;
+    unsigned int currentChannel = 0;        // which of the 16 channels we are editing ATM.
+
     Cmprsr compressors[4];
     void setupLimiter();
     void stepn();

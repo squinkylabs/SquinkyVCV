@@ -113,6 +113,7 @@ extern void testWavThread();
 extern void testACDetector();
 extern void testCmprsr();
 extern void testCompressor();
+extern void testCompressorParamHolder();
 
 #if 0
 #include <sstream>
@@ -199,6 +200,7 @@ if (runShaperGen) {
 #endif
    
     testADSR();
+    testCompressorParamHolder();
     testWavThread();
     testIComposite();
     testClockRecovery();
