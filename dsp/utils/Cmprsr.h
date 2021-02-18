@@ -32,7 +32,6 @@ public:
     void setThreshold(float th);
     void setCurve(Ratios);
 
-    // @param enableDistortionReduction is a 4 value mask
     void setTimesPoly(float_4 attackMs, float_4 releaseMs, float sampleTime, float_4 enableDistortionReduction);
     void setThresholdPoly(float_4 th);
     void setCurvePoly(const Ratios*);
@@ -59,8 +58,11 @@ private:
 
     float_4 threshold = 5;
     float_4 invThreshold = 1.f / 5.f;
-    int ratioIndex = 0;
-    Ratios ratio = Ratios::HardLimit;
+
+    int ratioIndex[4] = { 0 };
+    Ratios ratio[4] = { Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit };
+    //int ratioIndex = 0;
+   // Ratios ratio = Ratios::HardLimit;
     int maxChannel = 3;
 
 #ifdef _SQATOMIC
@@ -89,10 +91,12 @@ inline void Cmprsr::setNumChannels(int ch) {
     updateProcFun();
 }
 
+
+// only called for non poly
 inline void Cmprsr::updateProcFun() {
     // printf("in update, max = %d\n", maxChannel);
     procFun = &Cmprsr::stepGeneric;
-    if (maxChannel == 0 && (ratio != Ratios::HardLimit)) {
+    if (maxChannel == 0 && (ratio[0] != Ratios::HardLimit)) {
         if (reduceDistortion) {
             procFun = &Cmprsr::step1NoDistComp;
         } else {
@@ -102,21 +106,41 @@ inline void Cmprsr::updateProcFun() {
 }
 
 inline void Cmprsr::setCurve(Ratios r) {
-    ratio = r;
-    ratioIndex = int(ratio);
+    ratio[0] = r;
+    ratio[1] = r;
+    ratio[2] = r;
+    ratio[3] = r;
+
+    ratioIndex[0] = int(r);
+    ratioIndex[1] = int(r);
+    ratioIndex[2] = int(r);
+    ratioIndex[3] = int(r);
+}
+
+inline void Cmprsr::setCurvePoly(const Ratios* r) {
+    ratio[0] = r[0];
+    ratio[1] = r[1];
+    ratio[2] = r[2];
+    ratio[3] = r[3];
+
+    ratioIndex[0] = int(r[0]);
+    ratioIndex[1] = int(r[1]);
+    ratioIndex[2] = int(r[2]);
+    ratioIndex[3] = int(r[3]);
 }
 
 inline float_4 Cmprsr::step(float_4 input) {
     return (this->*procFun)(input);
 }
 
+// only non poly
 inline float_4 Cmprsr::step1Comp(float_4 input) {
     assert(wasInit());
     //printf("step1Comp gain = %s\n", toStr(gain_).c_str());
     lag.step(rack::simd::abs(input));
     float_4 envelope = lag.get();
 
-    CompCurves::LookupPtr table = ratioCurves[ratioIndex];
+    CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
     //   gain = float_4(1);
     const float_4 level = envelope * invThreshold;
 
@@ -127,6 +151,7 @@ inline float_4 Cmprsr::step1Comp(float_4 input) {
     return gain_ * input;
 }
 
+// only non poly
 inline float_4 Cmprsr::step1NoDistComp(float_4 input) {
     assert(wasInit());
 
@@ -135,7 +160,7 @@ inline float_4 Cmprsr::step1NoDistComp(float_4 input) {
     attackFilter.step(lag.get());
     float_4 envelope = attackFilter.get();
 
-    CompCurves::LookupPtr table = ratioCurves[ratioIndex];
+    CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
 
     const float_4 level = envelope * invThreshold;
 
@@ -145,6 +170,7 @@ inline float_4 Cmprsr::step1NoDistComp(float_4 input) {
     return gain_ * input;
 }
 
+// only non-poly
 inline float_4 Cmprsr::stepGeneric(float_4 input) {
     assert(wasInit());
 
@@ -158,12 +184,12 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
         envelope = lag.get();
     }
 
-    if (ratio == Ratios::HardLimit) {
+    if (ratio[0] == Ratios::HardLimit) {
         float_4 reductionGain = threshold / envelope;
         gain_ = SimdBlocks::ifelse(envelope > threshold, reductionGain, 1);
         return gain_ * input;
     } else {
-        CompCurves::LookupPtr table = ratioCurves[ratioIndex];
+        CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
         const float_4 level = envelope * invThreshold;
 
         float_4 t = gain_;
@@ -177,7 +203,37 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
     }
 }
 
+// only non-poly
+inline float_4 Cmprsr::stepPoly(float_4 input) {
+    assert(wasInit());
+    simd_assertMask(reduceDistortionPoly);
+
+    float_4 envelope;
+
+    lag.step(rack::simd::abs(input));
+    attackFilter.step(lag.get());
+    envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
+
+
+    // have to do the rest non-simd - in case the curves are all different.
+    // TODO: optimized case for all curves the same
+    for (int iChan = 0; iChan < 4; ++iChan) {
+        if (ratio[iChan] == Ratios::HardLimit) {
+            const float reductionGain = threshold[iChan] / envelope[iChan];
+            gain_[iChan] = (envelope[iChan] > threshold[iChan]) ? threshold[iChan] / envelope[iChan] : 1.f;
+        }
+        else {
+            CompCurves::LookupPtr table = ratioCurves[ratioIndex[iChan]];
+            const float level = envelope[iChan] * invThreshold[iChan];
+            gain_[iChan] = CompCurves::lookup(table, level);
+        }
+
+    }
+    return gain_ * input;
+}
+
 inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float sampleTime, float_4 enableDistortionReduction) {
+    simd_assertMask(enableDistortionReduction);
     const float_4 correction = 2 * M_PI;
     const float_4 releaseHz = 1000.f / (releaseMs * correction);
     const float_4 attackHz = 1000.f / (attackMs * correction);
@@ -185,13 +241,13 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
 
     // this sets:
     // this->reduce dist
-    // lag.instantAttack
+    // lag.instantAttack    
     // lag.release
     // lag.attack
     // attackFilter.cutoff
 
 
-    this->reduceDistortionPoly = SimdBlocks::ifelse( attackMs < float_4(.1f), SimdBlocks::mask(), enableDistortionReduction);
+    this->reduceDistortionPoly = SimdBlocks::ifelse( attackMs < float_4(.1f), SimdBlocks::maskFalse(), enableDistortionReduction);
     lag.setInstantAttackPoly(attackMs < float_4(.1f));
 
     lag.setAttackPoly(attackHz * sampleTime);

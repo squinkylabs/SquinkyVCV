@@ -37,11 +37,16 @@ public:
 
     static float_4 ifelse(float_4 mask, float a, float b);
 
-    static float_4 mask();
+    static float_4 maskTrue();
+    static float_4 maskFalse();
 };
 
-inline float_4 SimdBlocks::mask() {
+inline float_4 SimdBlocks::maskTrue() {
     return float_4(1) > float_4(0);
+}
+
+inline float_4 SimdBlocks::maskFalse() {
+    return float_4(0);
 }
 
 inline float_4 SimdBlocks::wrapPhase01(float_4 x) {
