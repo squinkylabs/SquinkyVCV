@@ -314,7 +314,6 @@ static void testIndependentA() {
     float_4 a(.01f, .02f, .04f, .08f);
 
     lag.setAttackPoly(a);
-    //lpf.setCutoffPoly(fc);
     lag.step( float_4(1));
     float_4 x = lag.get();
 
@@ -328,6 +327,39 @@ static void testIndependentA() {
     assertClosePct(x[1], x[0] * 2, 20);
     assertClosePct(x[2], x[1] * 2, 40);
     assertClosePct(x[3], x[2] * 2, 40);   
+}
+
+static void testIndependentR() {
+    MultiLag2 lag;
+    float_4 r(.01f, .02f, .04f, .08f);
+
+    lag.setAttack(.3f);     // set attack very fast
+  //  lag.setAttack(.001f);
+    lag.setReleasePoly(r);
+
+    // let's attack, should be pretty hight
+    lag.step( float_4(1));
+    float_4 x = lag.get();
+
+    printf("got %s\n", toStr(x).c_str());
+    fflush(stdout);
+
+    // attack all the same, fast
+    assertEQ(x[1], x[0]);
+    assertEQ(x[2], x[1]);
+    assertEQ(x[3], x[2]);
+    assertClosePct(x[0], .8f, 20);
+
+    // now let's release and measure
+    lag.step(float_4(0));
+    x = lag.get();
+    printf("rel got %s\n", toStr(x).c_str());
+    fflush(stdout);
+    assertLT(x[1], x[0]);
+    assertLT(x[2], x[1]);
+    assertLT(x[3], x[2]);
+
+ 
 }
 
 void testMultiLag2() {
@@ -354,5 +386,6 @@ void testMultiLag2() {
     testLagZeroAttack();
     testIndependentFc();
     testIndependentA();
+    testIndependentR();
 
 }

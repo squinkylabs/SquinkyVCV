@@ -72,6 +72,7 @@ public:
 
     void setEnable(bool);
     void setInstantAttack(bool);
+    void setInstantAttackPoly(float_4);
 
     float_4 _memory() const;
 
@@ -150,4 +151,13 @@ inline void MultiLag2::setRelease(float fs) {
     float ls = LowpassFilter<float>::computeLfromFs(fs);
     lRelease = float_4(ls);
 }
+
+inline void MultiLag2::setReleasePoly(float_4 r) {
+    // assert(fs > 00 && fs < .5);
+    for (int i = 0; i < 4; ++i) {
+        float ls = LowpassFilter<float>::computeLfromFs(r[i]);
+        lRelease[i] = ls;
+    }
+}
+
 #endif
