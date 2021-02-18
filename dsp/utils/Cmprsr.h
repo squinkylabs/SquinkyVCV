@@ -27,6 +27,7 @@ public:
     };
 
     float_4 step(float_4);
+    float_4 stepPoly(float_4);
     void setTimes(float attackMs, float releaseMs, float sampleTime, bool enableDistortionReduction);
     void setThreshold(float th);
     void setCurve(Ratios);
@@ -51,7 +52,11 @@ private:
     MultiLag2 lag;
     MultiLPF2 attackFilter;
 
+    // TODO: get rid of the non-poly version
     bool reduceDistortion = false;
+    float_4 reduceDistortionPoly = { 0 };
+
+
     float_4 threshold = 5;
     float_4 invThreshold = 1.f / 5.f;
     int ratioIndex = 0;
@@ -173,8 +178,54 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
 }
 
 inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float sampleTime, float_4 enableDistortionReduction) {
-    // oh, need to impl poly for lag
-    assert(false);
+    const float_4 correction = 2 * M_PI;
+    const float_4 releaseHz = 1000.f / (releaseMs * correction);
+    const float_4 attackHz = 1000.f / (attackMs * correction);
+  //  const float_4 normRelease = releaseHz * sampleTime;
+
+    // this sets:
+    // this->reduce dist
+    // lag.instantAttack
+    // lag.release
+    // lag.attack
+    // attackFilter.cutoff
+
+
+    this->reduceDistortionPoly = SimdBlocks::ifelse( attackMs < float_4(.1f), SimdBlocks::mask(), enableDistortionReduction);
+    lag.setInstantAttackPoly(attackMs < float_4(.1f));
+
+    lag.setAttackPoly(attackHz * sampleTime);
+    attackFilter.setCutoffPoly(attackHz * sampleTime);
+    lag.setReleasePoly(releaseHz * sampleTime);
+   
+
+
+    #if 0
+
+    if (attackMs < .1) {
+        reduceDistortion = false;  // no way to do this at zero attack
+        lag.setInstantAttack(true);
+        lag.setRelease(normRelease);
+    }
+    else {
+        reduceDistortion = enableDistortionReduction;
+        const float correction = 2 * M_PI;
+        float attackHz = 1000.f / (attackMs * correction);
+        lag.setInstantAttack(false);
+
+        const float normAttack = attackHz * sampleTime;
+        if (enableDistortionReduction) {
+            lag.setAttack(normAttack * 4);
+            attackFilter.setCutoff(normAttack * 1);
+        }
+        else {
+            lag.setAttack(normAttack);
+        }
+    }
+
+    lag.setRelease(normRelease);
+    #endif
+   // updateProcFun();
 }
 
 inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, bool enableDistortionReduction) {
