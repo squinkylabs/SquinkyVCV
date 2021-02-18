@@ -96,6 +96,11 @@ inline void MultiLag2::setInstantAttack(bool b) {
     simd_assertMask(instant);
 }
 
+inline void MultiLag2::setInstantAttackPoly(float_4 inst) {
+    instant = inst;
+    simd_assertMask(instant);
+ }
+
 inline void MultiLag2::setEnable(bool b) {
     enabled = b;
 }

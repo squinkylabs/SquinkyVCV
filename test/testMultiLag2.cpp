@@ -294,7 +294,7 @@ static void testIndependentFc() {
     float_4 fc(.01f, .02f, .04f, .08f);
 
     lpf.setCutoffPoly(fc);
-    lpf.step( float_4(1));
+    lpf.step(float_4(1));
     float_4 x = lpf.get();
 
     printf("got %s\n", toStr(x).c_str());
@@ -306,7 +306,7 @@ static void testIndependentFc() {
 
     assertClosePct(x[1], x[0] * 2, 20);
     assertClosePct(x[2], x[1] * 2, 40);
-    assertClosePct(x[3], x[2] * 2, 40);   
+    assertClosePct(x[3], x[2] * 2, 40);
 }
 
 static void testIndependentA() {
@@ -314,7 +314,7 @@ static void testIndependentA() {
     float_4 a(.01f, .02f, .04f, .08f);
 
     lag.setAttackPoly(a);
-    lag.step( float_4(1));
+    lag.step(float_4(1));
     float_4 x = lag.get();
 
     printf("got %s\n", toStr(x).c_str());
@@ -326,19 +326,19 @@ static void testIndependentA() {
 
     assertClosePct(x[1], x[0] * 2, 20);
     assertClosePct(x[2], x[1] * 2, 40);
-    assertClosePct(x[3], x[2] * 2, 40);   
+    assertClosePct(x[3], x[2] * 2, 40);
 }
 
 static void testIndependentR() {
     MultiLag2 lag;
     float_4 r(.01f, .02f, .04f, .08f);
 
-    lag.setAttack(.3f);     // set attack very fast
-  //  lag.setAttack(.001f);
+    lag.setAttack(.3f);  // set attack very fast
+                         //  lag.setAttack(.001f);
     lag.setReleasePoly(r);
 
     // let's attack, should be pretty hight
-    lag.step( float_4(1));
+    lag.step(float_4(1));
     float_4 x = lag.get();
 
     printf("got %s\n", toStr(x).c_str());
@@ -353,22 +353,46 @@ static void testIndependentR() {
     // now let's release and measure
     lag.step(float_4(0));
     x = lag.get();
-    printf("rel got %s\n", toStr(x).c_str());
-    fflush(stdout);
+   
     assertLT(x[1], x[0]);
     assertLT(x[2], x[1]);
     assertLT(x[3], x[2]);
+}
 
- 
+static void testIndependentInstant(unsigned int which) {
+    assert(which < 4);
+
+    MultiLag2 lag;
+    lag.setAttack(.01f);  // set attack slow
+
+    float_4 fast = 0;
+    float_4 allOnes = float_4(1) > float_4(0);
+    fast[which] = allOnes[which];
+    lag.setInstantAttackPoly(fast);
+
+    lag.step(float_4(1));
+    float_4 x = lag.get();
+
+     printf("ins(%d0 got %s\n", which, toStr(x).c_str());
+    fflush(stdout);
+    for (int i = 0; i < 4; ++i) {
+        if (i == which) {
+            assertEQ(x[i], 1);
+        }
+        else {
+           assertLT(x[i], .1f);
+        }
+    }
+
+}
+
+static void testIndependentInstant() {
+    for (unsigned int i = 0; i < 4; ++i) {
+        testIndependentInstant(i);
+    }
 }
 
 void testMultiLag2() {
-    //   testLowpassLookup();
-    //   testLowpassLookup2();
-    //   testDirectLookup();
-    //  testDirectLookup2();
-
-#if 1
     testMultiLag0();
     testMultiLag1();
     testMultiLag2int();
@@ -379,13 +403,10 @@ void testMultiLag2() {
     testLimiterAC();
     testLimiterAttack();
     testLimiterTC();
-  
-#endif
-
 
     testLagZeroAttack();
     testIndependentFc();
     testIndependentA();
     testIndependentR();
-
+    testIndependentInstant();
 }
