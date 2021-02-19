@@ -272,11 +272,16 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                     const float pitchCV = TBase::inputs[PITCH_INPUT].getVoltage(channel);
                     const int midiPitch = 60 + int(std::floor(pitchCV * 12));
 
-                    // printf("raw vel input = %f\n", TBase::inputs[VELOCITY_INPUT].getVoltage(channel));
-                    int midiVelocity = int(TBase::inputs[VELOCITY_INPUT].getVoltage(channel) * 12.7f);
-                    if (midiVelocity < 1) {
-                        midiVelocity = 1;
+                    // if velocity not patched, use 64
+                    int midiVelocity = 64;
+                    if (TBase::inputs[VELOCITY_INPUT].isConnected()) {
+                        // if it's mono, just get first chan. otherwise get poly
+                        midiVelocity = int(TBase::inputs[VELOCITY_INPUT].getPolyVoltage(channel) * 12.7f);
+                        if (midiVelocity < 1) {
+                            midiVelocity = 1;
+                        }
                     }
+                    // SQINFO("midi vel = %d", midiVelocity);
                     playback[bank].note_on(iSub, midiPitch, midiVelocity, args.sampleRate);
                     // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
                 } else {
