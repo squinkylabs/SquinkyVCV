@@ -39,7 +39,13 @@ public:
 
     static float_4 maskTrue();
     static float_4 maskFalse();
+    static bool isTrue(float_4);
 };
+
+inline bool SimdBlocks::isTrue(float_4 x) {
+    // This is a dumb, slow way to do it, but...
+    return x[0] && x[1] && x[2] && x[3];
+}
 
 inline float_4 SimdBlocks::maskTrue() {
     return float_4(1) > float_4(0);

@@ -169,6 +169,24 @@ static void testDeInterleaveHigh() {
     assertEQ(z[3], y[3]);
 }
 
+static void testBools() {
+    float_4 x = SimdBlocks::maskTrue();
+    simd_assertMask(x);
+    bool b = SimdBlocks::isTrue(x);
+    assert(b);
+
+     x = SimdBlocks::maskFalse();
+    simd_assertMask(x);
+    b = SimdBlocks::isTrue(x);
+    assert(!b);
+
+    float_4 mask = SimdBlocks::maskTrue();
+    float_4 not = SimdBlocks::maskFalse();
+
+    float_4 a = {not[0], not[0], not[0], mask[0]};
+}
+   
+
 void testSimd() {
     testAsserts();
     testMask();
@@ -176,5 +194,7 @@ void testSimd() {
     testMinMax();
     testDeInterleaveLow();
     testDeInterleaveHigh();
+
+    testBools();
 }
 #endif
