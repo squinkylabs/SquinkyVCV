@@ -30,8 +30,9 @@ public:
 
     std::shared_ptr<Comp> samp;
 
-    void setNewSamples(const std::string& s) {
-        samp->setNewSamples_UI(s);
+    void setNewSamples(const FilePath& fp) {
+        // later we might change samp to also take file path..
+        samp->setNewSamples_UI(fp.toString());
     }
 
     void setSamplePath(const std::string& s) {
@@ -128,7 +129,7 @@ struct SampWidget : ModuleWidget {
     }
 #endif
 
-    void requestNewSampleSet(const std::string& s);
+    void requestNewSampleSet(const FilePath& s);
 
     SampModule* _module;
 
@@ -162,7 +163,8 @@ struct SampWidget : ModuleWidget {
     Label* uiText2 = {nullptr};
 
     InstrumentInfoPtr info;
-    std::string curSampleSet;
+    //  std::string curSampleSet;
+    std::string curBaseFileName;
 
     void pollForStateChange();
     void pollNewState();
@@ -172,14 +174,15 @@ struct SampWidget : ModuleWidget {
     void updateUIForError();
 
     void removeKeyswitchPopup();
+    void buildKeyswitchUI();
+    void buildPitchrangeUI();
 };
 
 const float leftSide = 20;
 
-void SampWidget::requestNewSampleSet(const std::string& s) {
-    curSampleSet = s;
-    INFO("in req, set cur to %s", curSampleSet.c_str());
-    _module->setNewSamples(curSampleSet);
+void SampWidget::requestNewSampleSet(const FilePath& fp) {
+    curBaseFileName = fp.getFilenamePart();
+    _module->setNewSamples(fp);
     nextUIState = State::Loading;
 }
 
@@ -189,17 +192,10 @@ void SampWidget::updateUIForEmpty() {
 }
 
 void SampWidget::updateUIForLoading() {
-    INFO("in loading, set cur to %s", curSampleSet.c_str());
+    INFO("in loading, set cur to %s", curBaseFileName.c_str());
     std::string s = "Loading ";
-    s += curSampleSet;
+    s += curBaseFileName;
     s += "...";
-    uiText1->text = s;
-    uiText2->text = "";
-}
-
-void SampWidget::updateUIForLoaded() {
-    std::string s = "Samples: ";
-    s += curSampleSet;
     uiText1->text = s;
     uiText2->text = "";
 }
@@ -258,6 +254,66 @@ void SampWidget::step() {
     ModuleWidget::step();
     pollForStateChange();
     pollNewState();
+}
+
+void SampWidget::updateUIForLoaded() {
+    std::string s = "Samples: ";
+    s += curBaseFileName;
+    uiText1->text = s;
+    uiText2->text = "";
+
+    // now the ks stuff
+    buildKeyswitchUI();
+    buildPitchrangeUI();
+}
+
+void SampWidget::buildKeyswitchUI() {
+    keySwitchForIndex.clear();
+    if (!info->keyswitchData.empty()) {
+        std::vector<std::string> labels;
+        if (info->defaultKeySwitch < 0) {
+            labels.push_back("(no default key switch)");
+            keySwitchForIndex.push_back(-1);
+        }
+        for (auto it : info->keyswitchData) {
+            labels.push_back(it.first);
+            const int pitch = it.second.first;
+            if (pitch != it.second.second) {
+                SQWARN("skipping ks range > 1");
+            }
+            keySwitchForIndex.push_back(pitch);
+        }
+
+        keyswitchPopup = SqHelper::createParam<PopupMenuParamWidget>(
+            nullptr,
+            Vec(leftSide, 140),
+            _module,
+            Comp::DUMMYKS_PARAM);
+        keyswitchPopup->box.size.x = 160;  // width
+        keyswitchPopup->box.size.y = 22;   // should set auto like button does
+        keyswitchPopup->text = "noise";
+        keyswitchPopup->setLabels(labels);
+        addParam(keyswitchPopup);
+        keyswitchPopup->setCallback([this](int index) {
+            if (index < 0) {
+                return;
+            }
+            const int pitch = keySwitchForIndex[index];
+            if (pitch != lastKeySwitchSent) {
+                _module->setKeySwitch(pitch);
+                lastKeySwitchSent = pitch;
+            }
+        });
+    }
+}
+
+void SampWidget::buildPitchrangeUI() {
+    SqStream s;
+    s.add("Pitch Range: ");
+    s.add(info->minPitch);
+    s.add("-");
+    s.add(info->maxPitch);
+    uiText2->text = s.str();
 }
 
 #if 0
@@ -348,9 +404,9 @@ void SampWidget::loadSamplerFile() {
         }
 #endif
         lastKeySwitchSent = -1;
-         this->requestNewSampleSet(pathC);
-      //  _module->setNewSamples(pathC);
-   
+        this->requestNewSampleSet(FilePath(pathC));
+        //  _module->setNewSamples(pathC);
+
         INFO("setting state to loading (%d)", State::Loading);
         nextUIState = State::Loading;
     }
@@ -378,7 +434,7 @@ void SampWidget::getRootFolder() {
     });
     SQINFO("getRootFolder got %s", pathC);
     WARN("I don't think this is the rigth way to load samples");
-    this->requestNewSampleSet(pathC);
+    //   this->requestNewSampleSet(pathC);
 }
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
@@ -436,7 +492,7 @@ SampWidget::SampWidget(SampModule* module) {
     // pitchRangeLabel = addLabel(Vec(leftSide, 150), "");
     // pathLabel = addLabel(Vec(leftSide, 70), "");
     uiText1 = addLabel(Vec(leftSide, 70), "");
-    uiText2 = addLabel(Vec(leftSide, 110), "");
+    uiText2 = addLabel(Vec(leftSide, 95), "");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);

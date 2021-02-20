@@ -106,3 +106,12 @@ FilePath FilePath::getPathPart() const {
     auto subPath = s.substr(0, pos);
     return FilePath(subPath);
 }
+
+ std::string FilePath::getFilenamePart() const {
+    std::string s = toString();
+    auto pos = s.rfind(nativeSeparator());
+    if (pos == std::string::npos) {
+        return s;           // return the whole thing if no separator found
+    }
+    return s.substr(pos + 1);
+ }

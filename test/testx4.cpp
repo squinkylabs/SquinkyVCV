@@ -271,6 +271,23 @@ static void testFilePathConcat6() {
     assertEQ(expected.toString(), path.toString());
  }
 
+static void testFilePathGetFilenamePart() {
+    FilePath a("abc/def\\ghi//a.txt");
+    std::string fileName = a.getFilenamePart();
+    assertEQ(fileName, "a.txt");
+}
+
+static void testFilePathGetFilenamePart2() {
+    FilePath a("a.txt");
+    std::string fileName = a.getFilenamePart();
+    assertEQ(fileName, "a.txt");
+}
+
+static void testFilePathGetFilenamePart3() {
+    FilePath a("abc/");
+    std::string fileName = a.getFilenamePart();
+    assertEQ(fileName, "");
+}
 void testx4() {
     testRandomPlayerEmpty();
     testRandomPlayerOneEntry();
@@ -290,5 +307,9 @@ void testx4() {
     testFilePathConcat6();
     testFilePathGetPathPart();
     testFilePathGetPathPart2();
+    testFilePathGetFilenamePart();
+    testFilePathGetFilenamePart2();
+    testFilePathGetFilenamePart3();
+
 
 }

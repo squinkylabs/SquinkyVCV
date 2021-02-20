@@ -4,8 +4,8 @@
 
 class FilePath {
 public:
-    FilePath(const char*);
-    FilePath(const std::string&);
+    explicit FilePath(const char*);
+    explicit FilePath(const std::string&);
     FilePath() = default;
     std::string toString() const;
 
@@ -22,6 +22,7 @@ public:
     // if this == "abc/def/j.txt"
     // will return abc/def
     FilePath getPathPart() const;
+    std::string getFilenamePart() const;
 private:
     std::string data;
 
