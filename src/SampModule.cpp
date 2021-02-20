@@ -37,6 +37,7 @@ public:
     void setSamplePath(const std::string& s) {
         samp->setSamplePath_UI(s);
     }
+
     void setKeySwitch(int pitch) {
         samp->setKeySwitch_UI(pitch);
     }
@@ -165,30 +166,91 @@ struct SampWidget : ModuleWidget {
 
     void pollForStateChange();
     void pollNewState();
+    void updateUIForEmpty();
+    void updateUIForLoading();
+    void updateUIForLoaded();
+    void updateUIForError();
+
+    void removeKeyswitchPopup();
 };
 
 const float leftSide = 20;
 
 void SampWidget::requestNewSampleSet(const std::string& s) {
     curSampleSet = s;
-    _module->setSamplePath(s);
+    INFO("in req, set cur to %s", curSampleSet.c_str());
+    _module->setNewSamples(curSampleSet);
     nextUIState = State::Loading;
 }
 
+void SampWidget::updateUIForEmpty() {
+    uiText1->text = "No SFZ file loaded.";
+    uiText2->text = "";
+}
+
+void SampWidget::updateUIForLoading() {
+    INFO("in loading, set cur to %s", curSampleSet.c_str());
+    std::string s = "Loading ";
+    s += curSampleSet;
+    s += "...";
+    uiText1->text = s;
+    uiText2->text = "";
+}
+
+void SampWidget::updateUIForLoaded() {
+    std::string s = "Samples: ";
+    s += curSampleSet;
+    uiText1->text = s;
+    uiText2->text = "";
+}
+
+void SampWidget::updateUIForError() {
+    std::string s = "Error: ";
+    if (info) {
+        s += info->errorMessage;
+    }
+    uiText1->text = s;
+    uiText2->text = "";
+}
+
 void SampWidget::pollForStateChange() {
+    if (_module && _module->isNewInstrument()) {
+        info = _module->getInstrumentInfo();
+        SQINFO("in UI, error = %s", info->errorMessage.c_str());
+        SQINFO("got info there are %d labels", info->keyswitchData.size());
+        nextUIState = info->errorMessage.empty() ? State::Loaded : State::Error;
+    }
 }
 
 void SampWidget::pollNewState() {
     if (nextUIState != curUIState) {
+        removeKeyswitchPopup();
+        INFO("found ui state change. going to %d", nextUIState);
         switch (nextUIState) {
             case State::Empty:
-                uiText1->text = "No SFZ file loaded.";
+                updateUIForEmpty();
+                break;
+            case State::Loaded:
+                updateUIForLoaded();
+                break;
+            case State::Loading:
+                updateUIForLoading();
+                break;
+            case State::Error:
+                updateUIForError();
                 break;
             default:
                 WARN("UI state changing to %d, not imp", nextUIState);
         }
 
         curUIState = nextUIState;
+    }
+}
+
+inline void SampWidget::removeKeyswitchPopup() {
+    if (keyswitchPopup) {
+        removeChild(keyswitchPopup);
+        keyswitchPopup = nullptr;
     }
 }
 
@@ -273,17 +335,24 @@ void SampWidget::loadSamplerFile() {
     DEFER({
         std::free(pathC);
     });
-    printf("got %s\n", pathC);
+    printf("load sampler got %s\n", pathC);
     fflush(stdout);
 
-    FATAL("finish file load");
+    //FATAL("finish file load");
     if (pathC) {
+#if 0
+        FATAL("move keyswitch removal");
         if (keyswitchPopup) {
             removeChild(keyswitchPopup);
             keyswitchPopup = nullptr;
         }
+#endif
         lastKeySwitchSent = -1;
-        _module->setNewSamples(pathC);
+         this->requestNewSampleSet(pathC);
+      //  _module->setNewSamples(pathC);
+   
+        INFO("setting state to loading (%d)", State::Loading);
+        nextUIState = State::Loading;
     }
 }
 
@@ -307,7 +376,8 @@ void SampWidget::getRootFolder() {
     DEFER({
         std::free(pathC);
     });
-    SQINFO("got %s", pathC);
+    SQINFO("getRootFolder got %s", pathC);
+    WARN("I don't think this is the rigth way to load samples");
     this->requestNewSampleSet(pathC);
 }
 

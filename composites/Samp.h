@@ -205,6 +205,7 @@ inline void Samp<TBase>::init() {
 // Called when a patch has come back from thread server
 template <class TBase>
 inline void Samp<TBase>::setNewPatch(SampMessage* newMessage) {
+    SQINFO("Samp::setNewPatch (came back from thread serer");
     assert(newMessage);
     if (!newMessage->instrument || !newMessage->waves) {
         if (!newMessage->instrument) {
@@ -222,6 +223,7 @@ inline void Samp<TBase>::setNewPatch(SampMessage* newMessage) {
     }
     _isSampleLoaded = true;
     _isNewInstrument = true;
+    SQINFO("Samp::setNewPatch _isNewInstrument");
     this->gcWaveLoader = newMessage->waves;
     this->gcInstrument = newMessage->instrument;
     newMessage->waves.reset();
