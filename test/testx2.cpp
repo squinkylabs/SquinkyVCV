@@ -36,6 +36,17 @@ static void testWaveLoader1() {
     assert(!x);
 }
 
+static void testWaveLoader2() {
+    WaveLoader w;
+    w.addNextSample("D:/samples/UprightPianoKW-small-SFZ-20190703/samples/A3vH.wav");
+    const bool b = w.load();
+    assert(b);
+    auto x = w.getInfo(1);
+    assert(x->valid);
+    x = w.getInfo(0);
+    assert(!x);
+}
+
 static void testWaveLoaderNot44() {
     WaveLoader w;
     w.addNextSample("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav");
@@ -1422,6 +1433,7 @@ void testx2() {
     assert(compileCount == 0);
     testWaveLoader0();
     testWaveLoader1();
+    testWaveLoader2();
     testWaveLoaderNot44();
     testPlayInfo();
 

@@ -480,6 +480,15 @@ static void testRandomRange1() {
     assertEQ(test.size(), 3);
 }
 
+static void testParseDX() {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    // maybe need to compile this...
+    auto err = SParse::goFile("D:\\samples\\__test\\BS-DX7-Bright-Bow.sfz", inst);
+    assert(err.empty());
+    assertEQ(inst->groups.size(), 1);
+}
+
 extern int compileCount;
 
 void testx() {
@@ -528,5 +537,6 @@ void testx() {
     testParseSimpleDrum();
     testRandomRange0();
     testRandomRange1();
+    testParseDX();
     assert(parseCount == 0);
 }

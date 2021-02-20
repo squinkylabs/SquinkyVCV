@@ -257,6 +257,19 @@ static void testFilePathConcat6() {
     assertEQ(s, "abc");
 }
 
+ static void testFilePathGetPathPart() {
+    FilePath a("abc/def\\ghi//a.txt");
+    FilePath path = a.getPathPart();
+    FilePath expected("abc\\def\\ghi\\");           // trailing separators don't really make a difference
+    assertEQ(path.toString(), expected.toString());
+ }
+
+ static void testFilePathGetPathPart2() {
+    FilePath a("a.txt");
+    FilePath path = a.getPathPart();
+    FilePath expected("");
+    assertEQ(expected.toString(), path.toString());
+ }
 
 void testx4() {
     testRandomPlayerEmpty();
@@ -275,4 +288,7 @@ void testx4() {
     testFilePathConcat4();
     testFilePathConcat5();
     testFilePathConcat6();
+    testFilePathGetPathPart();
+    testFilePathGetPathPart2();
+
 }

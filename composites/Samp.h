@@ -8,6 +8,7 @@
 #include "CompiledInstrument.h"
 #include "Divider.h"
 #include "IComposite.h"
+#include "InstrumentInfo.h"
 #include "ManagedPool.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
@@ -333,7 +334,7 @@ public:
         SInstrumentPtr inst = std::make_shared<SInstrument>();
 
         // now load it, and then return it.
-        auto err = SParse::goFile(fullPath.c_str(), inst);
+        auto err = SParse::goFile(fullPath.toString(), inst);
         if (!err.empty()) {
             sendMessageToClient(msg);
             return;
@@ -349,7 +350,8 @@ public:
         }
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
 
-        samplePath += cinst->getDefaultPath();
+      //  samplePath += cinst->getDefaultPath();
+        samplePath.concat(cinst->getDefaultPath());
         cinst->setWaves(waves, samplePath);
         // TODO: errors from wave loader
 
@@ -374,9 +376,10 @@ public:
     }
 
 private:
-    std::string samplePath;
-    std::string fullPath;
-    std::string globalPath;
+    FilePath samplePath;         
+  //  std::string fullPath;
+  //  std::string globalPath;
+    FilePath fullPath;      // what gets passed in
 
     /** parse out the original file location and other info
      * to find the path to the folder containing the samples.
@@ -385,8 +388,9 @@ private:
     void parsePath(SampMessage* msg) {
         SQINFO("parse path 348");
         if (msg->pathToSfz) {
+            // maybe we should allow raw strings to come in this way. but it's probably fine
             fullPath = *(msg->pathToSfz);
-            SQINFO("parse path 351 %s", fullPath.c_str());
+            SQINFO("parse path 351 %s", fullPath.toString());
             SQINFO("about to delete %p", msg->pathToSfz);
             delete msg->pathToSfz;
             msg->pathToSfz = nullptr;
@@ -397,6 +401,11 @@ private:
             SQWARN("ignoring patch def = %s", msg->defaultPath.c_str());
         }
 #endif
+
+        //FilePath fullPath()
+        samplePath = fullPath.getPathPart(); 
+#if 0
+// old way
         WaveLoader::makeAllSeparatorsNative(fullPath);
         SQINFO("parse path 362");
         const auto pos = fullPath.rfind(WaveLoader::nativeSeparator());
@@ -408,6 +417,7 @@ private:
 
         samplePath = fullPath.substr(0, pos) + WaveLoader::nativeSeparator();
         SQINFO("sample base path %s", samplePath.c_str());
+#endif
 
         // If the patch had a path, add that
         //   samplePath += cinst->getDefaultPath();

@@ -22,13 +22,13 @@ WaveLoader::WaveInfoPtr WaveLoader::getInfo(int index) const {
     return finalInfo[index - 1];
 }
 
-WaveLoader::WaveInfo::WaveInfo(const std::string& path) : fileName(path) {
+WaveLoader::WaveInfo::WaveInfo(const FilePath& path) : fileName(path) {
 }
 
-void WaveLoader::addNextSample(const std::string& fileName) {
+void WaveLoader::addNextSample(const FilePath& fileName) {
     assert(!didLoad);
-    auto x = fileName.find(foreignSeparator());
-    assert(x == std::string::npos);
+  //  auto x = fileName.find(foreignSeparator());
+  //  assert(x == std::string::npos);
     filesToLoad.push_back(fileName);
 }
 
@@ -36,7 +36,7 @@ bool WaveLoader::load() {
     assert(!didLoad);
     didLoad = true;
     SQINFO("loader started loading waves");
-    for (std::string& file : filesToLoad) {
+    for (FilePath& file : filesToLoad) {
        // SQINFO("wave loader loading %s", file.c_str());
         WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
         std::string err;
@@ -57,15 +57,15 @@ bool WaveLoader::load() {
 
 bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
 
-    auto x = fileName.find(foreignSeparator());
-    assert(x == std::string::npos);
+   // auto x = fileName.find(foreignSeparator());
+  //  assert(x == std::string::npos);
 
-    float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
+    float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.toString().c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
         errorMessage += "can't open ";
-        errorMessage += fileName;
-        SQWARN("error opening wave %s", fileName.c_str());
+        errorMessage += fileName.toString();
+        SQWARN("error opening wave %s", fileName.toString().c_str());
         return false;
     }
     //SQINFO("after load, frames = %lld rate= %d ch=%d\n", totalFrameCount, sampleRate, numChannels);
@@ -125,6 +125,7 @@ float* WaveLoader::WaveInfo::convertToMono(float* data, uint64_t frames, int cha
 }
 #endif
 
+#if 0
 char WaveLoader::nativeSeparator() {
 #ifdef ARCH_WIN
     return '\\';
@@ -144,6 +145,7 @@ char WaveLoader::foreignSeparator() {
 void WaveLoader::makeAllSeparatorsNative(std::string& s) {
     std::replace(s.begin(), s.end(), foreignSeparator(), nativeSeparator());
 }
+#endif
 
 WaveLoader::WaveInfo::~WaveInfo() {
     if (data) {

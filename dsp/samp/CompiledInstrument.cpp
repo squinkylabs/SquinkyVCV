@@ -168,7 +168,7 @@ void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
     }
 }
 
-void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootPath) {
+void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath) {
     std::vector<std::string> tempPaths;
     assert(!rootPath.empty());
 
@@ -187,8 +187,11 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const std::string& rootP
 
     for (auto path : tempPaths) {
         assert(!path.empty());
-        WaveLoader::makeAllSeparatorsNative(path);
-        loader->addNextSample(rootPath + path);
+      //  WaveLoader::makeAllSeparatorsNative(path);
+        FilePath fullPath(rootPath);
+        FilePath relativePath(path);
+        fullPath.concat(relativePath);
+        loader->addNextSample(fullPath);
     }
 }
 

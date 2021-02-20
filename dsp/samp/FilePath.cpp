@@ -88,10 +88,21 @@ char FilePath::nativeSeparator() {
     return '/';
 #endif
 }
+
 char FilePath::foreignSeparator() {
 #ifdef ARCH_WIN
     return '/';
 #else
     return '\\';
 #endif
+}
+
+FilePath FilePath::getPathPart() const {
+    std::string s = toString();
+    auto pos = s.rfind(nativeSeparator());
+    if (pos == std::string::npos) {
+        return FilePath("");
+    }
+    auto subPath = s.substr(0, pos);
+    return FilePath(subPath);
 }

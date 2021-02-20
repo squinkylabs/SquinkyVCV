@@ -5,11 +5,13 @@
 #include <string>
 #include <vector>
 
-#include "PitchSwitch.h"
+#include "FilePath.h"
+//#include "PitchSwitch.h"
 #include "RegionPool.h"
 #include "SamplerPlayback.h"
 
 
+class FilePath;
 class SInstrument;
 class SRegion;
 class WaveLoader;
@@ -72,9 +74,9 @@ public:
     /**
      * move all the waves from here to wave loader
      */
-    void setWaves(WaveLoaderPtr waveLoader, const std::string& rootPath);
+    void setWaves(WaveLoaderPtr waveLoader, const FilePath& rootPath);
 
-    std::string getDefaultPath() const { return defaultPath; }
+    FilePath getDefaultPath() const { return defaultPath; }
 
     /**
      * finds all the key/value pairs in a parse tree and expands them in place.
@@ -91,12 +93,16 @@ private:
 
     AudioMath::RandomUniformFunc rand = AudioMath::random();
 
-    std::string defaultPath;
+    FilePath defaultPath;
 
     /**
      * Track all the unique relative paths here
      * key = file path
      * value = index (wave id);
+     * 
+     * We could more properly store these as FilePath,
+     * but string is convenient and fast for maps.
+     * as long as do convert these immediately to FilePath it will be fine.
      */
     std::map<std::string, int> relativeFilePaths;
     int nextIndex = 1;
@@ -105,14 +111,13 @@ private:
     bool compileOld(const SInstrumentPtr);
     bool fixupOneRandomGrouping(int groupStartIndex);
 
-   // ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);
-   // ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth);
-    void addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region);
+
+   // void addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region);
     /** add the passed player, which happens to be a vel switch,
      * to the passed destination play. Add it at every pitch where
      * it should be in the patch map.
      */
-    void addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, ISamplerPlaybackPtr velSwitch, const std::vector<CompiledRegionPtr>& regions);
+   // void addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, ISamplerPlaybackPtr velSwitch, const std::vector<CompiledRegionPtr>& regions);
 
     /** Returns wave index
      */
