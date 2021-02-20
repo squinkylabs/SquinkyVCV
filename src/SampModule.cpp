@@ -119,21 +119,86 @@ struct SampWidget : ModuleWidget {
     void loadSamplerFile();
     void getRootFolder();
     void addJacks(SampModule* module, std::shared_ptr<IComposite> icomp);
+
+#if 0
     void setSamplePath(const std::string& s) {
         _module->setSamplePath(s);
         pathLabel->text = s;
     }
+#endif
+
+    void requestNewSampleSet(const std::string& s);
 
     SampModule* _module;
-    Label* pathLabel = nullptr;
-    PopupMenuParamWidget* keyswitchPopup = {nullptr};
-    Label* pitchRangeLabel = {nullptr};
+
     std::vector<int> keySwitchForIndex;
     int lastKeySwitchSent = -1;
+
+    /************************************************************************************** 
+     * Stuff related to UI state and implementing it
+     */
+    enum class State { Empty,
+                       Loading,
+                       Loaded,
+                       Error,
+                       Initial };
+    State curUIState = State::Initial;
+    State nextUIState = State::Empty;
+    PopupMenuParamWidget* keyswitchPopup = {nullptr};
+
+    // display labels. they change as state changes
+
+    // Empty: "No SFZ file loaded"
+    // Loading: "Loading xxx.sfz"
+    // Loaded: Playing xxx.sfz
+    // Error : error message
+    Label* uiText1 = {nullptr};
+
+    // Empty: blank
+    // Loading: progress
+    // Loaded: pitch range
+    // Error: blank
+    Label* uiText2 = {nullptr};
+
+    InstrumentInfoPtr info;
+    std::string curSampleSet;
+
+    void pollForStateChange();
+    void pollNewState();
 };
 
 const float leftSide = 20;
 
+void SampWidget::requestNewSampleSet(const std::string& s) {
+    curSampleSet = s;
+    _module->setSamplePath(s);
+    nextUIState = State::Loading;
+}
+
+void SampWidget::pollForStateChange() {
+}
+
+void SampWidget::pollNewState() {
+    if (nextUIState != curUIState) {
+        switch (nextUIState) {
+            case State::Empty:
+                uiText1->text = "No SFZ file loaded.";
+                break;
+            default:
+                WARN("UI state changing to %d, not imp", nextUIState);
+        }
+
+        curUIState = nextUIState;
+    }
+}
+
+void SampWidget::step() {
+    ModuleWidget::step();
+    pollForStateChange();
+    pollNewState();
+}
+
+#if 0
 void SampWidget::step() {
     ModuleWidget::step();
     if (_module && _module->isNewInstrument()) {
@@ -187,6 +252,7 @@ void SampWidget::step() {
         pitchRangeLabel->text = s.str();
     }
 }
+#endif
 
 void SampWidget::loadSamplerFile() {
     static const char SMF_FILTERS[] = "Standard Sfz file (.sfz):sfz";
@@ -242,7 +308,7 @@ void SampWidget::getRootFolder() {
         std::free(pathC);
     });
     SQINFO("got %s", pathC);
-    this->setSamplePath(pathC);
+    this->requestNewSampleSet(pathC);
 }
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
@@ -295,9 +361,12 @@ SampWidget::SampWidget(SampModule* module) {
     _module = module;
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
-    addLabel(Vec(leftSide, 50), "Sssssss");
-    pitchRangeLabel = addLabel(Vec(leftSide, 150), "");
-    pathLabel = addLabel(Vec(leftSide, 70), "");
+    addLabel(Vec(80, 10), "-Sample Player-");
+
+    // pitchRangeLabel = addLabel(Vec(leftSide, 150), "");
+    // pathLabel = addLabel(Vec(leftSide, 70), "");
+    uiText1 = addLabel(Vec(leftSide, 70), "");
+    uiText2 = addLabel(Vec(leftSide, 110), "");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
