@@ -39,9 +39,13 @@ bool WaveLoader::load() {
     for (std::string& file : filesToLoad) {
        // SQINFO("wave loader loading %s", file.c_str());
         WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
-        const bool b = waveInfo->load();
+        std::string err;
+        const bool b = waveInfo->load(err);
         if (!b) {
             // bail on first error
+            assert(!err.empty());
+            lastError = err;
+            SQINFO("wave loader leaving with error %s", lastError.c_str());
             return false;
         }
 
@@ -51,7 +55,7 @@ bool WaveLoader::load() {
     return true;
 }
 
-bool WaveLoader::WaveInfo::load() {
+bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
 
     auto x = fileName.find(foreignSeparator());
     assert(x == std::string::npos);
@@ -59,6 +63,8 @@ bool WaveLoader::WaveInfo::load() {
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
+        errorMessage += "can't open ";
+        errorMessage += fileName;
         SQWARN("error opening wave %s", fileName.c_str());
         return false;
     }

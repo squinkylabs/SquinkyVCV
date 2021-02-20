@@ -10,7 +10,7 @@ public:
     public:
         WaveInfo(const std::string& fileName);
         ~WaveInfo();
-        bool load();
+        bool load(std::string& errorMsg);
 
         bool valid = false;
         float* data = nullptr;
@@ -46,7 +46,9 @@ public:
     static char foreignSeparator();
     static void makeAllSeparatorsNative(std::string& s);
 
+    std::string lastError;
 private:
+
     std::vector<std::string> filesToLoad;
     std::vector<WaveInfoPtr> finalInfo;
     void clear();

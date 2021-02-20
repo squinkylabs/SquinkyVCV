@@ -358,6 +358,16 @@ public:
 
         smsg->instrument = cinst;
         smsg->waves = loadedOK ? waves : nullptr;
+        auto info = cinst->getInfo();
+
+        SQINFO("samp thread back, info error = %s", info->errorMessage.c_str());
+        if (info->errorMessage.empty() && !loadedOK) {
+           // SQINFO("main error empty");
+           // SQINFO("error from ")
+            info->errorMessage = waves->lastError;
+            SQINFO("returning error message %s", info->errorMessage.c_str());
+        }
+  //   a b // return error now.
         SQINFO("** loader thread returning %d", loadedOK);
 
         sendMessageToClient(msg);

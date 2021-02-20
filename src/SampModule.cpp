@@ -138,6 +138,7 @@ void SampWidget::step() {
     ModuleWidget::step();
     if (_module && _module->isNewInstrument()) {
         auto info = _module->getInstrumentInfo();
+        SQINFO("in UI, error = %s", info->errorMessage.c_str());
         SQINFO("got info there are %d labels", info->keyswitchData.size());
 
         if (!info->keyswitchData.empty()) {

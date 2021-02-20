@@ -11,4 +11,6 @@ public:
     int maxPitch = -1;
     KeyswitchData keyswitchData;
     int defaultKeySwitch = -1;
+
+    std::string errorMessage;
 };
