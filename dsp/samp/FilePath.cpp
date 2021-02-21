@@ -78,7 +78,11 @@ bool FilePath::startsWithDot() const {
     if (data.empty()) {
         return false;
     }
-    return data.at(0) == '.';
+
+    // don't return true for ".."
+    const bool dotAtZero = data.at(0) == '.';
+    const bool dotAtOne = (data.size() < 2) ? false : (data.at(1) == '.');
+    return dotAtZero && !dotAtOne;
 }
 
 char FilePath::nativeSeparator() {
