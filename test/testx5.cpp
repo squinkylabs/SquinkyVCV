@@ -37,7 +37,7 @@ static void testSamplerRealSound() {
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
-    cinst->_setTestMode();
+    cinst->_setTestMode(CompiledInstrument::Tests::MiddleC);
 
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
     w->addNextSample(FilePath(p));
@@ -62,6 +62,7 @@ static void testSamplerRealSound() {
 }
 
 static void testSamplerTestOutput() {
+    printf("\n----- testSamplerTestOutput\n"); fflush(stdout);
     Sampler4vx s;
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -70,11 +71,8 @@ static void testSamplerTestOutput() {
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
     w->_setTestMode(WaveLoader::Tests::DCOneSec);
 
-    cinst->_setTestMode();      // I don't know what this test mode does now, but probably not enough?
+    cinst->_setTestMode(CompiledInstrument::Tests::MiddleC);      // I don't know what this test mode does now, but probably not enough?
 
-  //  const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
-  //  w->addNextSample(FilePath(p));
-  //  w->load();
 
     WaveLoader::WaveInfoPtr info = w->getInfo(1);
     assert(info->valid);

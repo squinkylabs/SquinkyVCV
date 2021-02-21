@@ -14,7 +14,6 @@
 #include "SParse.h"
 #include "SamplerPlayback.h"
 #include "SqLog.h"
-#include "VelSwitch.h"
 #include "WaveLoader.h"
 
 using Opcode = SamplerSchema::Opcode;
@@ -156,6 +155,9 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
 }
 
 void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
+    if (testMode != Tests::None) {
+        return playTestMode(info, params, loader, sampleRate);
+    }
     info.valid = false;
     float r = rand();
     const CompiledRegion* region = regionPool.play(params, r);
@@ -167,6 +169,12 @@ void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
         getGain(info, params.midiVelocity, region->amp_veltrack);
     }
 }
+
+ void CompiledInstrument::playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
+     assert(testMode == Tests::MiddleC);
+
+     assert(false);
+ }
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath) {
     std::vector<std::string> tempPaths;

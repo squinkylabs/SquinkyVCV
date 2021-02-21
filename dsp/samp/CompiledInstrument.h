@@ -10,7 +10,6 @@
 #include "RegionPool.h"
 #include "SamplerPlayback.h"
 
-
 class FilePath;
 class SInstrument;
 class SRegion;
@@ -60,6 +59,11 @@ using InstrumentInfoPtr = std::shared_ptr<InstrumentInfo>;
 
 class CompiledInstrument : public ISamplerPlayback {
 public:
+    enum class Tests {
+        None,
+        MiddleC  // PLays sample 1 at midi pitch 60
+    };
+
     /**
      * high level entry point to compile an instrument.
      * will return null if error, and log the error cause as best it can.
@@ -67,8 +71,8 @@ public:
     static CompiledInstrumentPtr make(SamplerErrorContext&, const SInstrumentPtr);
     void play(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
-    void _setTestMode() {
-        testMode = true;
+    void _setTestMode(Tests t) {
+        testMode = t;
     }
 
     /**
@@ -86,9 +90,10 @@ public:
     int removeOverlaps(std::vector<CompiledRegionPtr>&);
     const RegionPool& _pool() { return regionPool; }
     InstrumentInfoPtr getInfo() { return info; }
+
 private:
     RegionPool regionPool;
-    bool testMode = false;
+    Tests testMode = Tests::None;
     InstrumentInfoPtr info;
 
     AudioMath::RandomUniformFunc rand = AudioMath::random();
@@ -111,14 +116,6 @@ private:
     bool compileOld(const SInstrumentPtr);
     bool fixupOneRandomGrouping(int groupStartIndex);
 
-
-   // void addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region);
-    /** add the passed player, which happens to be a vel switch,
-     * to the passed destination play. Add it at every pitch where
-     * it should be in the patch map.
-     */
-   // void addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, ISamplerPlaybackPtr velSwitch, const std::vector<CompiledRegionPtr>& regions);
-
     /** Returns wave index
      */
     int addSampleFile(const std::string& s);
@@ -132,5 +129,6 @@ private:
      */
     void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate);
     void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack);
-};
 
+    void playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate);
+};
