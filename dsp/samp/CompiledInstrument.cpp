@@ -190,7 +190,9 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath
       //  WaveLoader::makeAllSeparatorsNative(path);
         FilePath fullPath(rootPath);
         FilePath relativePath(path);
+        SQINFO("in set waves full = %s, rel = %s", fullPath.toString().c_str(), relativePath.toString().c_str());
         fullPath.concat(relativePath);
+        SQINFO("result=%s", fullPath.toString().c_str());
         loader->addNextSample(fullPath);
     }
 }

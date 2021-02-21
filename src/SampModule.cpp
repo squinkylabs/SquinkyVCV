@@ -163,7 +163,6 @@ struct SampWidget : ModuleWidget {
     Label* uiText2 = {nullptr};
 
     InstrumentInfoPtr info;
-    //  std::string curSampleSet;
     std::string curBaseFileName;
 
     void pollForStateChange();
@@ -179,6 +178,10 @@ struct SampWidget : ModuleWidget {
 };
 
 const float leftSide = 20;
+const float text1y = 70;
+//const float text1Height = 40;
+const float text2y = 100;
+const float keyswitchy = 50; 
 
 void SampWidget::requestNewSampleSet(const FilePath& fp) {
     curBaseFileName = fp.getFilenamePart();
@@ -286,7 +289,7 @@ void SampWidget::buildKeyswitchUI() {
 
         keyswitchPopup = SqHelper::createParam<PopupMenuParamWidget>(
             nullptr,
-            Vec(leftSide, 140),
+            Vec(leftSide, keyswitchy),
             _module,
             Comp::DUMMYKS_PARAM);
         keyswitchPopup->box.size.x = 160;  // width
@@ -489,10 +492,12 @@ SampWidget::SampWidget(SampModule* module) {
 
     addLabel(Vec(80, 10), "-Sample Player-");
 
-    // pitchRangeLabel = addLabel(Vec(leftSide, 150), "");
-    // pathLabel = addLabel(Vec(leftSide, 70), "");
-    uiText1 = addLabel(Vec(leftSide, 70), "");
-    uiText2 = addLabel(Vec(leftSide, 95), "");
+    uiText1 = addLabel(Vec(leftSide, text1y), "");
+    uiText2 = addLabel(Vec(leftSide, text2y), "");
+
+    //uiText1->box.size.y = text1Height;
+    //uiText1->mulitl;
+
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);

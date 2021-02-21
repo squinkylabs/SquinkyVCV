@@ -205,7 +205,7 @@ inline void Samp<TBase>::init() {
 // Called when a patch has come back from thread server
 template <class TBase>
 inline void Samp<TBase>::setNewPatch(SampMessage* newMessage) {
-    SQINFO("Samp::setNewPatch (came back from thread serer");
+    SQINFO("Samp::setNewPatch (came back from thread server)");
     assert(newMessage);
     if (!newMessage->instrument || !newMessage->waves) {
         if (!newMessage->instrument) {
@@ -214,14 +214,16 @@ inline void Samp<TBase>::setNewPatch(SampMessage* newMessage) {
             SQWARN("Patch Loader could not load waves.");
         }
         _isSampleLoaded = false;
-        return;
+    } else {
+         _isSampleLoaded = true;
     }
     for (int i = 0; i < 4; ++i) {
-        playback[i].setPatch(newMessage->instrument);
-        playback[i].setLoader(newMessage->waves);
+        playback[i].setPatch(_isSampleLoaded ? newMessage->instrument : nullptr);
+        playback[i].setLoader(_isSampleLoaded ? newMessage->waves : nullptr);
         playback[i].setNumVoices(4);
     }
-    _isSampleLoaded = true;
+
+    // even if just for errors, we do have a new "instrument"
     _isNewInstrument = true;
     SQINFO("Samp::setNewPatch _isNewInstrument");
     this->gcWaveLoader = newMessage->waves;
@@ -354,6 +356,7 @@ public:
 
       //  samplePath += cinst->getDefaultPath();
         samplePath.concat(cinst->getDefaultPath());
+        SQINFO("calling setWaves on %s", samplePath.toString().c_str());
         cinst->setWaves(waves, samplePath);
         // TODO: errors from wave loader
 
@@ -406,20 +409,7 @@ private:
 
         //FilePath fullPath()
         samplePath = fullPath.getPathPart(); 
-#if 0
-// old way
-        WaveLoader::makeAllSeparatorsNative(fullPath);
-        SQINFO("parse path 362");
-        const auto pos = fullPath.rfind(WaveLoader::nativeSeparator());
-        if (pos == std::string::npos) {
-            SQWARN("failed to parse path to samples: %s\n", fullPath.c_str());
-            fflush(stdout);
-            return;
-        }
 
-        samplePath = fullPath.substr(0, pos) + WaveLoader::nativeSeparator();
-        SQINFO("sample base path %s", samplePath.c_str());
-#endif
 
         // If the patch had a path, add that
         //   samplePath += cinst->getDefaultPath();

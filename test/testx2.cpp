@@ -20,14 +20,14 @@ static const char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-P
 
 static void testWaveLoader0() {
     WaveLoader w;
-    w.addNextSample("fake file name");
+    w.addNextSample(FilePath("fake file name"));
     const bool b = w.load();
     assert(!b);
 }
 
 static void testWaveLoader1() {
     WaveLoader w;
-    w.addNextSample("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav");
+    w.addNextSample(FilePath("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav"));
     const bool b = w.load();
     assert(b);
     auto x = w.getInfo(1);
@@ -38,7 +38,7 @@ static void testWaveLoader1() {
 
 static void testWaveLoader2() {
     WaveLoader w;
-    w.addNextSample("D:/samples/UprightPianoKW-small-SFZ-20190703/samples/A3vH.wav");
+    w.addNextSample(FilePath("D:/samples/UprightPianoKW-small-SFZ-20190703/samples/A3vH.wav"));
     const bool b = w.load();
     assert(b);
     auto x = w.getInfo(1);
@@ -49,7 +49,7 @@ static void testWaveLoader2() {
 
 static void testWaveLoaderNot44() {
     WaveLoader w;
-    w.addNextSample("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav");
+    w.addNextSample(FilePath("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav"));
 
     const bool b = w.load();
     assert(b);
@@ -133,7 +133,7 @@ static void testLoadWavesPiano() {
     WaveLoaderPtr loader = std::make_shared<WaveLoader>();
 
     // const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
-    cinst->setWaves(loader, tinnyPianoRoot);
+    cinst->setWaves(loader, FilePath(tinnyPianoRoot));
     loader->load();
     // assert(false);
 }
@@ -276,7 +276,7 @@ static void testSamplerRealSound() {
     cinst->_setTestMode();
 
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
-    w->addNextSample(p);
+    w->addNextSample(FilePath(p));
     w->load();
 
     WaveLoader::WaveInfoPtr info = w->getInfo(1);
@@ -1399,7 +1399,7 @@ volume=12
 static void testSampleRate() {
     WaveLoader w;
     // TODO: change back to k18 orig when test is done
-    w.addNextSample("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav");
+    w.addNextSample(FilePath("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav"));
 
     w.load();
     auto x = w.getInfo(1);

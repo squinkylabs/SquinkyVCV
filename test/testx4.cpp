@@ -288,6 +288,15 @@ static void testFilePathGetFilenamePart3() {
     std::string fileName = a.getFilenamePart();
     assertEQ(fileName, "");
 }
+
+static void testFilePathDoubleDot() {
+    FilePath fp1("a");
+    FilePath fp2("../b");
+    fp1.concat(fp2);
+    FilePath expected("a/../b");
+    assertEQ(fp1.toString(), expected.toString());
+}
+
 void testx4() {
     testRandomPlayerEmpty();
     testRandomPlayerOneEntry();
@@ -310,6 +319,7 @@ void testx4() {
     testFilePathGetFilenamePart();
     testFilePathGetFilenamePart2();
     testFilePathGetFilenamePart3();
+    testFilePathDoubleDot();
 
 
 }

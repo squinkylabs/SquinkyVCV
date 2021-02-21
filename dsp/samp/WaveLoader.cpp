@@ -64,7 +64,7 @@ bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
         errorMessage += "can't open ";
-        errorMessage += fileName.toString();
+        errorMessage += fileName.getFilenamePart();
         SQWARN("error opening wave %s", fileName.toString().c_str());
         return false;
     }
