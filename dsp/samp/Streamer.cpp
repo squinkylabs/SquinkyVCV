@@ -53,10 +53,12 @@ float Streamer::stepNoTranspose(ChannelData& cd) {
     return ret * cd.vol;
 }
 
+#if 0
 void Streamer::mute(int channel) {
     assert(channel < 4);
     channels[channel].vol = 0;
 }
+#endif
 
 bool Streamer::canPlay(int channel) {
     assert(channel < 4);

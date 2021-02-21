@@ -1,13 +1,11 @@
 
 
 #include "CompiledInstrument.h"
+#include "SInstrument.h"
 #include "Sampler4vx.h"
 #include "SamplerErrorContext.h"
-#include "SInstrument.h"
 #include "WaveLoader.h"
-
 #include "asserts.h"
-
 
 static void testSampler() {
     Sampler4vx s;
@@ -62,17 +60,16 @@ static void testSamplerRealSound() {
 }
 
 std::shared_ptr<Sampler4vx> makeTest() {
-    std::shared_ptr<Sampler4vx> s = std::make_shared< Sampler4vx>();
+    std::shared_ptr<Sampler4vx> s = std::make_shared<Sampler4vx>();
 
-  SInstrumentPtr inst = std::make_shared<SInstrument>();
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
     w->_setTestMode(WaveLoader::Tests::DCOneSec);
 
-    cinst->_setTestMode(CompiledInstrument::Tests::MiddleC);      // I don't know what this test mode does now, but probably not enough?
-
+    cinst->_setTestMode(CompiledInstrument::Tests::MiddleC);  // I don't know what this test mode does now, but probably not enough?
 
     WaveLoader::WaveInfoPtr info = w->getInfo(1);
     assert(info->valid);
@@ -81,18 +78,13 @@ std::shared_ptr<Sampler4vx> makeTest() {
     s->setNumVoices(1);
     s->setPatch(cinst);
 
-
-    //const int channel = 0;
-    //const int midiPitch = 60;
-    //const int midiVel = 60;
-
     return s;
 }
 
 // This mostly tests that the test infrastructure works.
 static void testSamplerTestOutput() {
     auto s = makeTest();
-    
+
     const int channel = 0;
     const int midiPitch = 60;
     const int midiVel = 60;
@@ -106,11 +98,89 @@ static void testSamplerTestOutput() {
     assert(x[0] > .1);
 }
 
+using ProcFunc = std::function<float()>;
 
+static unsigned measureAttack( ProcFunc f, float threshold) {
+    unsigned int ret = 0;
+    float x = f();
+    assert (x < .5);
+    ret++;
 
+    while (x < threshold) {
+        ++ret;
+        x = f();
+    }
+    return ret;
+}
 
+static unsigned measureRelease( ProcFunc f, float threshold) {
+    unsigned int ret = 0;
+    float x = f();
+    assert (x > .5);
+    ret++;
+
+    while (x > threshold) {
+        ++ret;
+        x = f();
+    }
+    return ret;
+}
+
+static void testSamplerAttack() {
+    auto s = makeTest();
+
+    const int channel = 0;
+    const int midiPitch = 60;
+    const int midiVel = 60;
+    s->note_on(channel, midiPitch, midiVel, 0);
+
+    float_4 gates = SimdBlocks::maskTrue();
+    ProcFunc lambda = [s, &gates] {
+        const float sampleTime = 1.f / 44100.f;
+     
+        const float_4 x = s->step(gates, sampleTime);
+        return x[0];
+    };
+
+    const auto attackSamples = measureAttack(lambda, .95f);
+
+    // These are arbitrary "known good" values,
+    // but the point is to be sure the default attack is "fast"
+    assert(attackSamples > 10);
+    assert(attackSamples < 20);
+}
+
+static void testSamplerRelease() {
+    auto s = makeTest();
+
+    const int channel = 0;
+    const int midiPitch = 60;
+    const int midiVel = 60;
+    s->note_on(channel, midiPitch, midiVel, 0);
+
+    float_4 gates = SimdBlocks::maskTrue();
+    ProcFunc lambda = [s, &gates] {
+        const float sampleTime = 1.f / 44100.f;
+
+        const float_4 x = s->step(gates, sampleTime);
+        return x[0];
+    };
+
+    auto attackSamples = measureAttack(lambda, .95f);
+    gates = SimdBlocks::maskFalse();
+  //  s->note_off(channel);
+    const auto releaseSamples = measureRelease(lambda, .05f);
+
+    // These are arbitrary "known good" values,
+    // but the point is to be sure the default attack is "fast"
+    // I get 20,800 when I cheat. about right
+    assertLT(releaseSamples, 22000);
+    assertGT(releaseSamples, 18000);
+}
 void testx5() {
-      testSampler();
-      testSamplerTestOutput();
+    testSampler();
+    testSamplerTestOutput();
+    testSamplerAttack();
+    testSamplerRelease();
     //testSamplerRealSound();
 }

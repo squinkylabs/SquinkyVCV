@@ -293,8 +293,10 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                     playback[bank].note_on(iSub, midiPitch, midiVelocity, args.sampleRate);
                     // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
                 } else {
+#ifndef _USEADSR
                     playback[bank].note_off(iSub);
                     // printf("new gate off %d:%d value = %f\n", bank, iSub, gate4[iSub]); fflush(stdout);
+#endif
                 }
             }
         }

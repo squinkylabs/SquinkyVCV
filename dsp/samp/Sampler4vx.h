@@ -18,7 +18,9 @@ using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 class Sampler4vx {
 public:
     void note_on(int channel, int midiPitch, int midiVelocity, float sampleRate);
+#ifndef _USEADSR
     void note_off(int channel);
+#endif
 
     void setPatch(CompiledInstrumentPtr inst);
     void setLoader(WaveLoaderPtr loader);

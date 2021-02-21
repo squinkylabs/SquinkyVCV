@@ -59,17 +59,8 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
         assert(region->lovel >= 0);
         assert(region->hivel <= 127);
 
-        // printf("in play loop, looking at region: \n");
-        // region->_dump(0);
-
         bool sequenceMatch = true;
         if (region->sequenceLength > 1) {
-            // Sequence activation
-            // TODO: do we really need to use sequenceSwitched? might have no use for us
-            // WE need to do the calculation for all seq regions, or else they will never come on
-
-            // fprintf(stderr, "region %p", region);
-            // fprintf(stderr, "looking for seq ctr=%d len=%d pos=%d\n", region->sequenceCounter, region->sequenceLength, region->sequencePosition);
 
             sequenceMatch =
                 ((region->sequenceCounter++ % region->sequenceLength) == region->sequencePosition - 1);
@@ -86,14 +77,6 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
 
 // TODO: reduce code with the visitor
 void RegionPool::_getAllRegions(std::vector<CompiledRegionPtr>& array) const {
-#if 0
-    assert(array.empty());
-    for (auto group : groups) {
-        for (auto region : group->regions) {
-            array.push_back(region);
-        }
-    }
-#endif
     array = regions;
 }
 

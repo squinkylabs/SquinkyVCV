@@ -8,7 +8,9 @@ public:
     void setSample(int chan, float* data, int frames);
     void setTranspose(int chan, bool doTranspoe, float amount);
     bool canPlay(int chan);
-    void mute(int chan);
+
+    // this mute is just from before we had adsr
+   // void mute(int chan);
     void setGain(int chan, float gain);
 
     // TODO: float 4?

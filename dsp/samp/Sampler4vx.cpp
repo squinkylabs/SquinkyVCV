@@ -53,10 +53,14 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     // printf("note_on ch=%d, pitch-%d, vel=%d sample=%d\n", channel, midiPitch, midiVelocity, patchInfo.sampleIndex);  fflush(stdout);
 }
 
+#ifndef _USEADSR
 void Sampler4vx::note_off(int channel) {
+
     player.mute(channel);
+
     // printf("note off %d\n", channel);  fflush(stdout);
 }
+#endif
 
 void Sampler4vx::setNumVoices(int voices) {
 }
