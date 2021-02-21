@@ -8,9 +8,15 @@
 
 class WaveLoader {
 public:
+    enum class Tests {
+        None,
+        DCOneSec    // let's make one fake wave file that has one second of DC
+    };
+
     class WaveInfo {
     public:
         WaveInfo(const FilePath& fileName);
+        WaveInfo(Tests);                    // Special test only constructor
         ~WaveInfo();
         bool load(std::string& errorMsg);
 
@@ -43,15 +49,12 @@ public:
      * Index is one based. 
      */
     WaveInfoPtr getInfo(int index) const;
-
-#if 0 // use FilePath instead
-    static char nativeSeparator();
-    static char foreignSeparator();
-    static void makeAllSeparatorsNative(std::string& s);
-#endif
-
     std::string lastError;
+
+
+    void _setTestMode(Tests);
 private:
+    Tests _testMode = Tests::None;
 
     std::vector<FilePath> filesToLoad;
     std::vector<WaveInfoPtr> finalInfo;
