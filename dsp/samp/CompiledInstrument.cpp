@@ -55,7 +55,7 @@ void CompiledInstrument::deriveInfo() {
             int hi = region->sw_hilast;
 
             InstrumentInfo::PitchRange range = std::pair<int, int>(low, hi);
-            auto iter = info->keyswitchData.find(label); 
+            auto iter = info->keyswitchData.find(label);
 
             if (iter != info->keyswitchData.end()) {
                 InstrumentInfo::PitchRange existingRange = iter->second;
@@ -170,11 +170,16 @@ void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
     }
 }
 
- void CompiledInstrument::playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
-     assert(testMode == Tests::MiddleC);
+void CompiledInstrument::playTestMode(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
+    assert(testMode == Tests::MiddleC);
 
-     assert(false);
- }
+    assert(params.midiPitch == 60);  // probably a mistake it a tests isn't using this pitch
+    info.sampleIndex = 1;
+    info.valid = true;
+    info.needsTranspose = false;
+    info.transposeAmt = 1;
+    info.ampeg_release = .6;        // standard default for me.
+}
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath) {
     std::vector<std::string> tempPaths;
