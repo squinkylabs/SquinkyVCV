@@ -142,7 +142,7 @@ public:
     }
 
     void setKeySwitch_UI(int ks) {
-       _nextKeySwitchRequest = ks;
+        _nextKeySwitchRequest = ks;
     }
 
     bool _sampleLoaded() {
@@ -215,7 +215,7 @@ inline void Samp<TBase>::setNewPatch(SampMessage* newMessage) {
         }
         _isSampleLoaded = false;
     } else {
-         _isSampleLoaded = true;
+        _isSampleLoaded = true;
     }
     for (int i = 0; i < 4; ++i) {
         playback[i].setPatch(_isSampleLoaded ? newMessage->instrument : nullptr);
@@ -242,7 +242,7 @@ inline void Samp<TBase>::step_n() {
     serviceMessagesReturnedToComposite();
 
     if (_nextKeySwitchRequest >= 1) {
-        int midiPitch = _nextKeySwitchRequest; 
+        int midiPitch = _nextKeySwitchRequest;
         _nextKeySwitchRequest = -1;
         // we can send it to any sampler: ks is global
         // can also use fake vel and fake sr
@@ -271,7 +271,6 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         for (int iSub = 0; iSub < 4; ++iSub) {
             if (gate4[iSub] != lgate4[iSub]) {
                 if (gate4[iSub]) {
-                    // printf("new gate on %d:%d gatevalue=%f\n", bank, iSub, gate4[iSub]); fflush(stdout);
                     assert(bank < 4);
                     const int channel = iSub + bank * 4;
                     const float pitchCV = TBase::inputs[PITCH_INPUT].getVoltage(channel);
@@ -286,7 +285,11 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                             midiVelocity = 1;
                         }
                     }
-                    // SQINFO("midi vel = %d", midiVelocity);
+#if 0
+                    SQINFO("");
+                    SQINFO("new gate on %d:%d gatevalue=%f\n", bank, iSub, gate4[iSub]);
+                    SQINFO("  pitchcv = %f, midipitch = %d", pitchCV, midiPitch);
+#endif
                     playback[bank].note_on(iSub, midiPitch, midiVelocity, args.sampleRate);
                     // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
                 } else {
@@ -354,7 +357,7 @@ public:
         }
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
 
-      //  samplePath += cinst->getDefaultPath();
+        //  samplePath += cinst->getDefaultPath();
         samplePath.concat(cinst->getDefaultPath());
         SQINFO("calling setWaves on %s", samplePath.toString().c_str());
         cinst->setWaves(waves, samplePath);
@@ -369,22 +372,22 @@ public:
 
         SQINFO("samp thread back, info error = %s", info->errorMessage.c_str());
         if (info->errorMessage.empty() && !loadedOK) {
-           // SQINFO("main error empty");
-           // SQINFO("error from ")
+            // SQINFO("main error empty");
+            // SQINFO("error from ")
             info->errorMessage = waves->lastError;
             SQINFO("returning error message %s", info->errorMessage.c_str());
         }
-  //   a b // return error now.
+        //   a b // return error now.
         SQINFO("** loader thread returning %d", loadedOK);
 
         sendMessageToClient(msg);
     }
 
 private:
-    FilePath samplePath;         
-  //  std::string fullPath;
-  //  std::string globalPath;
-    FilePath fullPath;      // what gets passed in
+    FilePath samplePath;
+    //  std::string fullPath;
+    //  std::string globalPath;
+    FilePath fullPath;  // what gets passed in
 
     /** parse out the original file location and other info
      * to find the path to the folder containing the samples.
@@ -408,8 +411,7 @@ private:
 #endif
 
         //FilePath fullPath()
-        samplePath = fullPath.getPathPart(); 
-
+        samplePath = fullPath.getPathPart();
 
         // If the patch had a path, add that
         //   samplePath += cinst->getDefaultPath();

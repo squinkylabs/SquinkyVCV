@@ -2,8 +2,9 @@
   * Unit test entry point
   */
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
+
 #include <string>
 
 extern void testMidiPlayer2();
@@ -108,6 +109,7 @@ extern void testx();
 extern void testx2();
 extern void testx3();
 extern void testx4();
+extern void testx5();
 extern void testADSR();
 extern void testWavThread();
 extern void testACDetector();
@@ -116,8 +118,8 @@ extern void testCompressor();
 extern void testCompressorParamHolder();
 
 #if 0
-#include <sstream>
 #include <iostream>
+#include <sstream>
 static void xx()
 {
     std::stringstream s;
@@ -140,9 +142,8 @@ static void xx()
 
 // #define _MIDIONLY
 
-int main(int argc, char ** argv)
-{
-   // xx();
+int main(int argc, char** argv) {
+    // xx();
     bool runPerf = false;
     bool extended = false;
     bool runShaperGen = false;
@@ -171,7 +172,7 @@ int main(int argc, char ** argv)
     // Want to be sure we are testing the case we care about.
     assert(sizeof(size_t) == 8);
 
-if (runShaperGen) {
+    if (runShaperGen) {
         testSpline(true);
         return 0;
     }
@@ -185,20 +186,21 @@ if (runShaperGen) {
         initPerf();
         perfTest2();
         perfTest();
-       
+
         return 0;
     }
-  
+
 #if 1
- 
+
     testx();
     testx2();
- testx3();  
+    testx3();
     testx4();
+    testx5();
 #else
     printf("------ sampl tests diabled\n");
 #endif
-   
+
     testADSR();
     testCompressorParamHolder();
     testWavThread();
@@ -211,7 +213,7 @@ if (runShaperGen) {
     testDC();
     testSimd();
     testSimdLookup();
-   
+
     testOscSmoother();
 
     testAudioMath();
@@ -223,7 +225,6 @@ if (runShaperGen) {
     testBiquad();
     testACDetector();
 
-
     testSqStream();
     testSub();
     simd_testBiquad();
@@ -234,7 +235,6 @@ if (runShaperGen) {
     testFilterComposites();
     testSimpleQuantizer();
 
-  
     testVec();
     testCommChannels();
     testMidiEvents();
@@ -253,7 +253,7 @@ if (runShaperGen) {
     testReplaceCommand();
     testNewSongDataDataCommand();
     testUndoRedo();
-    
+
     testMidiFile();
     testMidiControllers();
     testMidiEditorSelection();
@@ -273,7 +273,7 @@ if (runShaperGen) {
     testObjectCache();
     testEditCommands4();
     testMultiLag();
-    testSlew4();   
+    testSlew4();
     testMixHelper();
     testStereoMix();
     testMix4();
@@ -282,16 +282,15 @@ if (runShaperGen) {
 #if !defined(_MIDIONLY)
     testTestSignal();
 
-   
     testSaw();
     testClockMult();
     testDelay();
     testPoly();
     testSinOscillator();
     testHilbert();
-    testButterLookup();  
+    testButterLookup();
     testVCO();
-   // testSin();
+    // testSin();
     testFFT();
     testAnalyzer();
     testRateConversion();
@@ -300,7 +299,7 @@ if (runShaperGen) {
     testLadder();
     testHighpassFilter();
     testSuper();
- 
+
 #if 0
     printf("skipping lots of tests\n");
 #else
@@ -311,7 +310,6 @@ if (runShaperGen) {
         testThread(extended);
     }
 
-    
     testFilter();
 
     testStochasticGrammar();
@@ -325,9 +323,6 @@ if (runShaperGen) {
     testVocalAnimator();
 #endif
 
-
-
-
     testFilterDesign();
 #else
     printf("disabled lots of tests for MS (or MIDI ONLY)\n");
@@ -336,14 +331,13 @@ if (runShaperGen) {
 
     // When we run inside Visual Studio, don't exit debugger immediately
 #if defined(_MSC_VER_not)
-    printf("Test passed. Press any key to continue...\n"); fflush(stdout);
+    printf("Test passed. Press any key to continue...\n");
+    fflush(stdout);
     getchar();
 #else
     printf("Tests passed.\n");
 #endif
 }
 
-void sequencerHelp()
-{
-
+void sequencerHelp() {
 }

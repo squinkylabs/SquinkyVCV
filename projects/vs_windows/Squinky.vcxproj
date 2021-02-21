@@ -200,6 +200,7 @@
     <ClCompile Include="..\..\test\testx.cpp" />
     <ClCompile Include="..\..\test\testx2.cpp" />
     <ClCompile Include="..\..\test\testx4.cpp" />
+    <ClCompile Include="..\..\test\testx5.cpp" />
     <ClCompile Include="..\..\util\SqLog.cpp" />
   </ItemGroup>
   <ItemGroup>
