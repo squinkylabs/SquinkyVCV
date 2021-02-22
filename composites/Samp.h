@@ -247,7 +247,9 @@ inline void Samp<TBase>::step_n() {
         // we can send it to any sampler: ks is global
         // can also use fake vel and fake sr
         playback[0].note_on(0, midiPitch, 64, 44100.f);
-        playback[0].note_off(0);
+
+        // don't do this anymore, now that we have ADSR
+       // playback[0].note_off(0);
     }
 }
 
