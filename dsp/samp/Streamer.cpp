@@ -1,6 +1,7 @@
 
 #include "Streamer.h"
 
+#include <algorithm>
 #include <assert.h>
 #include <stdio.h>
 
@@ -88,4 +89,22 @@ void Streamer::setTranspose(int channel, bool doTranspose, float amount) {
     ChannelData& cd = channels[channel];
     cd.transposeEnabled = doTranspose;
     cd.transposeMultiplier = amount;
+}
+
+float_4 Streamer::audioSamplesRemaining() const {
+    float_4 ret(0);
+    for (int channel = 0; channel < 4; ++channel) {
+        const ChannelData& cd = channels[channel];
+
+        unsigned curPosition = std::max<unsigned>(cd.curIntegerSampleOffset, (unsigned) cd.curFloatSampleOffset);
+        int framesRemaining = cd.frames - curPosition;
+        assert(framesRemaining >= 0);
+        framesRemaining = std::max(framesRemaining, 0);
+
+        // kind of sleazy forcing this into a float, but it will be fine.
+        ret[channel] = float(framesRemaining);
+    }
+
+    
+    return ret;
 }

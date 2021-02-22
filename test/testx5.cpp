@@ -116,7 +116,7 @@ static unsigned measureAttack( ProcFunc f, float threshold) {
 static unsigned measureRelease( ProcFunc f, float threshold) {
     unsigned int ret = 0;
     float x = f();
-    assert (x > .5);
+  //  assert (x > .5);
     ret++;
 
     while (x > threshold) {
@@ -142,12 +142,12 @@ static void testSamplerAttack() {
         return x[0];
     };
 
-    const auto attackSamples = measureAttack(lambda, .95f);
+    const auto attackSamples = measureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
 
     // These are arbitrary "known good" values,
     // but the point is to be sure the default attack is "fast"
-    assert(attackSamples > 10);
-    assert(attackSamples < 20);
+    assert(attackSamples > 100);
+    assert(attackSamples < 200);
 }
 
 static void testSamplerRelease() {
@@ -166,10 +166,9 @@ static void testSamplerRelease() {
         return x[0];
     };
 
-    auto attackSamples = measureAttack(lambda, .95f);
+    auto attackSamples = measureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
     gates = SimdBlocks::maskFalse();
-  //  s->note_off(channel);
-    const auto releaseSamples = measureRelease(lambda, .05f);
+    const auto releaseSamples = measureRelease(lambda, .05f * Sampler4vx::_outputGain()[0]);
 
     // These are arbitrary "known good" values,
     // but the point is to be sure the default attack is "fast"
@@ -177,10 +176,41 @@ static void testSamplerRelease() {
     assertLT(releaseSamples, 22000);
     assertGT(releaseSamples, 18000);
 }
+
+// validate that the release envelope kicks in a the end of the sampl/
+static void testSamplerEnd() {
+    auto s = makeTest();
+
+    const int channel = 0;
+    const int midiPitch = 60;
+    const int midiVel = 60;
+    s->note_on(channel, midiPitch, midiVel, 0);
+
+    float_4 gates = SimdBlocks::maskTrue();
+    ProcFunc lambda = [s, &gates] {
+        const float sampleTime = 1.f / 44100.f;
+
+        const float_4 x = s->step(gates, sampleTime);
+        return x[0];
+    };
+
+    auto attackSamples = measureAttack(lambda, .99f * Sampler4vx::_outputGain()[0]);
+    // don't lower the gate, just let it end
+    // masure when it starts to go down
+    const auto releaseSamples = measureRelease(lambda, .95f * Sampler4vx::_outputGain()[0]);
+    // and finish
+    const auto releaseSamples2 = measureRelease(lambda, .05f * Sampler4vx::_outputGain()[0]);
+
+
+    assertGT(releaseSamples2, 18000);
+    assertLT(releaseSamples2, 22000);
+}
+
 void testx5() {
     testSampler();
     testSamplerTestOutput();
     testSamplerAttack();
     testSamplerRelease();
+    testSamplerEnd();
     //testSamplerRealSound();
 }

@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "ADSR4.h"
+#include "Divider.h"
 #include "SimdBlocks.h"
 
 class CompiledInstrument;
@@ -17,6 +18,7 @@ using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 #define _USEADSR
 class Sampler4vx {
 public:
+    Sampler4vx();
     void note_on(int channel, int midiPitch, int midiVelocity, float sampleRate);
 #ifndef _USEADSR
     void note_off(int channel);
@@ -31,6 +33,11 @@ public:
     void setNumVoices(int voices);
     float_4 step(const float_4& gates, float sampleTime);
 
+    // fixed
+    static float_4 _outputGain() {
+        return 5;
+    }
+
 private:
     CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;
@@ -40,5 +47,11 @@ private:
     float_4 R = float_4(.001f);
 #endif
 
-    void tryInit();
+    Divider divn;           // used to reduce the polling frequency for remaining samples
+    void step_n();
+    float sampleTime_ = 0;
+    float_4 shutOffNow_ = {0};
+    float_4 releaseTime_ = {0};
+
+ //   void tryInit();
 };

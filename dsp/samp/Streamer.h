@@ -3,6 +3,11 @@
 
 #include "SimdBlocks.h"
 
+/**
+ * This is a four channel streamer.
+ * Streamer is the thing that plays out a block of samples, possibly at an
+ * altered rate.
+ */
 class Streamer {
 public:
     void setSample(int chan, float* data, int frames);
@@ -10,11 +15,16 @@ public:
     bool canPlay(int chan);
 
     // this mute is just from before we had adsr
-   // void mute(int chan);
+    // void mute(int chan);
     void setGain(int chan, float gain);
 
-    // TODO: float 4?
+
     float_4 step();
+
+    /** On each channel,
+     * how many samples are left?
+     */
+    float_4 audioSamplesRemaining() const;
 
 public:
     class ChannelData {
