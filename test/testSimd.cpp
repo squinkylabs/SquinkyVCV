@@ -175,17 +175,18 @@ static void testBools() {
     bool b = SimdBlocks::isTrue(x);
     assert(b);
 
-     x = SimdBlocks::maskFalse();
+    x = SimdBlocks::maskFalse();
     simd_assertMask(x);
     b = SimdBlocks::isTrue(x);
     assert(!b);
 
     float_4 mask = SimdBlocks::maskTrue();
-    float_4 not = SimdBlocks::maskFalse();
+    float_4 _not = SimdBlocks::maskFalse();
 
-    float_4 a = {not[0], not[0], not[0], mask[0]};
+    float_4 a = {_not[0], _not[0], _not[0], mask[0]};
+
+    // I forgot what this test was going to do...
 }
-   
 
 void testSimd() {
     testAsserts();

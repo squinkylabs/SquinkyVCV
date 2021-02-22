@@ -110,6 +110,7 @@ extern void testx2();
 extern void testx3();
 extern void testx4();
 extern void testx5();
+extern void testx6();
 extern void testADSR();
 extern void testWavThread();
 extern void testACDetector();
@@ -197,6 +198,7 @@ int main(int argc, char** argv) {
     testx3();
     testx4();
     testx5();
+    testx6();
 #else
     printf("------ sampl tests diabled\n");
 #endif

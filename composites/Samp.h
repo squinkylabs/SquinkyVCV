@@ -149,6 +149,8 @@ public:
         return _isSampleLoaded;
     }
 
+    static int quantize(float pitchCV);
+
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
                              // SInstrumentPtr instrument;
@@ -249,8 +251,14 @@ inline void Samp<TBase>::step_n() {
         playback[0].note_on(0, midiPitch, 64, 44100.f);
 
         // don't do this anymore, now that we have ADSR
-       // playback[0].note_off(0);
+        // playback[0].note_off(0);
     }
+}
+
+template <class TBase>
+inline int Samp<TBase>::quantize(float pitchCV) {
+    const int midiPitch = 60 + int(std::floor(.5 + pitchCV * 12));
+    return midiPitch;
 }
 
 template <class TBase>
@@ -276,7 +284,8 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                     assert(bank < 4);
                     const int channel = iSub + bank * 4;
                     const float pitchCV = TBase::inputs[PITCH_INPUT].getVoltage(channel);
-                    const int midiPitch = 60 + int(std::floor(pitchCV * 12));
+                    //  const int midiPitch = 60 + int(std::floor(pitchCV * 12));
+                    const int midiPitch = quantize(pitchCV);
 
                     // if velocity not patched, use 64
                     int midiVelocity = 64;

@@ -1,9 +1,10 @@
 
 
 #include "CompiledInstrument.h"
-#include "SInstrument.h"
+#include "Samp.h"
 #include "Sampler4vx.h"
 #include "SamplerErrorContext.h"
+#include "SInstrument.h"
 #include "WaveLoader.h"
 #include "asserts.h"
 
@@ -206,6 +207,42 @@ static void testSamplerEnd() {
     assertLT(releaseSamples2, 22000);
 }
 
+static void testSampSqantizer() {
+    using Comp = Samp<TestComposite>;
+
+    const float semiV = 1.f / 12.f;
+    const float quarterV = semiV / 2.f;
+    const float tinny = quarterV / 16.f;
+    // 0v quantized to middle C
+    assertEQ(Comp::quantize(0), 60);
+    assertEQ(Comp::quantize(0 + quarterV - tinny), 60);
+    assertEQ(Comp::quantize(0 + quarterV + tinny), 61);
+    assertEQ(Comp::quantize(0 - quarterV + tinny), 60);
+    assertEQ(Comp::quantize(0 - quarterV - tinny), 59);
+
+
+
+    assertEQ(Comp::quantize(0 + 1 * semiV), 61);
+    assertEQ(Comp::quantize(0 + 2 * semiV), 62);
+    assertEQ(Comp::quantize(0 + 3 * semiV), 63);
+    assertEQ(Comp::quantize(0 + 4 * semiV), 64);
+    assertEQ(Comp::quantize(0 + 5 * semiV), 65);
+
+    assertEQ(Comp::quantize(1 + 1 * semiV), 61+12);
+    assertEQ(Comp::quantize(1 + 2 * semiV), 62+12);
+    assertEQ(Comp::quantize(1 + 3 * semiV), 63+12);
+    assertEQ(Comp::quantize(1 + 4 * semiV), 64+12);
+    assertEQ(Comp::quantize(1 + 5 * semiV), 65+12);
+
+    assertEQ(Comp::quantize(-1 + 1 * semiV), 61 - 12);
+    assertEQ(Comp::quantize(-1 + 2 * semiV), 62 - 12);
+    assertEQ(Comp::quantize(-1 + 3 * semiV), 63 - 12);
+    assertEQ(Comp::quantize(-1 + 4 * semiV), 64 - 12);
+    assertEQ(Comp::quantize(-1 + 5 * semiV), 65 - 12);
+
+  
+}
+
 void testx5() {
     testSampler();
     testSamplerTestOutput();
@@ -213,4 +250,6 @@ void testx5() {
     testSamplerRelease();
     testSamplerEnd();
     //testSamplerRealSound();
+
+    testSampSqantizer();
 }
