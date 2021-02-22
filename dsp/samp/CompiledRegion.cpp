@@ -12,59 +12,77 @@
 
 int compileCount = 0;
 
-void CompiledRegion::findValue(int& intValue, SamplerSchema::Opcode opcode, const SGroup& parent, const SRegion& reg) {
-    assert(&parent);
-    auto value = reg.compiledValues->get(opcode);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Int);
-        intValue = value->numericInt;
-        return;
-    }
-    value = parent.compiledValues->get(opcode);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Int);
-        intValue = value->numericInt;
-        return;
-    }
-    return;
-}
-
-void CompiledRegion::findValue(float& floatValue, SamplerSchema::Opcode opcode, const SGroup& parent, const SRegion& reg) {
-    auto value = reg.compiledValues->get(opcode);
+void CompiledRegion::findValue(float& floatValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
+    assert(inputValues);
+    auto value = inputValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Float);
         floatValue = value->numericFloat;
-        return;
     }
-    value = parent.compiledValues->get(opcode);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Float);
-        floatValue = value->numericFloat;
-        return;
-    }
-    return;
 }
 
-void CompiledRegion::findValue(std::string& strValue, SamplerSchema::Opcode opcode, const SGroup& parent, const SRegion& reg) {
-    auto value = reg.compiledValues->get(opcode);
+void CompiledRegion::findValue(int& intValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
+    assert(inputValues);
+    auto value = inputValues->get(opcode);
     if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::String);
-        strValue = value->string;
-        return;
+        assert(value->type == SamplerSchema::OpcodeType::Int);
+        intValue = value->numericInt;
     }
-    value = parent.compiledValues->get(opcode);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::String);
-        strValue = value->string;
-        return;
-    }
-    return;
 }
 
-void findValue(float&, SamplerSchema::Opcode) {}
-void findValue(std::string&, SamplerSchema::Opcode) {}
+void CompiledRegion::findValue(std::string& stringValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
+    assert(inputValues);
+    auto value = inputValues->get(opcode);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::String);
+        stringValue = value->string;
+    }
+}
 
 using Opcode = SamplerSchema::Opcode;
+
+void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
+    // TODO: what did old findValue to that we don't?
+    // TODO: why did old version need so many args?
+    // TODO: do we need weakParent? get rid of it?
+    // TODO: line numbers
+
+    //---------------- key related values
+    findValue(lokey, values, SamplerSchema::Opcode::LO_KEY);
+    findValue(hikey, values, SamplerSchema::Opcode::HI_KEY);
+
+    int key = -1;
+    findValue(key, values, SamplerSchema::Opcode::KEY);
+    if (key >= 0) {
+        lokey = hikey = keycenter = key;
+    }
+    // TODO: only do this if key not set?
+    findValue(keycenter, values, SamplerSchema::Opcode::PITCH_KEYCENTER);
+
+    //---------------------------------------------velocity
+    findValue(lovel, values, SamplerSchema::Opcode::LO_VEL);
+    findValue(hivel, values, SamplerSchema::Opcode::HI_VEL);
+    assert(lovel >= 0);  // some idiot instruments use zero, even though it is not legal
+    assert(hivel >= lovel);
+    assert(hivel <= 127);
+
+    //------------- misc
+    findValue(ampeg_release, values, SamplerSchema::Opcode::AMPEG_RELEASE);
+
+    //----------- sample file
+    std::string baseFileName;
+    std::string defaultPathName;
+    findValue(baseFileName, values, SamplerSchema::Opcode::SAMPLE);
+    findValue(defaultPathName, values, SamplerSchema::Opcode::DEFAULT_PATH);
+    FilePath def(defaultPathName);
+    FilePath base(baseFileName);
+    def.concat(base);
+    this->sampleFile = def.toString();
+
+    //  static void findValue(float& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
+}
+
+#if 0
 CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParent, SGroupPtr parsedParent) : weakParent(compiledParent), lineNumber(region->lineNumber) {
     assert(parsedParent);
     compileCount++;
@@ -146,6 +164,7 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
 
     // findValue(sampleFile, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
 }
+#endif
 
 #if 0
 static bool overlapRange(int alo, int ahi, int blo, int bhi) {
@@ -174,7 +193,6 @@ static bool overlapRangeFloat(float alo, float ahi, float blo, float bhi) {
 }
 
 bool CompiledRegion::overlapsPitch(const CompiledRegion& that) const {
-
     // of both regions have valid sw_last info
     if (sw_lolast >= 0 && sw_hilast >= 0 && that.sw_lolast >= 0 && that.sw_hilast >= 0) {
         // and the ranges don't overlap
@@ -182,7 +200,7 @@ bool CompiledRegion::overlapsPitch(const CompiledRegion& that) const {
         if (!switchesOverlap) {
             // ... then there can't be a pitch conflict
             return false;
-        } 
+        }
     }
 
     return overlapRangeInt(this->lokey, this->hikey, that.lokey, that.hikey);

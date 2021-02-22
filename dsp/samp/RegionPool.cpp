@@ -117,7 +117,13 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
         auto cGroup = std::make_shared<CompiledGroup>(group);
         if (!cGroup->shouldIgnore()) {
             for (auto reg : group->regions) {
-                auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
+                SQWARN("need to add global info");
+                CompiledRegionPtr cReg = std::make_shared<CompiledRegion>();
+                cReg->addRegionInfo(in->global.compiledValues);
+                cReg->addRegionInfo(group->compiledValues);
+                cReg->addRegionInfo(reg->compiledValues);
+               
+              //  auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
                 maybeAddToKeyswitchList(cReg);
                 if (cReg->sw_default >= 0) {
                     currentSwitch_ = cReg->sw_default;

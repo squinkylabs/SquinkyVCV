@@ -18,7 +18,13 @@ public:
         CompiledInstrument::expandAllKV(errc, inst);
         assert(inst->wasExpanded);
         assert(err.empty());
-        CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+
+        // update this for new code
+       // assert(false);
+      //  //CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+      //  CompiledRegionPtr cr;
+        CompiledRegionPtr cr = std::make_shared<CompiledRegion>();
+        cr->addRegionInfo(region->compiledValues);
         return cr;
     }
 };

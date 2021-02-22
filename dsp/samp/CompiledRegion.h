@@ -34,7 +34,8 @@ extern int compileCount;
  */
 class CompiledRegion {
 public:
-    CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
+  //  CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
+    void addRegionInfo(SamplerSchema::KeysAndValuesPtr);
     CompiledRegion() {
         // SQINFO("Compiled REgion def ctor %p", this);
         ++compileCount;
@@ -114,9 +115,16 @@ protected:
     CompiledRegion& operator=(const CompiledRegion&) = default;
 
 private:
-    static void findValue(int& returnValue, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
-    static void findValue(float&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
-    static void findValue(std::string&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+    // old stuff
+  //  static void findValue(int& returnValue, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+  //  static void findValue(float&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+ //   static void findValue(std::string&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+
+    
+    // new stuff
+    static void findValue(float& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
+    static void findValue(int& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
+    static void findValue(std::string& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
 };
 
 /**

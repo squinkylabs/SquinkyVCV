@@ -193,12 +193,14 @@ int main(int argc, char** argv) {
 
 #if 1
 
+
     testx();
+    testx6();
     testx2();
     testx3();
     testx4();
     testx5();
-    testx6();
+   
 #else
     printf("------ sampl tests diabled\n");
 #endif
