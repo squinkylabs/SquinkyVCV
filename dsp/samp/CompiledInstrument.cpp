@@ -178,7 +178,7 @@ void CompiledInstrument::playTestMode(VoicePlayInfo& info, const VoicePlayParame
     info.valid = true;
     info.needsTranspose = false;
     info.transposeAmt = 1;
-    info.ampeg_release = .6;        // standard default for me.
+    info.ampeg_release = .6f;        // standard default for me.
 }
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath) {
