@@ -68,6 +68,7 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
 
     //------------- misc
     findValue(ampeg_release, values, SamplerSchema::Opcode::AMPEG_RELEASE);
+    findValue(amp_veltrack, values, SamplerSchema::Opcode::AMP_VELTRACK);
 
     //----------- sample file
     std::string baseFileName;
@@ -77,7 +78,19 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     FilePath def(defaultPathName);
     FilePath base(baseFileName);
     def.concat(base);
-    this->sampleFile = def.toString();
+    if (!def.empty()) {
+        this->sampleFile = def.toString();
+    }
+
+    // ---- random and RR -------------------
+    findValue(lorand, values, SamplerSchema::Opcode::LO_RAND);
+    findValue(hirand, values, SamplerSchema::Opcode::HI_RAND);
+    findValue(sequencePosition, values, SamplerSchema::Opcode::SEQ_POSITION);
+    findValue(sequenceLength, values, SamplerSchema::Opcode::SEQ_LENGTH);
+    if (sequencePosition < 0) {
+        sequenceLength = 1;
+        sequencePosition = 1;
+    }
 
     //  static void findValue(float& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
 }

@@ -24,6 +24,7 @@ public:
       //  //CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
       //  CompiledRegionPtr cr;
         CompiledRegionPtr cr = std::make_shared<CompiledRegion>();
+        cr->addRegionInfo(group->compiledValues);
         cr->addRegionInfo(region->compiledValues);
         return cr;
     }

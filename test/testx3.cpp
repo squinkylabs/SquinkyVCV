@@ -34,10 +34,11 @@ static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::
     sr->compiledValues = SamplerSchema::compile(errc, sr->values);
     assert(errc.empty());
 
-    assert(false);
-    // update this for new code
-    CompiledRegionPtr r0;
-    //CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
+    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>();
+    r0->addRegionInfo(sr->compiledValues);
+
+
+  //  //CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
     return r0;
 }
 
