@@ -92,6 +92,31 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
         sequencePosition = 1;
     }
 
+    // -------------------- key switch variables
+    findValue(sw_lolast, values, SamplerSchema::Opcode::SW_LOLAST);
+    findValue(sw_hilast, values, SamplerSchema::Opcode::SW_HILAST);
+
+    int sw_last = -1;
+    findValue(sw_last, values, SamplerSchema::Opcode::SW_LAST);
+    if (sw_last >= 0) {
+        if (sw_lolast < 0) {
+            sw_lolast = sw_last;
+        }
+         if (sw_hilast < 0) {
+            sw_hilast = sw_last;
+        }
+    }
+    findValue(sw_lokey, values, SamplerSchema::Opcode::SW_LOKEY);
+    findValue(sw_hikey, values, SamplerSchema::Opcode::SW_HIKEY);
+    findValue(sw_default, values, SamplerSchema::Opcode::SW_DEFAULT);
+
+    keySwitched = (sw_lolast < 0);            // if key switching in effect, default to off
+    if (!keySwitched && sw_default >= sw_lolast && sw_default <= sw_hilast) {
+        keySwitched = true;
+    }
+
+    findValue(sw_label, values, SamplerSchema::Opcode::SW_LABEL);
+
     //  static void findValue(float& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
 }
 
