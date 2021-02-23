@@ -44,7 +44,10 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::SW_LAST, OpcodeType::Int},
     {Opcode::SW_LOKEY, OpcodeType::Int},
     {Opcode::SW_HIKEY, OpcodeType::Int},
-    {Opcode::SW_DEFAULT, OpcodeType::Int}};
+    {Opcode::SW_DEFAULT, OpcodeType::Int},
+    {Opcode::HICC64_HACK, OpcodeType::Int},
+    {Opcode::LOCC64_HACK, OpcodeType::Int}
+    };
 
 static std::map<std::string, Opcode> opcodes = {
     {"hivel", Opcode::HI_VEL},
@@ -77,9 +80,12 @@ static std::map<std::string, Opcode> opcodes = {
     {"sw_last", Opcode::SW_LAST},
     {"sw_lokey", Opcode::SW_LOKEY},
     {"sw_hikey", Opcode::SW_HIKEY},
-    {"sw_default", Opcode::SW_DEFAULT}};
+    {"sw_default", Opcode::SW_DEFAULT},
+    {"hicc64", Opcode::HICC64_HACK},
+    {"locc64", Opcode::LOCC64_HACK} };
 
-static std::set<std::string> unrecognized;
+static std::set<std::string>
+    unrecognized;
 
 static std::map<std::string, DiscreteValue> discreteValues = {
     {"loop_continuous", DiscreteValue::LOOP_CONTINUOUS},
@@ -131,7 +137,7 @@ std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
                 case 'a':
                     noteName = 9;
                     break;
-                case 'b':   
+                case 'b':
                     noteName = 11;
                     break;
                 case 'c':
@@ -192,7 +198,7 @@ std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
 void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
     Opcode opcode = translate(input->key, false);
     if (opcode == Opcode::NONE) {
-      //  std::string e = std::string("could not translate opcode ") + input->key.c_str();
+        //  std::string e = std::string("could not translate opcode ") + input->key.c_str();
         err.unrecognizedOpcodes.insert(input->key);
         //SQWARN("could not translate opcode %s", input->key.c_str());
         return;

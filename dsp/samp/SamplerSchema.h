@@ -50,7 +50,9 @@ public:
         SW_HIKEY,
         SW_LOLAST,
         SW_HILAST,
-        SW_DEFAULT
+        SW_DEFAULT,
+        HICC64_HACK,        // It's a hack becuase it won't scale to "all" cc
+        LOCC64_HACK,
     };
 
     enum class DiscreteValue {

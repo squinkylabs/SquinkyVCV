@@ -105,26 +105,29 @@ public:
     int sw_hikey = -1;          // the range of pitches that are key-switches, not notes
     int sw_default = -1;        // the keyswitch region to start with
     std::string sw_label;
+
+    // cc stuff
+    int hicc64 = 127;
+    int locc64 = 0;
+
+    SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
     
     bool isKeyswitched() const {
         return keySwitched;
     }
+
+    bool shouldIgnore() const;
 
 protected:
     CompiledRegion(CompiledRegionPtr);
     CompiledRegion& operator=(const CompiledRegion&) = default;
 
 private:
-    // old stuff
-  //  static void findValue(int& returnValue, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
-  //  static void findValue(float&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
- //   static void findValue(std::string&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
 
-    
-    // new stuff
     static void findValue(float& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
     static void findValue(int& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
     static void findValue(std::string& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
+    static void findValue(SamplerSchema::DiscreteValue& returnVAlue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
 };
 
 /**
@@ -195,5 +198,6 @@ public:
     const int lineNumber;
 
 private:
+    // TODO: get rid of all magic logic in group
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
 };

@@ -39,6 +39,15 @@ void CompiledRegion::findValue(std::string& stringValue, SamplerSchema::KeysAndV
     }
 }
 
+void CompiledRegion::findValue(SamplerSchema::DiscreteValue& discreteValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
+    assert(inputValues);
+    auto value = inputValues->get(opcode);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Discrete);
+        discreteValue = value->discrete;
+    }
+}
+
 using Opcode = SamplerSchema::Opcode;
 
 void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
@@ -69,6 +78,7 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     //------------- misc
     findValue(ampeg_release, values, SamplerSchema::Opcode::AMPEG_RELEASE);
     findValue(amp_veltrack, values, SamplerSchema::Opcode::AMP_VELTRACK);
+    findValue(trigger, values, SamplerSchema::Opcode::TRIGGER);
 
     //----------- sample file
     std::string baseFileName;
@@ -102,7 +112,7 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
         if (sw_lolast < 0) {
             sw_lolast = sw_last;
         }
-         if (sw_hilast < 0) {
+        if (sw_hilast < 0) {
             sw_hilast = sw_last;
         }
     }
@@ -110,14 +120,18 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     findValue(sw_hikey, values, SamplerSchema::Opcode::SW_HIKEY);
     findValue(sw_default, values, SamplerSchema::Opcode::SW_DEFAULT);
 
-    keySwitched = (sw_lolast < 0);            // if key switching in effect, default to off
+    keySwitched = (sw_lolast < 0);  // if key switching in effect, default to off
     if (!keySwitched && sw_default >= sw_lolast && sw_default <= sw_hilast) {
         keySwitched = true;
     }
 
     findValue(sw_label, values, SamplerSchema::Opcode::SW_LABEL);
 
-    //  static void findValue(float& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
+    // ---------- cc
+    findValue(hicc64, values, SamplerSchema::Opcode::HICC64_HACK);
+    findValue(locc64, values, SamplerSchema::Opcode::LOCC64_HACK);
+
+ 
 }
 
 #if 0
@@ -204,15 +218,10 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
 }
 #endif
 
-#if 0
-static bool overlapRange(int alo, int ahi, int blo, int bhi) {
-    assert(alo <= ahi);
-    assert(blo <= bhi);
-    return (blo <= ahi && bhi >= alo) ||
-           (alo <= bhi && ahi >= blo);
-
+bool CompiledRegion::shouldIgnore() const {
+    bool dontIgnore = trigger == SamplerSchema::DiscreteValue::NONE || trigger == SamplerSchema::DiscreteValue::ATTACK;
+    return !dontIgnore;
 }
-#endif
 
 // Int version: if ranges have a value in common, they overlap
 static bool overlapRangeInt(int alo, int ahi, int blo, int bhi) {
