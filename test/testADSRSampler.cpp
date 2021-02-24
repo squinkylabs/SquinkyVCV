@@ -2,25 +2,20 @@
 #include "ADSRSampler.h"
 #include "asserts.h"
 
-static float measureRelease(float R, bool lin)
+static float measureRelease(float r)
 {
     float sampleTime = 1 / 44100.f;
 
-    float minus80Db = (float) AudioMath::gainFromDb(-80);
+    float minus85Db = (float) AudioMath::gainFromDb(-85);
 
-    ADSR4 a;
+    ADSRSampler a;
 
   
-    a.setA(0, 1);
-    a.setD(0, 1);
+    a.setASec(.01f);
+    a.setDSec(.01f);
     a.setS(1);
-    if (lin) {
-        a.setR_L(R);
-    }
-    else {
-       
-        a.setR(R, 1);
-    }
+    a.setRSec(r);
+   
 
     float_4 gates = (float_4(1) > float_4(0));
     simd_assertMask(gates);
@@ -39,7 +34,7 @@ static float measureRelease(float R, bool lin)
     for (bool done = false; !done; ) {
         ++rCount;
         float_4 x = a.step(gates, sampleTime);
-        if (x[0] < minus80Db) {
+        if (x[0] < minus85Db) {
             done = true;
         }
     }
@@ -50,6 +45,7 @@ static float measureRelease(float R, bool lin)
     return release;
 }
 
+#if 0
 static void testADSR_lin()
 {
     for (float x = .8f; x > .01f; x *= .5f) {
@@ -57,6 +53,7 @@ static void testADSR_lin()
         printf("r(%f) = %f seconds ratio = %f\n", x, r, r / x);
     }
 }
+
 
 
 static void testADRS4_1()
@@ -72,11 +69,16 @@ static void testADRS4_1()
     r = measureRelease(.2f, false);
     assertClose(r, .006, .001);
 }
+#endif
+
+static void test0() {
+    float r = measureRelease(1);
+    assertClose(r, 1, .1);
+}
 
 
 
 void testADSRSampler()
 {
-    testADRS4_1();
-    testADSR_lin();
+   test0();
 }
