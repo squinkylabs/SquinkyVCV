@@ -1,5 +1,5 @@
 
-#include "ADSR4.h"
+#include "ADSRSampler.h"
 #include "asserts.h"
 
 static float measureRelease(float R, bool lin)
@@ -75,7 +75,7 @@ static void testADRS4_1()
 
 
 
-void testADSR()
+void testADSRSampler()
 {
     testADRS4_1();
     testADSR_lin();

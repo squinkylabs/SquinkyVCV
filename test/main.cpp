@@ -112,6 +112,7 @@ extern void testx4();
 extern void testx5();
 extern void testx6();
 extern void testADSR();
+extern void testADSRSampler();
 extern void testWavThread();
 extern void testACDetector();
 extern void testCmprsr();
@@ -205,6 +206,7 @@ int main(int argc, char** argv) {
     printf("------ sampl tests diabled\n");
 #endif
 
+    testADSRSampler();
     testADSR();
     testCompressorParamHolder();
     testWavThread();

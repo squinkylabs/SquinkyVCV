@@ -44,6 +44,8 @@ float_4 Sampler4vx::step(const float_4& _gates, float sampleTime) {
         float_4 envelopes = adsr.step(gates, sampleTime);
         float_4 samples = player.step();
 
+       // SQINFO("g=%f, env=%f", gates[0], envelopes[0]);
+
         // apply envelope and boost level
         return envelopes * samples * _outputGain();;
 #else
@@ -82,6 +84,7 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     // this is a little messed up - the adsr should really have independent
     // settings for each channel. OK for now, though.
 #ifdef _USEADSR
+    SQINFO("setting release to %f, vel = %d", patchInfo.ampeg_release, midiVelocity);
     R[channel] = patchInfo.ampeg_release;
     //adsr.setR(R[channel], 1);
     adsr.setR_L(R[channel]);

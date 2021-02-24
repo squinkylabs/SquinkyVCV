@@ -1,10 +1,11 @@
 
 #include "WaveLoader.h"
 
-#include "SqLog.h"
-
 #include <assert.h>
+
 #include <algorithm>
+
+#include "SqLog.h"
 
 // Instantiate the dr_wav functions in this file
 #define DR_WAV_IMPLEMENTATION
@@ -21,8 +22,6 @@ WaveLoader::WaveInfoPtr WaveLoader::getInfo(int index) const {
     }
     return finalInfo[index - 1];
 }
-
-
 
 void WaveLoader::addNextSample(const FilePath& fileName) {
     assert(!didLoad);
@@ -57,13 +56,12 @@ void WaveLoader::_setTestMode(Tests test) {
     switch (_testMode) {
         case Tests::None:
             break;
-        case Tests::DCOneSec:
-            {
-                auto info = std::make_shared<WaveInfo>(_testMode);
-                finalInfo.push_back(info);
-                didLoad = true;
-            }
-            break;
+        case Tests::DCTenSec:
+        case Tests::DCOneSec: {
+            auto info = std::make_shared<WaveInfo>(_testMode);
+            finalInfo.push_back(info);
+            didLoad = true;
+        } break;
         default:
             assert(false);
     }
@@ -75,20 +73,31 @@ WaveLoader::WaveInfo::WaveInfo(const FilePath& path) : fileName(path) {
 }
 
 WaveLoader::WaveInfo::WaveInfo(Tests test) : fileName(FilePath("test only")) {
-    assert(test == Tests::DCOneSec);        // only one imp right now
+    //  assert(test == Tests::DCOneSec);        // only one imp right now
     assert(!data);
-    const int frames = 44100;
-    data = reinterpret_cast<float *>(malloc(frames * sizeof(float)));
+    int framesMult = 1;
+    switch (test) {
+        case Tests::DCOneSec:
+            framesMult = 1;
+            break;
+        case Tests::DCTenSec:
+            framesMult = 10;
+            break;
+        default:
+            assert(false);
+    }
+    const int frames = 44100 * framesMult;
+    data = reinterpret_cast<float*>(malloc(frames * sizeof(float)));
     assert(data);
 
-    for (int i=0; i<frames; ++i) {
+    for (int i = 0; i < frames; ++i) {
         data[i] = 1.f;
     }
     valid = true;
     numChannels = 1;
     sampleRate = 44100;
     totalFrameCount = frames;
-   // fileName = FilePath("test only name");
+    // fileName = FilePath("test only name");
 }
 
 /*
@@ -101,6 +110,7 @@ WaveLoader::WaveInfo::WaveInfo(Tests test) : fileName(FilePath("test only")) {
         */
 
 bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
+    SQINFO("loading %s", fileName.toString().c_str());
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.toString().c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.

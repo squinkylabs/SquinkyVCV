@@ -61,7 +61,8 @@ class CompiledInstrument : public ISamplerPlayback {
 public:
     enum class Tests {
         None,
-        MiddleC  // PLays sample 1 at midi pitch 60
+        MiddleC,   // PLays sample 1 at midi pitch 60 rel = .6
+        MiddleC11,   // PLays sample 1 at midi pitch 60 rel = 1.1
     };
 
     /**

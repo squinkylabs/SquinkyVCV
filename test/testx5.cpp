@@ -60,7 +60,9 @@ static void testSamplerRealSound() {
     assert(x[0] != 0);
 }
 
-std::shared_ptr<Sampler4vx> makeTest() {
+// CompiledInstrument::Tests::MiddleC
+// WaveLoader::Tests::DCOneSec
+std::shared_ptr<Sampler4vx> makeTest(CompiledInstrument::Tests citest, WaveLoader::Tests wltest) {
     std::shared_ptr<Sampler4vx> s = std::make_shared<Sampler4vx>();
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -68,9 +70,9 @@ std::shared_ptr<Sampler4vx> makeTest() {
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
-    w->_setTestMode(WaveLoader::Tests::DCOneSec);
+    w->_setTestMode(wltest);
 
-    cinst->_setTestMode(CompiledInstrument::Tests::MiddleC);  // I don't know what this test mode does now, but probably not enough?
+    cinst->_setTestMode(citest);  // I don't know what this test mode does now, but probably not enough?
 
     WaveLoader::WaveInfoPtr info = w->getInfo(1);
     assert(info->valid);
@@ -84,7 +86,7 @@ std::shared_ptr<Sampler4vx> makeTest() {
 
 // This mostly tests that the test infrastructure works.
 static void testSamplerTestOutput() {
-    auto s = makeTest();
+    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
     const int channel = 0;
     const int midiPitch = 60;
@@ -128,7 +130,7 @@ static unsigned measureRelease( ProcFunc f, float threshold) {
 }
 
 static void testSamplerAttack() {
-    auto s = makeTest();
+    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
     const int channel = 0;
     const int midiPitch = 60;
@@ -152,7 +154,7 @@ static void testSamplerAttack() {
 }
 
 static void testSamplerRelease() {
-    auto s = makeTest();
+    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
     const int channel = 0;
     const int midiPitch = 60;
@@ -178,9 +180,40 @@ static void testSamplerRelease() {
     assertGT(releaseSamples, 18000);
 }
 
+
+// this one should have a 1.1 second release
+static void testSamplerRelease2() {
+    auto s = makeTest(CompiledInstrument::Tests::MiddleC11, WaveLoader::Tests::DCTenSec);
+
+    const int channel = 0;
+    const int midiPitch = 60;
+    const int midiVel = 60;
+    s->note_on(channel, midiPitch, midiVel, 0);
+
+    float_4 gates = SimdBlocks::maskTrue();
+    ProcFunc lambda = [s, &gates] {
+        const float sampleTime = 1.f / 44100.f;
+
+        const float_4 x = s->step(gates, sampleTime);
+        return x[0];
+    };
+
+    auto attackSamples = measureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
+    gates = SimdBlocks::maskFalse();
+    const auto releaseSamples = measureRelease(lambda, .05f * Sampler4vx::_outputGain()[0]);
+
+    // These are arbitrary "known good" values,
+    // but the point is to be sure the default attack is "fast"
+    // I get 20,800 when I cheat. about right
+    assertLT(releaseSamples, 50000);
+    assertGT(releaseSamples, 40000);
+
+    assert(false) ; // re-write this for 1.1 sec release
+}
+
 // validate that the release envelope kicks in a the end of the sampl/
 static void testSamplerEnd() {
-    auto s = makeTest();
+    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
     const int channel = 0;
     const int midiPitch = 60;
@@ -250,6 +283,9 @@ void testx5() {
     testSamplerRelease();
     testSamplerEnd();
     //testSamplerRealSound();
+
+    printf("put back test release 2!!!!\n");
+   //  testSamplerRelease2();
 
     testSampSqantizer();
 }

@@ -171,14 +171,24 @@ void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
 }
 
 void CompiledInstrument::playTestMode(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
-    assert(testMode == Tests::MiddleC);
+    float release = 0;
+    switch(testMode) {
+        case Tests::MiddleC:
+            release = .6f;
+            break;
+        case Tests::MiddleC11:
+            release = 1.1f;
+            break;
+        default:
+            assert(false);
+    }
 
     assert(params.midiPitch == 60);  // probably a mistake it a tests isn't using this pitch
     info.sampleIndex = 1;
     info.valid = true;
     info.needsTranspose = false;
     info.transposeAmt = 1;
-    info.ampeg_release = .6f;        // standard default for me.
+    info.ampeg_release = release; 
 }
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath) {

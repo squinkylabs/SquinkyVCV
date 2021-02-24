@@ -10,7 +10,8 @@ class WaveLoader {
 public:
     enum class Tests {
         None,
-        DCOneSec    // let's make one fake wave file that has one second of DC
+        DCOneSec,  // let's make one fake wave file that has one second of DC
+        DCTenSec
     };
 
     class WaveInfo {
