@@ -259,12 +259,57 @@ static void testLexSpaces2() {
     testLexSpaces2d();
 }
 
+
 static void testLexLabel() {
-    auto lex = SLex::go("\nsw_label=abc def ghi");
+    std::string str("\nsw_label=abc def ghi");
+    auto lex = SLex::go(str);
     assert(lex);
     lex->validate();
     SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
     assertEQ(fname->idName, "abc def ghi");
+}
+
+
+#include <fstream>
+static void testLexMarimba2() {
+     std::string path("d:\\samples\\test\\PatchArena_marimba.sfz");
+
+    std::ifstream t(path);
+    if (!t.good()) {
+        printf("can't open file\n");
+        assert(false);
+        return;
+    }
+
+    std::string str((std::istreambuf_iterator<char>(t)),
+                    std::istreambuf_iterator<char>());
+    if (str.empty()) {
+        assert(false);
+        return;
+    }
+   
+
+    auto lex = SLex::go(str);
+  
+    assert(lex);
+    lex->validate();
+    lex->_dump();
+    assertEQ(lex->items.size(), 1001);
+   // assert(false);
+}
+
+
+static void testLexMarimba() {
+    std::string str("<region> trigger=attack  pitch_keycenter=36 lokey=36 hikey=36 sample=PatchArena_marimba-036-c1.wav\r\n\r\n");
+    auto lex = SLex::go(str);
+    assert(lex);
+    lex->validate();
+    const size_t items = lex->items.size();
+    lex->_dump();
+    assert(items == 16);
+   // assert(false);
+   // SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
+  //  assertEQ(fname->idName, "abc def ghi");
 }
 
 static void testparse1() {
@@ -299,7 +344,7 @@ static void testparse2() {
 }
 
 static void testParseMutliControls() {
-   // SQINFO("--- start testParseMutliControls");
+    // SQINFO("--- start testParseMutliControls");
 
     const char* test = R"foo(
         <control>
@@ -343,7 +388,7 @@ static void testParseMutliControls() {
 
 static void testParseGroupAndValues() {
     //SQINFO("---- start testParseGroupAndValues");
- //   const char* test = R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo";
+    //   const char* test = R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo";
     const char* test = R"foo(<group>a=b<region>)foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(test, inst);
@@ -352,15 +397,15 @@ static void testParseGroupAndValues() {
     assertEQ(inst->groups.size(), 1);
     assertEQ(inst->groups[0]->regions.size(), 1);
 
-   // inst->groups[0]->_dump();
-   // inst->groups[0]->regions[0]->_dump();
+    // inst->groups[0]->_dump();
+    // inst->groups[0]->regions[0]->_dump();
 
     assertEQ(inst->groups[0]->values.size(), 1);
     assertEQ(inst->groups[0]->regions[0]->values.size(), 0);
 }
 
 static void testParseGlobal() {
-   // SQINFO("---- start test parse global\n");
+    // SQINFO("---- start test parse global\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global>", inst);
     // no regions - that's not legal, but we make up groups if there aren't any,
@@ -371,7 +416,7 @@ static void testParseGlobal() {
 }
 
 static void testParseGlobalGroupAndRegion() {
-   // SQINFO("\n-- start testParseGlobalAndRegion\n");
+    // SQINFO("\n-- start testParseGlobalAndRegion\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><group><region>", inst);
 
@@ -379,7 +424,7 @@ static void testParseGlobalGroupAndRegion() {
 }
 
 static void testParseGlobalAndRegion() {
-  //  SQINFO("\n-- start testParseGlobalAndRegion\n");
+    //  SQINFO("\n-- start testParseGlobalAndRegion\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><region>", inst);
 
@@ -516,6 +561,7 @@ void testx() {
     testLexSpaces();
     testLexSpaces2();
     testLexLabel();
+    testLexMarimba();
 
     testparse1();
     testParseRegion();
@@ -538,5 +584,6 @@ void testx() {
     testRandomRange0();
     testRandomRange1();
     testParseDX();
+
     assert(parseCount == 0);
 }

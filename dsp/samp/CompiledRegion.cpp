@@ -219,7 +219,15 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
 #endif
 
 bool CompiledRegion::shouldIgnore() const {
+    // Ignore release triggered samples - we don't implement
     bool dontIgnore = trigger == SamplerSchema::DiscreteValue::NONE || trigger == SamplerSchema::DiscreteValue::ATTACK;
+    if (dontIgnore) {
+        // Ignore samples that only play with damper pedal.
+        dontIgnore = (locc64 == 0);
+        if (!dontIgnore) {
+            SQINFO("discaring region for damper pedal");
+        }
+    }
     return !dontIgnore;
 }
 

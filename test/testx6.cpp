@@ -163,10 +163,12 @@ static void testRemoveDamper() {
     for (auto region : regions) {
         switch (region->lokey) {
             case 1:
-                assert(false);
+                assert(region->locc64 == 0);
+                assert(region->hicc64 == 12);
                 break;
             case 2:
-                assert(false);
+                assert(region->locc64 == 0);
+                assert(region->hicc64 == 127);
                 break;
             default:
                 assert(false);
