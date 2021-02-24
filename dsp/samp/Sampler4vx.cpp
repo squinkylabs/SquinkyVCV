@@ -17,10 +17,10 @@ void Sampler4vx::setPatch(CompiledInstrumentPtr inst) {
 void Sampler4vx::setLoader(WaveLoaderPtr loader) {
     waves = loader;
 #ifdef _USEADSR
-    adsr.setA(.1f, 1);
-    adsr.setD(.1f, 1);
+    adsr.setASec(.1f);
+    adsr.setDSec(.1f);
     adsr.setS(1);
-    adsr.setR(.1f, 1);
+    adsr.setRSec(.3f);
 #endif
 }
 
@@ -84,20 +84,19 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     // this is a little messed up - the adsr should really have independent
     // settings for each channel. OK for now, though.
 #ifdef _USEADSR
-    SQINFO("setting release to %f, vel = %d", patchInfo.ampeg_release, midiVelocity);
+   // SQINFO("setting release to %f, vel = %d", patchInfo.ampeg_release, midiVelocity);
+
+    // This is all super janky how we setl all 4 adsr to same TC.
+    // But good enough for now
     R[channel] = patchInfo.ampeg_release;
-    //adsr.setR(R[channel], 1);
-    adsr.setR_L(R[channel]);
+    adsr.setRSec(R[channel]);
     releaseTime_ = patchInfo.ampeg_release;
 #endif
 }
 
 #ifndef _USEADSR
 void Sampler4vx::note_off(int channel) {
-
     player.mute(channel);
-
-    // printf("note off %d\n", channel);  fflush(stdout);
 }
 #endif
 

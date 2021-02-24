@@ -42,6 +42,8 @@ static float measureRelease(float r)
     float release = rCount * sampleTime;
 
     a.step(gates, sampleTime);
+
+    SQINFO("leaving measure(%f) with %f", r, release);
     return release;
 }
 
@@ -71,9 +73,18 @@ static void testADRS4_1()
 }
 #endif
 
+static void testSub(float time) {
+    float r = measureRelease(time);
+    assertClosePct(r, time, 5.f);
+}
+
 static void test0() {
-    float r = measureRelease(1);
-    assertClose(r, 1, .1);
+    testSub(1.f);
+    testSub(2.f);
+    testSub(4.f);
+
+    testSub(.5f);
+    testSub(.25f);
 }
 
 

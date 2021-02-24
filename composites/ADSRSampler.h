@@ -6,6 +6,7 @@
 #pragma once
 
 #include "SimdBlocks.h"
+#include "SqLog.h"
 #include "asserts.h"
 #include "simd.h"
 
@@ -16,16 +17,12 @@ public:
      * 
      */
 
-    // the first param is the usual time constant exp mapping
-    // the mult param speeds everything up by a factor of mult;
     void setASec(float);
     void setDSec(float);
     void setS(float);
     void setRSec(float);
 
-
-
-    /* v > 1 = on
+    /* gates are simd mask encode bools
      */
     float_4 step(const float_4& gates, float sampleTime);
 
@@ -48,10 +45,7 @@ private:
     const float LAMBDA_BASE = MAX_TIME / MIN_TIME;
 
     int channels = 0;
-    //bool snap = false;
-
     void setLambda(float_4& output, float input);
- //   void setLambda_L(float_4& output, float input);
 };
 
 inline float_4 ADSRSampler::step(const float_4& gates, float sampleTime) {
@@ -61,7 +55,6 @@ inline float_4 ADSRSampler::step(const float_4& gates, float sampleTime) {
     float_4 target = SimdBlocks::ifelse(gates, SimdBlocks::ifelse(attacking, attackTarget, sustain), float_4::zero());
     float_4 lambda = SimdBlocks::ifelse(gates, SimdBlocks::ifelse(attacking, attackLambda, decayLambda), releaseLambda);
 
-    // don't know what reasonable values are here...
     simd_assertLE(env, float_4(2));
     simd_assertGE(env, float_4(0));
     simd_assertMask(attacking);
@@ -80,22 +73,10 @@ inline float_4 ADSRSampler::step(const float_4& gates, float sampleTime) {
 }
 
 inline void ADSRSampler::setLambda(float_4& output, float input) {
-    assert(input >= -.01);
-    assert(input <= 1);
-
-    const float mult = 10;
-    float_4 x = rack::simd::clamp(input, 0.f, 1.f);
-    output = rack::simd::pow(LAMBDA_BASE, -x) / MIN_TIME;
-    output *= float_4(mult);
-    // printf("set lambda input=%f, output=%f\n", input, output[0]); fflush(stdout);
+    float x = 10.f / input;
+    float_4 x4(x);
+    output = x4;
 }
-
-// this isn't exact - but close enough?
-#if 0
-inline void ADSRSampler::setLambda_L(float_4& output, float inputSec) {
-    output = 100 * rack::simd::pow(100.f, -inputSec);
-}
-#endif
 
 inline void ADSRSampler::setASec(float t) {
     setLambda(attackLambda, t);
@@ -113,4 +94,3 @@ inline void ADSRSampler::setS(float s) {
 inline void ADSRSampler::setRSec(float t) {
     setLambda(releaseLambda, t);
 }
-

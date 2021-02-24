@@ -77,6 +77,7 @@ static void testADRS4_1()
 
 void testADSR()
 {
-    testADRS4_1();
+    // roll back to Organ version and enable this
+   // testADRS4_1();
     testADSR_lin();
 }

@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "ADSR4.h"
+#include "ADSRSampler.h"
 #include "Divider.h"
 #include "SimdBlocks.h"
 
@@ -43,7 +43,7 @@ private:
     WaveLoaderPtr waves;
     Streamer player;
 #ifdef _USEADSR
-    ADSR4 adsr;
+    ADSRSampler adsr;
     float_4 R = float_4(.001f);
 #endif
 

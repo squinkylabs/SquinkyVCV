@@ -110,7 +110,7 @@ WaveLoader::WaveInfo::WaveInfo(Tests test) : fileName(FilePath("test only")) {
         */
 
 bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
-    SQINFO("loading %s", fileName.toString().c_str());
+   // SQINFO("loading %s", fileName.toString().c_str());
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.toString().c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
