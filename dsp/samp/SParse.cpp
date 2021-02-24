@@ -33,13 +33,6 @@ only non-parser thing:
 */
 
 std::string SParse::goFile(const std::string& sPath, SInstrumentPtr inst) {
-#if 0
-    FILE* fp = nullptr;
-    fopen_s(&fp, sPath.c_str(), "r");
-    if (fp) {
-        fclose(fp);
-    }
-#endif
     std::ifstream t(sPath);
     if (!t.good()) {
         printf("can't open file\n");
