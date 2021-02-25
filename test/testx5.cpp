@@ -190,18 +190,8 @@ static void testSamplerRelease() {
     const auto releaseSamples = measureRelease(lambda, releaseMeasureThreshold);
 
     // I think .6 should give me about 26k samples,
-    // but ATM im getting 7790
-    // primed I get 7930 (this and above with .05 threshold
-    // but with 85 db I get 25.8k . huge difference!
-
-
     const float f = .6 *  44100.f;
-    const float rr = f / releaseSamples;
-    // These are arbitrary "known good" values,
-    // but the point is to be sure the default attack is "fast"
-    // I get 20,800 when I cheat. about right
-    assertLT(releaseSamples, 27000);
-    assertGT(releaseSamples, 25000);
+    assertClosePct(releaseSamples, f, 10);
 }
 
 
@@ -224,20 +214,21 @@ static void testSamplerRelease2() {
 
     auto attackSamples = measureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
     gates = SimdBlocks::maskFalse();
-    const auto releaseSamples = measureRelease(lambda, .05f * Sampler4vx::_outputGain()[0]);
 
-    // These are arbitrary "known good" values,
-    // but the point is to be sure the default attack is "fast"
-    // I get 20,800 when I cheat. about right
-    assertLT(releaseSamples, 50000);
-    assertGT(releaseSamples, 40000);
+    const float minus85Db = (float)AudioMath::gainFromDb(-85);
+    const float releaseMeasureThreshold = minus85Db * Sampler4vx::_outputGain()[0];
+    const auto releaseSamples = measureRelease(lambda, releaseMeasureThreshold);
 
-    assert(false) ; // re-write this for 1.1 sec release
+
+    const float f = 1.1f * 44100.f;
+    assertClosePct(releaseSamples, f, 10);
 }
 
-// validate that the release envelope kicks in a the end of the sampl/
+// validate that the release envelope kicks in a the end of the sample
 static void testSamplerEnd() {
     auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
+
+    prime(s);
 
     const int channel = 0;
     const int midiPitch = 60;
@@ -252,16 +243,19 @@ static void testSamplerEnd() {
         return x[0];
     };
 
+
+    const float minus85Db = (float)AudioMath::gainFromDb(-85);
+    const float releaseMeasureThreshold = minus85Db * Sampler4vx::_outputGain()[0];
+
     auto attackSamples = measureAttack(lambda, .99f * Sampler4vx::_outputGain()[0]);
     // don't lower the gate, just let it end
     // masure when it starts to go down
     const auto releaseSamples = measureRelease(lambda, .95f * Sampler4vx::_outputGain()[0]);
     // and finish
-    const auto releaseSamples2 = measureRelease(lambda, .05f * Sampler4vx::_outputGain()[0]);
+    const auto releaseSamples2 = measureRelease(lambda, releaseMeasureThreshold);
 
-
-    assertGT(releaseSamples2, 18000);
-    assertLT(releaseSamples2, 22000);
+    const float f = .6 *  44100.f;
+    assertClosePct(releaseSamples2, f, 10);
 }
 
 static void testSampSqantizer() {
@@ -309,7 +303,9 @@ void testx5() {
     //testSamplerRealSound();
 
     printf("put back test release 2!!!!\n");
-   //  testSamplerRelease2();
+    testSamplerRelease2();
 
     testSampSqantizer();
+
+    assert(false);      // now write a test for retriggering played out voice
 }
