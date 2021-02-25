@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <memory>
 
 #include "ADSRSampler.h"
@@ -15,14 +16,42 @@ using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 
 #include "Streamer.h"
 
+
+// fordebugging
+#include <utility>
+class Accumulator {
+public:
+    Accumulator(int divPeriod) : period(divPeriod) {}
+
+    bool go(float x) {
+        bool ret = false;
+        min = std::min(x, min);
+        max = std::max(x, max);
+        if (++counter > period) {
+            ret = true;
+            counter = 0;
+        }
+        return ret;
+    }
+    std::pair<float, float> get() {
+        auto ret = std::make_pair(min, max);
+        min = 10;
+        max = -10;
+        return ret;
+    }
+private:
+    const int period;
+    int counter = 0;
+    float min = 10;
+    float max = -10;
+};
+
 #define _USEADSR
 class Sampler4vx {
 public:
     Sampler4vx();
     void note_on(int channel, int midiPitch, int midiVelocity, float sampleRate);
-#ifndef _USEADSR
-    void note_off(int channel);
-#endif
+
 
     void setPatch(CompiledInstrumentPtr inst);
     void setLoader(WaveLoaderPtr loader);
@@ -42,16 +71,15 @@ private:
     CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;
     Streamer player;
-#ifdef _USEADSR
     ADSRSampler adsr;
-    float_4 R = float_4(.001f);
-#endif
 
+    // Don't remember what this is for
+    float_4 R = float_4(.001f);
     Divider divn;           // used to reduce the polling frequency for remaining samples
     void step_n();
     float sampleTime_ = 0;
     float_4 shutOffNow_ = {0};
     float_4 releaseTime_ = {0};
 
- //   void tryInit();
+   // Accumulator acc = {100};
 };

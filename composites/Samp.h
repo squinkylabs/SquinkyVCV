@@ -275,9 +275,12 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         Port& p = TBase::inputs[GATE_INPUT];
         float_4 g = p.getVoltageSimd<float_4>(bank * 4);
         float_4 gmask = (g > float_4(1));
-        float_4 gate4 = SimdBlocks::ifelse(gmask, float_4(1), float_4(0));
+        float_4 gate4 = SimdBlocks::ifelse(gmask, float_4(1), float_4(0));      // isn't this pointless?
         float_4 lgate4 = lastGate4[bank];
 
+        if (bank == 0) {
+      //      printf("samp, g4 = %s\n", toStr(gate4).c_str());
+        }
         for (int iSub = 0; iSub < 4; ++iSub) {
             if (gate4[iSub] != lgate4[iSub]) {
                 if (gate4[iSub]) {

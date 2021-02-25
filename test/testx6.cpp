@@ -176,6 +176,32 @@ static void testRemoveDamper() {
     }
 }
 
+#if 0
+static void  testDemoVel() {
+    for (int v = 127; v> 0; v-=1) {
+        int midiVelocity = v;
+        float velTrack = 1.f;
+        float g = CompiledInstrument::velToGain1(midiVelocity, velTrack);
+        float g2 = CompiledInstrument::velToGain2(midiVelocity, velTrack);
+        printf("v=%d, g1=%f g2=%f\n", midiVelocity, g, g2);
+    }
+    fflush(stdout);
+    assert(false);
+}
+#endif
+
+static void testVel() {
+    // full scale
+    assertClose(CompiledInstrument::velToGain(127, 100), 1, .05);
+    assertClose(CompiledInstrument::velToGain(1, 100), 0, .05);
+    assertClose(CompiledInstrument::velToGain(64, 100), 0.253953, .05);
+
+    // no scale
+    assertClose(CompiledInstrument::velToGain(127, 0), 1, .05);
+    assertClose(CompiledInstrument::velToGain(1, 0), 1, .05);
+    assertClose(CompiledInstrument::velToGain(64, 0), 1, .05);
+}
+
 void testx6() {
     testRegionAmpeg();
     testDefaultAmpeg();
@@ -185,4 +211,6 @@ void testx6() {
     testRemoveRelease2();
     testHicc();
     testRemoveDamper();
+    //   testDemoVel();
+    testVel();
 }

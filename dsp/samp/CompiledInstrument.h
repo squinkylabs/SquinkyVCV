@@ -92,6 +92,10 @@ public:
     const RegionPool& _pool() { return regionPool; }
     InstrumentInfoPtr getInfo() { return info; }
 
+    static float velToGain1(int midiVelocity, float veltrack);
+    static float velToGain2(int midiVelocity, float veltrack);
+    static float velToGain(int midiVelocity, float veltrack);
+
 private:
     RegionPool regionPool;
     Tests testMode = Tests::None;
@@ -123,13 +127,11 @@ private:
     void addSampleIndexes();
     void deriveInfo();
 
-    ISamplerPlaybackPtr playbackMapVelocities(const std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
-
     /**
      * these helpers help fill in VoicePlayInfo
      */
-    void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate);
-    void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack);
+    static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate);
+    static void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack);
 
     void playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate);
 };

@@ -120,15 +120,46 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SamplerErrorC
     return result ? instOut : nullptr;
 }
 
-void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack) {
-    const float v = float(midiVelocity);
-    const float t = regionVeltrack;
-    const float x = (v * t / 100.f) + (100.f - t) * (127.f / 100.f);
+#if 0
+float CompiledInstrument::velToGain2(int midiVelocity, float veltrack) {
+    assert(veltrack == 1);
+    assert(midiVelocity >= 1);
+    assert(midiVelocity < 128);
+    float x = float(127 * 127) / (midiVelocity * midiVelocity);
+    return -float(AudioMath::db(x));
+}
+#endif
 
-    // then taper it
+float CompiledInstrument::velToGain1(int midiVelocity, float veltrack) {
+    const float v = float(midiVelocity);
+   // const float t = veltrack;
+  //  const float x = (v * t / 100.f) + (100.f - t) * (127.f / 100.f);
+
+    // let's simplify for now
+    // scale down to -1..1 (and noone ever uses negative)
+    veltrack /= 100.f;
+   
+
+    float x = v;    // veloc 1..127
+
+
+    // temp = 0...1
     auto temp = float(x) / 127.f;
+
+    // warp it, but still 0..1
     temp *= temp;
-    info.gain = temp;
+
+    float final = (veltrack * temp) + (1 - veltrack);
+    return final;
+} 
+
+float CompiledInstrument::velToGain(int midiVelocity, float veltrack) {
+    return velToGain1(midiVelocity, veltrack);
+} 
+
+void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack) {
+   
+    info.gain = velToGain(midiVelocity, regionVeltrack);
 }
 
 void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate) {

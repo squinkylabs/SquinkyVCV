@@ -1056,12 +1056,13 @@ static void testCompileAmpVel() {
     assertClose(info.gain, .25f, .01f);
 
     // veltrack 50, inherited
+    // vel = 64
     params.midiPitch = 10;
     params.midiVelocity = 64;
     ci->play(info, params, nullptr, 0);
     assert(info.valid);
-    assertClose(info.gain, .56, .01f);  //number gotten from known-good.
-                                        //but at least it's > .25 and < 1
+    assertClose(info.gain, .63, .01f);  // number gotten from known-good.
+                                        // but at least it's > .25 and < 1
 }
 
 static void testCompileMulPitchAndVelComplex2() {

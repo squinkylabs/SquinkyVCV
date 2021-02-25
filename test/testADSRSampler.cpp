@@ -10,17 +10,18 @@ static float measureRelease(float r)
 
     ADSRSampler a;
 
-  
-    a.setASec(.01f);
-    a.setDSec(.01f);
+    a.setASec(.001f);
+    a.setDSec(.1f);
     a.setS(1);
     a.setRSec(r);
    
+    // prime it once to reset state
+    float_4 gatesLow = SimdBlocks::maskFalse();
+    float_4 x = a.step(gatesLow, sampleTime);
+  
 
-    float_4 gates = (float_4(1) > float_4(0));
+    float_4 gates = SimdBlocks::maskTrue();
     simd_assertMask(gates);
-
-   // float rTime = 0;
 
     for (bool done = false; !done; ) {
         float_4 x = a.step(gates, sampleTime);
@@ -43,48 +44,30 @@ static float measureRelease(float r)
 
     a.step(gates, sampleTime);
 
-    SQINFO("leaving measure(%f) with %f", r, release);
+   // SQINFO("leaving measure(%f) with %f", r, release);
     return release;
 }
 
-#if 0
-static void testADSR_lin()
-{
-    for (float x = .8f; x > .01f; x *= .5f) {
-        float r = measureRelease(x, true);
-        printf("r(%f) = %f seconds ratio = %f\n", x, r, r / x);
-    }
-}
-
-
-
-static void testADRS4_1()
-{
-    // These values are just "known goods" from original ADSR4.
-    // But we want to preserve these for existing ADSR4 clients
-    float r = measureRelease(.8f, false);
-    assertClose(r, 2.2, .1);
-
-    r = measureRelease(.4f, false);
-    assertClose(r, .04, .01);
-
-    r = measureRelease(.2f, false);
-    assertClose(r, .006, .001);
-}
-#endif
-
-static void testSub(float time) {
+static void testSub(float time, float ptcTolerance = 5.f) {
     float r = measureRelease(time);
-    assertClosePct(r, time, 5.f);
+    assertClosePct(r, time, ptcTolerance);
+  //  printf("time input = %f, measured = %f\n", time, r);
 }
 
 static void test0() {
+  //  SQINFO("----------- test0");
     testSub(1.f);
     testSub(2.f);
     testSub(4.f);
 
     testSub(.5f);
+    testSub(.6f);
+
     testSub(.25f);
+    testSub(.1f);
+    testSub(.01f);
+    testSub(.001f, 20);
+    testSub(10);
 }
 
 

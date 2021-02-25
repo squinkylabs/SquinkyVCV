@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
 
 #if 1
 
-
+    testADSRSampler();
     testx();
     testx6();
     testx2();
@@ -206,7 +206,7 @@ int main(int argc, char** argv) {
     printf("------ sampl tests diabled\n");
 #endif
 
-    testADSRSampler();
+
     testADSR();
     testCompressorParamHolder();
     testWavThread();

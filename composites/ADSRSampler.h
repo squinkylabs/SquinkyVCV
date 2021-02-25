@@ -79,11 +79,15 @@ inline void ADSRSampler::setLambda(float_4& output, float input) {
 }
 
 inline void ADSRSampler::setASec(float t) {
+  //  SQINFO("set attack %f sec", t);
     setLambda(attackLambda, t);
+  //  SQINFO("lambda now %f", attackLambda[0]);
 }
 
 inline void ADSRSampler::setDSec(float t) {
+  //  SQINFO("set decay %f sec", t);
     setLambda(decayLambda, t);
+  //  SQINFO("lambda now %f", decayLambda[0]);
 }
 
 inline void ADSRSampler::setS(float s) {
@@ -92,5 +96,7 @@ inline void ADSRSampler::setS(float s) {
 }
 
 inline void ADSRSampler::setRSec(float t) {
+  //  SQINFO("set release %f sec", t);
     setLambda(releaseLambda, t);
+  //  SQINFO("lambda now %f", releaseLambda[0]);
 }
