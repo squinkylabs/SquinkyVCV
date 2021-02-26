@@ -297,8 +297,8 @@ static void testIndependentFc() {
     lpf.step(float_4(1));
     float_4 x = lpf.get();
 
-    printf("got %s\n", toStr(x).c_str());
-    fflush(stdout);
+    //printf("got %s\n", toStr(x).c_str());
+    //fflush(stdout);
 
     assertGT(x[1], x[0]);
     assertGT(x[2], x[1]);
@@ -317,8 +317,8 @@ static void testIndependentA() {
     lag.step(float_4(1));
     float_4 x = lag.get();
 
-    printf("got %s\n", toStr(x).c_str());
-    fflush(stdout);
+    //printf("got %s\n", toStr(x).c_str());
+    //fflush(stdout);
 
     assertGT(x[1], x[0]);
     assertGT(x[2], x[1]);
@@ -341,8 +341,8 @@ static void testIndependentR() {
     lag.step(float_4(1));
     float_4 x = lag.get();
 
-    printf("got %s\n", toStr(x).c_str());
-    fflush(stdout);
+    //printf("got %s\n", toStr(x).c_str());
+    //fflush(stdout);
 
     // attack all the same, fast
     assertEQ(x[1], x[0]);
@@ -373,8 +373,8 @@ static void testIndependentInstant(unsigned int which) {
     lag.step(float_4(1));
     float_4 x = lag.get();
 
-     printf("ins(%d0 got %s\n", which, toStr(x).c_str());
-    fflush(stdout);
+    // printf("ins(%d0 got %s\n", which, toStr(x).c_str());
+    //fflush(stdout);
     for (int i = 0; i < 4; ++i) {
         if (i == which) {
             assertEQ(x[i], 1);

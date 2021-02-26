@@ -171,15 +171,15 @@ static void testStreamValues() {
     const int channel = 1;
     assert(!s.canPlay(channel));
 
-    float x[6] = {6, 5, 4, 3, 2, 1};
-    assertEQ(x[0], 6);
+    float x[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
+    assertEQ(x[0], .6f);
 
     s.setSample(channel, x, 6);
     s.setTranspose(channel, false, 1.f);
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {
         float_4 v = s.step();
-        assertEQ(v[channel], 6 - i);
+        assertClosePct(v[channel], .1f * (6 - i), 1);
     }
     assert(!s.canPlay(channel));
 }
@@ -189,8 +189,8 @@ static void testStreamXpose1() {
     const int channel = 3;
     assert(!s.canPlay(channel));
 
-    float x[6] = {6, 5, 4, 3, 2, 1};
-    assertEQ(x[0], 6);
+    float x[6] = { .6f, .5f, .4f, .3f, .2f, .1f };
+    assertEQ(x[0], .6f);
 
     s.setSample(channel, x, 6);
     s.setTranspose(channel, true, 1.f);
@@ -226,7 +226,7 @@ static void testStreamRetrigger() {
     Streamer s;
     const int channel = 0;
 
-    float x[6] = {6, 5, 4, 3, 2, 1};
+    float x[6] = { .6f, .5f, .4f, .3f, .2f, .1f };
 
     s.setSample(channel, x, 6);
     s.setTranspose(channel, false, 1.f);

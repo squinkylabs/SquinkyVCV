@@ -41,6 +41,8 @@ public:
         bool transposeEnabled = false;
         float transposeMultiplier = 1;
         float gain = 1;
+
+        void _dump() const;
     };
     ChannelData channels[4];
 

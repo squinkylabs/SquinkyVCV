@@ -64,7 +64,7 @@ public:
     int lokey = 0;
     int hikey = 127;
 
-    int keycenter = -1;
+    int keycenter = 60;
     std::string sampleFile;
     int lovel = 1;
     int hivel = 127;

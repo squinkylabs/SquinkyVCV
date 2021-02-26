@@ -16,7 +16,6 @@ using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 
 #include "Streamer.h"
 
-
 // fordebugging
 #include <utility>
 class Accumulator {
@@ -39,6 +38,7 @@ public:
         max = -10;
         return ret;
     }
+
 private:
     const int period;
     int counter = 0;
@@ -51,7 +51,6 @@ class Sampler4vx {
 public:
     Sampler4vx();
     void note_on(int channel, int midiPitch, int midiVelocity, float sampleRate);
-
 
     void setPatch(CompiledInstrumentPtr inst);
     void setLoader(WaveLoaderPtr loader);
@@ -75,11 +74,11 @@ private:
 
     // Don't remember what this is for
     float_4 R = float_4(.001f);
-    Divider divn;           // used to reduce the polling frequency for remaining samples
+    Divider divn;  // used to reduce the polling frequency for remaining samples
     void step_n();
     float sampleTime_ = 0;
     float_4 shutOffNow_ = {0};
     float_4 releaseTime_ = {0};
 
-   // Accumulator acc = {100};
+    // Accumulator acc = {100};
 };

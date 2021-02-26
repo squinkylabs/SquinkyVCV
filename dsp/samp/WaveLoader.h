@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,6 +28,15 @@ public:
         unsigned int sampleRate = 0;
         uint64_t totalFrameCount = 0;
         const FilePath fileName;
+
+        void validate() {
+            assert(numChannels == 1);
+            for (uint64_t i = 0; i < totalFrameCount; ++i) {
+                const float d = data[i];
+                assert(d <= 1);
+                assert(d >= -1);
+            }
+        }
 
     private:
         // static float* convertToMono(float* data, uint64_t frames, int channels);
@@ -61,6 +71,7 @@ private:
     std::vector<WaveInfoPtr> finalInfo;
     void clear();
     bool didLoad = false;
+    void validate();
 };
 
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;

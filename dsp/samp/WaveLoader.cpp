@@ -48,7 +48,17 @@ bool WaveLoader::load() {
         finalInfo.push_back(waveInfo);
     }
     SQINFO("loader loaded all wave files");
+#ifndef NDEBUG
+    validate();
+#endif
     return true;
+}
+
+void WaveLoader::validate()
+{
+    for (auto info : finalInfo) {
+        info->validate();
+    }
 }
 
 void WaveLoader::_setTestMode(Tests test) {
@@ -71,6 +81,7 @@ void WaveLoader::_setTestMode(Tests test) {
 
 WaveLoader::WaveInfo::WaveInfo(const FilePath& path) : fileName(path) {
 }
+
 
 WaveLoader::WaveInfo::WaveInfo(Tests test) : fileName(FilePath("test only")) {
     //  assert(test == Tests::DCOneSec);        // only one imp right now

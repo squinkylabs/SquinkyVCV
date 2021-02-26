@@ -26,7 +26,6 @@ void Sampler4vx::step_n() {
     float_4 remainingSamples = player.audioSamplesRemaining();
     assertNE(sampleTime_, 0);
     float_4 timeRemaining = remainingSamples * sampleTime_;
-
     shutOffNow_ = timeRemaining < releaseTime_;
 }
 
@@ -74,6 +73,7 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
         return;
     }
 
+    this->shutOffNow_[channel] = 0;
     WaveLoader::WaveInfoPtr waveInfo = waves->getInfo(patchInfo.sampleIndex);
     assert(waveInfo->valid);
     assert(waveInfo->numChannels == 1);
