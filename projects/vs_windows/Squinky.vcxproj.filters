@@ -708,6 +708,9 @@
     <ClCompile Include="..\..\test\testADSRSampler.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testStreamer.cpp">
+      <Filter>Header Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

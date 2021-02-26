@@ -103,6 +103,7 @@
     <ClCompile Include="..\..\test\testCmprsr.cpp" />
     <ClCompile Include="..\..\test\testCompressor.cpp" />
     <ClCompile Include="..\..\test\testCompressorParamHolder.cpp" />
+    <ClCompile Include="..\..\test\testStreamer.cpp" />
     <ClCompile Include="..\..\test\testWavThread.cpp" />
     <ClCompile Include="..\..\test\testx3.cpp" />
     <ClCompile Include="..\..\test\testAudioMath.cpp" />

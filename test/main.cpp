@@ -118,6 +118,7 @@ extern void testACDetector();
 extern void testCmprsr();
 extern void testCompressor();
 extern void testCompressorParamHolder();
+extern void testStreamer();
 
 #if 0
 #include <iostream>
@@ -195,6 +196,7 @@ int main(int argc, char** argv) {
 #if 1
 
     testADSRSampler();
+    testStreamer();
     testx();
     testx6();
     testx2();
