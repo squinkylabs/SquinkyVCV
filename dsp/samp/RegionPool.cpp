@@ -29,7 +29,11 @@ bool RegionPool::checkPitchAndVel(const VoicePlayParameter& params, const Compil
 
 const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random) {
     // printf("\n... play(%d)\n", params.midiPitch);
-    assert(params.midiPitch >= 0 && params.midiPitch <= 127 && params.midiVelocity > 0 && params.midiVelocity <= 127);
+    if (!(params.midiPitch >= 0 && params.midiPitch <= 127 && params.midiVelocity > 0 && params.midiVelocity <= 127)) {
+        SQWARN("value out of range: pitch = %d, vel = %d\n", params.midiPitch, params.midiVelocity);
+        return nullptr;
+    }
+  
 
     // First the keyswitch logic from sfizz
     if (!lastKeyswitchLists_[params.midiPitch].empty()) {

@@ -82,7 +82,7 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     player.setGain(channel, patchInfo.gain);
 
     std::string sample = waveInfo->fileName.getFilenamePart();
-    SQINFO("play vel=%d pitch=%d gain=%f samp=%s", midiVelocity, midiPitch, patchInfo.gain, sample.c_str());
+    // SQINFO("play vel=%d pitch=%d gain=%f samp=%s", midiVelocity, midiPitch, patchInfo.gain, sample.c_str());
 
     // this is a little messed up - the adsr should really have independent
     // settings for each channel. OK for now, though.

@@ -73,5 +73,13 @@ endif
 FLAGS += -finline-limit=500000 -finline-functions-called-once -flto
 LDFLAGS += -flto
 
+# ---- for ASAN on linux, just uncomment
+# using the static library is a hack for getting the libraries to load.
+# Trying other hacks first is a good idea. Building Rack.exe with asan is a pretty easy way
+# ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer -Wno-format-security
+# FLAGS += $(ASAN_FLAGS)
+# LDFLAGS += $(ASAN_FLAGS)
+# LDFLAGS += -static-libasan
+
 include test.mk
 

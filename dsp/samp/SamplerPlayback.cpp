@@ -32,6 +32,7 @@ void SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& para
     }
 }
 
+#if 0
 void RandomVoicePlayer::_dump(int depth) const {
     indent(depth);
     printf("Random Voice Player (tbd)\n");
@@ -161,3 +162,4 @@ void RoundRobinVoicePlayer::finalize() {
     });
     currentEntry = int(entries.size()) + 1;
 }
+#endif

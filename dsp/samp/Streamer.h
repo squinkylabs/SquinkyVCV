@@ -14,8 +14,6 @@ public:
     void setTranspose(int chan, bool doTranspoe, float amount);
     bool canPlay(int chan);
 
-    // this mute is just from before we had adsr
-    // void mute(int chan);
     void setGain(int chan, float gain);
 
 
@@ -25,6 +23,8 @@ public:
      * how many samples are left?
      */
     float_4 audioSamplesRemaining() const;
+
+    void _assertValid();
 
 public:
     class ChannelData {
@@ -37,7 +37,6 @@ public:
         int curIntegerSampleOffset = 0;
         bool arePlaying = false;
         float curFloatSampleOffset = 0;
-        bool areTransposing = false;
         bool transposeEnabled = false;
         float transposeMultiplier = 1;
         float gain = 1;

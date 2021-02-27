@@ -1,8 +1,7 @@
 
-#include "asserts.h"
-
 #include "CubicInterpolator.h"
 #include "Streamer.h"
+#include "asserts.h"
 
 static void testCubicInterp() {
     float data[] = {10, 9, 8, 7};
@@ -27,16 +26,19 @@ static void testCubicInterp() {
 
 static void testStream() {
     Streamer s;
+    s._assertValid();
     assert(!s.canPlay(0));
     assert(!s.canPlay(1));
     assert(!s.canPlay(2));
     assert(!s.canPlay(3));
     s.step();
+    s._assertValid();
 
     float x[6] = {0};
     s.setSample(0, x, 6);
     assert(s.canPlay(0));
     assert(!s.canPlay(1));
+    s._assertValid();
 }
 
 static void testStreamEnd() {
@@ -48,7 +50,9 @@ static void testStreamEnd() {
     s.setSample(channel, x, 6);
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {
+        s._assertValid();
         s.step();
+        s._assertValid();
     }
     assert(!s.canPlay(channel));
 }
@@ -65,8 +69,10 @@ static void testStreamValues() {
     s.setTranspose(channel, false, 1.f);
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {
+        s._assertValid();
         float_4 v = s.step();
         assertClosePct(v[channel], .1f * (6 - i), 1);
+        s._assertValid();
     }
     assert(!s.canPlay(channel));
 }
@@ -76,13 +82,15 @@ static void testStreamXpose1() {
     const int channel = 3;
     assert(!s.canPlay(channel));
 
-    float x[6] = { .6f, .5f, .4f, .3f, .2f, .1f };
+    float x[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
     assertEQ(x[0], .6f);
 
     s.setSample(channel, x, 6);
     s.setTranspose(channel, true, 1.f);
     assert(s.canPlay(channel));
+    s._assertValid();
     s.step();
+    s._assertValid();
     assert(s.canPlay(channel));
 }
 
@@ -113,13 +121,15 @@ static void testStreamRetrigger() {
     Streamer s;
     const int channel = 0;
 
-    float x[6] = { .6f, .5f, .4f, .3f, .2f, .1f };
+    float x[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
 
     s.setSample(channel, x, 6);
     s.setTranspose(channel, false, 1.f);
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {
+        s._assertValid();
         float_4 v = s.step();
+        s._assertValid();
     }
     assert(!s.canPlay(channel));
 
@@ -127,11 +137,30 @@ static void testStreamRetrigger() {
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {
         assert(s.canPlay(channel));
+        s._assertValid();
         float_4 v = s.step();
+        s._assertValid();
     }
     assert(!s.canPlay(channel));
 }
 
+static void testBugCaseHighFreq() {
+    Streamer s;
+    const int channel = 0;
+    assert(!s.canPlay(channel));
+
+    float x[6] = {0};
+    s.setSample(channel, x, 6);
+    s.setTranspose(0, true, 33.4f);
+
+    assert(s.canPlay(channel));
+    for (int i = 0; i < 6; ++i) {
+        s._assertValid();
+        s.step();
+        s._assertValid();
+    }
+    assert(!s.canPlay(channel));
+}
 
 void testStreamer() {
     testCubicInterp();
@@ -141,7 +170,8 @@ void testStreamer() {
     testStreamValues();
     testStreamRetrigger();
     testStreamXpose1();
-
     // printf("fix testStreamXpose2\n");
     //testStreamXpose2();
+
+    testBugCaseHighFreq();
 }

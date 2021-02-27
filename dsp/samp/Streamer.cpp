@@ -82,8 +82,9 @@ void Streamer::setSample(int channel, float* d, int f) {
     assert(channel < 4);
     ChannelData& cd = channels[channel];
 
+    // temporary validity test
 #ifndef NDEBUG
-    SQINFO("st::setSample(%d) siz=%f", channel, f);
+    // SQINFO("st::setSample(%d) siz=%d", channel, f);
     for (int i = 0; i < f; ++i) {
         const float x = d[i];
         assert(x <= 1);
@@ -120,7 +121,9 @@ float_4 Streamer::audioSamplesRemaining() const {
             if (framesRemaining <= -10) {
                 SQINFO("we have %d frames, pos = %d", cd.frames, curPosition);
                 cd._dump();
-                assert(framesRemaining > -10);
+
+                // I think assert valid will catch this now.
+             //   assert(framesRemaining > -10);
             }
         }
         framesRemaining = std::max(framesRemaining, 0);
@@ -134,5 +137,31 @@ float_4 Streamer::audioSamplesRemaining() const {
 
 void Streamer::ChannelData::_dump() const {
     SQINFO("dumping %p", this);
-    SQINFO("vol=%f, aret=%d, te=%d tm=%f g = %f", vol, areTransposing, transposeEnabled, transposeMultiplier, gain);
+    SQINFO("vol=%f, te=%d tm=%f g = %f", vol, transposeEnabled, transposeMultiplier, gain);
+}
+
+void Streamer::_assertValid() {
+#if 1
+    for (int channel = 0; channel < 4; ++channel) {
+        ChannelData& cd = channels[channel];
+
+        if (cd.transposeEnabled) {
+            SQINFO("finihs overrun checking!");
+            if (cd.arePlaying)
+                assert(CubicInterpolator<float>::canInterpolate(cd.curFloatSampleOffset, cd.frames));
+
+        }
+        else {
+            // these can be equal, if we play past end
+            if (cd.arePlaying) {
+                assert(cd.curIntegerSampleOffset < cd.frames);
+            }
+            else {
+                assert(cd.curIntegerSampleOffset <= cd.frames);
+            }
+        }
+    }
+#endif
+   
+
 }

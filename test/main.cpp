@@ -145,8 +145,23 @@ static void xx()
 
 // #define _MIDIONLY
 
+// This will turn on more Microsoft malloc debug
+#if 0
+static void setupMem()
+{
+    // default is 1
+    int f = _CrtSetDbgFlag(
+        _CRTDBG_ALLOC_MEM_DF |
+        _CRTDBG_DELAY_FREE_MEM_DF |
+        _CRTDBG_CHECK_CRT_DF |
+        _CRTDBG_LEAK_CHECK_DF 
+   );
+}
+#endif
+
 int main(int argc, char** argv) {
-    // xx();
+   // setupMem();
+
     bool runPerf = false;
     bool extended = false;
     bool runShaperGen = false;
