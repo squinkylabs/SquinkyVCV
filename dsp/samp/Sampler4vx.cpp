@@ -23,10 +23,13 @@ void Sampler4vx::setLoader(WaveLoaderPtr loader) {
 }
 
 void Sampler4vx::step_n() {
-    float_4 remainingSamples = player.audioSamplesRemaining();
-    assertNE(sampleTime_, 0);
-    float_4 timeRemaining = remainingSamples * sampleTime_;
-    shutOffNow_ = timeRemaining < releaseTime_;
+    // only check time remaining if we have a patch
+    if (waves) {
+        float_4 remainingSamples = player.audioSamplesRemaining();
+        assertNE(sampleTime_, 0);
+        float_4 timeRemaining = remainingSamples * sampleTime_;
+        shutOffNow_ = timeRemaining < releaseTime_;
+    }
 }
 
 float_4 Sampler4vx::step(const float_4& _gates, float sampleTime) {

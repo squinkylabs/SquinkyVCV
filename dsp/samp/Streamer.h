@@ -13,7 +13,7 @@ public:
     void setSample(int chan, float* data, int frames);
     void setTranspose(int chan, bool doTranspoe, float amount);
     bool canPlay(int chan);
-
+    void clearSamples();
     void setGain(int chan, float gain);
 
 

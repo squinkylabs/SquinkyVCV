@@ -15,6 +15,7 @@ float_4 Streamer::step() {
     for (int channel = 0; channel < 4; ++channel) {
         ChannelData& cd = channels[channel];
 
+        if (cd.data) {
         // I guess we can get called when this it true. do we even care? is the variable useful?
         // assert(cd.arePlaying);
         float f = cd.transposeEnabled ? stepTranspose(cd) : stepNoTranspose(cd);
@@ -22,11 +23,17 @@ float_4 Streamer::step() {
         assert(f >= -1);
         f *= cd.gain;
         ret[channel] = f;
+        } else {
+            // now we called in this state sometimes. Not sure why,
+            // but it certainly seems reasonable to handle it.
+            ret[channel] = 0;
+        }
     }
     return ret;
 }
 
 float Streamer::stepTranspose(ChannelData& cd) {
+   // SQINFO("step tran off=%f, frames=%f data=%p", cd.curFloatSampleOffset, cd.frames, cd.data);
     float ret = 0;
     assert(cd.transposeEnabled);
 
@@ -50,6 +57,7 @@ float Streamer::stepTranspose(ChannelData& cd) {
 }
 
 float Streamer::stepNoTranspose(ChannelData& cd) {
+   // SQINFO("step no tran");
     float ret = 0;
     assert(!cd.transposeEnabled);
 
@@ -93,10 +101,17 @@ void Streamer::setSample(int channel, float* d, int f) {
 #endif
     cd.data = d;
     cd.frames = f;
-    cd.arePlaying = true;
+    cd.arePlaying = true;           // this variable doesn't mean much, but???
     cd.curIntegerSampleOffset = 0;
     cd.curFloatSampleOffset = 1;  // start one past, to allow for interpolator padding
     cd.vol = 1;
+}
+
+void Streamer::clearSamples() {
+    SQINFO("Streamer::clearSamples()");
+    for (int channel=0; channel<4; ++channel) {
+        setSample(channel, nullptr, 0);
+    }
 }
 
 void Streamer::setTranspose(int channel, bool doTranspose, float amount) {
@@ -108,15 +123,17 @@ void Streamer::setTranspose(int channel, bool doTranspose, float amount) {
 }
 
 float_4 Streamer::audioSamplesRemaining() const {
+    //SQINFO("");
     float_4 ret(0);
     for (int channel = 0; channel < 4; ++channel) {
         const ChannelData& cd = channels[channel];
 
-        unsigned curPosition = std::max<unsigned>(cd.curIntegerSampleOffset, (unsigned)cd.curFloatSampleOffset);
+        const unsigned curPosition = std::max<unsigned>(cd.curIntegerSampleOffset, (unsigned)cd.curFloatSampleOffset);
         int framesRemaining = cd.frames - curPosition;
         // assert(framesRemaining >= 0);
+       // SQINFO("rf[%d]= %d, pos=%d, fm=%d ", channel, framesRemaining, curPosition, cd.frames);
         if (framesRemaining < 0) {
-            SQWARN("frames rem =%d", framesRemaining);
+            //SQWARN("frames rem =%d", framesRemaining);
 
             if (framesRemaining <= -10) {
                 SQINFO("we have %d frames, pos = %d", cd.frames, curPosition);
@@ -131,6 +148,8 @@ float_4 Streamer::audioSamplesRemaining() const {
         // kind of sleazy forcing this into a float, but it will be fine.
         ret[channel] = float(framesRemaining);
     }
+    //SQINFO("samp remain ret %s", toStr(ret).c_str());
+
 
     return ret;
 }

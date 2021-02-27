@@ -10,6 +10,7 @@
 #include "IComposite.h"
 #include "InstrumentInfo.h"
 #include "ManagedPool.h"
+#include "SamplerSharedState.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
 #include "SamplerErrorContext.h"
@@ -25,6 +26,8 @@
 //   #define ARCH_WIN
 #endif
 
+#define _ATOM
+
 namespace rack {
 namespace engine {
 struct Module;
@@ -34,21 +37,41 @@ using Module = ::rack::engine::Module;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**
+ * This is the message that is passed from Samp's audio thread
+ * to Samp's worker thread. Note that it's a two way communication -
+ * auto thread is requesting work, and worker thread is returning data
+ */
 class SampMessage : public ThreadMessage {
 public:
     SampMessage() : ThreadMessage(Type::SAMP) {
     }
 
-    std::string* pathToSfz;  // full path to sfz file from user
+    /**
+    * full path to sfz file from user
+    * This is the sfz that will be parsed and loded by the worker
+    */
+    std::string* pathToSfz;  // 
+
                              //  std::string pathToSfz;          // full path to sfz file from user
                              //  std::string globalBase;         // aria base path from user
                              //  std::string defaultPath;        // override from the patch
 
-    // used in both directions.
-    // plugin->server: these are the old values to be disposed of by server.
-    // server->plugin: new values from parsed and loaded patch.
+    /**
+     * Used in both directions.
+     * plugin->server: these are the old values to be disposed of by server.
+     * server->plugin: new values from parsed and loaded patch.
+     */
     CompiledInstrumentPtr instrument;
     WaveLoaderPtr waves;
+
+    /**
+     * A thread safe way to communicate
+     * with the other threads
+     */
+#ifdef _ATOM
+    SamplerSharedStatePtr sharedState;
+#endif
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -156,9 +179,17 @@ private:
                              // SInstrumentPtr instrument;
                              // WaveLoaderPtr waves;
 
+
     // here we hold onto a reference to these so we can give it back
+    // Actually, I think we reference some of these - should consider updating...
     WaveLoaderPtr gcWaveLoader;
     CompiledInstrumentPtr gcInstrument;
+
+#ifdef _ATOM
+    SamplerSharedStatePtr sharedState; 
+#else
+    a b c // just a test, for now
+#endif
 
     float_4 lastGate4[4];
     Divider divn;
@@ -188,6 +219,7 @@ private:
     void servicePendingPatchRequest();
     void serviceMessagesReturnedToComposite();
     void setNewPatch(SampMessage*);
+    void serviceSampleReloadRequest();
 
     // server thread stuff
     // void servicePatchLoader();
@@ -195,6 +227,9 @@ private:
 
 template <class TBase>
 inline void Samp<TBase>::init() {
+#ifdef _ATOM
+    sharedState  =  std::make_shared<SamplerSharedState>();
+#endif
     divn.setup(32, [this]() {
         this->step_n();
     });
@@ -230,6 +265,8 @@ inline void Samp<TBase>::setNewPatch(SampMessage* newMessage) {
     SQINFO("Samp::setNewPatch _isNewInstrument");
     this->gcWaveLoader = newMessage->waves;
     this->gcInstrument = newMessage->instrument;
+
+    // We have taken over ownership. This should be non-blocking
     newMessage->waves.reset();
     newMessage->instrument.reset();
 }
@@ -242,6 +279,7 @@ inline void Samp<TBase>::step_n() {
     outPort.setChannels(numChannels_m);
     servicePendingPatchRequest();
     serviceMessagesReturnedToComposite();
+    serviceSampleReloadRequest();
 
     if (_nextKeySwitchRequest >= 1) {
         int midiPitch = _nextKeySwitchRequest;
@@ -253,6 +291,19 @@ inline void Samp<TBase>::step_n() {
         // don't do this anymore, now that we have ADSR
         // playback[0].note_off(0);
     }
+
+}
+
+template <class TBase>
+inline void  Samp<TBase>::serviceSampleReloadRequest() {
+    #ifdef _ATOM
+    if (sharedState->au_isSampleReloadRequested()) {
+        for (int i=0; i<4; ++i) {
+            playback[i].clearSamples();
+        }
+        sharedState->au_grantSampleReloadRequest();
+    }
+    #endif
 }
 
 template <class TBase>
@@ -345,10 +396,24 @@ public:
     SampServer(std::shared_ptr<ThreadSharedState> state) : ThreadServer(state) {
     }
 
+    // This handle is called when the worker thread (ThreadServer)
+    // gets a message. This is the handler for that message
     void handleMessage(ThreadMessage* msg) override {
+
+        // Since Samp only uses one type of message, we can
+        // trivailly down-cast to the particular message type
         assert(msg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(msg);
 
+#ifdef _ATOM
+        SQINFO("worker about to wait for sample access");
+        assert(smsg->sharedState);
+        smsg->sharedState->uiw_requestAndWaitForSampleReload();
+        SQINFO("worker got sample access");
+#endif
+
+        // First thing we do it throw away the old patch data.
+        // We couldn't do that on the audio thread, since mem allocation will block the thread
         smsg->waves.reset();
         smsg->instrument.reset();
 
@@ -467,6 +532,9 @@ void Samp<TBase>::servicePendingPatchRequest() {
     // OK, we are ready to send a message!
     SampMessage* msg = messagePool.pop();
 
+#ifdef _ATOM
+    msg->sharedState = sharedState;
+#endif
     msg->pathToSfz = patchRequestFromUI;
     msg->instrument = this->gcInstrument;
     msg->waves = this->gcWaveLoader;

@@ -66,6 +66,12 @@ public:
         return 5;
     }
 
+    // expect this to be called on the audio thread.
+    void clearSamples() {
+        player.clearSamples();
+        waves.reset();
+    }
+
 private:
     CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;
