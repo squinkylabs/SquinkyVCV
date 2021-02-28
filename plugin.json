@@ -268,7 +268,7 @@
 			"slug": "squinkylabs-samp",
 			"name": "Samp",
 			"description": "x",
-			"disabled": true,
+			"disabled": false,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/samp.md",
 			"tags": ["Polyphonic"]
 		},
