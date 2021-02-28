@@ -259,7 +259,6 @@ static void testLexSpaces2() {
     testLexSpaces2d();
 }
 
-
 static void testLexLabel() {
     std::string str("\nsw_label=abc def ghi");
     auto lex = SLex::go(str);
@@ -269,10 +268,9 @@ static void testLexLabel() {
     assertEQ(fname->idName, "abc def ghi");
 }
 
-
 #include <fstream>
 static void testLexMarimba2() {
-     std::string path("d:\\samples\\test\\PatchArena_marimba.sfz");
+    std::string path("d:\\samples\\test\\PatchArena_marimba.sfz");
 
     std::ifstream t(path);
     if (!t.good()) {
@@ -287,17 +285,15 @@ static void testLexMarimba2() {
         assert(false);
         return;
     }
-   
 
     auto lex = SLex::go(str);
-  
+
     assert(lex);
     lex->validate();
     lex->_dump();
     assertEQ(lex->items.size(), 1001);
-   // assert(false);
+    // assert(false);
 }
-
 
 static void testLexMarimba() {
     std::string str("<region> trigger=attack  pitch_keycenter=36 lokey=36 hikey=36 sample=PatchArena_marimba-036-c1.wav\r\n\r\n");
@@ -307,9 +303,9 @@ static void testLexMarimba() {
     const size_t items = lex->items.size();
     lex->_dump();
     assert(items == 16);
-   // assert(false);
-   // SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
-  //  assertEQ(fname->idName, "abc def ghi");
+    // assert(false);
+    // SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
+    //  assertEQ(fname->idName, "abc def ghi");
 }
 
 static void testparse1() {

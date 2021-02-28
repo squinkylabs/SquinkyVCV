@@ -1,11 +1,12 @@
 
 #include <asserts.h>
+
 #include "CompiledInstrument.h"
 #include "SInstrument.h"
 #include "SLex.h"
 #include "SParse.h"
-#include "SqLog.h"
 #include "SamplerErrorContext.h"
+#include "SqLog.h"
 
 extern void testPlayInfoTinnyPiano();
 extern void testPlayInfoSmallPiano();
@@ -37,8 +38,7 @@ static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::
     CompiledRegionPtr r0 = std::make_shared<CompiledRegion>();
     r0->addRegionInfo(sr->compiledValues);
 
-
-  //  //CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
+    //  //CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
     return r0;
 }
 
@@ -98,7 +98,6 @@ static void testSmallPianoVelswitch() {
     params.midiVelocity = 60;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
-
 
     params.midiPitch = 64;
     params.midiVelocity = 1;
@@ -174,10 +173,9 @@ static void testAllSal() {
     // cinst->_dump(0);
 }
 
-
 static void testKeswitchCompiled() {
-     SQINFO("\n------ testKeyswitchCompiled");
-     static char* patch = R"foo(
+    SQINFO("\n------ testKeyswitchCompiled");
+    static char* patch = R"foo(
        <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 sw_hikey=15
         lokey=9
@@ -201,7 +199,6 @@ static void testKeswitchCompiled() {
     pool._getAllRegions(regions);
     assertEQ(regions.size(), 2);
 
-
     // region with switch is not enabled yet
     assertEQ(regions[0]->isKeyswitched(), false);
     assertEQ(regions[0]->sw_lolast, 10);
@@ -220,8 +217,8 @@ static void testKeswitchCompiled() {
 
 // two regions at same pitch, but never on at the same time
 static void testKeswitchCompiledOverlap() {
-      SQINFO("\n------ testKeyswitchCompiled");
-     static char* patch = R"foo(
+    SQINFO("\n------ testKeyswitchCompiled");
+    static char* patch = R"foo(
        <group>
         lokey=9
         hikey=11
@@ -251,7 +248,7 @@ static void testKeswitchCompiledOverlap() {
 
 static void testKeyswitch() {
     SQINFO("\n------ testKeyswitch");
-#if 0 // this one made the lexer freak out. Let's investigage (later)
+#if 0  // this one made the lexer freak out. Let's investigage (later)
     static char* patch = R"foo(
         <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 swhikey=15
@@ -283,7 +280,7 @@ static void testKeyswitch() {
 
 // this one has not default
 static void testKeyswitch15() {
-      SQINFO("\n------ testKeyswitch15");
+    SQINFO("\n------ testKeyswitch15");
     static char* patch = R"foo(
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15
@@ -307,8 +304,7 @@ static void testKeyswitch15() {
     }
     assert(errc.empty());
 
-
-// no selection, won't play
+    // no selection, won't play
     VoicePlayInfo info;
     VoicePlayParameter params;
     info.sampleIndex = 0;
@@ -320,33 +316,31 @@ static void testKeyswitch15() {
     cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
-// keyswitch with pitch 11
+    // keyswitch with pitch 11
     params.midiPitch = 11;
     cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
-// now play 50 again, should play first region
+    // now play 50 again, should play first region
     params.midiPitch = 50;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 
-// keyswitch with pitch 10
+    // keyswitch with pitch 10
     params.midiPitch = 10;
     cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
-// now play 50 again, should play second region
+    // now play 50 again, should play second region
     params.midiPitch = 50;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
-
-
 }
 
 static void testKeyswitch2() {
-      SQINFO("\n------ testKeyswitch 2");
+    SQINFO("\n------ testKeyswitch 2");
     static char* patch = R"foo(
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15
@@ -377,8 +371,7 @@ static void testKeyswitch2() {
     assertEQ(regions[0]->sw_default, 10);
     assertEQ(regions[1]->sw_default, 10);
 
-
-// default keyswitch
+    // default keyswitch
     VoicePlayInfo info;
     VoicePlayParameter params;
     info.sampleIndex = 0;
@@ -395,12 +388,12 @@ static void testKeyswitch2() {
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
 
-// keyswitch
+    // keyswitch
     params.midiPitch = 11;
     cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
-// other one
+    // other one
     params.midiPitch = 50;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
@@ -408,14 +401,11 @@ static void testKeyswitch2() {
 }
 
 void testx3() {
-
-  
-
     testAllSal();
     // work up to these
     assert(parseCount == 0);
 
-  //  testVelSwitch1();
+    //  testVelSwitch1();
     testOverlap();
 
     testSmallPianoVelswitch();
@@ -427,13 +417,11 @@ void testx3() {
     testSnareBasic();
     testAllSal();
 
-
     testKeswitchCompiled();
     testKeswitchCompiledOverlap();
     testKeyswitch();
     testKeyswitch15();
     testKeyswitch2();
-
 
     assert(parseCount == 0);
     assert(compileCount == 0);

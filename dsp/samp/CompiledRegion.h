@@ -110,6 +110,9 @@ public:
     int hicc64 = 127;
     int locc64 = 0;
 
+    float volume = 0;           // volume change in db
+    int tune = 0;               // tuning offset in cents
+
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
     
     bool isKeyswitched() const {

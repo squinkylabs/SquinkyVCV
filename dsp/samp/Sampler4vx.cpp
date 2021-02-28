@@ -5,14 +5,6 @@
 #include "SInstrument.h"
 #include "WaveLoader.h"
 
-#if 0
-Sampler4vx::Sampler4vx() {
-    divn.setup(32, [this] {
-        this->step_n();
-    });
-}
-#endif
-
 void Sampler4vx::setPatch(CompiledInstrumentPtr inst) {
     patch = inst;
 }
@@ -25,38 +17,13 @@ void Sampler4vx::setLoader(WaveLoaderPtr loader) {
     adsr.setRSec(.3f);
 }
 
-#if 0
-void Sampler4vx::step_n() {
-    // only check time remaining if we have a patch
-    if (waves) {
-        float_4 remainingSamples = player.audioSamplesRemaining();
-        assertNE(sampleTime_, 0);
-        float_4 timeRemaining = remainingSamples * sampleTime_;
-        shutOffNow_ = timeRemaining < releaseTime_;
-    }
-}
-#endif
-
 float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
     sampleTime_ = sampleTime;
     if (patch && waves) {
-      //  divn.step();
-
-     //   float_4 gates = SimdBlocks::ifelse(shutOffNow_, SimdBlocks::maskFalse(), _gates);
         simd_assertMask(gates);
 
         float_4 envelopes = adsr.step(gates, sampleTime);
         float_4 samples = player.step();
-
-        //
-#if 0
-        const bool b = acc.go(samples[0]);
-        if (b) {
-            auto x = acc.get();
-            SQINFO("g=%f, env=%f d=%f,%f", gates[0], envelopes[0], x.first, x.second);
-            SQINFO(" _gates=%f, shutOffNow=%f", _gates[0], shutOffNow_[0]);
-        }
-#endif
         // apply envelope and boost level
         return envelopes * samples * _outputGain();
     } else {
@@ -81,7 +48,6 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
         return;
     }
 
-  //  this->shutOffNow_[channel] = 0;
     WaveLoader::WaveInfoPtr waveInfo = waves->getInfo(patchInfo.sampleIndex);
     assert(waveInfo->valid);
     assert(waveInfo->numChannels == 1);

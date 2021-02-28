@@ -1,10 +1,10 @@
 
 
 #include "CompiledInstrument.h"
+#include "SInstrument.h"
 #include "Samp.h"
 #include "Sampler4vx.h"
 #include "SamplerErrorContext.h"
-#include "SInstrument.h"
 #include "WaveLoader.h"
 #include "asserts.h"
 
@@ -104,14 +104,14 @@ static void testSamplerTestOutput() {
 
 using ProcFunc = std::function<float()>;
 
-static unsigned measureAttack( ProcFunc f, float threshold) {
+static unsigned measureAttack(ProcFunc f, float threshold) {
     unsigned int ret = 0;
     float x = f();
-   // assert (x < .5);
+    // assert (x < .5);
     assert(x < Sampler4vx::_outputGain()[0] / 2);
     ret++;
 
-    const int maxIterations = 44100 * 20;   // 20 second time out
+    const int maxIterations = 44100 * 20;  // 20 second time out
     while (x < threshold) {
         ++ret;
         x = f();
@@ -120,10 +120,10 @@ static unsigned measureAttack( ProcFunc f, float threshold) {
     return ret;
 }
 
-static unsigned measureRelease( ProcFunc f, float threshold) {
+static unsigned measureRelease(ProcFunc f, float threshold) {
     unsigned int ret = 0;
     float x = f();
-   // assert (x > .5);
+    // assert (x > .5);
     assert(x > Sampler4vx::_outputGain()[0] / 2);
     ret++;
 
@@ -146,7 +146,7 @@ static void testSamplerAttack() {
     float_4 gates = SimdBlocks::maskTrue();
     ProcFunc lambda = [s, &gates] {
         const float sampleTime = 1.f / 44100.f;
-     
+
         const float_4 x = s->step(gates, sampleTime);
         return x[0];
     };
@@ -174,7 +174,7 @@ static void testSamplerRelease() {
     const int midiPitch = 60;
     const int midiVel = 60;
     s->note_on(channel, midiPitch, midiVel, 0);
-    prime(s);       // probably no needed, but  a few quiet ones to start
+    prime(s);  // probably no needed, but  a few quiet ones to start
 
     float_4 gates = SimdBlocks::maskTrue();
     ProcFunc lambda = [s, &gates] {
@@ -184,7 +184,6 @@ static void testSamplerRelease() {
         return x[0];
     };
 
-    
     auto attackSamples = measureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
     gates = SimdBlocks::maskFalse();
     const float minus85Db = (float)AudioMath::gainFromDb(-85);
@@ -192,10 +191,9 @@ static void testSamplerRelease() {
     const auto releaseSamples = measureRelease(lambda, releaseMeasureThreshold);
 
     // I think .6 should give me about 26k samples,
-    const float f = .6 *  44100.f;
+    const float f = .6 * 44100.f;
     assertClosePct(releaseSamples, f, 10);
 }
-
 
 // this one should have a 1.1 second release
 static void testSamplerRelease2() {
@@ -221,7 +219,6 @@ static void testSamplerRelease2() {
     const float releaseMeasureThreshold = minus85Db * Sampler4vx::_outputGain()[0];
     const auto releaseSamples = measureRelease(lambda, releaseMeasureThreshold);
 
-
     const float f = 1.1f * 44100.f;
     assertClosePct(releaseSamples, f, 10);
 }
@@ -246,7 +243,6 @@ static void testSamplerEnd() {
         return x[0];
     };
 
-
     const float minus85Db = (float)AudioMath::gainFromDb(-85);
     const float releaseMeasureThreshold = minus85Db * Sampler4vx::_outputGain()[0];
 
@@ -257,7 +253,7 @@ static void testSamplerEnd() {
     // and finish
     const auto releaseSamples2 = measureRelease(lambda, releaseMeasureThreshold);
 
-    const float f = .6 *  44100.f;
+    const float f = .6 * 44100.f;
     assertClosePct(releaseSamples2, f, 10);
 }
 
@@ -281,7 +277,6 @@ static void testSampleRetrigger() {
         return x[0];
     };
 
-
     //--------------------- first, measure tirgger though to play-out
     const float minus85Db = (float)AudioMath::gainFromDb(-85);
     const float releaseMeasureThreshold = minus85Db * Sampler4vx::_outputGain()[0];
@@ -294,15 +289,13 @@ static void testSampleRetrigger() {
     // and finish
     const auto releaseSamples2 = measureRelease(lambda, releaseMeasureThreshold);
 
-    const float f = .6 *  44100.f;
+    const float f = .6 * 44100.f;
     assertClosePct(releaseSamples2, f, 10);
-
-
 
     //------------------- second - re-trigger it a couple of times
     for (int i = 0; i < 4; ++i) {
-        prime(s);           // send it a  few gate low to reset the ADSR
-        s->note_on(channel, midiPitch, midiVel, 0); // and re-trigger
+        prime(s);                                    // send it a  few gate low to reset the ADSR
+        s->note_on(channel, midiPitch, midiVel, 0);  // and re-trigger
         auto attackSamplesNext = measureAttack(lambda, .99f * Sampler4vx::_outputGain()[0]);
         assertEQ(attackSamplesNext, attackSamples);
 
@@ -332,19 +325,17 @@ static void testSampQantizer() {
     assertEQ(Comp::quantize(0 + 4 * semiV), 64);
     assertEQ(Comp::quantize(0 + 5 * semiV), 65);
 
-    assertEQ(Comp::quantize(1 + 1 * semiV), 61+12);
-    assertEQ(Comp::quantize(1 + 2 * semiV), 62+12);
-    assertEQ(Comp::quantize(1 + 3 * semiV), 63+12);
-    assertEQ(Comp::quantize(1 + 4 * semiV), 64+12);
-    assertEQ(Comp::quantize(1 + 5 * semiV), 65+12);
+    assertEQ(Comp::quantize(1 + 1 * semiV), 61 + 12);
+    assertEQ(Comp::quantize(1 + 2 * semiV), 62 + 12);
+    assertEQ(Comp::quantize(1 + 3 * semiV), 63 + 12);
+    assertEQ(Comp::quantize(1 + 4 * semiV), 64 + 12);
+    assertEQ(Comp::quantize(1 + 5 * semiV), 65 + 12);
 
     assertEQ(Comp::quantize(-1 + 1 * semiV), 61 - 12);
     assertEQ(Comp::quantize(-1 + 2 * semiV), 62 - 12);
     assertEQ(Comp::quantize(-1 + 3 * semiV), 63 - 12);
     assertEQ(Comp::quantize(-1 + 4 * semiV), 64 - 12);
     assertEQ(Comp::quantize(-1 + 5 * semiV), 65 - 12);
-
-  
 }
 
 void testx5() {
@@ -352,9 +343,9 @@ void testx5() {
     testSamplerTestOutput();
 
     printf("put back all of these!\n");
-   // testSamplerAttack();
+    // testSamplerAttack();
     testSamplerRelease();
-   // testSamplerEnd();
+    // testSamplerEnd();
     //testSamplerRealSound();
 
     printf("put back test release 2!!!!\n");
@@ -362,5 +353,5 @@ void testx5() {
 
     testSampQantizer();
 
-   // testSampleRetrigger();      // now write a test for retriggering played out voice
+    // testSampleRetrigger();      // now write a test for retriggering played out voice
 }

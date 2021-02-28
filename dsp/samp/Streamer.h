@@ -15,15 +15,7 @@ public:
     bool canPlay(int chan);
     void clearSamples();
     void setGain(int chan, float gain);
-
-
     float_4 step();
-
-    /** On each channel,
-     * how many samples are left?
-     */
-   // float_4 audioSamplesRemaining() const;
-
     void _assertValid();
 
 public:

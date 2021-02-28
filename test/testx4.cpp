@@ -1,8 +1,8 @@
 
+#include "FilePath.h"
 #include "SqLog.h"
 #include "asserts.h"
 #include "samplerTests.h"
-#include "FilePath.h"
 
 static void testFilePath0() {
     FilePath f("abc");
@@ -22,7 +22,7 @@ static void testFilePathFixup() {
 }
 
 static void testFilePathFixup2() {
-    const char* input ="\\\\////\\\\\\";
+    const char* input = "\\\\////\\\\\\";
     FilePath f(input);
     const std::string s = f.toString();
     assertNE(s, input);
@@ -97,19 +97,19 @@ static void testFilePathConcat6() {
     assertEQ(s, "abc");
 }
 
- static void testFilePathGetPathPart() {
+static void testFilePathGetPathPart() {
     FilePath a("abc/def\\ghi//a.txt");
     FilePath path = a.getPathPart();
-    FilePath expected("abc\\def\\ghi\\");           // trailing separators don't really make a difference
+    FilePath expected("abc\\def\\ghi\\");  // trailing separators don't really make a difference
     assertEQ(path.toString(), expected.toString());
- }
+}
 
- static void testFilePathGetPathPart2() {
+static void testFilePathGetPathPart2() {
     FilePath a("a.txt");
     FilePath path = a.getPathPart();
     FilePath expected("");
     assertEQ(expected.toString(), path.toString());
- }
+}
 
 static void testFilePathGetFilenamePart() {
     FilePath a("abc/def\\ghi//a.txt");
@@ -153,6 +153,4 @@ void testx4() {
     testFilePathGetFilenamePart2();
     testFilePathGetFilenamePart3();
     testFilePathDoubleDot();
-
-
 }

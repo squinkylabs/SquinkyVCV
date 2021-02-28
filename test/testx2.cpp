@@ -11,7 +11,6 @@
 #include "asserts.h"
 #include "samplerTests.h"
 
-
 static const char* tinnyPiano = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
 const char* tinnyPianoRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
 static const char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo";
@@ -137,7 +136,6 @@ static void testLoadWavesPiano() {
 }
 
 static void testCIKeysAndValues(const std::string& pitch, int expectedPitch) {
-
     SKeyValuePairPtr p = std::make_shared<SKeyValuePair>("hikey", pitch);
     SKeyValueList l = {p};
 
@@ -147,28 +145,25 @@ static void testCIKeysAndValues(const std::string& pitch, int expectedPitch) {
     assertEQ(output->_size(), 1);
     SamplerSchema::ValuePtr vp = output->get(SamplerSchema::Opcode::HI_KEY);
     assert(vp);
-    assertEQ(vp->numericInt, expectedPitch);    
+    assertEQ(vp->numericInt, expectedPitch);
 }
 
 static void testCIKeysAndValues() {
     testCIKeysAndValues("12", 12);
 }
 
-static void testCIKeysAndValuesNotes()  {
-        // c0 = 12
+static void testCIKeysAndValuesNotes() {
+    // c0 = 12
     // c6 - 84
-    testCIKeysAndValues("c6",  12 * (6 + 1));
+    testCIKeysAndValues("c6", 12 * (6 + 1));
     testCIKeysAndValues("b5", 12 * (6 + 1) - 1);
-
 }
 
-static void testCIKeysAndValuesNotesSharp()  {
+static void testCIKeysAndValuesNotesSharp() {
     // c c# d d# = 3 semis
     int expectedPitch = 12 * (4 + 1) + 3;
-     testCIKeysAndValues("d#4", expectedPitch);
+    testCIKeysAndValues("d#4", expectedPitch);
 }
-
- 
 
 static void testParseGlobalAndRegionCompiled() {
     printf("start test parse global\n");
@@ -258,7 +253,7 @@ static void testParseControl() {
     assertEQ(inst->groups[0]->regions.size(), 1);
 
     auto gp = inst->groups[0];
-    auto rg =inst->groups[0]->regions[0];
+    auto rg = inst->groups[0]->regions[0];
 #if 0
     SRegionPtr region = inst->groups[0]->regions[0];
 
@@ -389,7 +384,7 @@ static void testTranspose1() {
 
 static void testCompiledRegion() {
     SQINFO("---- starting testCompiledRegion");
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200)foo");
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 offset=200)foo");
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
     assertEQ(cr->hivel, 22);
@@ -397,6 +392,18 @@ static void testCompiledRegion() {
     assertEQ(cr->hikey, 97);
     std::string expected = std::string("K18") + FilePath::nativeSeparator() + std::string("C7.pp.wav");
     assertEQ(cr->sampleFile, expected);
+
+    // test a few defaults
+    assertEQ(cr->volume, 0);
+    assertEQ(cr->tune, 0);
+}
+
+static void testCompiledRegionAddedOpcodes() {
+   SQINFO("---- starting testCompiledRegionAddedOpcodes");
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=a key=64 tune=11 volume=-13)foo");
+
+    assertEQ(cr->tune, 11);
+    assertEQ(cr->volume, -13);
 }
 
 static void testCompiledRegionInherit() {
@@ -480,7 +487,7 @@ static void testCompiledGroup2() {
 static void testCompileMutliControls() {
     SQWARN("need to re-implement testCompileMutliControls");
 }
-#if 0   // need to re-do this
+#if 0  // need to re-do this
 static void testCompileMutliControls() {
     SQINFO("--- start testCompileMutliControls");
 
@@ -520,7 +527,7 @@ static void testCompileMutliControls() {
     fprintf(stderr, "xx=%s\n", xx.c_str());
  xx += std::string("r1");
     fprintf(stderr, "xx=%s\n", xx.c_str());
-    #endif
+#endif
 
    // SQINFO("at 635, exp=%s", expected.c_str());
     fprintf(stderr, "at 635, exp=%s", expected.c_str());
@@ -532,7 +539,6 @@ static void testCompileMutliControls() {
     assertEQ(r1->sampleFile, expected);
 }
 #endif
-
 
 static void testCompileTreeOne() {
     printf("\n----- testCompileTreeOne\n");
@@ -556,7 +562,6 @@ static void testCompileTreeOne() {
     ci->play(info, params, nullptr, 0);
     assert(info.valid);
 }
-
 
 static void testCompileTreeTwo() {
     printf("\n----- testCompileTreeOne\n");
@@ -1038,9 +1043,9 @@ static void testCompileSimpleDrum() {
 
     SamplerErrorContext errc;
     auto ci = CompiledInstrument::make(errc, inst);
-   // SQINFO("dumping drum patch");
-   // ci->_dump(0);
-  //  SQINFO("done with dump");
+    // SQINFO("dumping drum patch");
+    // ci->_dump(0);
+    //  SQINFO("done with dump");
     VoicePlayInfo info;
 
     std::set<int> waves;
@@ -1052,7 +1057,7 @@ static void testCompileSimpleDrum() {
 
         assert(info.valid);
         assert(info.sampleIndex > 0);
-     //   printf("sample index = %d\n", info.sampleIndex);
+        //   printf("sample index = %d\n", info.sampleIndex);
         waves.insert(info.sampleIndex);
     }
 
@@ -1258,15 +1263,6 @@ void testx2() {
 
     // put here just for now
     testCompileMutliControls();
-#if 0
-    testCubicInterp();
-
-    testStream();
-    testStreamEnd();
-    testStreamValues();
-    testStreamRetrigger();
-    testStreamXpose1();
-    #endif
 
     // printf("fix testStreamXpose2\n");
     //testStreamXpose2();
@@ -1281,6 +1277,7 @@ void testx2() {
     testParseLabel();
 
     testCompiledRegion();
+    testCompiledRegionAddedOpcodes();
     testCompiledRegionInherit();
     testCompiledRegionKey();
     testCompiledRegionVel();

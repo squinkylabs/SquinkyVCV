@@ -38,8 +38,6 @@ float Streamer::stepTranspose(ChannelData& cd) {
     assert(cd.transposeEnabled);
 
     if (CubicInterpolator<float>::canInterpolate(cd.curFloatSampleOffset, cd.frames)) {
-        // if (cd.curFloatSampleOffset < (cd.frames)) {
-        //  assert(cd.arePlaying);
         if (!cd.arePlaying) {
             SQWARN("why are we playing a streamer not started? pl=%d, fo=%f, io=%d", cd.arePlaying, cd.curFloatSampleOffset, cd.curIntegerSampleOffset);
             assert(false);
@@ -68,7 +66,6 @@ float Streamer::stepNoTranspose(ChannelData& cd) {
         ++cd.curIntegerSampleOffset;
     }
     if (cd.curIntegerSampleOffset >= cd.frames) {
-        //  SQINFO("play to end");
         cd.arePlaying = false;
     }
 
@@ -122,47 +119,13 @@ void Streamer::setTranspose(int channel, bool doTranspose, float amount) {
     cd.transposeMultiplier = amount;
 }
 
-#if 0
-float_4 Streamer::audioSamplesRemaining() const {
-    //SQINFO("");
-    float_4 ret(0);
-    for (int channel = 0; channel < 4; ++channel) {
-        const ChannelData& cd = channels[channel];
-
-        const unsigned curPosition = std::max<unsigned>(cd.curIntegerSampleOffset, (unsigned)cd.curFloatSampleOffset);
-        int framesRemaining = cd.frames - curPosition;
-        // assert(framesRemaining >= 0);
-       // SQINFO("rf[%d]= %d, pos=%d, fm=%d ", channel, framesRemaining, curPosition, cd.frames);
-        if (framesRemaining < 0) {
-            //SQWARN("frames rem =%d", framesRemaining);
-
-            if (framesRemaining <= -10) {
-                SQINFO("we have %d frames, pos = %d", cd.frames, curPosition);
-                cd._dump();
-
-                // I think assert valid will catch this now.
-             //   assert(framesRemaining > -10);
-            }
-        }
-        framesRemaining = std::max(framesRemaining, 0);
-
-        // kind of sleazy forcing this into a float, but it will be fine.
-        ret[channel] = float(framesRemaining);
-    }
-    //SQINFO("samp remain ret %s", toStr(ret).c_str());
-
-
-    return ret;
-}
-#endif
-
 void Streamer::ChannelData::_dump() const {
     SQINFO("dumping %p", this);
     SQINFO("vol=%f, te=%d tm=%f g = %f", vol, transposeEnabled, transposeMultiplier, gain);
 }
 
 void Streamer::_assertValid() {
-#if 1
+
     for (int channel = 0; channel < 4; ++channel) {
         ChannelData& cd = channels[channel];
 
@@ -182,7 +145,4 @@ void Streamer::_assertValid() {
             }
         }
     }
-#endif
-   
-
 }

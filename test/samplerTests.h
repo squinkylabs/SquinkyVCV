@@ -19,6 +19,9 @@ public:
         assert(inst->wasExpanded);
         assert(err.empty());
 
+        assert(errc.unrecognizedOpcodes.empty());
+       // auto info = inst->getInfo();
+
         // update this for new code
        // assert(false);
       //  //CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);

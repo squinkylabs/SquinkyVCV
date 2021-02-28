@@ -131,92 +131,10 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     findValue(hicc64, values, SamplerSchema::Opcode::HICC64_HACK);
     findValue(locc64, values, SamplerSchema::Opcode::LOCC64_HACK);
 
- 
+    findValue(tune, values, SamplerSchema::Opcode::TUNE);
+    findValue(volume, values, SamplerSchema::Opcode::VOLUME);
+
 }
-
-#if 0
-CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParent, SGroupPtr parsedParent) : weakParent(compiledParent), lineNumber(region->lineNumber) {
-    assert(parsedParent);
-    compileCount++;
-    const SRegion& reg = *region;
-    assert(reg.compiledValues);
-
-    // TODO: better API for getting values
-    findValue(lokey, SamplerSchema::Opcode::LO_KEY, *parsedParent, reg);
-    findValue(hikey, SamplerSchema::Opcode::HI_KEY, *parsedParent, reg);
-
-    int key = -1;
-    findValue(key, SamplerSchema::Opcode::KEY, *parsedParent, reg);
-    if (key >= 0) {
-        lokey = hikey = keycenter = key;
-    }
-
-    // key switch trigger variables
-  
-    findValue(sw_lolast, SamplerSchema::Opcode::SW_LOLAST, *parsedParent, reg);
-    findValue(sw_hilast, SamplerSchema::Opcode::SW_HILAST, *parsedParent, reg);
-
-    int sw_last = -1;
-    findValue(sw_last, SamplerSchema::Opcode::SW_LAST, *parsedParent, reg);
-    if (sw_last >= 0) {
-        if (sw_lolast < 0) {
-            sw_lolast = sw_last;
-        }
-         if (sw_hilast < 0) {
-            sw_hilast = sw_last;
-        }
-    }
-
-
-    // key switch range variables
-    findValue(sw_lokey, SamplerSchema::Opcode::SW_LOKEY, *parsedParent, reg);
-    findValue(sw_hikey, SamplerSchema::Opcode::SW_HIKEY, *parsedParent, reg);
-    findValue(sw_default, SamplerSchema::Opcode::SW_DEFAULT, *parsedParent, reg);
-
-    keySwitched = (sw_lolast < 0);            // if key switching in effect, default to off
-    if (!keySwitched && sw_default >= sw_lolast && sw_default <= sw_hilast) {
-        keySwitched = true;
-    }
-
-    findValue(sw_label, SamplerSchema::Opcode::SW_LABEL, *parsedParent, reg);
-
-    findValue(sequencePosition, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
-    findValue(sequenceLength, SamplerSchema::Opcode::SEQ_LENGTH, *parsedParent, reg);
-
-    findValue(keycenter, SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
-    findValue(lovel, SamplerSchema::Opcode::LO_VEL, *parsedParent, reg);
-    findValue(hivel, SamplerSchema::Opcode::HI_VEL, *parsedParent, reg);
-    assert(lovel >= 0);  // some idiot instruments use zero, even though it is not logal
-    assert(hivel >= lovel);
-    assert(hivel <= 127);
-
-    findValue(lorand, SamplerSchema::Opcode::LO_RAND, *parsedParent, reg);
-    findValue(hirand, SamplerSchema::Opcode::HI_RAND, *parsedParent, reg);
-
-    findValue(amp_veltrack, SamplerSchema::Opcode::AMP_VELTRACK, *parsedParent, reg);
-    findValue(ampeg_release, SamplerSchema::Opcode::AMPEG_RELEASE, *parsedParent, reg);
-
-    std::string baseFileName;
-    std::string defaultPathName;
-    findValue(baseFileName, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
-    findValue(defaultPathName, SamplerSchema::Opcode::DEFAULT_PATH, *parsedParent, reg);
-
-    FilePath def(defaultPathName);
-    FilePath base(baseFileName);
-    def.concat(base);
-    this->sampleFile = def.toString();
-
-    // if not position set in region, fix it up so it will
-    // not be part of sequence logic.
-    if (sequencePosition < 0) {
-        // assert(sequenceLength == 1);
-        sequenceLength = 1;
-        sequencePosition = 1;
-    }
-
-    // findValue(sampleFile, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
-}
-#endif
 
 bool CompiledRegion::shouldIgnore() const {
     // Ignore release triggered samples - we don't implement
