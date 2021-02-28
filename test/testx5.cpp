@@ -227,7 +227,9 @@ static void testSamplerRelease2() {
 }
 
 // validate that the release envelope kicks in a the end of the sample
+// no longer valid: that feature removed
 static void testSamplerEnd() {
+    assert(false);
     auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
     prime(s);
 
@@ -259,6 +261,8 @@ static void testSamplerEnd() {
     assertClosePct(releaseSamples2, f, 10);
 }
 
+// no longer valide since no env at end
+// perhaps could be re-written
 static void testSampleRetrigger() {
     SQINFO("------ testSampleRetrigger");
     auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
@@ -350,7 +354,7 @@ void testx5() {
     printf("put back all of these!\n");
    // testSamplerAttack();
     testSamplerRelease();
-    testSamplerEnd();
+   // testSamplerEnd();
     //testSamplerRealSound();
 
     printf("put back test release 2!!!!\n");
@@ -358,5 +362,5 @@ void testx5() {
 
     testSampQantizer();
 
-    testSampleRetrigger();      // now write a test for retriggering played out voice
+   // testSampleRetrigger();      // now write a test for retriggering played out voice
 }
