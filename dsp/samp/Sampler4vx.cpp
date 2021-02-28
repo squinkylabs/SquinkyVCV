@@ -5,11 +5,14 @@
 #include "SInstrument.h"
 #include "WaveLoader.h"
 
+#if 0
 Sampler4vx::Sampler4vx() {
     divn.setup(32, [this] {
         this->step_n();
     });
 }
+#endif
+
 void Sampler4vx::setPatch(CompiledInstrumentPtr inst) {
     patch = inst;
 }
@@ -22,6 +25,7 @@ void Sampler4vx::setLoader(WaveLoaderPtr loader) {
     adsr.setRSec(.3f);
 }
 
+#if 0
 void Sampler4vx::step_n() {
     // only check time remaining if we have a patch
     if (waves) {
@@ -31,13 +35,14 @@ void Sampler4vx::step_n() {
         shutOffNow_ = timeRemaining < releaseTime_;
     }
 }
+#endif
 
-float_4 Sampler4vx::step(const float_4& _gates, float sampleTime) {
+float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
     sampleTime_ = sampleTime;
     if (patch && waves) {
-        divn.step();
+      //  divn.step();
 
-        float_4 gates = SimdBlocks::ifelse(shutOffNow_, SimdBlocks::maskFalse(), _gates);
+     //   float_4 gates = SimdBlocks::ifelse(shutOffNow_, SimdBlocks::maskFalse(), _gates);
         simd_assertMask(gates);
 
         float_4 envelopes = adsr.step(gates, sampleTime);
@@ -76,7 +81,7 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
         return;
     }
 
-    this->shutOffNow_[channel] = 0;
+  //  this->shutOffNow_[channel] = 0;
     WaveLoader::WaveInfoPtr waveInfo = waves->getInfo(patchInfo.sampleIndex);
     assert(waveInfo->valid);
     assert(waveInfo->numChannels == 1);

@@ -122,6 +122,7 @@ void Streamer::setTranspose(int channel, bool doTranspose, float amount) {
     cd.transposeMultiplier = amount;
 }
 
+#if 0
 float_4 Streamer::audioSamplesRemaining() const {
     //SQINFO("");
     float_4 ret(0);
@@ -153,6 +154,7 @@ float_4 Streamer::audioSamplesRemaining() const {
 
     return ret;
 }
+#endif
 
 void Streamer::ChannelData::_dump() const {
     SQINFO("dumping %p", this);

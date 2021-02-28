@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "ADSRSampler.h"
-#include "Divider.h"
+//#include "Divider.h"
 #include "SimdBlocks.h"
 
 class CompiledInstrument;
@@ -49,7 +49,7 @@ private:
 #define _USEADSR
 class Sampler4vx {
 public:
-    Sampler4vx();
+ //   Sampler4vx();
     void note_on(int channel, int midiPitch, int midiVelocity, float sampleRate);
 
     void setPatch(CompiledInstrumentPtr inst);
@@ -80,10 +80,10 @@ private:
 
     // Don't remember what this is for
     float_4 R = float_4(.001f);
-    Divider divn;  // used to reduce the polling frequency for remaining samples
+ //   Divider divn;  // used to reduce the polling frequency for remaining samples
     void step_n();
     float sampleTime_ = 0;
-    float_4 shutOffNow_ = {0};
+   // float_4 shutOffNow_ = {0};
     float_4 releaseTime_ = {0};
 
     // Accumulator acc = {100};

@@ -22,7 +22,7 @@ public:
     /** On each channel,
      * how many samples are left?
      */
-    float_4 audioSamplesRemaining() const;
+   // float_4 audioSamplesRemaining() const;
 
     void _assertValid();
 
