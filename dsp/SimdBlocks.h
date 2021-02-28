@@ -39,8 +39,14 @@ public:
 
     static float_4 maskTrue();
     static float_4 maskFalse();
+    static bool isChannelTrue(int channel, float_4 x);
     static bool isTrue(float_4);
 };
+
+ inline bool SimdBlocks::isChannelTrue(int channel, float_4 x) {
+    int32_4 mi = x;
+    return mi[channel] != 0;    
+ }
 
 inline bool SimdBlocks::isTrue(float_4 x) {
     // This is a dumb, slow way to do it, but...

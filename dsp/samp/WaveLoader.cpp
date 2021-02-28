@@ -139,7 +139,34 @@ bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
     return true;
 }
 
+
 void WaveLoader::WaveInfo::convertToMono() {
+    SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
+    const int origChannels = numChannels;
+    uint64_t newBufferSize = 1 + totalFrameCount;
+    void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
+    float* dest = reinterpret_cast<float*>(x);
+
+    for (uint64_t outputIndex = 0; outputIndex < totalFrameCount; ++outputIndex) {
+        float monoSampleValue = 0;
+        for (int channelIndex=0; channelIndex < origChannels; ++channelIndex) {
+            uint64_t inputIndex = outputIndex * origChannels + channelIndex;
+            monoSampleValue += data[inputIndex];
+        }
+        monoSampleValue /= origChannels;
+        assert(monoSampleValue <= 1);
+        assert(monoSampleValue >= -1);
+        dest[outputIndex] = monoSampleValue;
+    }
+    numChannels = 1;
+    SQINFO("leaving, not total frames = %d", totalFrameCount);
+    DRWAV_FREE(data);
+    data = dest;
+}
+
+#if 0
+void WaveLoader::WaveInfo::convertToMono() {
+    SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
     const int origChannels = numChannels;
     uint64_t newBufferSize = 1 + totalFrameCount / origChannels;
     void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
@@ -157,10 +184,12 @@ void WaveLoader::WaveInfo::convertToMono() {
 
     totalFrameCount /= origChannels;
     numChannels = 1;
+    SQINFO("leaving, not total frames = %d", totalFrameCount);
 
     DRWAV_FREE(data);
     data = dest;
 }
+#endif
 
 WaveLoader::WaveInfo::~WaveInfo() {
     if (data) {
