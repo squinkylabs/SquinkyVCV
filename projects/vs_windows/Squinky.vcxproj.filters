@@ -687,6 +687,30 @@
     <ClCompile Include="..\..\dsp\samp\FilePath.cpp">
       <Filter>Source Files\dsp\samp</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\dsp\samp\RegionPool.cpp">
+      <Filter>Source Files\dsp\samp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testCmprsr.cpp">
+      <Filter>Header Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testCompressor.cpp">
+      <Filter>Header Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testCompressorParamHolder.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testx5.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testx6.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testADSRSampler.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testStreamer.cpp">
+      <Filter>Header Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">
@@ -1145,9 +1169,6 @@
     <ClInclude Include="..\..\dsp\samp\dr_wav.h">
       <Filter>Header Files\dsp\samp</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\dsp\samp\PitchSwitch.h">
-      <Filter>Header Files\dsp\samp</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\dsp\samp\Sampler4vx.h">
       <Filter>Header Files\dsp\samp</Filter>
     </ClInclude>
@@ -1164,9 +1185,6 @@
       <Filter>Header Files\dsp\samp</Filter>
     </ClInclude>
     <ClInclude Include="..\..\dsp\samp\Streamer.h">
-      <Filter>Header Files\dsp\samp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\dsp\samp\VelSwitch.h">
       <Filter>Header Files\dsp\samp</Filter>
     </ClInclude>
     <ClInclude Include="..\..\test\samplerTests.h">

@@ -30,6 +30,7 @@
     <ClCompile Include="..\..\dsp\samp\CompiledInstrument.cpp" />
     <ClCompile Include="..\..\dsp\samp\CompiledRegion.cpp" />
     <ClCompile Include="..\..\dsp\samp\FilePath.cpp" />
+    <ClCompile Include="..\..\dsp\samp\RegionPool.cpp" />
     <ClCompile Include="..\..\dsp\samp\Sampler4vx.cpp" />
     <ClCompile Include="..\..\dsp\samp\SamplerPlayback.cpp" />
     <ClCompile Include="..\..\dsp\samp\SamplerSchema.cpp" />
@@ -98,6 +99,11 @@
     <ClCompile Include="..\..\test\SqWaveFile.cpp" />
     <ClCompile Include="..\..\test\testACDetector.cpp" />
     <ClCompile Include="..\..\test\testADSR.cpp" />
+    <ClCompile Include="..\..\test\testADSRSampler.cpp" />
+    <ClCompile Include="..\..\test\testCmprsr.cpp" />
+    <ClCompile Include="..\..\test\testCompressor.cpp" />
+    <ClCompile Include="..\..\test\testCompressorParamHolder.cpp" />
+    <ClCompile Include="..\..\test\testStreamer.cpp" />
     <ClCompile Include="..\..\test\testWavThread.cpp" />
     <ClCompile Include="..\..\test\testx3.cpp" />
     <ClCompile Include="..\..\test\testAudioMath.cpp" />
@@ -196,6 +202,8 @@
     <ClCompile Include="..\..\test\testx.cpp" />
     <ClCompile Include="..\..\test\testx2.cpp" />
     <ClCompile Include="..\..\test\testx4.cpp" />
+    <ClCompile Include="..\..\test\testx5.cpp" />
+    <ClCompile Include="..\..\test\testx6.cpp" />
     <ClCompile Include="..\..\util\SqLog.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -254,7 +262,6 @@
     <ClInclude Include="..\..\dsp\samp\CompiledInstrument.h" />
     <ClInclude Include="..\..\dsp\samp\CompiledRegion.h" />
     <ClInclude Include="..\..\dsp\samp\dr_wav.h" />
-    <ClInclude Include="..\..\dsp\samp\PitchSwitch.h" />
     <ClInclude Include="..\..\dsp\samp\Sampler4vx.h" />
     <ClInclude Include="..\..\dsp\samp\SamplerPlayback.h" />
     <ClInclude Include="..\..\dsp\samp\SamplerSchema.h" />
@@ -262,7 +269,6 @@
     <ClInclude Include="..\..\dsp\samp\SLex.h" />
     <ClInclude Include="..\..\dsp\samp\SParse.h" />
     <ClInclude Include="..\..\dsp\samp\Streamer.h" />
-    <ClInclude Include="..\..\dsp\samp\VelSwitch.h" />
     <ClInclude Include="..\..\dsp\simd.h" />
     <ClInclude Include="..\..\dsp\SimdBlocks.h" />
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h" />

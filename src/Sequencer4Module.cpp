@@ -9,7 +9,7 @@
 #include "WidgetComposite.h"
 
 #ifdef _SEQ4
-#include "ctrl/PopupMenuParamWidgetv1.h"
+#include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqToggleLED.h"

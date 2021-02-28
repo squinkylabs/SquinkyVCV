@@ -4,8 +4,9 @@
 
 class FilePath {
 public:
-    FilePath(const char*);
-    FilePath(const std::string&);
+    explicit FilePath(const char*);
+    explicit FilePath(const std::string&);
+    FilePath() = default;
     std::string toString() const;
 
     static char nativeSeparator();
@@ -17,6 +18,11 @@ public:
      */
     void concat(const FilePath& other);
     bool empty() const;
+
+    // if this == "abc/def/j.txt"
+    // will return abc/def
+    FilePath getPathPart() const;
+    std::string getFilenamePart() const;
 private:
     std::string data;
 

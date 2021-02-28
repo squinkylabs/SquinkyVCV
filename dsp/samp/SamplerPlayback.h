@@ -155,6 +155,7 @@ public:
     }
 };
 
+#if 0 // don't use these any more
 class RandomVoicePlayer : public ISamplerPlayback {
 public:
     RandomVoicePlayer() : rand(0) {}
@@ -199,3 +200,4 @@ private:
 };
 
 using RoundRobinVoicePlayerPtr = std::shared_ptr<RoundRobinVoicePlayer>;
+#endif

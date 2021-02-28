@@ -77,7 +77,6 @@ static void testxKVP2() {
 }
 
 static void testLexComment() {
-    printf("\n---- testLexComment\n");
     SLexPtr lex = SLex::go("// comment\n<global>");
     assert(lex);
     lex->validate();
@@ -131,7 +130,6 @@ static void testLexMultiLine2() {
 }
 
 static void testLexGlobalWithData() {
-    printf("testParseGlobalWithData\n");
     SLexPtr lex = SLex::go("<global>ampeg_release=0.6<region>");
     assert(lex);
     lex->validate();
@@ -142,7 +140,6 @@ static void testLexGlobalWithData() {
 }
 
 static void testLexTwoRegions() {
-    printf("testLexTwoRegions\n");
     SLexPtr lex = SLex::go("<region><region>");
     assert(lex);
     lex->validate();
@@ -154,7 +151,6 @@ static void testLexTwoRegions() {
 }
 
 static void testLexTwoKeys() {
-    printf("testLexTwoRegionsValues\n");
     SLexPtr lex = SLex::go("a=b\nc=d");
     assert(lex);
     lex->validate();
@@ -179,7 +175,6 @@ static void testLexTwoKeysOneLine() {
 }
 
 static void testLexTwoRegionsWithKeys() {
-    printf("testLexTwoRegionsValues\n");
     SLexPtr lex = SLex::go("<region>a=b\nc=d<region>q=w\ne=r");
     assert(lex);
     lex->validate();
@@ -198,13 +193,11 @@ static void testLexMangledId() {
 }
 
 static void testLex4() {
-    printf("\ntestLex5s\n");
     auto lex = SLex::go("<group><region><region><group><region.");
     assert(!lex);
 }
 
 static void testLex5() {
-    printf("\ntestLex5\n");
     auto lex = SLex::go("\n<group>");
     assert(lex);
     lex->validate();
@@ -213,7 +206,6 @@ static void testLex5() {
 }
 
 static void testLexSpaces() {
-    SQWARN("staring test lex spaces");
     auto lex = SLex::go("\nsample=a b c");
     assert(lex);
     lex->validate();
@@ -242,22 +234,18 @@ static void testLexSpaces2Sub(const std::string& testString, const std::string& 
 }
 
 static void testLexSpaces2a() {
-    SQWARN("staring test lex spaces 2");
     testLexSpaces2Sub("sample=abc x=y", "abc");
 }
 
 static void testLexSpaces2b() {
-    SQWARN("staring test lex spaces 2b");
     testLexSpaces2Sub("sample=abc  x=y", "abc");
 }
 
 static void testLexSpaces2c() {
-    SQWARN("staring test lex spaces 2b");
     testLexSpaces2Sub("sample=a b c    x=y", "a b c");
 }
 
 static void testLexSpaces2d() {
-    SQWARN("staring test lex spaces 2D");
     const char* pAllDrum = R"foo(sample=a
 //comm
     x = y
@@ -271,12 +259,57 @@ static void testLexSpaces2() {
     testLexSpaces2d();
 }
 
+
 static void testLexLabel() {
-    auto lex = SLex::go("\nsw_label=abc def ghi");
+    std::string str("\nsw_label=abc def ghi");
+    auto lex = SLex::go(str);
     assert(lex);
     lex->validate();
     SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
     assertEQ(fname->idName, "abc def ghi");
+}
+
+
+#include <fstream>
+static void testLexMarimba2() {
+     std::string path("d:\\samples\\test\\PatchArena_marimba.sfz");
+
+    std::ifstream t(path);
+    if (!t.good()) {
+        printf("can't open file\n");
+        assert(false);
+        return;
+    }
+
+    std::string str((std::istreambuf_iterator<char>(t)),
+                    std::istreambuf_iterator<char>());
+    if (str.empty()) {
+        assert(false);
+        return;
+    }
+   
+
+    auto lex = SLex::go(str);
+  
+    assert(lex);
+    lex->validate();
+    lex->_dump();
+    assertEQ(lex->items.size(), 1001);
+   // assert(false);
+}
+
+
+static void testLexMarimba() {
+    std::string str("<region> trigger=attack  pitch_keycenter=36 lokey=36 hikey=36 sample=PatchArena_marimba-036-c1.wav\r\n\r\n");
+    auto lex = SLex::go(str);
+    assert(lex);
+    lex->validate();
+    const size_t items = lex->items.size();
+    lex->_dump();
+    assert(items == 16);
+   // assert(false);
+   // SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
+  //  assertEQ(fname->idName, "abc def ghi");
 }
 
 static void testparse1() {
@@ -295,7 +328,6 @@ static void testParseRegion() {
 }
 
 static void testparse2() {
-    printf("\nstart testprse2\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>pitch_keycenter=24", inst);
     assert(err.empty());
@@ -312,7 +344,7 @@ static void testparse2() {
 }
 
 static void testParseMutliControls() {
-   // SQINFO("--- start testParseMutliControls");
+    // SQINFO("--- start testParseMutliControls");
 
     const char* test = R"foo(
         <control>
@@ -356,7 +388,7 @@ static void testParseMutliControls() {
 
 static void testParseGroupAndValues() {
     //SQINFO("---- start testParseGroupAndValues");
- //   const char* test = R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo";
+    //   const char* test = R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo";
     const char* test = R"foo(<group>a=b<region>)foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(test, inst);
@@ -365,15 +397,15 @@ static void testParseGroupAndValues() {
     assertEQ(inst->groups.size(), 1);
     assertEQ(inst->groups[0]->regions.size(), 1);
 
-    inst->groups[0]->_dump();
-    inst->groups[0]->regions[0]->_dump();
+    // inst->groups[0]->_dump();
+    // inst->groups[0]->regions[0]->_dump();
 
     assertEQ(inst->groups[0]->values.size(), 1);
     assertEQ(inst->groups[0]->regions[0]->values.size(), 0);
 }
 
 static void testParseGlobal() {
-   // SQINFO("---- start test parse global\n");
+    // SQINFO("---- start test parse global\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global>", inst);
     // no regions - that's not legal, but we make up groups if there aren't any,
@@ -384,7 +416,7 @@ static void testParseGlobal() {
 }
 
 static void testParseGlobalGroupAndRegion() {
-   // SQINFO("\n-- start testParseGlobalAndRegion\n");
+    // SQINFO("\n-- start testParseGlobalAndRegion\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><group><region>", inst);
 
@@ -392,7 +424,7 @@ static void testParseGlobalGroupAndRegion() {
 }
 
 static void testParseGlobalAndRegion() {
-  //  SQINFO("\n-- start testParseGlobalAndRegion\n");
+    //  SQINFO("\n-- start testParseGlobalAndRegion\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><region>", inst);
 
@@ -493,6 +525,15 @@ static void testRandomRange1() {
     assertEQ(test.size(), 3);
 }
 
+static void testParseDX() {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    // maybe need to compile this...
+    auto err = SParse::goFile("D:\\samples\\__test\\BS-DX7-Bright-Bow.sfz", inst);
+    assert(err.empty());
+    assertEQ(inst->groups.size(), 1);
+}
+
 extern int compileCount;
 
 void testx() {
@@ -520,6 +561,7 @@ void testx() {
     testLexSpaces();
     testLexSpaces2();
     testLexLabel();
+    testLexMarimba();
 
     testparse1();
     testParseRegion();
@@ -541,5 +583,7 @@ void testx() {
     testParseSimpleDrum();
     testRandomRange0();
     testRandomRange1();
+    testParseDX();
+
     assert(parseCount == 0);
 }

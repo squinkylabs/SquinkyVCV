@@ -32,6 +32,7 @@ void SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& para
     }
 }
 
+#if 0
 void RandomVoicePlayer::_dump(int depth) const {
     indent(depth);
     printf("Random Voice Player (tbd)\n");
@@ -146,7 +147,7 @@ void RoundRobinVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& 
 void RoundRobinVoicePlayer::addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch) {
     CachedSamplerPlaybackInfoPtr info = std::make_shared<CachedSamplerPlaybackInfo>(region, midiPitch, sampleIndex);
     RRPlayInfoPtr rr_info = std::make_shared<RRPlayInfo>(*info);
-    rr_info->seq_position = region->seq_position;
+    rr_info->seq_position = region->sequencePosition;
     entries.push_back(rr_info);
     numEntries = int(entries.size());
 }
@@ -161,3 +162,4 @@ void RoundRobinVoicePlayer::finalize() {
     });
     currentEntry = int(entries.size()) + 1;
 }
+#endif

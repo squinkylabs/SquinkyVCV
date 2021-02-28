@@ -34,6 +34,9 @@ endif
 # Static libraries are fine.
 LDFLAGS += -lpthread
 
+# this doesn't work on mac. Let's back this experiment out for now.
+#LDFLAGS += -latomic
+
 # Add .cpp and .c files to the build
 SOURCES += $(wildcard src/*.cpp)
 SOURCES += $(wildcard dsp/**/*.cpp)
@@ -69,6 +72,14 @@ endif
 #  -flto
 FLAGS += -finline-limit=500000 -finline-functions-called-once -flto
 LDFLAGS += -flto
+
+# ---- for ASAN on linux, just uncomment
+# using the static library is a hack for getting the libraries to load.
+# Trying other hacks first is a good idea. Building Rack.exe with asan is a pretty easy way
+# ASAN_FLAGS = -fsanitize=address -fno-omit-frame-pointer -Wno-format-security
+# FLAGS += $(ASAN_FLAGS)
+# LDFLAGS += $(ASAN_FLAGS)
+# LDFLAGS += -static-libasan
 
 include test.mk
 

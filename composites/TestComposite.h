@@ -218,8 +218,8 @@ public:
     }
 
     struct ProcessArgs {
-        float sampleRate;
-        float sampleTime;
+        float sampleRate = 44100.f;
+        float sampleTime = 1.f / 44100.f;
     };
 
     std::vector<Input> inputs;

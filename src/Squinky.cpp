@@ -16,6 +16,7 @@ void init (::rack::Plugin *p)
     p->slug = "squinkylabs-plug1";
     p->version = TOSTRING(VERSION);
 
+
 #ifdef _BOOTY
     p->addModel(modelBootyModule);
 #endif
@@ -134,6 +135,10 @@ p->addModel(modelF2Module);
 p->addModel(modelF4Module);
 #endif
 p->addModel(modelCompressorModule);
+
+#ifdef _COMP2
+p->addModel(modelCompressor2Module);
+#endif
 
 #ifdef  _SAMP
 p->addModel(modelSampModule);

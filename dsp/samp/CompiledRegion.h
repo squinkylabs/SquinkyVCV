@@ -24,6 +24,9 @@ using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
 
 extern int compileCount;
 
+#define _SFZ_RANDOM
+// #define _SFZ_RR
+
 /**
  * All the data that we care about, pulled out of the SRegion we parsed.
  * These live throughout the duration of a compile, and are the basic structures
@@ -31,18 +34,21 @@ extern int compileCount;
  */
 class CompiledRegion {
 public:
-    CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
+  //  CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
+    void addRegionInfo(SamplerSchema::KeysAndValuesPtr);
     CompiledRegion() {
-       // SQINFO("Compiled REgion def ctor %p", this);
+        // SQINFO("Compiled REgion def ctor %p", this);
         ++compileCount;
     }
     virtual ~CompiledRegion() { compileCount--; }
+    void _dump(int depth) const;
 
+    // still used??
     enum class Type {
         Base,
-        RoundRobin,     // group and regions where we RR between the regions in the one group.
-        Random,         // group and regions where we random between the regions in the one group.
-        GRandom,        // probability is on each group, so multiple groups involved.
+        RoundRobin,  // group and regions where we RR between the regions in the one group.
+        Random,      // group and regions where we random between the regions in the one group.
+        GRandom,     // probability is on each group, so multiple groups involved.
         GRoundRobbin
     };
     virtual Type type() const { return Type::Base; }
@@ -52,42 +58,76 @@ public:
     bool overlapsVelocityButNotEqual(const CompiledRegion&) const;
     bool velocityRangeEqual(const CompiledRegion&) const;
     bool pitchRangeEqual(const CompiledRegion&) const;
+    bool overlapsRand(const CompiledRegion&) const;
+    bool sameSequence(const CompiledRegion&) const;
 
-    // Keys were defaulting to -1, -1, but for drums with no
-    // keys at all they were skipped. Better default is "all keys".
-#if 1
     int lokey = 0;
     int hikey = 127;
-#else
-    int lokey = -1;
-    int hikey = -1;
-#endif
-    // int onlykey = -1;           // can't lokey and hikey represent this just fine?
-    int keycenter = -1;
+
+    int keycenter = 60;
     std::string sampleFile;
     int lovel = 1;
     int hivel = 127;
 
     // assume no valid random data
-    float lorand = -1;
-    float hirand = -1;
+    float lorand = 0;
+    float hirand = 1;
 
-    int seq_position = -1;
     float amp_veltrack = 100;
     float ampeg_release = .001f;
 
     CompiledGroupPtrWeak weakParent;
     int lineNumber = -1;
-    ;
+
+    /** valid sample index starts at 1
+     */
+    int sampleIndex = 0;
+
+    /**
+     * Member variable to control round robin selection
+     * of regions. Variable are named after the corresponding variables
+     * from sfizz. . Def to true, set to false for sequence groups.
+     */
+    bool sequenceSwitched = true;
+    int sequenceCounter = 0;  //: int region member, init to zero.
+    int sequenceLength = 1;   // uint8_t init to 1, set  from sfz data
+    int sequencePosition = -1;
+
+    /**
+     * for key switching
+     */
+    bool keySwitched = true;    // by default, normal regions are on
+  //  int sw_last = -1;         // the pitch that turns on this region
+    int sw_lolast = -1;         // the range of pitches that turn this region on
+    int sw_hilast = -1; 
+
+    int sw_lokey = -1;
+    int sw_hikey = -1;          // the range of pitches that are key-switches, not notes
+    int sw_default = -1;        // the keyswitch region to start with
+    std::string sw_label;
+
+    // cc stuff
+    int hicc64 = 127;
+    int locc64 = 0;
+
+    SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
+    
+    bool isKeyswitched() const {
+        return keySwitched;
+    }
+
+    bool shouldIgnore() const;
 
 protected:
     CompiledRegion(CompiledRegionPtr);
     CompiledRegion& operator=(const CompiledRegion&) = default;
 
 private:
-    static void findValue(int& returnValue, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
-    static void findValue(float&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
-    static void findValue(std::string&, SamplerSchema::Opcode, const SGroup& parent, const SRegion& region);
+
+    static void findValue(float& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
+    static void findValue(int& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
+    static void findValue(std::string& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
+    static void findValue(SamplerSchema::DiscreteValue& returnVAlue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
 };
 
 /**
@@ -101,7 +141,6 @@ public:
      */
     CompiledMultiRegion(CompiledGroupPtr parent);
     CompiledMultiRegion() {
-
     }
     const std::vector<CompiledRegionPtr>& getRegions() { return originalRegions; }
 
@@ -159,5 +198,6 @@ public:
     const int lineNumber;
 
 private:
+    // TODO: get rid of all magic logic in group
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
 };

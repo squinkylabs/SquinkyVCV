@@ -7,64 +7,134 @@
 #include "CompiledInstrument.h"
 #include "FilePath.h"
 #include "SParse.h"
-#include "SqLog.h"
 #include "SamplerSchema.h"
+#include "SqLog.h"
 
 int compileCount = 0;
 
-void CompiledRegion::findValue(int& intValue, SamplerSchema::Opcode opcode, const SGroup& parent, const SRegion& reg) {
-    assert(&parent);
-    auto value = reg.compiledValues->get(opcode);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Int);
-        intValue = value->numericInt;
-        return;
-    }
-    value = parent.compiledValues->get(opcode);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Int);
-        intValue = value->numericInt;
-        return;
-    }
-    return;
-}
-
-void CompiledRegion::findValue(float& floatValue, SamplerSchema::Opcode opcode, const SGroup& parent, const SRegion& reg) {
-    auto value = reg.compiledValues->get(opcode);
+void CompiledRegion::findValue(float& floatValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
+    assert(inputValues);
+    auto value = inputValues->get(opcode);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Float);
         floatValue = value->numericFloat;
-        return;
     }
-    value = parent.compiledValues->get(opcode);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Float);
-        floatValue = value->numericFloat;
-        return;
-    }
-    return;
 }
 
-void CompiledRegion::findValue(std::string& strValue, SamplerSchema::Opcode opcode, const SGroup& parent, const SRegion& reg) {
-    auto value = reg.compiledValues->get(opcode);
+void CompiledRegion::findValue(int& intValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
+    assert(inputValues);
+    auto value = inputValues->get(opcode);
     if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::String);
-        strValue = value->string;
-        return;
+        assert(value->type == SamplerSchema::OpcodeType::Int);
+        intValue = value->numericInt;
     }
-    value = parent.compiledValues->get(opcode);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::String);
-        strValue = value->string;
-        return;
-    }
-    return;
 }
 
-void findValue(float&, SamplerSchema::Opcode) {}
-void findValue(std::string&, SamplerSchema::Opcode) {}
+void CompiledRegion::findValue(std::string& stringValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
+    assert(inputValues);
+    auto value = inputValues->get(opcode);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::String);
+        stringValue = value->string;
+    }
+}
+
+void CompiledRegion::findValue(SamplerSchema::DiscreteValue& discreteValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
+    assert(inputValues);
+    auto value = inputValues->get(opcode);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Discrete);
+        discreteValue = value->discrete;
+    }
+}
 
 using Opcode = SamplerSchema::Opcode;
+
+void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
+    // TODO: what did old findValue to that we don't?
+    // TODO: why did old version need so many args?
+    // TODO: do we need weakParent? get rid of it?
+    // TODO: line numbers
+
+    //---------------- key related values
+    findValue(lokey, values, SamplerSchema::Opcode::LO_KEY);
+    findValue(hikey, values, SamplerSchema::Opcode::HI_KEY);
+
+    int key = -1;
+    findValue(key, values, SamplerSchema::Opcode::KEY);
+    if (key >= 0) {
+        lokey = hikey = keycenter = key;
+    }
+    // TODO: only do this if key not set?
+    findValue(keycenter, values, SamplerSchema::Opcode::PITCH_KEYCENTER);
+
+    //---------------------------------------------velocity
+    findValue(lovel, values, SamplerSchema::Opcode::LO_VEL);
+    findValue(hivel, values, SamplerSchema::Opcode::HI_VEL);
+    assert(lovel >= 0);  // some idiot instruments use zero, even though it is not legal
+    assert(hivel >= lovel);
+    assert(hivel <= 127);
+
+    //------------- misc
+    findValue(ampeg_release, values, SamplerSchema::Opcode::AMPEG_RELEASE);
+    findValue(amp_veltrack, values, SamplerSchema::Opcode::AMP_VELTRACK);
+    findValue(trigger, values, SamplerSchema::Opcode::TRIGGER);
+
+    //----------- sample file
+    std::string baseFileName;
+    std::string defaultPathName;
+    findValue(baseFileName, values, SamplerSchema::Opcode::SAMPLE);
+    findValue(defaultPathName, values, SamplerSchema::Opcode::DEFAULT_PATH);
+    FilePath def(defaultPathName);
+    FilePath base(baseFileName);
+    def.concat(base);
+    if (!def.empty()) {
+        this->sampleFile = def.toString();
+    }
+
+    // ---- random and RR -------------------
+    findValue(lorand, values, SamplerSchema::Opcode::LO_RAND);
+    findValue(hirand, values, SamplerSchema::Opcode::HI_RAND);
+    findValue(sequencePosition, values, SamplerSchema::Opcode::SEQ_POSITION);
+    findValue(sequenceLength, values, SamplerSchema::Opcode::SEQ_LENGTH);
+    if (sequencePosition < 0) {
+        sequenceLength = 1;
+        sequencePosition = 1;
+    }
+
+    // -------------------- key switch variables
+    findValue(sw_lolast, values, SamplerSchema::Opcode::SW_LOLAST);
+    findValue(sw_hilast, values, SamplerSchema::Opcode::SW_HILAST);
+
+    int sw_last = -1;
+    findValue(sw_last, values, SamplerSchema::Opcode::SW_LAST);
+    if (sw_last >= 0) {
+        if (sw_lolast < 0) {
+            sw_lolast = sw_last;
+        }
+        if (sw_hilast < 0) {
+            sw_hilast = sw_last;
+        }
+    }
+    findValue(sw_lokey, values, SamplerSchema::Opcode::SW_LOKEY);
+    findValue(sw_hikey, values, SamplerSchema::Opcode::SW_HIKEY);
+    findValue(sw_default, values, SamplerSchema::Opcode::SW_DEFAULT);
+
+    keySwitched = (sw_lolast < 0);  // if key switching in effect, default to off
+    if (!keySwitched && sw_default >= sw_lolast && sw_default <= sw_hilast) {
+        keySwitched = true;
+    }
+
+    findValue(sw_label, values, SamplerSchema::Opcode::SW_LABEL);
+
+    // ---------- cc
+    findValue(hicc64, values, SamplerSchema::Opcode::HICC64_HACK);
+    findValue(locc64, values, SamplerSchema::Opcode::LOCC64_HACK);
+
+ 
+}
+
+#if 0
 CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParent, SGroupPtr parsedParent) : weakParent(compiledParent), lineNumber(region->lineNumber) {
     assert(parsedParent);
     compileCount++;
@@ -80,19 +150,45 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     if (key >= 0) {
         lokey = hikey = keycenter = key;
     }
-#if 0
-    {
-        SQINFO("in cr::cr of region %p) here is parent:", this);
-        parsedParent->_dump();
-        SQINFO(" and here is reg (still in ctor)");
-        region->_dump();
 
+    // key switch trigger variables
+  
+    findValue(sw_lolast, SamplerSchema::Opcode::SW_LOLAST, *parsedParent, reg);
+    findValue(sw_hilast, SamplerSchema::Opcode::SW_HILAST, *parsedParent, reg);
+
+    int sw_last = -1;
+    findValue(sw_last, SamplerSchema::Opcode::SW_LAST, *parsedParent, reg);
+    if (sw_last >= 0) {
+        if (sw_lolast < 0) {
+            sw_lolast = sw_last;
+        }
+         if (sw_hilast < 0) {
+            sw_hilast = sw_last;
+        }
     }
-#endif
-    findValue(seq_position, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
+
+
+    // key switch range variables
+    findValue(sw_lokey, SamplerSchema::Opcode::SW_LOKEY, *parsedParent, reg);
+    findValue(sw_hikey, SamplerSchema::Opcode::SW_HIKEY, *parsedParent, reg);
+    findValue(sw_default, SamplerSchema::Opcode::SW_DEFAULT, *parsedParent, reg);
+
+    keySwitched = (sw_lolast < 0);            // if key switching in effect, default to off
+    if (!keySwitched && sw_default >= sw_lolast && sw_default <= sw_hilast) {
+        keySwitched = true;
+    }
+
+    findValue(sw_label, SamplerSchema::Opcode::SW_LABEL, *parsedParent, reg);
+
+    findValue(sequencePosition, SamplerSchema::Opcode::SEQ_POSITION, *parsedParent, reg);
+    findValue(sequenceLength, SamplerSchema::Opcode::SEQ_LENGTH, *parsedParent, reg);
+
     findValue(keycenter, SamplerSchema::Opcode::PITCH_KEYCENTER, *parsedParent, reg);
     findValue(lovel, SamplerSchema::Opcode::LO_VEL, *parsedParent, reg);
     findValue(hivel, SamplerSchema::Opcode::HI_VEL, *parsedParent, reg);
+    assert(lovel >= 0);  // some idiot instruments use zero, even though it is not logal
+    assert(hivel >= lovel);
+    assert(hivel <= 127);
 
     findValue(lorand, SamplerSchema::Opcode::LO_RAND, *parsedParent, reg);
     findValue(hirand, SamplerSchema::Opcode::HI_RAND, *parsedParent, reg);
@@ -110,27 +206,66 @@ CompiledRegion::CompiledRegion(SRegionPtr region, CompiledGroupPtr compiledParen
     def.concat(base);
     this->sampleFile = def.toString();
 
-   // findValue(sampleFile, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
+    // if not position set in region, fix it up so it will
+    // not be part of sequence logic.
+    if (sequencePosition < 0) {
+        // assert(sequenceLength == 1);
+        sequenceLength = 1;
+        sequencePosition = 1;
+    }
+
+    // findValue(sampleFile, SamplerSchema::Opcode::SAMPLE, *parsedParent, reg);
+}
+#endif
+
+bool CompiledRegion::shouldIgnore() const {
+    // Ignore release triggered samples - we don't implement
+    bool dontIgnore = trigger == SamplerSchema::DiscreteValue::NONE || trigger == SamplerSchema::DiscreteValue::ATTACK;
+    if (dontIgnore) {
+        // Ignore samples that only play with damper pedal.
+        dontIgnore = (locc64 == 0);
+#if 0
+        if (!dontIgnore) {
+            SQINFO("discarding region for damper pedal");
+        }
+#endif
+    }
+
+    return !dontIgnore;
 }
 
-static bool overlapRange(int alo, int ahi, int blo, int bhi) {
+// Int version: if ranges have a value in common, they overlap
+static bool overlapRangeInt(int alo, int ahi, int blo, int bhi) {
     assert(alo <= ahi);
     assert(blo <= bhi);
-#if 0  // original version
-    return (blo >= alo && blo <= ahi) ||   // blo is in A
-        (bhi >= alo && bhi <= ahi);         // or bhi is in A
-#else
     return (blo <= ahi && bhi >= alo) ||
            (alo <= bhi && ahi >= blo);
-#endif
+}
+
+// float version: if ranges have a value in common, they don't necessarily overlap
+static bool overlapRangeFloat(float alo, float ahi, float blo, float bhi) {
+    assert(alo <= ahi);
+    assert(blo <= bhi);
+    return (blo < ahi && bhi > alo) ||
+           (alo < bhi && ahi > blo);
 }
 
 bool CompiledRegion::overlapsPitch(const CompiledRegion& that) const {
-    return overlapRange(this->lokey, this->hikey, that.lokey, that.hikey);
+    // of both regions have valid sw_last info
+    if (sw_lolast >= 0 && sw_hilast >= 0 && that.sw_lolast >= 0 && that.sw_hilast >= 0) {
+        // and the ranges don't overlap
+        bool switchesOverlap = overlapRangeInt(sw_lolast, sw_hilast, that.sw_lolast, that.sw_hilast);
+        if (!switchesOverlap) {
+            // ... then there can't be a pitch conflict
+            return false;
+        }
+    }
+
+    return overlapRangeInt(this->lokey, this->hikey, that.lokey, that.hikey);
 }
 
 bool CompiledRegion::overlapsVelocity(const CompiledRegion& that) const {
-    return overlapRange(this->lovel, this->hivel, that.lovel, that.hivel);
+    return overlapRangeInt(this->lovel, this->hivel, that.lovel, that.hivel);
 }
 
 bool CompiledRegion::overlapsVelocityButNotEqual(const CompiledRegion& that) const {
@@ -143,6 +278,13 @@ bool CompiledRegion::velocityRangeEqual(const CompiledRegion& that) const {
 
 bool CompiledRegion::pitchRangeEqual(const CompiledRegion& that) const {
     return (this->lokey == that.lokey) && (this->hikey == that.hikey);
+}
+
+bool CompiledRegion::overlapsRand(const CompiledRegion& that) const {
+    return overlapRangeFloat(this->lorand, this->hirand, that.lorand, that.hirand);
+}
+bool CompiledRegion::sameSequence(const CompiledRegion& that) const {
+    return this->sequencePosition == that.sequencePosition;
 }
 
 CompiledRegion::CompiledRegion(CompiledRegionPtr prototype) {
@@ -158,8 +300,7 @@ CompiledMultiRegion::CompiledMultiRegion(CompiledGroupPtr parent) : CompiledRegi
     }
 }
 
-void CompiledMultiRegion::addChild(CompiledRegionPtr child)
-{
+void CompiledMultiRegion::addChild(CompiledRegionPtr child) {
     originalRegions.push_back(child);
 }
 
@@ -173,6 +314,8 @@ CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMu
 CompiledGroup::CompiledGroup(SGroupPtr group) : lineNumber(group->lineNumber) {
     compileCount++;
 
+    // do we still need all these members in groups?
+    // do they really do something anymore?
     auto value = group->compiledValues->get(Opcode::TRIGGER);
     if (value) {
         assert(value->type == SamplerSchema::OpcodeType::Discrete);
@@ -211,7 +354,7 @@ CompiledRegion::Type CompiledGroup::type() const {
     if (this->sequence_length > 0) {
         theType = CompiledRegion::Type::RoundRobin;
     } else if (this->lorand >= 0) {
-       // the group has prob on it.
+        // the group has prob on it.
         theType = CompiledRegion::Type::GRandom;
     } else {
         bool isProbabilty = !regions.empty();  // assume if any regions we are a probability group
@@ -228,4 +371,15 @@ CompiledRegion::Type CompiledGroup::type() const {
         }
     }
     return theType;
+}
+
+void CompiledRegion::_dump(int depth) const {
+    // for (int i=0; i<depth; ++i) {
+    //    printf(" ");
+    //}
+    printf("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d\n", isKeyswitched(), sw_lolast, sw_hilast);
+    printf("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d\n", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
+    printf("lorand=%.2f hirand=%.2f\n", lorand, hirand);
+    printf("lokey=%d hikey=%d center=%d lovel=%d hivel=%d\n", lokey, hikey, keycenter, lovel, hivel);
+    printf("\n");
 }

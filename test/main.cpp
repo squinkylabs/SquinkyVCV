@@ -2,8 +2,9 @@
   * Unit test entry point
   */
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
+
 #include <string>
 
 extern void testMidiPlayer2();
@@ -108,13 +109,20 @@ extern void testx();
 extern void testx2();
 extern void testx3();
 extern void testx4();
+extern void testx5();
+extern void testx6();
 extern void testADSR();
+extern void testADSRSampler();
 extern void testWavThread();
 extern void testACDetector();
+extern void testCmprsr();
+extern void testCompressor();
+extern void testCompressorParamHolder();
+extern void testStreamer();
 
 #if 0
-#include <sstream>
 #include <iostream>
+#include <sstream>
 static void xx()
 {
     std::stringstream s;
@@ -137,9 +145,23 @@ static void xx()
 
 // #define _MIDIONLY
 
-int main(int argc, char ** argv)
+// This will turn on more Microsoft malloc debug
+#if 0
+static void setupMem()
 {
-   // xx();
+    // default is 1
+    int f = _CrtSetDbgFlag(
+        _CRTDBG_ALLOC_MEM_DF |
+        _CRTDBG_DELAY_FREE_MEM_DF |
+        _CRTDBG_CHECK_CRT_DF |
+        _CRTDBG_LEAK_CHECK_DF 
+   );
+}
+#endif
+
+int main(int argc, char** argv) {
+   // setupMem();
+
     bool runPerf = false;
     bool extended = false;
     bool runShaperGen = false;
@@ -168,7 +190,7 @@ int main(int argc, char ** argv)
     // Want to be sure we are testing the case we care about.
     assert(sizeof(size_t) == 8);
 
-if (runShaperGen) {
+    if (runShaperGen) {
         testSpline(true);
         return 0;
     }
@@ -182,18 +204,28 @@ if (runShaperGen) {
         initPerf();
         perfTest2();
         perfTest();
-       
+
         return 0;
     }
-  
-  
+
+#if 1
+
+    testADSRSampler();
+    testStreamer();
     testx();
+    testx6();
     testx2();
     testx3();
     testx4();
+    testx5();
    
+#else
+    printf("------ sampl tests diabled\n");
+#endif
+
 
     testADSR();
+    testCompressorParamHolder();
     testWavThread();
     testIComposite();
     testClockRecovery();
@@ -204,7 +236,7 @@ if (runShaperGen) {
     testDC();
     testSimd();
     testSimdLookup();
-   
+
     testOscSmoother();
 
     testAudioMath();
@@ -216,16 +248,16 @@ if (runShaperGen) {
     testBiquad();
     testACDetector();
 
-
     testSqStream();
     testSub();
     simd_testBiquad();
     testWVCO();
     testMultiLag2();
+    testCmprsr();
+    testCompressor();
     testFilterComposites();
     testSimpleQuantizer();
 
-  
     testVec();
     testCommChannels();
     testMidiEvents();
@@ -244,7 +276,7 @@ if (runShaperGen) {
     testReplaceCommand();
     testNewSongDataDataCommand();
     testUndoRedo();
-    
+
     testMidiFile();
     testMidiControllers();
     testMidiEditorSelection();
@@ -264,7 +296,7 @@ if (runShaperGen) {
     testObjectCache();
     testEditCommands4();
     testMultiLag();
-    testSlew4();   
+    testSlew4();
     testMixHelper();
     testStereoMix();
     testMix4();
@@ -273,16 +305,15 @@ if (runShaperGen) {
 #if !defined(_MIDIONLY)
     testTestSignal();
 
-   
     testSaw();
     testClockMult();
     testDelay();
     testPoly();
     testSinOscillator();
     testHilbert();
-    testButterLookup();  
+    testButterLookup();
     testVCO();
-   // testSin();
+    // testSin();
     testFFT();
     testAnalyzer();
     testRateConversion();
@@ -291,7 +322,7 @@ if (runShaperGen) {
     testLadder();
     testHighpassFilter();
     testSuper();
- 
+
 #if 0
     printf("skipping lots of tests\n");
 #else
@@ -302,7 +333,6 @@ if (runShaperGen) {
         testThread(extended);
     }
 
-    
     testFilter();
 
     testStochasticGrammar();
@@ -316,9 +346,6 @@ if (runShaperGen) {
     testVocalAnimator();
 #endif
 
-
-
-
     testFilterDesign();
 #else
     printf("disabled lots of tests for MS (or MIDI ONLY)\n");
@@ -327,14 +354,13 @@ if (runShaperGen) {
 
     // When we run inside Visual Studio, don't exit debugger immediately
 #if defined(_MSC_VER_not)
-    printf("Test passed. Press any key to continue...\n"); fflush(stdout);
+    printf("Test passed. Press any key to continue...\n");
+    fflush(stdout);
     getchar();
 #else
     printf("Tests passed.\n");
 #endif
 }
 
-void sequencerHelp()
-{
-
+void sequencerHelp() {
 }

@@ -48,7 +48,7 @@ void testPolyChannels(int  inputPort, int outputPort, int numChannels)
     comp.inputs[inputPort].channels = numChannels;
     comp.outputs[outputPort].channels = 1;          // this will set it as patched so comp can set it right
 
-    TestComposite::ProcessArgs args =  {44100, 1/44100}; 
+    TestComposite::ProcessArgs args; // default is ok. old gcc doesn't like =  {44100.f, 1.f/44100.f}; 
 
     comp.process(args);
     // const int outputChannels = comp.outputs[outputPort].channels;
@@ -89,7 +89,7 @@ inline void testArbitrary( std::function<void(T&)> setup, std::function<void(T&)
     initComposite(comp);
 
     setup(comp);
-    TestComposite::ProcessArgs args =  {44100, 1/44100}; 
+    TestComposite::ProcessArgs args; // =  {44100, 1/44100}; 
     for (int i = 0; i < 40; ++i) {
         comp.process(args);
     }

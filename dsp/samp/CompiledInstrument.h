@@ -5,22 +5,25 @@
 #include <string>
 #include <vector>
 
-#include "PitchSwitch.h"
+#include "FilePath.h"
+//#include "PitchSwitch.h"
+#include "RegionPool.h"
 #include "SamplerPlayback.h"
 
+class FilePath;
 class SInstrument;
 class SRegion;
 class WaveLoader;
 class SGroup;
-class VelSwitch;
+class SamplerErrorContext;
+class InstrumentInfo;
 
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
 using SRegionPtr = std::shared_ptr<SRegion>;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 using SGroupPtr = std::shared_ptr<SGroup>;
-using VelSwitchPtr = std::shared_ptr<VelSwitch>;
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
-
+using InstrumentInfoPtr = std::shared_ptr<InstrumentInfo>;
 /**
  * How "Compiling" works.
  * 
@@ -56,77 +59,79 @@ using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 
 class CompiledInstrument : public ISamplerPlayback {
 public:
+    enum class Tests {
+        None,
+        MiddleC,   // PLays sample 1 at midi pitch 60 rel = .6
+        MiddleC11,   // PLays sample 1 at midi pitch 60 rel = 1.1
+    };
+
     /**
      * high level entry point to compile an instrument.
      * will return null if error, and log the error cause as best it can.
      */
-    static CompiledInstrumentPtr make(const SInstrumentPtr);
+    static CompiledInstrumentPtr make(SamplerErrorContext&, const SInstrumentPtr);
     void play(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
-    void _setTestMode() {
-        testMode = true;
-        //pitchMap._setTestMode();
+    void _setTestMode(Tests t) {
+        testMode = t;
     }
 
     /**
      * move all the waves from here to wave loader
      */
-    void setWaves(WaveLoaderPtr waveLoader, const std::string& rootPath);
+    void setWaves(WaveLoaderPtr waveLoader, const FilePath& rootPath);
 
-    std::string getDefaultPath() const { return defaultPath; }
+    FilePath getDefaultPath() const { return defaultPath; }
 
     /**
      * finds all the key/value pairs in a parse tree and expands them in place.
      */
-    static void expandAllKV(SInstrumentPtr);
+    static void expandAllKV(SamplerErrorContext&, SInstrumentPtr);
 
-    void getAllRegions(std::vector<CompiledRegionPtr>&);
     int removeOverlaps(std::vector<CompiledRegionPtr>&);
+    const RegionPool& _pool() { return regionPool; }
+    InstrumentInfoPtr getInfo() { return info; }
 
-    static void sortByVelocity(std::vector<CompiledRegionPtr>&);
-    static void sortByPitch(std::vector<CompiledRegionPtr>&);
-    static void sortByPitchAndVelocity(std::vector<CompiledRegionPtr>&);
+    static float velToGain1(int midiVelocity, float veltrack);
+    static float velToGain2(int midiVelocity, float veltrack);
+    static float velToGain(int midiVelocity, float veltrack);
 
-    // test accessor
-    const std::vector<CompiledGroupPtr>& _groups() { return groups; }
-
-    using GroupIter = std::vector<CompiledGroupPtr>::iterator; 
 private:
-    std::vector<CompiledGroupPtr> groups;
-    bool testMode = false;
+    RegionPool regionPool;
+    Tests testMode = Tests::None;
+    InstrumentInfoPtr info;
 
-    ISamplerPlaybackPtr player;
-    std::string defaultPath;
+    AudioMath::RandomUniformFunc rand = AudioMath::random();
+
+    FilePath defaultPath;
 
     /**
      * Track all the unique relative paths here
      * key = file path
      * value = index (wave id);
+     * 
+     * We could more properly store these as FilePath,
+     * but string is convenient and fast for maps.
+     * as long as do convert these immediately to FilePath it will be fine.
      */
     std::map<std::string, int> relativeFilePaths;
     int nextIndex = 1;
 
     bool compile(const SInstrumentPtr);
-    bool buildCompiledTree(const SInstrumentPtr i);
-    bool fixupCompiledTree();
+    bool compileOld(const SInstrumentPtr);
     bool fixupOneRandomGrouping(int groupStartIndex);
-
-    ISamplerPlaybackPtr buildPlayerVelLayers(std::vector<CompiledRegionPtr>& inputRegions, int depth);
-    ISamplerPlaybackPtr buildPlayerPitchSwitch(std::vector<CompiledRegionPtr>& inputRegions, int depth);
-    void addSingleRegionPitchPlayers(PitchSwitchPtr dest, CompiledRegionPtr region);
-    /** add the passed player, which happens to be a vel switch,
-     * to the passed destination play. Add it at every pitch where
-     * it should be in the patch map.
-     */
-    void addVelSwitchToCoverPitchRegions(PitchSwitchPtr dest, ISamplerPlaybackPtr velSwitch, const std::vector<CompiledRegionPtr>& regions);
 
     /** Returns wave index
      */
     int addSampleFile(const std::string& s);
+    void addSampleIndexes();
+    void deriveInfo();
 
-    ISamplerPlaybackPtr playbackMapVelocities(const std::vector<CompiledRegionPtr>& entriesForPitch, int midiPitch);
+    /**
+     * these helpers help fill in VoicePlayInfo
+     */
+    static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate);
+    static void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack);
 
-   // void extractDefaultPath(const SInstrumentPtr in);
+    void playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate);
 };
-
-//KeysAndValuesPtr compile(const SKeyValueList&);

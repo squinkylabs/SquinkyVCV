@@ -8,6 +8,7 @@
 #include <vector>
 
 class SKeyValuePair;
+class SamplerErrorContext;
 using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>;
 using SKeyValueList = std::vector<SKeyValuePairPtr>;
 
@@ -43,7 +44,15 @@ public:
         SEQ_LENGTH,
         SEQ_POSITION,
         DEFAULT_PATH,
-        SW_LABEL
+        SW_LABEL,
+        SW_LAST,
+        SW_LOKEY,
+        SW_HIKEY,
+        SW_LOLAST,
+        SW_HILAST,
+        SW_DEFAULT,
+        HICC64_HACK,        // It's a hack becuase it won't scale to "all" cc
+        LOCC64_HACK,
     };
 
     enum class DiscreteValue {
@@ -108,12 +117,12 @@ public:
     using KeysAndValuesPtr = std::shared_ptr<KeysAndValues>;
 
     // doesn't really belong here, but better there than some places...
-    static KeysAndValuesPtr compile(const SKeyValueList&);
-  //  static Opcode translate(const std::string& s);
+    static KeysAndValuesPtr compile(SamplerErrorContext&, const SKeyValueList&);
     static Opcode translate(const std::string& key, bool suppressErrorMessages);
     static OpcodeType keyTextToType(const std::string& key, bool suppressErrorMessages);
 
 private:
-    static void compile(KeysAndValuesPtr results, SKeyValuePairPtr input);
+    static std::pair<bool, int> convertToInt(const std::string& s);
+    static void compile(SamplerErrorContext&, KeysAndValuesPtr results, SKeyValuePairPtr input);
     static DiscreteValue translated(const std::string& s);
 };

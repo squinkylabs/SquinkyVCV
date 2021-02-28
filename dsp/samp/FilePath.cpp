@@ -78,7 +78,11 @@ bool FilePath::startsWithDot() const {
     if (data.empty()) {
         return false;
     }
-    return data.at(0) == '.';
+
+    // don't return true for ".."
+    const bool dotAtZero = data.at(0) == '.';
+    const bool dotAtOne = (data.size() < 2) ? false : (data.at(1) == '.');
+    return dotAtZero && !dotAtOne;
 }
 
 char FilePath::nativeSeparator() {
@@ -88,6 +92,7 @@ char FilePath::nativeSeparator() {
     return '/';
 #endif
 }
+
 char FilePath::foreignSeparator() {
 #ifdef ARCH_WIN
     return '/';
@@ -95,3 +100,22 @@ char FilePath::foreignSeparator() {
     return '\\';
 #endif
 }
+
+FilePath FilePath::getPathPart() const {
+    std::string s = toString();
+    auto pos = s.rfind(nativeSeparator());
+    if (pos == std::string::npos) {
+        return FilePath("");
+    }
+    auto subPath = s.substr(0, pos);
+    return FilePath(subPath);
+}
+
+ std::string FilePath::getFilenamePart() const {
+    std::string s = toString();
+    auto pos = s.rfind(nativeSeparator());
+    if (pos == std::string::npos) {
+        return s;           // return the whole thing if no separator found
+    }
+    return s.substr(pos + 1);
+ }

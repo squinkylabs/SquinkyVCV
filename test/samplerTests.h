@@ -3,6 +3,7 @@
 #include "CompiledInstrument.h"
 #include "SInstrument.h"
 #include "SamplerPlayback.h"
+#include "SamplerErrorContext.h"
 
 class st {
 public:
@@ -13,9 +14,18 @@ public:
 
         SGroupPtr group = inst->groups[0];
         SRegionPtr region = group->regions[0];
-        CompiledInstrument::expandAllKV(inst);
+        SamplerErrorContext errc;
+        CompiledInstrument::expandAllKV(errc, inst);
         assert(inst->wasExpanded);
-        CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+        assert(err.empty());
+
+        // update this for new code
+       // assert(false);
+      //  //CompiledRegionPtr cr = std::make_shared<CompiledRegion>(region, nullptr, group);
+      //  CompiledRegionPtr cr;
+        CompiledRegionPtr cr = std::make_shared<CompiledRegion>();
+        cr->addRegionInfo(group->compiledValues);
+        cr->addRegionInfo(region->compiledValues);
         return cr;
     }
 };
