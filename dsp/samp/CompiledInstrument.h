@@ -130,8 +130,8 @@ private:
     /**
      * these helpers help fill in VoicePlayInfo
      */
-    static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate);
-    static void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack);
+    static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate);
+    static void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack, float regionVolumeDb);
 
     void playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate);
 };

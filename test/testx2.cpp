@@ -1,5 +1,6 @@
 #include <set>
 
+#include "AudioMath.h"
 #include "CompiledInstrument.h"
 #include "CompiledRegion.h"
 #include "FilePath.h"
@@ -1252,6 +1253,37 @@ static void testSampleRate() {
     //  float transposeAmt = 1;
 }
 
+static void testPlayVolumeAndTune() {
+   SQINFO("---- starting testCompiledRegionAddedOpcodes");
+    const char* data = (R"foo(<region>sample=a key=44 tune=11 volume=-13)foo");
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+    assert(errc.empty());
+    assert(ci);
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 44;
+    params.midiVelocity = 127;
+
+    // play with not wave and sr??
+    ci->play(info, params, nullptr, 0);
+
+    const float expectedGain = float(AudioMath::gainFromDb(-13));
+
+    // one octave is 1200 cents.
+    // wikipedia tells me that 11 cetns is 1.006374 mult
+    const float expectedTransposeMult = std::pow(2.f, 11.f / 1200.f);
+
+    assertEQ(info.gain, expectedGain);
+    assertEQ(info.transposeAmt, expectedTransposeMult);
+    assert(info.needsTranspose);;
+}
+
 void testx2() {
     assert(parseCount == 0);
     assert(compileCount == 0);
@@ -1321,6 +1353,7 @@ void testx2() {
 
     testTranspose1();
     testSampleRate();
+    testPlayVolumeAndTune();
 
 #ifdef _SFZ_RANDOM
     testCompileSimpleDrum();

@@ -157,19 +157,22 @@ float CompiledInstrument::velToGain(int midiVelocity, float veltrack) {
     return velToGain1(midiVelocity, veltrack);
 } 
 
-void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack) {
-   
-    info.gain = velToGain(midiVelocity, regionVeltrack);
+void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack, float regionVolumeDb) {
+    float regionGainMult = float(AudioMath::gainFromDb(regionVolumeDb));
+    info.gain = velToGain(midiVelocity, regionVeltrack) * regionGainMult;
 }
 
-void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate) {
+void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate) {
+   
     // first base pitch
     const int semiOffset = midiPitch - regionKeyCenter;
-    if (semiOffset == 0) {
+    if (semiOffset == 0 && tuneCents == 0) {
         info.needsTranspose = false;
         info.transposeAmt = 1;
     } else {
-        const float pitchMul = float(std::pow(2, semiOffset / 12.0));
+        // maybe in the future we could do this in the v/8 domain?
+        float tuneSemiOffset = float(semiOffset) + float(tuneCents) / 100;
+        const float pitchMul = float(std::pow(2, tuneSemiOffset / 12.0));
         info.needsTranspose = true;
         info.transposeAmt = pitchMul;
     }
@@ -196,8 +199,8 @@ void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
         info.sampleIndex = region->sampleIndex;
         info.valid = true;
         info.ampeg_release = region->ampeg_release;
-        getPlayPitch(info, params.midiPitch, region->keycenter, loader, sampleRate);
-        getGain(info, params.midiVelocity, region->amp_veltrack);
+        getPlayPitch(info, params.midiPitch, region->keycenter, region->tune, loader, sampleRate);
+        getGain(info, params.midiVelocity, region->amp_veltrack, region->volume);
     }
 }
 
