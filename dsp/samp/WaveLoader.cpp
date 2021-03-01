@@ -111,15 +111,6 @@ WaveLoader::WaveInfo::WaveInfo(Tests test) : fileName(FilePath("test only")) {
     // fileName = FilePath("test only name");
 }
 
-/*
-   bool valid = false;
-        float* data = nullptr;
-        unsigned int numChannels = 0;
-        unsigned int sampleRate = 0;
-        uint64_t totalFrameCount = 0;
-        const FilePath fileName;
-        */
-
 bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
    // SQINFO("loading %s", fileName.toString().c_str());
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.toString().c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
@@ -141,7 +132,7 @@ bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
 
 
 void WaveLoader::WaveInfo::convertToMono() {
-    SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
+  //  SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
     const int origChannels = numChannels;
     uint64_t newBufferSize = 1 + totalFrameCount;
     void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
@@ -159,37 +150,10 @@ void WaveLoader::WaveInfo::convertToMono() {
         dest[outputIndex] = monoSampleValue;
     }
     numChannels = 1;
-    SQINFO("leaving, not total frames = %d", totalFrameCount);
+  //  SQINFO("leaving, not total frames = %d", totalFrameCount);
     DRWAV_FREE(data);
     data = dest;
 }
-
-#if 0
-void WaveLoader::WaveInfo::convertToMono() {
-    SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
-    const int origChannels = numChannels;
-    uint64_t newBufferSize = 1 + totalFrameCount / origChannels;
-    void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
-    float* dest = reinterpret_cast<float*>(x);
-    for (uint64_t i = 0; i < totalFrameCount / origChannels; ++i) {
-        float temp = 0;
-        for (int ch = 0; ch < origChannels; ++ch) {
-            temp += data[i + ch];
-        }
-        temp /= origChannels;
-        assert(temp <= 1);
-        assert(temp >= -1);
-        dest[i] = temp;
-    }
-
-    totalFrameCount /= origChannels;
-    numChannels = 1;
-    SQINFO("leaving, not total frames = %d", totalFrameCount);
-
-    DRWAV_FREE(data);
-    data = dest;
-}
-#endif
 
 WaveLoader::WaveInfo::~WaveInfo() {
     if (data) {

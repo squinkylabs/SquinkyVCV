@@ -154,7 +154,7 @@ struct SampWidget : ModuleWidget {
     // display labels. they change as state changes
 
 #ifdef _TW
-    TextDisplay* textField;
+    TextDisplaySamp* textField;
     //	textField = createWidget<LedDisplayTextField>(mm2px(Vec(3.39962, 14.8373)));
 #else
     // Empty: "No SFZ file loaded"
@@ -202,7 +202,7 @@ void SampWidget::updateUIForEmpty() {
     uiText1->text = "No SFZ file loaded.";
     uiText2->text = "";
 #else
-    textField->text = "No SFZ file loaded.";
+    textField->setText("No SFZ file loaded.");
 #endif
 }
 
@@ -211,7 +211,7 @@ void SampWidget::updateUIForLoading() {
     std::string s = "Loading ";
     s += curBaseFileName;
     s += "...";
-    textField->text = s;
+    textField->setText(s);
 #else
     INFO("in loading, set cur to %s", curBaseFileName.c_str());
     std::string s = "Loading ";
@@ -287,7 +287,7 @@ void SampWidget::updateUIForLoaded() {
     s += "\n";
     s += buildPitchrangeUIString();
 #ifdef _TW
-    textField->text = s;
+    textField->setText(s);
 #else
   
     uiText1->text = s;
@@ -466,10 +466,11 @@ SampWidget::SampWidget(SampModule* module) {
     addLabel(Vec(80, 10), "-Sample Player-");
 
 #ifdef _TW
-    textField = createWidget<TextDisplay>(mm2px(Vec(3.39962, 14.8373)));
+    textField = createWidget<TextDisplaySamp>(mm2px(Vec(3.39962, 14.8373)));
+
     //		textField->box.size = mm2px(Vec(74.480, 102.753));
     textField->box.size = Vec(250, 100);
-    textField->multiline = true;
+  //  textField->multiline = true;
     addChild(textField);
 #else
     uiText1 = addLabel(Vec(leftSide, text1y), "");
