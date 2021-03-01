@@ -43,8 +43,8 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     params.midiVelocity = midiVelocity;
     patch->play(patchInfo, params, waves.get(), sampleRate);
     if (!patchInfo.valid) {
-        printf("could not get play info pitch %d vel%d\n", midiPitch, midiVelocity);
-        fflush(stdout);
+        SQINFO("could not get play info pitch %d vel%d", midiPitch, midiVelocity);
+        player.clearSamples(channel);
         return;
     }
 

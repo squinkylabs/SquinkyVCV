@@ -14,6 +14,7 @@ public:
     void setTranspose(int chan, bool doTranspoe, float amount);
     bool canPlay(int chan);
     void clearSamples();
+    void clearSamples(int channel);
     void setGain(int chan, float gain);
     float_4 step();
     void _assertValid();
