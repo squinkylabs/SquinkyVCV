@@ -119,6 +119,13 @@ public:
 
 inline TextDisplaySamp::TextDisplaySamp() {
 	font = APP->window->loadFont(asset::system("res/fonts/ShareTechMono-Regular.ttf"));
-	color = nvgRGB(0xff, 0xd7, 0x14);
+//	color = nvgRGB(0xff, 0xd7, 0x14);
+
+  //  float r = 255.0 / 238.0;
+ //   color = nvgRGB(r * 48, r * 125, r * 238);
+   // int add = 255 - 238;
+ //   color = nvgRGB(add + 48, add + 125, add + 238);
+    int add = 75;
+     color = nvgRGB(add + 48, add + 125, 255);
 	textOffset = math::Vec(5, 5);
 }
