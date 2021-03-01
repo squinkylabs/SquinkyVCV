@@ -13,6 +13,7 @@
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/TextDisplay.h"
 
 using Comp = Samp<WidgetComposite>;
 
@@ -77,6 +78,8 @@ void SampModule::process(const ProcessArgs& args) {
 ////////////////////
 // module widget
 ////////////////////
+
+#define _TW
 
 // static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/booty-shifter.md";
 static const char* helpUrl = "https://docs.google.com/document/d/1u0aNMgU48jRmy7Hd8WDtvvvUDQd9pOlNtknvWKs5qf0";
@@ -150,6 +153,10 @@ struct SampWidget : ModuleWidget {
 
     // display labels. they change as state changes
 
+#ifdef _TW
+    TextDisplay* textField;
+    //	textField = createWidget<LedDisplayTextField>(mm2px(Vec(3.39962, 14.8373)));
+#else
     // Empty: "No SFZ file loaded"
     // Loading: "Loading xxx.sfz"
     // Loaded: Playing xxx.sfz
@@ -161,6 +168,7 @@ struct SampWidget : ModuleWidget {
     // Loaded: pitch range
     // Error: blank
     Label* uiText2 = {nullptr};
+#endif
 
     InstrumentInfoPtr info;
     std::string curBaseFileName;
@@ -174,14 +182,14 @@ struct SampWidget : ModuleWidget {
 
     void removeKeyswitchPopup();
     void buildKeyswitchUI();
-    void buildPitchrangeUI();
+    std::string buildPitchrangeUIString();
 };
 
 const float leftSide = 20;
 const float text1y = 70;
 //const float text1Height = 40;
 const float text2y = 100;
-const float keyswitchy = 50; 
+const float keyswitchy = 50;
 
 void SampWidget::requestNewSampleSet(const FilePath& fp) {
     curBaseFileName = fp.getFilenamePart();
@@ -190,26 +198,40 @@ void SampWidget::requestNewSampleSet(const FilePath& fp) {
 }
 
 void SampWidget::updateUIForEmpty() {
+#ifndef _TW
     uiText1->text = "No SFZ file loaded.";
     uiText2->text = "";
+#else
+    textField->text = "No SFZ file loaded.";
+#endif
 }
 
 void SampWidget::updateUIForLoading() {
+#ifdef _TW
+    std::string s = "Loading ";
+    s += curBaseFileName;
+    s += "...";
+    textField->text = s;
+#else
     INFO("in loading, set cur to %s", curBaseFileName.c_str());
     std::string s = "Loading ";
     s += curBaseFileName;
     s += "...";
     uiText1->text = s;
     uiText2->text = "";
+#endif
 }
 
 void SampWidget::updateUIForError() {
+#ifdef _TW
+#else
     std::string s = "Error: ";
     if (info) {
         s += info->errorMessage;
     }
     uiText1->text = s;
     uiText2->text = "";
+#endif
 }
 
 void SampWidget::pollForStateChange() {
@@ -262,12 +284,19 @@ void SampWidget::step() {
 void SampWidget::updateUIForLoaded() {
     std::string s = "Samples: ";
     s += curBaseFileName;
+    s += "\n";
+    s += buildPitchrangeUIString();
+#ifdef _TW
+    textField->text = s;
+#else
+  
     uiText1->text = s;
-    uiText2->text = "";
-
+    uiText2->text =  buildPitchrangeUIString();
+#endif
     // now the ks stuff
     buildKeyswitchUI();
-    buildPitchrangeUI();
+    
+
 }
 
 void SampWidget::buildKeyswitchUI() {
@@ -310,70 +339,14 @@ void SampWidget::buildKeyswitchUI() {
     }
 }
 
-void SampWidget::buildPitchrangeUI() {
+std::string SampWidget::buildPitchrangeUIString() {
     SqStream s;
     s.add("Pitch Range: ");
     s.add(info->minPitch);
     s.add("-");
     s.add(info->maxPitch);
-    uiText2->text = s.str();
+    return s.str();
 }
-
-#if 0
-void SampWidget::step() {
-    ModuleWidget::step();
-    if (_module && _module->isNewInstrument()) {
-        auto info = _module->getInstrumentInfo();
-        SQINFO("in UI, error = %s", info->errorMessage.c_str());
-        SQINFO("got info there are %d labels", info->keyswitchData.size());
-
-        if (!info->keyswitchData.empty()) {
-            keySwitchForIndex.clear();
-            std::vector<std::string> labels;
-            if (info->defaultKeySwitch < 0) {
-                labels.push_back("(no default key switch)");
-                keySwitchForIndex.push_back(-1);
-            }
-            for (auto it : info->keyswitchData) {
-                labels.push_back(it.first);
-                const int pitch = it.second.first;
-                if (pitch != it.second.second) {
-                    SQWARN("skipping ks range > 1");
-                }
-                keySwitchForIndex.push_back(pitch);
-            }
-
-            keyswitchPopup = SqHelper::createParam<PopupMenuParamWidget>(
-                nullptr,
-                Vec(leftSide, 80),
-                _module,
-                Comp::DUMMYKS_PARAM);
-            keyswitchPopup->box.size.x = 160;  // width
-            keyswitchPopup->box.size.y = 22;   // should set auto like button does
-            keyswitchPopup->text = "noise";
-            keyswitchPopup->setLabels(labels);
-            addParam(keyswitchPopup);
-            keyswitchPopup->setCallback([this](int index) {
-                if (index < 0) {
-                    return;
-                }
-                const int pitch = keySwitchForIndex[index];
-                if (pitch != lastKeySwitchSent) {
-                    _module->setKeySwitch(pitch);
-                    lastKeySwitchSent = pitch;
-                }
-            });
-        }
-
-        SqStream s;
-        s.add("Pitch Range: ");
-        s.add(info->minPitch);
-        s.add("-");
-        s.add(info->maxPitch);
-        pitchRangeLabel->text = s.str();
-    }
-}
-#endif
 
 void SampWidget::loadSamplerFile() {
     static const char SMF_FILTERS[] = "Standard Sfz file (.sfz):sfz";
@@ -492,12 +465,16 @@ SampWidget::SampWidget(SampModule* module) {
 
     addLabel(Vec(80, 10), "-Sample Player-");
 
+#ifdef _TW
+    textField = createWidget<TextDisplay>(mm2px(Vec(3.39962, 14.8373)));
+    //		textField->box.size = mm2px(Vec(74.480, 102.753));
+    textField->box.size = Vec(250, 100);
+    textField->multiline = true;
+    addChild(textField);
+#else
     uiText1 = addLabel(Vec(leftSide, text1y), "");
     uiText2 = addLabel(Vec(leftSide, text2y), "");
-
-    //uiText1->box.size.y = text1Height;
-    //uiText1->mulitl;
-
+#endif
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
