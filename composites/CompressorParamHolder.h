@@ -4,8 +4,8 @@
 #include "SimdBlocks.h"
 
 /**
- * this holds all the compressor params for all the channels.
- * most of the getters and setters return values for four channels,
+ * This holds all the compressor params for all the channels.
+ * many of the getters and setters return values for four channels,
  * these are called banks.
  */
 class CompressorParmHolder {
@@ -14,24 +14,39 @@ public:
     static const unsigned int numBanks = {numChannels / 4};
 
     float_4 getAttacks(unsigned int bank) const;
+    float getAttack(unsigned int channel) const;
+
     float_4 getReleases(unsigned int bank) const;
+    float getRelease(unsigned int channel) const;
+
     float_4 getThresholds(unsigned int bank) const;
+    float getThreshold(unsigned int channel) const;
+    
     float_4 getMakeupGains(unsigned int bank) const;
+    float getMakeupGain(unsigned int channel) const;
+    
     float_4 getEnableds(unsigned int bank) const;
+    bool getEnabled(unsigned int channel) const;
+    
+    
     float_4 getWetDryMixs(unsigned int bank) const;
+    float getWetDryMix(unsigned int channel) const;
+   
    // void getRatio(unsigned int bank, int* ratios) const;
     int32_4 getRatios(unsigned int bank) const;
+    int getRatio(unsigned int channel) const;
+
 
     /**
      * setters return true if the value was changed
      */
-    bool setAttacks(unsigned int bank, float_4 value);
-    bool setReleases(unsigned int bank, float_4 value);
-    bool setThresholds(unsigned int bank, float_4 value);
-    bool setMakeupGains(unsigned int bank, float_4 value);
-    bool setEnableds(unsigned int bank, float_4 value);
-    bool setWetDrys(unsigned int bank, float_4 value);
-    bool setRatios(unsigned int bank, int32_4 ratios);
+    bool setAttack(unsigned int channel, float value);
+    bool setRelease(unsigned int channel, float value);
+    bool setThreshold(unsigned int channel, float value);
+    bool setMakeupGain(unsigned int channel, float value);
+    bool setEnabled(unsigned int channel, bool value);
+    bool setWetDry(unsigned int channel, float value);
+    bool setRatio(unsigned int channel, int ratios);
 private:
     float_4 a[numBanks] = {0, 0, 0, 0};
     float_4 r[numBanks] = { 0, 0, 0, 0};
@@ -48,15 +63,37 @@ inline  float_4 CompressorParmHolder::getAttacks(unsigned int bank) const {
     return a[bank];
 }
 
+inline  float CompressorParmHolder::getAttack(unsigned int channel) const {
+    assert(channel < numChannels);
+    const unsigned bank = channel / 4;
+    const unsigned subChannel = channel - (bank * 4);
+    return a[bank][subChannel];
+}
+
 inline  float_4 CompressorParmHolder::getReleases(unsigned int bank) const {
     assert(bank < numBanks);
     return r[bank];
+}
+
+inline  float CompressorParmHolder::getRelease(unsigned int channel) const {
+    assert(channel < numChannels);
+    const unsigned bank = channel / 4;
+    const unsigned subChannel = channel - (bank * 4);
+    return r[bank][subChannel];
 }
 
 inline  float_4 CompressorParmHolder::getThresholds(unsigned int bank) const {
     assert(bank < numBanks);
     return t[bank];
 }
+
+inline  float CompressorParmHolder::getThreshold(unsigned int channel) const {
+    assert(channel < numChannels);
+    const unsigned bank = channel / 4;
+    const unsigned subChannel = channel - (bank * 4);
+    return t[bank][subChannel];
+}
+
 inline  float_4 CompressorParmHolder::getMakeupGains(unsigned int bank) const {
     assert(bank < numBanks);
     return m[bank];
@@ -74,8 +111,9 @@ inline  int32_4 CompressorParmHolder::getRatios(unsigned int bank) const {
     return ratio[bank];
 }
 
-inline  bool CompressorParmHolder::setAttacks(unsigned int bank, float_4 value) {
-    assert(bank < numBanks);
+inline  bool CompressorParmHolder::setAttack(unsigned int channel, float value) {
+    assert(channel < numChannels);
+    const unsigned int bank = channel / 4;
     float_4 temp = (a[bank] != value);
     bool ret = SimdBlocks::isTrue(temp);
     if (ret) {
@@ -84,8 +122,9 @@ inline  bool CompressorParmHolder::setAttacks(unsigned int bank, float_4 value) 
     return ret;
 }
 
-inline  bool CompressorParmHolder::setReleases(unsigned int bank, float_4 value) {
-    assert(bank < numBanks);
+inline  bool CompressorParmHolder::setRelease(unsigned int channel, float value) {
+    assert(channel < numChannels);
+    const unsigned int bank = channel / 4;
     float_4 temp = (r[bank] != value);
     bool ret = SimdBlocks::isTrue(temp);
     if (ret) {
@@ -94,8 +133,9 @@ inline  bool CompressorParmHolder::setReleases(unsigned int bank, float_4 value)
     return ret;
 }
 
-inline  bool CompressorParmHolder::setThresholds(unsigned int bank, float_4 value) {
-    assert(bank < numBanks);
+inline  bool CompressorParmHolder::setThreshold(unsigned int channel, float value) {
+    assert(channel < numChannels);
+    const unsigned int bank = channel / 4;
     float_4 temp = (t[bank] != value);
     bool ret = SimdBlocks::isTrue(temp);
     if (ret) {
@@ -104,8 +144,9 @@ inline  bool CompressorParmHolder::setThresholds(unsigned int bank, float_4 valu
     return ret;
 }
 
-inline  bool CompressorParmHolder::setMakeupGains(unsigned int bank, float_4 value) {
-    assert(bank < numBanks);
+inline  bool CompressorParmHolder::setMakeupGain(unsigned int channel, float value) {
+    assert(channel < numChannels);
+    const unsigned int bank = channel / 4;
     float_4 temp = (m[bank] != value);
     bool ret = SimdBlocks::isTrue(temp);
     if (ret) {
@@ -114,8 +155,9 @@ inline  bool CompressorParmHolder::setMakeupGains(unsigned int bank, float_4 val
     return ret;
 }
 
-inline  bool CompressorParmHolder::setEnableds(unsigned int bank, float_4 value) {
-    assert(bank < numBanks);
+inline  bool CompressorParmHolder::setEnabled(unsigned int channel, bool value) {
+    assert(channel < numChannels);
+    const unsigned int bank = channel / 4;
     float_4 temp = (e[bank] != value);
     bool ret = SimdBlocks::isTrue(temp);
     if (ret) {
@@ -124,8 +166,9 @@ inline  bool CompressorParmHolder::setEnableds(unsigned int bank, float_4 value)
     return ret;
 }
 
-inline  bool CompressorParmHolder::setWetDrys(unsigned int bank, float_4 value) {
-    assert(bank < numBanks);
+inline  bool CompressorParmHolder::setWetDry(unsigned int channel, float value) {
+    assert(channel < numChannels);
+    const unsigned int bank = channel / 4;
     float_4 temp = (w[bank] != value);
     bool ret = SimdBlocks::isTrue(temp);
     if (ret) {
@@ -134,8 +177,9 @@ inline  bool CompressorParmHolder::setWetDrys(unsigned int bank, float_4 value) 
     return ret;
 }
 
-inline  bool CompressorParmHolder::setRatios(unsigned int bank, int32_4 value) {
-    assert(bank < numBanks);
+inline  bool CompressorParmHolder::setRatio(unsigned int channel, int value) {
+    assert(channel < numChannels);
+    const unsigned int bank = channel / 4;
     float_4 temp = (ratio[bank] != value);
     bool ret = SimdBlocks::isTrue(temp);
     if (ret) {

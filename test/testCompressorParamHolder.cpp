@@ -19,44 +19,75 @@ public:
 };
 */
 
+static const float testValues[] = {
+    1, 2, 3, 4,
+    .1f, .2f, .3f, .4f,
+    6, 7, 8, 9,
+    -1, -2, -3, -4
+};
+
 static void test0() {
     assertEQ(CompressorParmHolder::numChannels, 16);
     assertEQ(CompressorParmHolder::numBanks, 4);
 }
 
-static void testAttacks(unsigned int bank) {
+static void testAttack(unsigned int channel) {
+    assert(channel < CompressorParmHolder::numChannels);
+    const unsigned int bank = channel / 4;
     assert(bank < CompressorParmHolder::numBanks);
 
     CompressorParmHolder c;
 
-    float_4 x(.1f, .2f, .3f, .4f);
-    bool b = c.setAttacks(bank, x);
+    const float x = testValues[channel];
+
+    bool b = c.setAttack(channel, x);
     assert(b);
-    simd_assertEQ(c.getAttacks(bank), x);
+
+    assertEQ(c.getAttack(channel), x);
+
+   const unsigned subChannel = channel - (bank * 4);
+   assertEQ(c.getAttacks(bank)[subChannel], x);
 }
 
-static void testReleases(unsigned int bank) {
+
+static void testRelease(unsigned int channel) {
+    assert(channel < CompressorParmHolder::numChannels);
+    const unsigned int bank = channel / 4;
     assert(bank < CompressorParmHolder::numBanks);
 
     CompressorParmHolder c;
 
-    float_4 x(.1f, .2f, .3f, .4f);
-    bool b = c.setReleases(bank, x);
+    const float x = testValues[channel] + 1;
+
+    bool b = c.setRelease(channel, x);
     assert(b);
-    simd_assertEQ(c.getReleases(bank), x);
+
+    assertEQ(c.getRelease(channel), x);
+
+    const unsigned subChannel = channel - (bank * 4);
+    assertEQ(c.getReleases(bank)[subChannel], x);
 }
 
-static void testThresholds(unsigned int bank) {
+static void testThreshold(unsigned int channel) {
+    assert(channel < CompressorParmHolder::numChannels);
+    const unsigned int bank = channel / 4;
     assert(bank < CompressorParmHolder::numBanks);
 
     CompressorParmHolder c;
 
-    float_4 x(.1f, .2f, .3f, .4f);
-    bool b = c.setThresholds(bank, x);
+    const float x = testValues[channel] - 1;
+
+    bool b = c.setThreshold(channel, x);
     assert(b);
-    simd_assertEQ(c.getThresholds(bank), x);
+
+    assertEQ(c.getThreshold(channel), x);
+
+    const unsigned subChannel = channel - (bank * 4);
+    assertEQ(c.getThresholds(bank)[subChannel], x);
 }
 
+
+#if 0
 static void testMakeupGains(unsigned int bank) {
     assert(bank < CompressorParmHolder::numBanks);
 
@@ -74,7 +105,7 @@ static void testEnableds(unsigned int bank) {
     CompressorParmHolder c;
 
     float_4 x(.1f, .2f, .3f, .4f);
-    bool b = c.setEnableds(bank, x);
+    bool b = c.setEnabled(bank, x);
     assert(b);
     simd_assertEQ(c.getEnableds(bank), x);
 }
@@ -85,7 +116,7 @@ static void testWetDrys(unsigned int bank) {
     CompressorParmHolder c;
 
     float_4 x(.1f, .2f, .3f, .4f);
-    bool b = c.setWetDrys(bank, x);
+    bool b = c.setWetDry(bank, x);
     assert(b);
     simd_assertEQ(c.getWetDryMixs(bank), x);
 }
@@ -96,19 +127,22 @@ static void testRatios(unsigned int bank) {
     CompressorParmHolder c;
 
     int32_4 x(1, 2, 3, 4);
-    bool b = c.setRatios(bank, x);
+    bool b = c.setRatio(bank, x);
     assert(b);
     simd_assertEQ(c.getRatios(bank), x);
 }
+#endif
 void testCompressorParamHolder() {
     test0();
-    for (int i = 0; i < CompressorParmHolder::numBanks; ++i) {
-        testAttacks(i);
-        testReleases(i);
-        testThresholds(i);
-        testMakeupGains(i);
-        testEnableds(i);
-        testWetDrys(i);
-        testRatios(i);
+    for (int i = 0; i < CompressorParmHolder::numChannels; ++i) {
+        testAttack(i);
+
+        testRelease(i);
+        testThreshold(i);
+       // testMakeupGains(i);
+       // testEnableds(i);
+        //testWetDrys(i);
+        //testRatios(i);
+
     }
 }
