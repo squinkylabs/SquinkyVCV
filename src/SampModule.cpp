@@ -192,7 +192,7 @@ const float text2y = 100;
 const float keyswitchy = 50;
 
 void SampWidget::requestNewSampleSet(const FilePath& fp) {
-    curBaseFileName = fp.getFilenamePart();
+    curBaseFileName = fp.getFilenamePartNoExtension();
     _module->setNewSamples(fp);
     nextUIState = State::Loading;
 }

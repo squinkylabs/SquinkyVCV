@@ -22,7 +22,6 @@ void FilePath::fixSeparators() {
 }
 
 void FilePath::concat(const FilePath& _other) {
-
     // slihgtly special case / bug if we are empty
     if (this->empty()) {
         this->data = _other.data;
@@ -30,7 +29,7 @@ void FilePath::concat(const FilePath& _other) {
     }
 
     FilePath other = _other;
- 
+
     // remove any leading dots from other
     const bool secondStartsWithDot = other.startsWithDot();
     if (secondStartsWithDot) {
@@ -41,7 +40,7 @@ void FilePath::concat(const FilePath& _other) {
     if (other.empty()) {
         return;
     }
-    
+
     {
         const bool firstEndsWithSeparator = this->endsWithSeparator();
         const bool secondStartsWithSeparator = other.startsWithSeparator();
@@ -111,11 +110,17 @@ FilePath FilePath::getPathPart() const {
     return FilePath(subPath);
 }
 
- std::string FilePath::getFilenamePart() const {
+std::string FilePath::getFilenamePart() const {
     std::string s = toString();
     auto pos = s.rfind(nativeSeparator());
     if (pos == std::string::npos) {
-        return s;           // return the whole thing if no separator found
+        return s;  // return the whole thing if no separator found
     }
     return s.substr(pos + 1);
- }
+}
+
+std::string FilePath::getFilenamePartNoExtension() const {
+    std::string s = getFilenamePart();
+    auto pos = s.rfind('.');
+    return pos == std::string::npos ? s : s.substr(0, pos);
+}

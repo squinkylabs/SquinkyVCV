@@ -129,6 +129,24 @@ static void testFilePathGetFilenamePart3() {
     assertEQ(fileName, "");
 }
 
+static void testFilePathGetFilenamePartNoExtension()  {
+    FilePath a("abc/def.hij");
+    std::string fileName = a.getFilenamePartNoExtension();
+    assertEQ(fileName, "def");
+}
+
+static void testFilePathGetFilenamePartNoExtension2() {
+    FilePath a("abc/def.hij.klm");
+    std::string fileName = a.getFilenamePartNoExtension();
+    assertEQ(fileName, "def.hij");
+}
+
+static void testFilePathGetFilenamePartNoExtension3() {
+    FilePath a("abc/def");
+    std::string fileName = a.getFilenamePartNoExtension();
+    assertEQ(fileName, "def");
+}
+
 static void testFilePathDoubleDot() {
     FilePath fp1("a");
     FilePath fp2("../b");
@@ -136,6 +154,7 @@ static void testFilePathDoubleDot() {
     FilePath expected("a/../b");
     assertEQ(fp1.toString(), expected.toString());
 }
+
 
 void testx4() {
     testFilePath0();
@@ -152,5 +171,7 @@ void testx4() {
     testFilePathGetFilenamePart();
     testFilePathGetFilenamePart2();
     testFilePathGetFilenamePart3();
+    testFilePathGetFilenamePartNoExtension();
+    testFilePathGetFilenamePartNoExtension2();
     testFilePathDoubleDot();
 }
