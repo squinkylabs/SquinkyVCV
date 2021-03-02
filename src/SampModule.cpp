@@ -44,6 +44,10 @@ public:
         samp->setKeySwitch_UI(pitch);
     }
 
+    float getProgressPct() {
+        return samp->getProgressPct();
+    }
+
     InstrumentInfoPtr getInstrumentInfo();
     bool isNewInstrument();
 
@@ -175,6 +179,7 @@ struct SampWidget : ModuleWidget {
 
     void pollForStateChange();
     void pollNewState();
+    void pollForProgress();
     void updateUIForEmpty();
     void updateUIForLoading();
     void updateUIForLoaded();
@@ -183,13 +188,14 @@ struct SampWidget : ModuleWidget {
     void removeKeyswitchPopup();
     void buildKeyswitchUI();
     std::string buildPitchrangeUIString();
+
+    float curProgress = 0;
 };
 
-const float leftSide = 20;
+const float leftSide = 10;
 const float text1y = 70;
-//const float text1Height = 40;
 const float text2y = 100;
-const float keyswitchy = 50;
+const float keyswitchy = 150;
 
 void SampWidget::requestNewSampleSet(const FilePath& fp) {
     curBaseFileName = fp.getFilenamePartNoExtension();
@@ -208,10 +214,14 @@ void SampWidget::updateUIForEmpty() {
 
 void SampWidget::updateUIForLoading() {
 #ifdef _TW
-    std::string s = "Loading ";
-    s += curBaseFileName;
-    s += "...";
-    textField->setText(s);
+    float pct = _module->getProgressPct();
+    SqStream str;
+    str.add( "Loading ");
+    str.add(curBaseFileName);
+    str.add("...\n");
+    str.add("Progress: ");
+    str.add( int(pct));
+    textField->setText(str.str());
 #else
     INFO("in loading, set cur to %s", curBaseFileName.c_str());
     std::string s = "Loading ";
@@ -279,6 +289,17 @@ void SampWidget::step() {
     ModuleWidget::step();
     pollForStateChange();
     pollNewState();
+    pollForProgress();
+}
+
+void SampWidget::pollForProgress() {
+    if (curUIState == State::Loading) {
+        int oldProgress = curProgress;
+        curProgress = _module->getProgressPct();
+        if (int(curProgress) != oldProgress) {
+            updateUIForLoading();
+        }
+    }
 }
 
 void SampWidget::updateUIForLoaded() {
@@ -295,8 +316,6 @@ void SampWidget::updateUIForLoaded() {
 #endif
     // now the ks stuff
     buildKeyswitchUI();
-    
-
 }
 
 void SampWidget::buildKeyswitchUI() {

@@ -19,26 +19,29 @@ static const char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-P
 static void testWaveLoader0() {
     WaveLoader w;
     w.addNextSample(FilePath("fake file name"));
-    const bool b = w.load();
-    assert(!b);
+    auto b = w.load2();
+    assertEQ(int(b), int(WaveLoader::LoaderState::Error));
+    assertEQ(w.getProgressPercent(), 0);
 }
 
 static void testWaveLoader1() {
     WaveLoader w;
     w.addNextSample(FilePath("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav"));
-    const bool b = w.load();
-    assert(b);
+    auto b = w.load2();
+    assertEQ(int(b), int(WaveLoader::LoaderState::Done));
     auto x = w.getInfo(1);
     assert(x->valid);
     x = w.getInfo(0);
     assert(!x);
+
+    assertEQ(w.getProgressPercent(), 100);
 }
 
 static void testWaveLoader2() {
     WaveLoader w;
     w.addNextSample(FilePath("D:/samples/UprightPianoKW-small-SFZ-20190703/samples/A3vH.wav"));
-    const bool b = w.load();
-    assert(b);
+    auto b = w.load2();
+    assertEQ(int(b), int(WaveLoader::LoaderState::Done));
     auto x = w.getInfo(1);
     assert(x->valid);
     x = w.getInfo(0);
@@ -49,8 +52,8 @@ static void testWaveLoaderNot44() {
     WaveLoader w;
     w.addNextSample(FilePath("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav"));
 
-    const bool b = w.load();
-    assert(b);
+    auto b = w.load2();
+    assertEQ(int(b), int(WaveLoader::LoaderState::Done));
 
     auto x = w.getInfo(1);
     assert(x->valid);
@@ -132,7 +135,7 @@ static void testLoadWavesPiano() {
 
     // const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
     cinst->setWaves(loader, FilePath(tinnyPianoRoot));
-    loader->load();
+    loader->load2();
     // assert(false);
 }
 
@@ -1226,7 +1229,7 @@ static void testSampleRate() {
     // TODO: change back to k18 orig when test is done
     w.addNextSample(FilePath("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav"));
 
-    w.load();
+    w.load2();
     auto x = w.getInfo(1);
     assert(x->valid);
     assertEQ(x->sampleRate, 48000);

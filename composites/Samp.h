@@ -10,10 +10,10 @@
 #include "IComposite.h"
 #include "InstrumentInfo.h"
 #include "ManagedPool.h"
-#include "SamplerSharedState.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
 #include "SamplerErrorContext.h"
+#include "SamplerSharedState.h"
 #include "SimdBlocks.h"
 #include "SqLog.h"
 #include "SqPort.h"
@@ -51,11 +51,11 @@ public:
     * full path to sfz file from user
     * This is the sfz that will be parsed and loded by the worker
     */
-    std::string* pathToSfz;  // 
+    std::string* pathToSfz;  //
 
-                             //  std::string pathToSfz;          // full path to sfz file from user
-                             //  std::string globalBase;         // aria base path from user
-                             //  std::string defaultPath;        // override from the patch
+    //  std::string pathToSfz;          // full path to sfz file from user
+    //  std::string globalBase;         // aria base path from user
+    //  std::string defaultPath;        // override from the patch
 
     /**
      * Used in both directions.
@@ -172,6 +172,8 @@ public:
         return _isSampleLoaded;
     }
 
+    float getProgressPct() const;
+
     static int quantize(float pitchCV);
 
 private:
@@ -179,16 +181,15 @@ private:
                              // SInstrumentPtr instrument;
                              // WaveLoaderPtr waves;
 
-
     // here we hold onto a reference to these so we can give it back
     // Actually, I think we reference some of these - should consider updating...
     WaveLoaderPtr gcWaveLoader;
     CompiledInstrumentPtr gcInstrument;
 
 #ifdef _ATOM
-    SamplerSharedStatePtr sharedState; 
+    SamplerSharedStatePtr sharedState;
 #else
-    a b c // just a test, for now
+    a b c  // just a test, for now
 #endif
 
     float_4 lastGate4[4];
@@ -228,7 +229,7 @@ private:
 template <class TBase>
 inline void Samp<TBase>::init() {
 #ifdef _ATOM
-    sharedState  =  std::make_shared<SamplerSharedState>();
+    sharedState = std::make_shared<SamplerSharedState>();
 #endif
     divn.setup(32, [this]() {
         this->step_n();
@@ -237,6 +238,11 @@ inline void Samp<TBase>::init() {
     for (int i = 0; i < 4; ++i) {
         lastGate4[i] = float_4(0);
     }
+}
+
+template <class TBase>
+inline float Samp<TBase>::getProgressPct() const {
+    return sharedState->uiw_getProgressPercent();
 }
 
 // Called when a patch has come back from thread server
@@ -291,19 +297,18 @@ inline void Samp<TBase>::step_n() {
         // don't do this anymore, now that we have ADSR
         // playback[0].note_off(0);
     }
-
 }
 
 template <class TBase>
-inline void  Samp<TBase>::serviceSampleReloadRequest() {
-    #ifdef _ATOM
+inline void Samp<TBase>::serviceSampleReloadRequest() {
+#ifdef _ATOM
     if (sharedState->au_isSampleReloadRequested()) {
-        for (int i=0; i<4; ++i) {
+        for (int i = 0; i < 4; ++i) {
             playback[i].clearSamples();
         }
         sharedState->au_grantSampleReloadRequest();
     }
-    #endif
+#endif
 }
 
 template <class TBase>
@@ -326,11 +331,11 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         Port& p = TBase::inputs[GATE_INPUT];
         float_4 g = p.getVoltageSimd<float_4>(bank * 4);
         float_4 gmask = (g > float_4(1));
-        float_4 gate4 = SimdBlocks::ifelse(gmask, float_4(1), float_4(0));      // isn't this pointless?
+        float_4 gate4 = SimdBlocks::ifelse(gmask, float_4(1), float_4(0));  // isn't this pointless?
         float_4 lgate4 = lastGate4[bank];
 
         if (bank == 0) {
-      //      printf("samp, g4 = %s\n", toStr(gate4).c_str());
+            //      printf("samp, g4 = %s\n", toStr(gate4).c_str());
         }
         for (int iSub = 0; iSub < 4; ++iSub) {
             if (gate4[iSub] != lgate4[iSub]) {
@@ -399,7 +404,6 @@ public:
     // This handle is called when the worker thread (ThreadServer)
     // gets a message. This is the handler for that message
     void handleMessage(ThreadMessage* msg) override {
-
         // Since Samp only uses one type of message, we can
         // trivailly down-cast to the particular message type
         assert(msg->type == ThreadMessage::Type::SAMP);
@@ -442,24 +446,36 @@ public:
         samplePath.concat(cinst->getDefaultPath());
         SQINFO("calling setWaves on %s", samplePath.toString().c_str());
         cinst->setWaves(waves, samplePath);
-        // TODO: errors from wave loader
 
-        // TODO: need a way for wave loader to return error/
-        const bool loadedOK = waves->load();
+        WaveLoader::LoaderState loadedState;
+        for (bool done = false; !done;) {
+            loadedState = waves->load2();
+            switch (loadedState) {
+                case WaveLoader::LoaderState::Progress:
+                    smsg->sharedState->uiw_setLoadProgress( waves->getProgressPercent());
+                    break;
+                case WaveLoader::LoaderState::Done:
+                case WaveLoader::LoaderState::Error:
+                    done= true;
+                    break;
+                default:
+                    assert(false);
+            }
+        }
 
         smsg->instrument = cinst;
-        smsg->waves = loadedOK ? waves : nullptr;
+        smsg->waves = loadedState == WaveLoader::LoaderState::Done ? waves : nullptr;
         auto info = cinst->getInfo();
 
         SQINFO("samp thread back, info error = %s", info->errorMessage.c_str());
-        if (info->errorMessage.empty() && !loadedOK) {
+        if (info->errorMessage.empty() && loadedState != WaveLoader::LoaderState::Done) {
             // SQINFO("main error empty");
             // SQINFO("error from ")
             info->errorMessage = waves->lastError;
             SQINFO("returning error message %s", info->errorMessage.c_str());
         }
         //   a b // return error now.
-        SQINFO("** loader thread returning %d", loadedOK);
+        SQINFO("** loader thread returning %d", int(loadedState));
 
         sendMessageToClient(msg);
     }

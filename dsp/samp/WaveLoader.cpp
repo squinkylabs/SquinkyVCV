@@ -26,8 +26,42 @@ WaveLoader::WaveInfoPtr WaveLoader::getInfo(int index) const {
 void WaveLoader::addNextSample(const FilePath& fileName) {
     assert(!didLoad);
     filesToLoad.push_back(fileName);
+    curLoadIndex = 0;
 }
 
+float WaveLoader::getProgressPercent() const {
+    float done = float(curLoadIndex);
+    float total = float(filesToLoad.size());
+    return 100 * done / total;
+}
+
+WaveLoader::LoaderState WaveLoader::load2() {
+    if (curLoadIndex >= filesToLoad.size()) {
+        return LoaderState::Done;
+    }
+
+    FilePath& file = filesToLoad[curLoadIndex];
+    WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
+    std::string err;
+    const bool b = waveInfo->load(err);
+    if (!b) {
+        // bail on first error
+        assert(!err.empty());
+        lastError = err;
+        SQINFO("wave loader leaving with error %s", lastError.c_str());
+        return LoaderState::Error;
+    }
+
+    finalInfo.push_back(waveInfo);
+    curLoadIndex++;
+    auto ret = curLoadIndex >= filesToLoad.size() ? LoaderState::Done : LoaderState::Progress;
+    if (ret == LoaderState::Done) {
+        didLoad = true;
+    }
+    return ret;
+}
+
+#if 0
 bool WaveLoader::load() {
     assert(!didLoad);
     didLoad = true;
@@ -53,9 +87,9 @@ bool WaveLoader::load() {
 #endif
     return true;
 }
+#endif
 
-void WaveLoader::validate()
-{
+void WaveLoader::validate() {
     for (auto info : finalInfo) {
         info->validate();
     }
@@ -81,7 +115,6 @@ void WaveLoader::_setTestMode(Tests test) {
 
 WaveLoader::WaveInfo::WaveInfo(const FilePath& path) : fileName(path) {
 }
-
 
 WaveLoader::WaveInfo::WaveInfo(Tests test) : fileName(FilePath("test only")) {
     //  assert(test == Tests::DCOneSec);        // only one imp right now
@@ -112,7 +145,7 @@ WaveLoader::WaveInfo::WaveInfo(Tests test) : fileName(FilePath("test only")) {
 }
 
 bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
-   // SQINFO("loading %s", fileName.toString().c_str());
+    // SQINFO("loading %s", fileName.toString().c_str());
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.toString().c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
@@ -130,9 +163,8 @@ bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
     return true;
 }
 
-
 void WaveLoader::WaveInfo::convertToMono() {
-  //  SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
+    //  SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
     const int origChannels = numChannels;
     uint64_t newBufferSize = 1 + totalFrameCount;
     void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
@@ -140,7 +172,7 @@ void WaveLoader::WaveInfo::convertToMono() {
 
     for (uint64_t outputIndex = 0; outputIndex < totalFrameCount; ++outputIndex) {
         float monoSampleValue = 0;
-        for (int channelIndex=0; channelIndex < origChannels; ++channelIndex) {
+        for (int channelIndex = 0; channelIndex < origChannels; ++channelIndex) {
             uint64_t inputIndex = outputIndex * origChannels + channelIndex;
             monoSampleValue += data[inputIndex];
         }
@@ -150,7 +182,7 @@ void WaveLoader::WaveInfo::convertToMono() {
         dest[outputIndex] = monoSampleValue;
     }
     numChannels = 1;
-  //  SQINFO("leaving, not total frames = %d", totalFrameCount);
+    //  SQINFO("leaving, not total frames = %d", totalFrameCount);
     DRWAV_FREE(data);
     data = dest;
 }

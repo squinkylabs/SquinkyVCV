@@ -54,7 +54,14 @@ public:
      * load will load all of them.
      * will return true is they all load.
      */
-    bool load();
+
+    enum class LoaderState {
+        Done,
+        Error,
+        Progress
+    };
+    LoaderState load2();
+    float getProgressPercent() const;
 
     /**
      * Index is one based. 
@@ -72,6 +79,7 @@ private:
     void clear();
     bool didLoad = false;
     void validate();
+    int curLoadIndex = -1;
 };
 
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
