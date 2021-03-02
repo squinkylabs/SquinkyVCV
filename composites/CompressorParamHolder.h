@@ -98,6 +98,14 @@ inline  float_4 CompressorParmHolder::getMakeupGains(unsigned int bank) const {
     assert(bank < numBanks);
     return m[bank];
 }
+
+inline  float CompressorParmHolder::getMakeupGain(unsigned int channel) const {
+    assert(channel < numChannels);
+    const unsigned bank = channel / 4;
+    const unsigned subChannel = channel - (bank * 4);
+    return m[bank][subChannel];
+}
+
 inline  float_4 CompressorParmHolder::getEnableds(unsigned int bank) const {
     assert(bank < numBanks);
     return e[bank];

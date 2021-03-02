@@ -57,7 +57,7 @@ static void testRelease(unsigned int channel) {
 
     CompressorParmHolder c;
 
-    const float x = testValues[channel] + 1;
+    const float x = testValues[channel] + 100;
 
     bool b = c.setRelease(channel, x);
     assert(b);
@@ -75,7 +75,7 @@ static void testThreshold(unsigned int channel) {
 
     CompressorParmHolder c;
 
-    const float x = testValues[channel] - 1;
+    const float x = testValues[channel] - 10;
 
     bool b = c.setThreshold(channel, x);
     assert(b);
@@ -86,52 +86,25 @@ static void testThreshold(unsigned int channel) {
     assertEQ(c.getThresholds(bank)[subChannel], x);
 }
 
-
-#if 0
-static void testMakeupGains(unsigned int bank) {
+static void testMakeupGain(unsigned int channel) {
+    assert(channel < CompressorParmHolder::numChannels);
+    const unsigned int bank = channel / 4;
     assert(bank < CompressorParmHolder::numBanks);
 
     CompressorParmHolder c;
 
-    float_4 x(.1f, .2f, .3f, .4f);
-    bool b = c.setMakeupGains(bank, x);
+    const float x = testValues[channel] - 1.23f;
+
+    bool b = c.setMakeupGain(channel, x);
     assert(b);
-    simd_assertEQ(c.getMakeupGains(bank), x);
+
+    assertEQ(c.getMakeupGain(channel), x);
+
+    const unsigned subChannel = channel - (bank * 4);
+    assertEQ(c.getMakeupGains(bank)[subChannel], x);
 }
 
-static void testEnableds(unsigned int bank) {
-    assert(bank < CompressorParmHolder::numBanks);
 
-    CompressorParmHolder c;
-
-    float_4 x(.1f, .2f, .3f, .4f);
-    bool b = c.setEnabled(bank, x);
-    assert(b);
-    simd_assertEQ(c.getEnableds(bank), x);
-}
-
-static void testWetDrys(unsigned int bank) {
-    assert(bank < CompressorParmHolder::numBanks);
-
-    CompressorParmHolder c;
-
-    float_4 x(.1f, .2f, .3f, .4f);
-    bool b = c.setWetDry(bank, x);
-    assert(b);
-    simd_assertEQ(c.getWetDryMixs(bank), x);
-}
-
-static void testRatios(unsigned int bank) {
-    assert(bank < CompressorParmHolder::numBanks);
-
-    CompressorParmHolder c;
-
-    int32_4 x(1, 2, 3, 4);
-    bool b = c.setRatio(bank, x);
-    assert(b);
-    simd_assertEQ(c.getRatios(bank), x);
-}
-#endif
 void testCompressorParamHolder() {
     test0();
     for (int i = 0; i < CompressorParmHolder::numChannels; ++i) {
@@ -139,10 +112,10 @@ void testCompressorParamHolder() {
 
         testRelease(i);
         testThreshold(i);
-       // testMakeupGains(i);
-       // testEnableds(i);
-        //testWetDrys(i);
-        //testRatios(i);
+        testMakeupGain(i);
+       // testEnabled(i);
+        //testWetDry(i);
+        //testRatio(i);
 
     }
 }
