@@ -35,7 +35,6 @@ public:
         // later we might change samp to also take file path..
         samp->setNewSamples_UI(fp.toString());
         lastSampleSetLoaded = fp.toString();
-        SQINFO("setNewSamples %s", fp.toString().c_str());
     }
 
     void setSamplePath(const std::string& s) {
@@ -66,20 +65,12 @@ private:
 const char* sfzpath = "sfzpath";
 
 void SampModule::dataFromJson(json_t *rootJ) {
-    SQINFO("----module data from json: ----");
-    char* p = json_dumps(rootJ, 0);
-    SQINFO("p=%s\n", p);
-    free(p);
-
     json_t *pathJ = json_object_get(rootJ, sfzpath);
     if (pathJ) {
         const char* path = json_string_value(pathJ);
-        SQINFO("got path %s, will set to load", path);
         std::string sPath(path);
         deserializedPath = sPath;
 
-    } else {
-        SQINFO("did not find %s", sfzpath);
     }
 }
 
@@ -237,7 +228,6 @@ const float text2y = 100;
 const float keyswitchy = 150;
 
 void SampWidget::requestNewSampleSet(const FilePath& fp) {
-    SQINFO("sidget::reqeuest new");
     curBaseFileName = fp.getFilenamePartNoExtension();
     _module->setNewSamples(fp);
     nextUIState = State::Loading;
@@ -287,8 +277,6 @@ void SampWidget::updateUIForError() {
 void SampWidget::pollForStateChange() {
     if (_module && _module->isNewInstrument()) {
         info = _module->getInstrumentInfo();
-        SQINFO("in UI, error = %s", info->errorMessage.c_str());
-        SQINFO("got info there are %d labels", info->keyswitchData.size());
         nextUIState = info->errorMessage.empty() ? State::Loaded : State::Error;
     }
 }
@@ -344,9 +332,12 @@ void SampWidget::pollForProgress() {
 }
 
 void SampWidget:: pollForDeserializedPatch() {
+    if (!_module) {
+        return;
+    }
+
     const bool empty = _module->deserializedPath.empty(); 
     if (!empty) {
-        SQINFO("found deser");
        FilePath fp(_module->deserializedPath);
        _module->deserializedPath.clear();
        requestNewSampleSet(fp);
@@ -478,9 +469,6 @@ void SampWidget::getRootFolder() {
     DEFER({
         std::free(pathC);
     });
-    SQINFO("getRootFolder got %s", pathC);
-    WARN("I don't think this is the rigth way to load samples");
-    //   this->requestNewSampleSet(pathC);
 }
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
@@ -555,9 +543,6 @@ SampWidget::SampWidget(SampModule* module) {
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-
-    SQINFO("widget ctor");
-
 }
 
 Model* modelSampModule = createModel<SampModule, SampWidget>("squinkylabs-samp");
