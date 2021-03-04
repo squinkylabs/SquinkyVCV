@@ -3,6 +3,7 @@
 #include "SqUI.h"
 #include "rack.hpp"
 
+#include <random>
 #include <functional>
 
 /**
@@ -30,10 +31,22 @@ public:
     void onButton(const ::rack::event::Button &e) override;
     void onChange(const ::rack::event::Change &e) override;
     void onAction(const ::rack::event::Action &e) override;
+    void randomize() override;
 private:
 
     Callback optionalCallback = {nullptr};
+    int curIndex = 0;
 };
+
+inline void PopupMenuParamWidget::randomize() {  
+	if (paramQuantity && paramQuantity->isBounded()) {
+		float value = rack::math::rescale(rack::random::uniform(), 0.f, 1.f, paramQuantity->getMinValue(), paramQuantity->getMaxValue());
+		//if (snap)
+		value = std::round(value);
+		paramQuantity->setValue(value);
+		//oldValue = snapValue = paramQuantity->getValue();
+	}
+}
 
 inline void PopupMenuParamWidget::setCallback(Callback callback) {
     optionalCallback = callback;
@@ -46,13 +59,14 @@ inline void PopupMenuParamWidget::onChange(const ::rack::event::Change &e) {
 
     // process ourself to update the text label
     const int index = (int)std::round(this->paramQuantity->getValue());
-    INFO("raw index = %d", index);
+    INFO("PopupMenuParamWidget::onChange raw index = %d", index);
     if (!labels.empty()) {
         if (index < 0 || index >= (int)labels.size()) {
-            fprintf(stderr, "index is outside label ranges %d\n", index);
+            WARN("index is outside label ranges %d", index);
             return;
         }
         this->text = labels[index];
+        curIndex = index;               // remember it
     }
 
     // Delegate to base class to change param value

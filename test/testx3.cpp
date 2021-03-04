@@ -400,6 +400,50 @@ static void testKeyswitch2() {
     assertEQ(info.sampleIndex, 1);
 }
 
+static void shouldFindMalformed(const char* input) {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(input, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    SQINFO("now will compile");
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    assert(!errc.empty());
+}
+
+static void testMalformedRelease() {
+    shouldFindMalformed(R"foo(
+        <region>ampeg_release=abcd
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>ampeg_release=qb.3
+        )foo");
+}
+
+static void testMalformedKey() {
+    shouldFindMalformed(R"foo(
+        <region>key=abcd
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=c#
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=cn
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=c.
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=h3
+        )foo");
+}
+
 void testx3() {
     testAllSal();
     // work up to these
@@ -422,6 +466,9 @@ void testx3() {
     testKeyswitch();
     testKeyswitch15();
     testKeyswitch2();
+
+    testMalformedRelease();
+    testMalformedKey();
 
     assert(parseCount == 0);
     assert(compileCount == 0);

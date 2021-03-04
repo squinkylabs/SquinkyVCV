@@ -31,6 +31,7 @@
 //#define _F2
 //#define _F4
 #define _SAMP
+#define _TESTM
 
 
 //#define _BLANKMODULE
@@ -161,4 +162,8 @@ extern Model *modelDividerXModule;
 extern Model *modelSampModule;
 #endif
 
+
+#ifdef  _TESTM
+extern Model *modelTestModule;
+#endif
 

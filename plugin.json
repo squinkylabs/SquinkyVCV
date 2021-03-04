@@ -283,6 +283,15 @@
 				"Dynamics",
 				"Polyphonic"
 			  ]
+		},
+		{
+			"slug": "squinkylabs-testmodel",
+			"name": "Test",
+			"disabled": false,
+			"description": "Programming test",
+			"tags": [
+
+			  ]
 		}
 	]
 }

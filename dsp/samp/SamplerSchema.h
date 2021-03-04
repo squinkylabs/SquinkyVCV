@@ -122,7 +122,7 @@ public:
     static OpcodeType keyTextToType(const std::string& key, bool suppressErrorMessages);
 
 private:
-    static std::pair<bool, int> convertToInt(const std::string& s);
+    static std::pair<bool, int> convertToInt(SamplerErrorContext& err, const std::string& s);
     static void compile(SamplerErrorContext&, KeysAndValuesPtr results, SKeyValuePairPtr input);
     static DiscreteValue translated(const std::string& s);
 };

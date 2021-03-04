@@ -52,36 +52,33 @@ public:
     InstrumentInfoPtr getInstrumentInfo();
     bool isNewInstrument();
 
-
-    void dataFromJson(json_t *data) override;
+    void dataFromJson(json_t* data) override;
     json_t* dataToJson() override;
-
 
     std::string deserializedPath;
     std::string lastSampleSetLoaded;
+
 private:
 };
 
 const char* sfzpath = "sfzpath";
 
-void SampModule::dataFromJson(json_t *rootJ) {
-    json_t *pathJ = json_object_get(rootJ, sfzpath);
+void SampModule::dataFromJson(json_t* rootJ) {
+    json_t* pathJ = json_object_get(rootJ, sfzpath);
     if (pathJ) {
         const char* path = json_string_value(pathJ);
         std::string sPath(path);
         deserializedPath = sPath;
-
     }
 }
 
 json_t* SampModule::dataToJson() {
-    json_t *rootJ = json_object();
+    json_t* rootJ = json_object();
     if (!lastSampleSetLoaded.empty()) {
         json_object_set_new(rootJ, sfzpath, json_string(lastSampleSetLoaded.c_str()));
     }
     return rootJ;
 }
-
 
 InstrumentInfoPtr SampModule::getInstrumentInfo() {
     return samp->getInstrumentInfo_UI();
@@ -133,6 +130,13 @@ struct SampWidget : ModuleWidget {
             sfile->text = "Load Sample file";
             theMenu->addChild(sfile);
         }
+        {
+            SqMenuItem* test = new SqMenuItem(
+                []() { return false; },
+                [this]() { this->debug(); });
+            test->text = "Debug Test";
+            theMenu->addChild(test);
+        }
 #if 0  // add the root folder
         {
             SqMenuItem* spath = new SqMenuItem(
@@ -145,6 +149,7 @@ struct SampWidget : ModuleWidget {
     }
 
     void step() override;
+    void debug();
 
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK) {
         Label* label = new Label();
@@ -246,11 +251,11 @@ void SampWidget::updateUIForLoading() {
 #ifdef _TW
     float pct = _module->getProgressPct();
     SqStream str;
-    str.add( "Loading ");
+    str.add("Loading ");
     str.add(curBaseFileName);
     str.add("...\n");
     str.add("Progress: ");
-    str.add( int(pct));
+    str.add(int(pct));
     textField->setText(str.str());
 #else
     INFO("in loading, set cur to %s", curBaseFileName.c_str());
@@ -331,16 +336,16 @@ void SampWidget::pollForProgress() {
     }
 }
 
-void SampWidget:: pollForDeserializedPatch() {
+void SampWidget::pollForDeserializedPatch() {
     if (!_module) {
         return;
     }
 
-    const bool empty = _module->deserializedPath.empty(); 
+    const bool empty = _module->deserializedPath.empty();
     if (!empty) {
-       FilePath fp(_module->deserializedPath);
-       _module->deserializedPath.clear();
-       requestNewSampleSet(fp);
+        FilePath fp(_module->deserializedPath);
+        _module->deserializedPath.clear();
+        requestNewSampleSet(fp);
     }
 }
 
@@ -352,9 +357,9 @@ void SampWidget::updateUIForLoaded() {
 #ifdef _TW
     textField->setText(s);
 #else
-  
+
     uiText1->text = s;
-    uiText2->text =  buildPitchrangeUIString();
+    uiText2->text = buildPitchrangeUIString();
 #endif
     // now the ks stuff
     buildKeyswitchUI();
@@ -472,7 +477,7 @@ void SampWidget::getRootFolder() {
 }
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
-    float jacksY = 340;
+    float jacksY = 323;
     float jacksX = 15;
     float jacksDx = 40;
     float labelY = jacksY - 25;
@@ -519,7 +524,7 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
 SampWidget::SampWidget(SampModule* module) {
     setModule(module);
     _module = module;
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    SqHelper::setPanel(this, "res/samp_panel.svg");
 
     addLabel(Vec(80, 10), "-Sample Player-");
 
@@ -528,7 +533,7 @@ SampWidget::SampWidget(SampModule* module) {
 
     //		textField->box.size = mm2px(Vec(74.480, 102.753));
     textField->box.size = Vec(250, 100);
-  //  textField->multiline = true;
+    //  textField->multiline = true;
     addChild(textField);
 #else
     uiText1 = addLabel(Vec(leftSide, text1y), "");
@@ -543,6 +548,79 @@ SampWidget::SampWidget(SampModule* module) {
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+}
+
+
+static void shouldFindMalformed(const char* input) {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(input, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    SQINFO("now will compile");
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    if (!cinst) {
+        SQWARN("did not compile. bailing");
+        return;
+    }
+
+    if (errc.empty()) {
+         SQWARN("did not find malf");
+    }
+   // assert(!errc.empty());
+}
+
+static void testMalformedRelease() {
+    shouldFindMalformed(R"foo(
+        <region>ampeg_release=abcd
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>ampeg_release=qb.3
+        )foo");
+}
+
+static void testMalformedKey() {
+    shouldFindMalformed(R"foo(
+        <region>key=abcd
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=c#
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=cn
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=c.
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=h3
+        )foo");
+}
+
+void SampWidget::debug() {
+    SQINFO("start debug");
+    const char* input = "12345";
+    try {
+        float x = std::stof(input);
+        printf("converted to %f\n", x);
+    } catch (std::exception&) {
+        WARN("excpetion converting float");
+    }
+
+    input = "abc";
+    try {
+        float x = std::stof(input);
+        printf("converted abc to %f\n", x);
+    } catch (std::exception&) {
+        WARN("excpetion converting bad float float");
+    }
+
+
+    testMalformedRelease();
+    testMalformedKey();
+    SQINFO("test finished");
 }
 
 Model* modelSampModule = createModel<SampModule, SampWidget>("squinkylabs-samp");

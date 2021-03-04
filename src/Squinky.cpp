@@ -144,6 +144,10 @@ p->addModel(modelCompressor2Module);
 p->addModel(modelSampModule);
 #endif
 
+#ifdef  _TESTM
+p->addModel(modelTestModule);
+#endif
+
 }
 
 const NVGcolor SqHelper::COLOR_GREY = nvgRGB(0x80, 0x80, 0x80);

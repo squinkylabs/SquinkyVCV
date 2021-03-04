@@ -46,8 +46,7 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::SW_HIKEY, OpcodeType::Int},
     {Opcode::SW_DEFAULT, OpcodeType::Int},
     {Opcode::HICC64_HACK, OpcodeType::Int},
-    {Opcode::LOCC64_HACK, OpcodeType::Int}
-    };
+    {Opcode::LOCC64_HACK, OpcodeType::Int}};
 
 static std::map<std::string, Opcode> opcodes = {
     {"hivel", Opcode::HI_VEL},
@@ -82,7 +81,7 @@ static std::map<std::string, Opcode> opcodes = {
     {"sw_hikey", Opcode::SW_HIKEY},
     {"sw_default", Opcode::SW_DEFAULT},
     {"hicc64", Opcode::HICC64_HACK},
-    {"locc64", Opcode::LOCC64_HACK} };
+    {"locc64", Opcode::LOCC64_HACK}};
 
 static std::set<std::string>
     unrecognized;
@@ -125,7 +124,7 @@ OpcodeType SamplerSchema::keyTextToType(const std::string& key, bool suppressErr
 // TODO: octaves
 // TODO: IPN octaves
 // TODO: upper case
-std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
+std::pair<bool, int> SamplerSchema::convertToInt(SamplerErrorContext& err, const std::string& _s) {
     std::string s(_s);
     int noteName = -1;
     bool sharp = false;
@@ -190,7 +189,8 @@ std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
         }
         return std::make_pair(true, x);
     } catch (std::exception&) {
-        printf("could not convert %s to Int. \n", s.c_str());
+        SQWARN("could not convert %s to Int", s.c_str());
+        err.sawMalformedInput = true;
         return std::make_pair(false, 0);
     }
 }
@@ -216,19 +216,8 @@ void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValu
     vp->type = type;
     bool isValid = true;
     switch (type) {
-        case OpcodeType::Int:
-#if 0
-            try {
-                int x = std::stoi(input->value);
-                vp->numericInt = x;
-            } catch (std::exception&) {
-                isValid = false;
-                printf("could not convert %s to Int. key=%s\n", input->value.c_str(), input->key.c_str());
-                return;
-            }
-#endif
-        {
-            auto foo = convertToInt(input->value);
+        case OpcodeType::Int: {
+            auto foo = convertToInt(err, input->value);
             if (!foo.first) {
                 return;
             }
@@ -240,7 +229,8 @@ void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValu
                 vp->numericFloat = x;
             } catch (std::exception&) {
                 isValid = false;
-                printf("could not convert %s to float. key=%s\n", input->value.c_str(), input->key.c_str());
+                SQWARN("could not convert %s to float. key=%s", input->value.c_str(), input->key.c_str());
+                err.sawMalformedInput = true;
                 return;
             }
             break;
