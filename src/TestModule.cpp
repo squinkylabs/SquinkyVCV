@@ -63,12 +63,14 @@ struct TestWidget : ModuleWidget {
         return label;
     }
     void draw(const DrawArgs& args) override {
+        INFO("TestModule::draw 66");
         ModuleWidget::draw(args);
         std::stringstream str;
         static int counter = 0;
         str << "draw ";
         str << counter;
         INFO(str.str().c_str());
+        INFO("TestModule::draw 73");
         ++counter;
         try {
             std::invalid_argument ex("i am an exception");
