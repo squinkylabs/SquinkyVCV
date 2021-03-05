@@ -72,6 +72,7 @@ struct TestWidget : ModuleWidget {
         INFO(str.str().c_str());
         INFO("TestModule::draw 73");
         ++counter;
+    #if 0
         try {
             std::invalid_argument ex("i am an exception");
             throw(ex);
@@ -97,6 +98,7 @@ struct TestWidget : ModuleWidget {
             sum += testArray[i];
         }
         INFO("sum = %d", sum);
+#endif
     }
 };
 
