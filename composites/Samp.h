@@ -495,7 +495,7 @@ private:
         if (msg->pathToSfz) {
             // maybe we should allow raw strings to come in this way. but it's probably fine
             fullPath = FilePath(*(msg->pathToSfz));
-            SQINFO("parse path 351 %s", fullPath.toString());
+            SQINFO("parse path 351 %s", fullPath.toString().c_str());
             SQINFO("about to delete %p", msg->pathToSfz);
             delete msg->pathToSfz;
             msg->pathToSfz = nullptr;
