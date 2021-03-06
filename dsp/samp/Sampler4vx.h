@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "ADSRSampler.h"
-//#include "Divider.h"
 #include "SimdBlocks.h"
 
 class CompiledInstrument;
@@ -15,6 +14,8 @@ class SInstrument;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 
 #include "Streamer.h"
+
+#define _SAMPFM         // let's start implementing this
 
 // fordebugging
 #include <utility>

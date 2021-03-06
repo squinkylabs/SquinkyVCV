@@ -513,6 +513,24 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
         Vec(jacksX + 3 * jacksDx, jacksY),
         module,
         Comp::VELOCITY_INPUT));
+
+    //    FM_INPUT,
+
+    addLabel(
+        Vec(jacksX + 4 * jacksDx - 6, labelY),
+        "FM");
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX + 4 * jacksDx, jacksY),
+        module,
+        Comp::FM_INPUT));
+  //  LFM_INPUT
+    addLabel(
+        Vec(jacksX + 5 * jacksDx - 6, labelY),
+        "LFM");
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX + 5 * jacksDx, jacksY),
+        module,
+        Comp::LFM_INPUT));
 }
 
 /**
@@ -550,7 +568,6 @@ SampWidget::SampWidget(SampModule* module) {
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
 }
 
-
 static void shouldFindMalformed(const char* input) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -567,9 +584,9 @@ static void shouldFindMalformed(const char* input) {
     }
 
     if (errc.empty()) {
-         SQWARN("did not find malf");
+        SQWARN("did not find malf");
     }
-   // assert(!errc.empty());
+    // assert(!errc.empty());
 }
 
 static void testMalformedRelease() {
@@ -616,7 +633,6 @@ void SampWidget::debug() {
     } catch (std::exception&) {
         WARN("excpetion converting bad float float");
     }
-
 
     testMalformedRelease();
     testMalformedKey();

@@ -106,7 +106,12 @@ public:
     void init();
 
     enum ParamIds {
-        DUMMYKS_PARAM,
+        DUMMYKS_PARAM,          // need to make this real
+#ifdef _SAMPFM
+        PITCH_PARAM,
+        PITCH_TRIM_PARAM,
+        LFM_DEPTH_PARAM,
+#endif
         NUM_PARAMS
     };
 
@@ -114,6 +119,8 @@ public:
         PITCH_INPUT,
         VELOCITY_INPUT,
         GATE_INPUT,
+        FM_INPUT,
+        LFM_INPUT,
         NUM_INPUTS
     };
 
@@ -385,9 +392,22 @@ template <class TBase>
 inline IComposite::Config SampDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
+#ifdef _SAMPFM
+        case Samp<TBase>::PITCH_PARAM:
+            ret = {0, 10, 3, "Pitch"};
+            break;
+        case Samp<TBase>::PITCH_TRIM_PARAM:
+            ret = {-1, 1, 0, "Pitch trim"};
+            break;
+
+        case Samp<TBase>::LFM_DEPTH_PARAM:
+            ret = {0, 10, 0, "LFM Depth"};
+            break;
+#endif
         case Samp<TBase>::DUMMYKS_PARAM:
             ret = {-1, 127, -1, "Key Switch"};
             break;
+
         default:
             assert(false);
     }
@@ -452,11 +472,11 @@ public:
             loadedState = waves->load2();
             switch (loadedState) {
                 case WaveLoader::LoaderState::Progress:
-                    smsg->sharedState->uiw_setLoadProgress( waves->getProgressPercent());
+                    smsg->sharedState->uiw_setLoadProgress(waves->getProgressPercent());
                     break;
                 case WaveLoader::LoaderState::Done:
                 case WaveLoader::LoaderState::Error:
-                    done= true;
+                    done = true;
                     break;
                 default:
                     assert(false);
