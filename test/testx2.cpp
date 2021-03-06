@@ -657,7 +657,7 @@ static void testCompileMultiPitch() {
     // If this breaks the test should be fixed.
     assertEQ(info.sampleIndex, 1);
 
-    // pitsh 12 requires a semitone up in this region
+    // pitch 12 requires a semitone up in this region
     params.midiPitch = 12;
     params.midiVelocity = 60;
     ci->play(info, params, nullptr, 0);
@@ -670,6 +670,7 @@ static void testCompileMultiPitch() {
     assertGT(info.transposeAmt, 1);
 #endif
 
+    // Pitch 10 requies a semiton down
     params.midiPitch = 10;
     params.midiVelocity = 60;
     ci->play(info, params, nullptr, 0);
@@ -1288,7 +1289,7 @@ static void testSampleRate() {
 #endif
     }
     const float yy = std::log2(expectedTranspose);
-    assertClose(info.transposeV, yy, .001);
+    assertClose(info.transposeV, yy, .0001);
 
 #else
     assertClose(info.transposeAmt, expectedTranspose, .01);

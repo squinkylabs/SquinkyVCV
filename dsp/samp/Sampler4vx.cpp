@@ -82,6 +82,7 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
 
 #ifdef _SAMPFM
     const float transposeAmt = PitchUtils::semitoneToFreqRatio(patchInfo.transposeV * 12);
+    SQINFO("Sampler4x cv=%f, ratio=%f", patchInfo.transposeV, transposeAmt);
     player.setTranspose(channel, patchInfo.needsTranspose, transposeAmt);
 #else
     player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);

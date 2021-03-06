@@ -169,6 +169,8 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
         info.needsTranspose = false;
 #ifdef _SAMPFM
         info.transposeV = 0;
+        SQINFO("");
+        SQINFO("173 no ode set tranposeV to %f", info.transposeV);
 #else
         info.transposeAmt = 1;
 #endif
@@ -179,7 +181,9 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
 #ifdef _SAMPFM
         const float offsetCV = tuneSemiOffset / 12.f;
         info.transposeV = offsetCV;
-        SQINFO("set info.transposeV to %f based on %f", info.transposeV, tuneSemiOffset);
+        SQINFO("");
+        SQINFO("182 set info.transposeV to %f based on %f", info.transposeV, tuneSemiOffset);
+        SQINFO("incoming semi offset = %d, tuneCents=%d", semiOffset, tuneCents);
 #else
         const float pitchMul = float(std::pow(2, tuneSemiOffset / 12.0));
         info.transposeAmt = pitchMul;
@@ -194,7 +198,8 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
             info.needsTranspose = true;
 #ifdef _SAMPFM
             //assert(false); 
-            info.transposeV = PitchUtils::freqRatioToSemitone(sampleRate / float(waveSampleRate)) / 12.f ;
+            info.transposeV += PitchUtils::freqRatioToSemitone(float(waveSampleRate) / sampleRate) / 12.f ;
+            SQINFO("set tranposeV for SM to %f", info.transposeV);
 #else
             info.transposeAmt *= sampleRate / float(waveSampleRate);
 #endif

@@ -122,7 +122,7 @@ void Streamer::clearSamples(int channel) {
 }
 
 void Streamer::setTranspose(int channel, bool doTranspose, float amount) {
-    // printf("streamer trans ch=%d amd=%f\n", channel, amount); fflush(stdout);
+    SQINFO("streamer trans ch=%d amt=%f\n", channel, amount);
     assert(channel < 4);
     ChannelData& cd = channels[channel];
     cd.transposeEnabled = doTranspose;
