@@ -39,7 +39,6 @@ float_4 Streamer::step() {
 }
 
 float Streamer::stepTranspose(ChannelData& cd) {
-    // SQINFO("step tran off=%f, frames=%f data=%p", cd.curFloatSampleOffset, cd.frames, cd.data);
     float ret = 0;
     assert(cd.transposeEnabled);
 

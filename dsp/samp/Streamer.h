@@ -29,7 +29,14 @@ public:
 
         int curIntegerSampleOffset = 0;
         bool arePlaying = false;
-        float curFloatSampleOffset = 0;
+
+        /* If curFloatSampleOffset is a float we build up error and it 
+         * makes the pitch off by a few cents. We could use an integer
+         * and just use the float for the fraction, but I have a feeling that 
+         * just using a double is simpler and faster.
+         */
+        double curFloatSampleOffset = 0;   
+        
         bool transposeEnabled = false;
         float transposeMultiplier = 1;
         float gain = 1;
