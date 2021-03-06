@@ -15,7 +15,7 @@ using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
 
 #include "Streamer.h"
 
-#define _SAMPFM         // let's start implementing this
+#define _SAMPFM  // let's start implementing this
 
 // fordebugging
 #include <utility>
@@ -47,7 +47,8 @@ private:
     float max = -10;
 };
 
-#define _USEADSR
+//----------------------------------------------------------------------
+
 class Sampler4vx {
 public:
     void note_on(int channel, int midiPitch, int midiVelocity, float sampleRate);
@@ -59,7 +60,11 @@ public:
      * zero to 4
      */
     void setNumVoices(int voices);
+#ifdef _SAMPFM
+    float_4 step(const float_4& gates, float sampleTime, const float_4& fm, const float_4 lfm );
+#else
     float_4 step(const float_4& gates, float sampleTime);
+#endif
 
     // fixed
     static float_4 _outputGain() {

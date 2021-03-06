@@ -25,7 +25,7 @@ static void testSampler() {
     const int midiVel = 60;
     s.note_on(channel, midiPitch, midiVel, 0);
 
-    float_4 x = s.step(0, 1.f / 44100.f);
+    float_4 x = s.step(0, 1.f / 44100.f, 0, 0);
     assert(x[0] == 0);
 }
 
@@ -53,10 +53,10 @@ static void testSamplerRealSound() {
     const int midiPitch = 60;
     const int midiVel = 60;
     s.note_on(channel, midiPitch, midiVel, 0);
-    float_4 x = s.step(0, 1.f / 44100.f);
+    float_4 x = s.step(0, 1.f / 44100.f, 0, 0);
     assert(x[0] == 0);
 
-    x = s.step(0, 1.f / 44100.f);
+    x = s.step(0, 1.f / 44100.f, 0, 0);
     assert(x[0] != 0);
 }
 
@@ -97,8 +97,8 @@ static void testSamplerTestOutput() {
     const float sampleTime = 1.f / 44100.f;
     const float_4 gates = SimdBlocks::maskTrue();
 
-    float_4 x = s->step(gates, sampleTime);
-    x = s->step(gates, sampleTime);
+    float_4 x = s->step(gates, sampleTime, 0, 0);
+    x = s->step(gates, sampleTime, 0, 0);
     assertGE(x[0], .01);
 }
 
@@ -147,7 +147,7 @@ static void testSamplerAttack() {
     ProcFunc lambda = [s, &gates] {
         const float sampleTime = 1.f / 44100.f;
 
-        const float_4 x = s->step(gates, sampleTime);
+        const float_4 x = s->step(gates, sampleTime, 0, 0);
         return x[0];
     };
 
@@ -162,8 +162,8 @@ static void testSamplerAttack() {
 static void prime(std::shared_ptr<Sampler4vx> s) {
     const float sampleTime = 1.f / 44100.f;
     const float_4 zero = SimdBlocks::maskFalse();
-    s->step(zero, sampleTime);
-    s->step(zero, sampleTime);
+    s->step(zero, sampleTime, 0, 0);
+    s->step(zero, sampleTime, 0, 0);
 }
 
 static void testSamplerRelease() {
@@ -180,7 +180,7 @@ static void testSamplerRelease() {
     ProcFunc lambda = [s, &gates] {
         const float sampleTime = 1.f / 44100.f;
 
-        const float_4 x = s->step(gates, sampleTime);
+        const float_4 x = s->step(gates, sampleTime, 0, 0);
         return x[0];
     };
 
@@ -208,7 +208,7 @@ static void testSamplerRelease2() {
     ProcFunc lambda = [s, &gates] {
         const float sampleTime = 1.f / 44100.f;
 
-        const float_4 x = s->step(gates, sampleTime);
+        const float_4 x = s->step(gates, sampleTime, 0, 0);
         return x[0];
     };
 
@@ -239,7 +239,7 @@ static void testSamplerEnd() {
     ProcFunc lambda = [s, &gates] {
         const float sampleTime = 1.f / 44100.f;
 
-        const float_4 x = s->step(gates, sampleTime);
+        const float_4 x = s->step(gates, sampleTime, 0, 0);
         return x[0];
     };
 
@@ -273,7 +273,7 @@ static void testSampleRetrigger() {
     ProcFunc lambda = [s, &gates] {
         const float sampleTime = 1.f / 44100.f;
 
-        const float_4 x = s->step(gates, sampleTime);
+        const float_4 x = s->step(gates, sampleTime, 0, 0);
         return x[0];
     };
 

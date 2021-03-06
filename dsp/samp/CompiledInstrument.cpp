@@ -1,20 +1,19 @@
 
 #include "CompiledInstrument.h"
-
-#include <assert.h>
-
-#include <algorithm>
-#include <cmath>
-#include <set>
-#include <string>
-
 #include "CompiledRegion.h"
 #include "InstrumentInfo.h"
+#include "PitchUtils.h"
 #include "SInstrument.h"
 #include "SParse.h"
 #include "SamplerPlayback.h"
 #include "SqLog.h"
 #include "WaveLoader.h"
+
+#include <assert.h>
+#include <algorithm>
+#include <cmath>
+#include <set>
+#include <string>
 
 using Opcode = SamplerSchema::Opcode;
 using OpcodeType = SamplerSchema::OpcodeType;
@@ -168,13 +167,23 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
     const int semiOffset = midiPitch - regionKeyCenter;
     if (semiOffset == 0 && tuneCents == 0) {
         info.needsTranspose = false;
+#ifdef _SAMPFM
+        info.transposeV = 0;
+#else
         info.transposeAmt = 1;
+#endif
     } else {
-        // maybe in the future we could do this in the v/8 domain?
-        float tuneSemiOffset = float(semiOffset) + float(tuneCents) / 100;
-        const float pitchMul = float(std::pow(2, tuneSemiOffset / 12.0));
         info.needsTranspose = true;
+        // maybe in the future we could do this in the v/8 domain?
+        const float tuneSemiOffset = float(semiOffset) + float(tuneCents) / 100;
+#ifdef _SAMPFM
+        const float offsetCV = tuneSemiOffset / 12.f;
+        info.transposeV = offsetCV;
+        SQINFO("set info.transposeV to %f based on %f", info.transposeV, tuneSemiOffset);
+#else
+        const float pitchMul = float(std::pow(2, tuneSemiOffset / 12.0));
         info.transposeAmt = pitchMul;
+#endif
     }
 
     // then sample rate correction
@@ -183,7 +192,12 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
         unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->sampleRate;
         if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
             info.needsTranspose = true;
+#ifdef _SAMPFM
+            //assert(false); 
+            info.transposeV = PitchUtils::freqRatioToSemitone(sampleRate / float(waveSampleRate)) / 12.f ;
+#else
             info.transposeAmt *= sampleRate / float(waveSampleRate);
+#endif
         }
     }
 }
@@ -221,8 +235,14 @@ void CompiledInstrument::playTestMode(VoicePlayInfo& info, const VoicePlayParame
     info.sampleIndex = 1;
     info.valid = true;
     info.needsTranspose = false;
-    info.transposeAmt = 1;
+
+   
     info.ampeg_release = release; 
+#ifdef _SAMPFM
+    info.transposeV = 0;
+#else
+    info.transposeAmt = 1;
+#endif
 }
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath) {

@@ -2,6 +2,7 @@
 #include "Sampler4vx.h"
 
 #include "CompiledInstrument.h"
+#include "PitchUtils.h"
 #include "SInstrument.h"
 #include "WaveLoader.h"
 
@@ -17,6 +18,26 @@ void Sampler4vx::setLoader(WaveLoaderPtr loader) {
     adsr.setRSec(.3f);
 }
 
+
+#ifdef _SAMPFM
+float_4 Sampler4vx::step(const float_4& gates, float sampleTime, const float_4& fm, const float_4 lfm) {
+    sampleTime_ = sampleTime;
+    if (patch && waves) {
+        simd_assertMask(gates);
+
+        float_4 envelopes = adsr.step(gates, sampleTime);
+        float_4 samples = player.step();
+        // apply envelope and boost level
+        return envelopes * samples * _outputGain();
+    } else {
+        return 0;
+    }
+    return 0.f;
+}
+#endif
+
+#ifndef _SAMPFM
+
 float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
     sampleTime_ = sampleTime;
     if (patch && waves) {
@@ -31,6 +52,7 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
     }
     return 0.f;
 }
+#endif
 
 void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
     if (!patch || !waves) {
@@ -52,8 +74,19 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     assert(waveInfo->valid);
     assert(waveInfo->numChannels == 1);
     player.setSample(channel, waveInfo->data, int(waveInfo->totalFrameCount));
-    player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
+    
     player.setGain(channel, patchInfo.gain);
+
+    // I don't think this test cares what we set the player too
+
+
+#ifdef _SAMPFM
+    const float transposeAmt = PitchUtils::semitoneToFreqRatio(patchInfo.transposeV * 12);
+    player.setTranspose(channel, patchInfo.needsTranspose, transposeAmt);
+#else
+    player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
+#endif
+
 
     std::string sample = waveInfo->fileName.getFilenamePart();
     // SQINFO("play vel=%d pitch=%d gain=%f samp=%s", midiVelocity, midiPitch, patchInfo.gain, sample.c_str());

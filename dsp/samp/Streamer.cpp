@@ -18,11 +18,17 @@ float_4 Streamer::step() {
         if (cd.data) {
             // I guess we can get called when this it true. do we even care? is the variable useful?
             // assert(cd.arePlaying);
-            float f = cd.transposeEnabled ? stepTranspose(cd) : stepNoTranspose(cd);
-            assert(f <= 1);
-            assert(f >= -1);
-            f *= cd.gain;
-            ret[channel] = f;
+            float scalarData = cd.transposeEnabled ? stepTranspose(cd) : stepNoTranspose(cd);
+
+            const float acceptable = 1.1f;
+            if (scalarData > acceptable || scalarData<-acceptable) {
+                SQWARN("bad sample value from step %f", scalarData);
+                SQWARN("pos = %, %df", cd.curFloatSampleOffset, cd.curIntegerSampleOffset);
+            }
+            assert(scalarData <= acceptable);
+            assert(scalarData >= -acceptable);
+            scalarData *= cd.gain;
+            ret[channel] = scalarData;
         } else {
             // now we called in this state sometimes. Not sure why,
             // but it certainly seems reasonable to handle it.

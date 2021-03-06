@@ -375,7 +375,7 @@ static void testTranspose1() {
 
     // figure the expected transpose for pitch 26
     int semiOffset = -1;
-    float pitchMul = float(std::pow(2, semiOffset / 12.0));
+   
 
     VoicePlayParameter params;
     params.midiPitch = 26;
@@ -383,7 +383,13 @@ static void testTranspose1() {
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assert(info.needsTranspose);
+#ifdef _SAMPFM
+    
+    assertClose(info.transposeV, -1.f / 12.f, .0001);
+#else
+    float pitchMul = float(std::pow(2, semiOffset / 12.0));
     assertEQ(info.transposeAmt, pitchMul);
+#endif
 }
 
 static void testCompiledRegion() {
@@ -651,19 +657,29 @@ static void testCompileMultiPitch() {
     // If this breaks the test should be fixed.
     assertEQ(info.sampleIndex, 1);
 
+    // pitsh 12 requires a semitone up in this region
     params.midiPitch = 12;
     params.midiVelocity = 60;
     ci->play(info, params, nullptr, 0);
     assert(info.valid);
+
     assertEQ(info.needsTranspose, true);
+#ifdef _SAMPFM
+    assertClose(info.transposeV, 1.f / 12.f, .0001);
+#else
     assertGT(info.transposeAmt, 1);
+#endif
 
     params.midiPitch = 10;
     params.midiVelocity = 60;
     ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
+#ifdef _SAMPFM
+    assertClose(info.transposeV, -1.f / 12.f, .0001);
+#else
     assertLT(info.transposeAmt, 1);
+#endif
 
     params.midiPitch = 13;
     params.midiVelocity = 60;
@@ -672,13 +688,19 @@ static void testCompileMultiPitch() {
     assertEQ(info.needsTranspose, true);
     assertEQ(info.sampleIndex, 2);
 
+    // pitch 20 is up 2 semi in this region
     params.midiPitch = 20;
     params.midiVelocity = 60;
     ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
-    assertGT(info.transposeAmt, 1);
     assertEQ(info.sampleIndex, 3);
+#ifdef _SAMPFM
+    assertClose(info.transposeV, 2.f / 12.f, .0001);
+#else
+    assertGT(info.transposeAmt, 1);
+#endif
+
 }
 
 static void testCompileMultiVel() {
@@ -1248,16 +1270,33 @@ static void testSampleRate() {
     simplePlayer.play(info, params, &w, 44100);
     assert(info.valid);
 
-    float expectedTranspose = 44100.f / 48000.f;
+    // if the sample is at 48k, and we are playing at 44.1k, then it will sound slow.
+    // so we need to play faster to get it back up to pitch.
+    float expectedTranspose = 48000.f / 44100.f;
     assert(info.needsTranspose);
-    assertClose(info.transposeAmt, expectedTranspose, .01);
+#ifdef _SAMPFM
+    {
+        // octave pitches
+        // (log2 (freq) = cv (+k)
+#if 0
+        float a1 = std::log2(1);
+        float a2 = std::log2(2);
+        float a3 = std::log2(4);
 
-    //  bool needsTranspose = false;
-    //  float transposeAmt = 1;
+        float a4 = std::log2(44100.f / 48000.f);
+        float a5 = 6;
+#endif
+    }
+    const float yy = std::log2(expectedTranspose);
+    assertClose(info.transposeV, yy, .001);
+
+#else
+    assertClose(info.transposeAmt, expectedTranspose, .01);
+#endif
 }
 
 static void testPlayVolumeAndTune() {
-   SQINFO("---- starting testCompiledRegionAddedOpcodes");
+    SQINFO("---- starting testCompiledRegionAddedOpcodes");
     const char* data = (R"foo(<region>sample=a key=44 tune=11 volume=-13)foo");
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -1278,14 +1317,22 @@ static void testPlayVolumeAndTune() {
 
     const float expectedGain = float(AudioMath::gainFromDb(-13));
 
+    
+    assertEQ(info.gain, expectedGain);
+    assert(info.needsTranspose);
+    assert(info.needsTranspose);;
+#ifdef _SAMPFM
+    const float cvOffset = 11.f / 1200.f;
+    assertClose(info.transposeV, cvOffset, .0001);
+#else
     // one octave is 1200 cents.
     // wikipedia tells me that 11 cetns is 1.006374 mult
     const float expectedTransposeMult = std::pow(2.f, 11.f / 1200.f);
 
-    assertEQ(info.gain, expectedGain);
     assertEQ(info.transposeAmt, expectedTransposeMult);
-    assert(info.needsTranspose);;
+#endif
 }
+   
 
 void testx2() {
     assert(parseCount == 0);

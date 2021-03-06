@@ -362,22 +362,12 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                             midiVelocity = 1;
                         }
                     }
-#if 0
-                    SQINFO("");
-                    SQINFO("new gate on %d:%d gatevalue=%f\n", bank, iSub, gate4[iSub]);
-                    SQINFO("  pitchcv = %f, midipitch = %d", pitchCV, midiPitch);
-#endif
                     playback[bank].note_on(iSub, midiPitch, midiVelocity, args.sampleRate);
                     // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
-                } else {
-#ifndef _USEADSR
-                    playback[bank].note_off(iSub);
-                    // printf("new gate off %d:%d value = %f\n", bank, iSub, gate4[iSub]); fflush(stdout);
-#endif
                 }
             }
         }
-        auto output = playback[bank].step(gmask, args.sampleTime);
+        auto output = playback[bank].step(gmask, args.sampleTime, 0, 0);
         TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
         lastGate4[bank] = gate4;
     }

@@ -674,6 +674,22 @@ static void testPitchUtilMidi()
     assertEQ(PitchUtils::pitchCVToMidi(vcvMiddleC + 1), midiMiddleC + 12);
 }
 
+static void testPitchUtilSemi()
+{
+    // octave up
+    assertClose(PitchUtils::semitoneToFreqRatio(12), 2, .001);
+    assertClose(PitchUtils::freqRatioToSemitone(2), 12, .001);
+
+    assertClose(PitchUtils::semitoneToFreqRatio(-12), .5, .001);
+    assertClose(PitchUtils::semitoneToFreqRatio(1), std::pow(2.f, 1 / 12.f), .001);
+
+    for (float f = -30; f < 30; f += .23f) {
+        const float x = PitchUtils::semitoneToFreqRatio(f);
+        const float y = PitchUtils::freqRatioToSemitone(x);
+        assertClose(y, f, .001);
+    }
+}
+
 void  testMidiEvents()
 {
     assertNoMidi();     // check for leaks
@@ -710,5 +726,6 @@ void  testMidiEvents()
     testPitchUtil2();
 
     testPitchUtilMidi();
+    testPitchUtilSemi();
     assertNoMidi();     // check for leaks
 }
