@@ -9,7 +9,9 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "InstrumentInfo.h"
+#include "LookupTable.h"
 #include "ManagedPool.h"
+#include "ObjectCache.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
 #include "SamplerErrorContext.h"
@@ -202,6 +204,8 @@ private:
     float_4 lastGate4[4];
     Divider divn;
     int numChannels_m = 1;
+    std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
+    std::shared_ptr<LookupTableParams<float>> audioTaperLookupParams = ObjectCache<float>::getAudioTaper();
 
     std::unique_ptr<ThreadClient> thread;
 

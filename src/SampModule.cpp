@@ -13,11 +13,13 @@
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
+#include "ctrl/SqWidgets.h"
 #include "ctrl/TextDisplay.h"
 
 using Comp = Samp<WidgetComposite>;
 
-/**
+/** SampModule
+ * Audio processing module for sfz player
  */
 struct SampModule : Module {
 public:
@@ -105,9 +107,10 @@ void SampModule::process(const ProcessArgs& args) {
     samp->process(args);
 }
 
-////////////////////
+////////////////////////////////////////////////////////////
 // module widget
-////////////////////
+// UI for sfz player
+////////////////////////////////////////////////////////////
 
 #define _TW
 
@@ -116,7 +119,6 @@ static const char* helpUrl = "https://docs.google.com/document/d/1u0aNMgU48jRmy7
 
 struct SampWidget : ModuleWidget {
     SampWidget(SampModule* m);
-    //  DECLARE_MANUAL("Samp Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/booty-shifter.md");
     void appendContextMenu(Menu* theMenu) override {
         ::rack::ui::MenuLabel* spacerLabel = new ::rack::ui::MenuLabel();
         theMenu->addChild(spacerLabel);
@@ -162,6 +164,7 @@ struct SampWidget : ModuleWidget {
     void loadSamplerFile();
     void getRootFolder();
     void addJacks(SampModule* module, std::shared_ptr<IComposite> icomp);
+    void addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp);
 
 #if 0
     void setSamplePath(const std::string& s) {
@@ -191,22 +194,8 @@ struct SampWidget : ModuleWidget {
 
     // display labels. they change as state changes
 
-#ifdef _TW
     TextDisplaySamp* textField;
     //	textField = createWidget<LedDisplayTextField>(mm2px(Vec(3.39962, 14.8373)));
-#else
-    // Empty: "No SFZ file loaded"
-    // Loading: "Loading xxx.sfz"
-    // Loaded: Playing xxx.sfz
-    // Error : error message
-    Label* uiText1 = {nullptr};
-
-    // Empty: blank
-    // Loading: progress
-    // Loaded: pitch range
-    // Error: blank
-    Label* uiText2 = {nullptr};
-#endif
 
     InstrumentInfoPtr info;
     std::string curBaseFileName;
@@ -239,16 +228,10 @@ void SampWidget::requestNewSampleSet(const FilePath& fp) {
 }
 
 void SampWidget::updateUIForEmpty() {
-#ifndef _TW
-    uiText1->text = "No SFZ file loaded.";
-    uiText2->text = "";
-#else
     textField->setText("No SFZ file loaded.");
-#endif
 }
 
 void SampWidget::updateUIForLoading() {
-#ifdef _TW
     float pct = _module->getProgressPct();
     SqStream str;
     str.add("Loading ");
@@ -257,26 +240,14 @@ void SampWidget::updateUIForLoading() {
     str.add("Progress: ");
     str.add(int(pct));
     textField->setText(str.str());
-#else
-    INFO("in loading, set cur to %s", curBaseFileName.c_str());
-    std::string s = "Loading ";
-    s += curBaseFileName;
-    s += "...";
-    uiText1->text = s;
-    uiText2->text = "";
-#endif
 }
 
 void SampWidget::updateUIForError() {
-#ifdef _TW
-#else
     std::string s = "Error: ";
     if (info) {
         s += info->errorMessage;
     }
-    uiText1->text = s;
-    uiText2->text = "";
-#endif
+    textField->setText(s);
 }
 
 void SampWidget::pollForStateChange() {
@@ -306,7 +277,6 @@ void SampWidget::pollNewState() {
             default:
                 WARN("UI state changing to %d, not imp", nextUIState);
         }
-
         curUIState = nextUIState;
     }
 }
@@ -354,13 +324,7 @@ void SampWidget::updateUIForLoaded() {
     s += curBaseFileName;
     s += "\n";
     s += buildPitchrangeUIString();
-#ifdef _TW
     textField->setText(s);
-#else
-
-    uiText1->text = s;
-    uiText2->text = buildPitchrangeUIString();
-#endif
     // now the ks stuff
     buildKeyswitchUI();
 }
@@ -438,18 +402,8 @@ void SampWidget::loadSamplerFile() {
 
     //FATAL("finish file load");
     if (pathC) {
-#if 0
-        FATAL("move keyswitch removal");
-        if (keyswitchPopup) {
-            removeChild(keyswitchPopup);
-            keyswitchPopup = nullptr;
-        }
-#endif
         lastKeySwitchSent = -1;
         this->requestNewSampleSet(FilePath(pathC));
-        //  _module->setNewSamples(pathC);
-
-        INFO("setting state to loading (%d)", State::Loading);
         nextUIState = State::Loading;
     }
 }
@@ -459,7 +413,6 @@ void SampWidget::getRootFolder() {
     osdialog_filters* filters = osdialog_filters_parse(SMF_FILTERS);
     std::string filename;
 
-    // std::string dir = _module->sequencer->context->settings()->getMidiFilePath();
     std::string dir = "";
     DEFER({
         osdialog_filters_free(filters);
@@ -523,7 +476,7 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
         Vec(jacksX + 4 * jacksDx, jacksY),
         module,
         Comp::FM_INPUT));
-  //  LFM_INPUT
+    //  LFM_INPUT
     addLabel(
         Vec(jacksX + 5 * jacksDx - 6, labelY),
         "LFM");
@@ -531,6 +484,42 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
         Vec(jacksX + 5 * jacksDx, jacksY),
         module,
         Comp::LFM_INPUT));
+}
+
+void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp) {
+    float knobsY = 200;
+    //  float knobsX = 15;
+    float knobsX = 180;
+    float knobsDx = 40;
+
+    float labelDy = 25;
+    float labelY = knobsY - labelDy;
+
+    float knobsY2 = knobsY + 40;
+
+    addLabel(
+        Vec(knobsX - 6, labelY),
+        "Pitch");
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobsX, knobsY),
+        module,
+        Comp::PITCH_PARAM));
+
+    addLabel(
+        Vec(knobsX - 6 + 1 * knobsDx, labelY),
+        "Depth");
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobsX + 1 * knobsDx, knobsY),
+        module,
+        Comp::LFM_DEPTH_PARAM));
+
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(knobsX + 6 + +0 * knobsDx, knobsY2),
+        module,
+        Comp::PITCH_TRIM_PARAM));
 }
 
 /**
@@ -546,20 +535,13 @@ SampWidget::SampWidget(SampModule* module) {
 
     addLabel(Vec(80, 10), "-Sample Player-");
 
-#ifdef _TW
     textField = createWidget<TextDisplaySamp>(mm2px(Vec(3.39962, 14.8373)));
-
-    //		textField->box.size = mm2px(Vec(74.480, 102.753));
     textField->box.size = Vec(250, 100);
-    //  textField->multiline = true;
     addChild(textField);
-#else
-    uiText1 = addLabel(Vec(leftSide, text1y), "");
-    uiText2 = addLabel(Vec(leftSide, text2y), "");
-#endif
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
+    addKnobs(module, icomp);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
@@ -586,7 +568,6 @@ static void shouldFindMalformed(const char* input) {
     if (errc.empty()) {
         SQWARN("did not find malf");
     }
-    // assert(!errc.empty());
 }
 
 static void testMalformedRelease() {
