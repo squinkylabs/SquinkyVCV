@@ -1,5 +1,7 @@
 
 
+#include <memory>
+
 #include "CompiledInstrument.h"
 #include "SInstrument.h"
 #include "Samp.h"
@@ -338,6 +340,16 @@ static void testSampQantizer() {
     assertEQ(Comp::quantize(-1 + 5 * semiV), 65 - 12);
 }
 
+// This test is just to force compile errors in Samp.h
+// Later, when there are real tests for Samp, this could go away
+static void testSampBUilds() {
+    using Comp = Samp<TestComposite>;
+    Comp::ProcessArgs arg;
+    std::shared_ptr<Comp> pcomp = std::make_shared<Comp>();
+    pcomp->init();
+    pcomp->process(arg);
+}
+
 void testx5() {
     testSampler();
     testSamplerTestOutput();
@@ -352,6 +364,7 @@ void testx5() {
     testSamplerRelease2();
 
     testSampQantizer();
+    testSampBUilds();
 
     // testSampleRetrigger();      // now write a test for retriggering played out voice
 }

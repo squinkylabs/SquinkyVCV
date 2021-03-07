@@ -108,7 +108,7 @@ public:
     void init();
 
     enum ParamIds {
-        DUMMYKS_PARAM,          // need to make this real
+        DUMMYKS_PARAM,  // need to make this real
 #ifdef _SAMPFM
         PITCH_PARAM,
         PITCH_TRIM_PARAM,
@@ -203,13 +203,15 @@ private:
 
     // Variables updated every 'n' samples
     int numChannels_n = 1;
+    int numBanks_n = 1;
     bool lfmConnected_n = false;
     float_4 lfmGain_n = {0};
 
     float_4 lastGate4[4];
     Divider divn;
-    
-    std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
+
+    // I think this goes ins sSampler4vx
+    //  std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
     std::shared_ptr<LookupTableParams<float>> audioTaperLookupParams = ObjectCache<float>::getAudioTaper();
     std::unique_ptr<ThreadClient> thread;
 
@@ -236,6 +238,8 @@ private:
     void serviceMessagesReturnedToComposite();
     void setNewPatch(SampMessage*);
     void serviceSampleReloadRequest();
+    void serviceKeySwitch();
+    void serviceFMMod();
 
     // server thread stuff
     // void servicePatchLoader();
@@ -296,12 +300,23 @@ template <class TBase>
 inline void Samp<TBase>::step_n() {
     SqInput& inPort = TBase::inputs[PITCH_INPUT];
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
+
     numChannels_n = inPort.channels;
     outPort.setChannels(numChannels_n);
+    numBanks_n = numChannels_n / 4;
+    if (numBanks_n * 4 < numChannels_n) {
+        numBanks_n++;
+    }
+
     servicePendingPatchRequest();
     serviceMessagesReturnedToComposite();
     serviceSampleReloadRequest();
+    serviceKeySwitch();
+    serviceFMMod();
+}
 
+template <class TBase>
+inline void Samp<TBase>::serviceKeySwitch() {
     if (_nextKeySwitchRequest >= 1) {
         int midiPitch = _nextKeySwitchRequest;
         _nextKeySwitchRequest = -1;
@@ -309,13 +324,15 @@ inline void Samp<TBase>::step_n() {
         // can also use fake vel and fake sr
         playback[0].note_on(0, midiPitch, 64, 44100.f);
     }
+}
 
+template <class TBase>
+inline void Samp<TBase>::serviceFMMod() {
     lfmConnected_n = TBase::inputs[LFM_INPUT].isConnected();
-
 
     // lfm gain = audio_taper( knob / 10);
     float depth = TBase::params[LFM_DEPTH_PARAM].value;
-    depth /= 10.f;          // scale it to 0..1
+    depth /= 10.f;  // scale it to 0..1
     depth = LookupTable<float>::lookup(*audioTaperLookupParams, depth);
     lfmGain_n = float_4(depth);
 }
@@ -341,12 +358,10 @@ inline int Samp<TBase>::quantize(float pitchCV) {
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     divn.step();
-    int numBanks = numChannels_n / 4;
-    if (numBanks * 4 < numChannels_n) {
-        numBanks++;
-    }
-    assert(numBanks < 4);
-    for (int bank = 0; bank < numBanks; ++bank) {
+
+    // is there some "off by one error" here?
+    assert(numBanks_n < 4);
+    for (int bank = 0; bank < numBanks_n; ++bank) {
         // prepare 4 gates. note that ADSR / Sampler4vx must see simd mask (0 or nan)
         // but our logic needs to see numbers (we use 1 and 0).
         Port& p = TBase::inputs[GATE_INPUT];
@@ -386,7 +401,7 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
             Port& p = TBase::inputs[LFM_INPUT];
             float_4 rawInput = p.getPolyVoltageSimd<float_4>(bank * 4);
             fm = rawInput * lfmGain_n;
-           // SQINFO("read fm=%s, raw=%s", toStr(fm).c_str(), toStr(rawInput).c_str());
+            // SQINFO("read fm=%s, raw=%s", toStr(fm).c_str(), toStr(rawInput).c_str());
         }
         auto output = playback[bank].step(gmask, args.sampleTime, fm, lfmConnected_n);
         TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
@@ -604,7 +619,7 @@ void Samp<TBase>::servicePendingPatchRequest() {
     bool sent = thread->sendMessage(msg);
     if (sent) {
     } else {
-        WARN("Unable to sent message to server.");
+        SQWARN("Unable to sent message to server.");
         messagePool.push(msg);
     }
 }
