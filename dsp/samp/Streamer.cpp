@@ -11,19 +11,17 @@
 
 float_4 Streamer::step(float_4 fm, bool fmEnabled) {
     float_4 ret;
-    assert(!fmEnabled);
-
+    // SQINFO("St:Step %d, %s", fmEnabled, toStr(fm).c_str());
     for (int channel = 0; channel < 4; ++channel) {
         ChannelData& cd = channels[channel];
 
         if (cd.data) {
-            // I guess we can get called when this it true. do we even care? is the variable useful?
-            // assert(cd.arePlaying);
-            const bool doInterp = cd.transposeEnabled || fmEnabled; 
+            const bool doInterp = cd.transposeEnabled || fmEnabled;
+            // SQWARN("do in = %d fm=%d", doInterp, fmEnabled);
             float scalarData = doInterp ? stepTranspose(cd, fm[channel]) : stepNoTranspose(cd);
 
             const float acceptable = 1.1f;
-            if (scalarData > acceptable || scalarData<-acceptable) {
+            if (scalarData > acceptable || scalarData < -acceptable) {
                 SQWARN("bad sample value from step %f", scalarData);
                 SQWARN("pos = %, %df", cd.curFloatSampleOffset, cd.curIntegerSampleOffset);
             }
@@ -42,8 +40,10 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
 
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
     float ret = 0;
-    assert(cd.transposeEnabled);
-    assert(lfm == 0);
+ //   assert(cd.transposeEnabled);
+  //  assert(lfm == 0);
+
+  //  SQINFO("St:Step% %f", lfm);
 
     if (CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         if (!cd.arePlaying) {
@@ -53,6 +53,8 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
 
         ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
         cd.curFloatSampleOffset += cd.transposeMultiplier;
+        cd.curFloatSampleOffset += lfm;
+        cd.curFloatSampleOffset = std::max<float>(2.f, cd.curFloatSampleOffset);
     }
 
     if (!CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {

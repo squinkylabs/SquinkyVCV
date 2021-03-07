@@ -386,6 +386,7 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
             Port& p = TBase::inputs[LFM_INPUT];
             float_4 rawInput = p.getPolyVoltageSimd<float_4>(bank * 4);
             fm = rawInput * lfmGain_n;
+           // SQINFO("read fm=%s, raw=%s", toStr(fm).c_str(), toStr(rawInput).c_str());
         }
         auto output = playback[bank].step(gmask, args.sampleTime, fm, lfmConnected_n);
         TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
