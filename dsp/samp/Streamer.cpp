@@ -9,8 +9,9 @@
 #include "CubicInterpolator.h"
 #include "SqLog.h"
 
-float_4 Streamer::step() {
+float_4 Streamer::step(float_4 fm, bool fmEnabled) {
     float_4 ret;
+    assert(!fmEnabled);
 
     for (int channel = 0; channel < 4; ++channel) {
         ChannelData& cd = channels[channel];
@@ -18,7 +19,8 @@ float_4 Streamer::step() {
         if (cd.data) {
             // I guess we can get called when this it true. do we even care? is the variable useful?
             // assert(cd.arePlaying);
-            float scalarData = cd.transposeEnabled ? stepTranspose(cd) : stepNoTranspose(cd);
+            const bool doInterp = cd.transposeEnabled || fmEnabled; 
+            float scalarData = doInterp ? stepTranspose(cd, fm[channel]) : stepNoTranspose(cd);
 
             const float acceptable = 1.1f;
             if (scalarData > acceptable || scalarData<-acceptable) {
@@ -38,21 +40,22 @@ float_4 Streamer::step() {
     return ret;
 }
 
-float Streamer::stepTranspose(ChannelData& cd) {
+float Streamer::stepTranspose(ChannelData& cd, float lfm) {
     float ret = 0;
     assert(cd.transposeEnabled);
+    assert(lfm == 0);
 
-    if (CubicInterpolator<float>::canInterpolate(cd.curFloatSampleOffset, cd.frames)) {
+    if (CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         if (!cd.arePlaying) {
             SQWARN("why are we playing a streamer not started? pl=%d, fo=%f, io=%d", cd.arePlaying, cd.curFloatSampleOffset, cd.curIntegerSampleOffset);
             assert(false);
         }
 
-        ret = CubicInterpolator<float>::interpolate(cd.data, cd.curFloatSampleOffset);
+        ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
         cd.curFloatSampleOffset += cd.transposeMultiplier;
     }
 
-    if (!CubicInterpolator<float>::canInterpolate(cd.curFloatSampleOffset, cd.frames)) {
+    if (!CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         cd.arePlaying = false;
     }
 
@@ -140,7 +143,7 @@ void Streamer::_assertValid() {
         if (cd.transposeEnabled) {
             SQINFO("finihs overrun checking!");
             if (cd.arePlaying)
-                assert(CubicInterpolator<float>::canInterpolate(cd.curFloatSampleOffset, cd.frames));
+                assert(CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames));
 
         } else {
             // these can be equal, if we play past end

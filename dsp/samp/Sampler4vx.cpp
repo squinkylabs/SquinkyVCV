@@ -20,13 +20,13 @@ void Sampler4vx::setLoader(WaveLoaderPtr loader) {
 
 
 #ifdef _SAMPFM
-float_4 Sampler4vx::step(const float_4& gates, float sampleTime, const float_4& fm, const float_4 lfm) {
+float_4 Sampler4vx::step(const float_4& gates, float sampleTime, const float_4& lfm, bool lfmEnabled) {
     sampleTime_ = sampleTime;
     if (patch && waves) {
         simd_assertMask(gates);
 
         float_4 envelopes = adsr.step(gates, sampleTime);
-        float_4 samples = player.step();
+        float_4 samples = player.step(lfm, lfmEnabled);
         // apply envelope and boost level
         return envelopes * samples * _outputGain();
     } else {

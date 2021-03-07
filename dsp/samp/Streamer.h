@@ -16,7 +16,7 @@ public:
     void clearSamples();
     void clearSamples(int channel);
     void setGain(int chan, float gain);
-    float_4 step();
+    float_4 step(float_4 fm, bool fmEnabled);
     void _assertValid();
 
 public:
@@ -46,5 +46,5 @@ public:
     ChannelData channels[4];
 
     float stepNoTranspose(ChannelData&);
-    float stepTranspose(ChannelData&);
+    float stepTranspose(ChannelData&, const float lfm);
 };

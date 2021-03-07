@@ -201,12 +201,16 @@ private:
     a b c  // just a test, for now
 #endif
 
+    // Variables updated every 'n' samples
+    int numChannels_n = 1;
+    bool lfmConnected_n = false;
+    float_4 lfmGain_n = {0};
+
     float_4 lastGate4[4];
     Divider divn;
-    int numChannels_m = 1;
+    
     std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
     std::shared_ptr<LookupTableParams<float>> audioTaperLookupParams = ObjectCache<float>::getAudioTaper();
-
     std::unique_ptr<ThreadClient> thread;
 
     // sent in on UI thread (should be atomic)
@@ -292,8 +296,8 @@ template <class TBase>
 inline void Samp<TBase>::step_n() {
     SqInput& inPort = TBase::inputs[PITCH_INPUT];
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-    numChannels_m = inPort.channels;
-    outPort.setChannels(numChannels_m);
+    numChannels_n = inPort.channels;
+    outPort.setChannels(numChannels_n);
     servicePendingPatchRequest();
     serviceMessagesReturnedToComposite();
     serviceSampleReloadRequest();
@@ -304,10 +308,16 @@ inline void Samp<TBase>::step_n() {
         // we can send it to any sampler: ks is global
         // can also use fake vel and fake sr
         playback[0].note_on(0, midiPitch, 64, 44100.f);
-
-        // don't do this anymore, now that we have ADSR
-        // playback[0].note_off(0);
     }
+
+    lfmConnected_n = TBase::inputs[LFM_INPUT].isConnected();
+
+
+    // lfm gain = audio_taper( knob / 10);
+    float depth = TBase::params[LFM_DEPTH_PARAM].value;
+    depth /= 10.f;          // scale it to 0..1
+    depth = LookupTable<float>::lookup(*audioTaperLookupParams, depth);
+    lfmGain_n = float_4(depth);
 }
 
 template <class TBase>
@@ -331,8 +341,8 @@ inline int Samp<TBase>::quantize(float pitchCV) {
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     divn.step();
-    int numBanks = numChannels_m / 4;
-    if (numBanks * 4 < numChannels_m) {
+    int numBanks = numChannels_n / 4;
+    if (numBanks * 4 < numChannels_n) {
         numBanks++;
     }
     assert(numBanks < 4);
@@ -371,7 +381,13 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                 }
             }
         }
-        auto output = playback[bank].step(gmask, args.sampleTime, 0, 0);
+        float_4 fm = float_4::zero();
+        if (lfmConnected_n) {
+            Port& p = TBase::inputs[LFM_INPUT];
+            float_4 rawInput = p.getPolyVoltageSimd<float_4>(bank * 4);
+            fm = rawInput * lfmGain_n;
+        }
+        auto output = playback[bank].step(gmask, args.sampleTime, fm, lfmConnected_n);
         TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
         lastGate4[bank] = gate4;
     }

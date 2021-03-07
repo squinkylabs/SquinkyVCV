@@ -61,7 +61,7 @@ public:
      */
     void setNumVoices(int voices);
 #ifdef _SAMPFM
-    float_4 step(const float_4& gates, float sampleTime, const float_4& fm, const float_4 lfm );
+    float_4 step(const float_4& gates, float sampleTime, const float_4& lfm, bool lfmEnabled);
 #else
     float_4 step(const float_4& gates, float sampleTime);
 #endif

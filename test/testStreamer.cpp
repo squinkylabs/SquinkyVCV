@@ -31,7 +31,7 @@ static void testStream() {
     assert(!s.canPlay(1));
     assert(!s.canPlay(2));
     assert(!s.canPlay(3));
-    s.step();
+    s.step(0, false);
     s._assertValid();
 
     float x[6] = {0};
@@ -51,7 +51,7 @@ static void testStreamEnd() {
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {
         s._assertValid();
-        s.step();
+        s.step(0, false);
         s._assertValid();
     }
     assert(!s.canPlay(channel));
@@ -70,7 +70,7 @@ static void testStreamValues() {
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {
         s._assertValid();
-        float_4 v = s.step();
+        float_4 v = s.step(0, false);
         assertClosePct(v[channel], .1f * (6 - i), 1);
         s._assertValid();
     }
@@ -89,7 +89,7 @@ static void testStreamXpose1() {
     s.setTranspose(channel, true, 1.f);
     assert(s.canPlay(channel));
     s._assertValid();
-    s.step();
+    s.step(0, false);
     s._assertValid();
     assert(s.canPlay(channel));
 }
@@ -108,7 +108,7 @@ static void testStreamXpose2() {
     s.setTranspose(channel, true, 2.f);
     assert(s.canPlay(channel));
     for (int i = 0; i < 3; ++i) {
-        float_4 v = s.step();
+        float_4 v = s.step(0, false);
         // start with 5, as interpoator forces us to start on second sample
         printf("i = %d v=%f\n", i, v[channel]);
         assertEQ(v[channel], 5 - (2 * i));
@@ -128,7 +128,7 @@ static void testStreamRetrigger() {
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {
         s._assertValid();
-        float_4 v = s.step();
+        float_4 v = s.step(0, false);
         s._assertValid();
     }
     assert(!s.canPlay(channel));
@@ -138,7 +138,7 @@ static void testStreamRetrigger() {
     for (int i = 0; i < 6; ++i) {
         assert(s.canPlay(channel));
         s._assertValid();
-        float_4 v = s.step();
+        float_4 v = s.step(0, false);
         s._assertValid();
     }
     assert(!s.canPlay(channel));
@@ -156,7 +156,7 @@ static void testBugCaseHighFreq() {
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {
         s._assertValid();
-        s.step();
+        s.step(0, false);
         s._assertValid();
     }
     assert(!s.canPlay(channel));
