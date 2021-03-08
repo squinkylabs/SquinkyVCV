@@ -88,12 +88,14 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
  //const float transposeCV = patchInfo.transposeV * 12;       // temp - put back like it was?
 
     const float transposeAmt = PitchUtils::semitoneToFreqRatio(transposeCV);
-    // SQINFO("Sampler4x cv=%f, cvm=%f, ratio=%f", patchInfo.transposeV, fmCV[channel], transposeAmt);
+
+#if 0
     SQINFO("");
     SQINFO("trans from patch = %f trans from fm = %f", patchInfo.transposeV * 12, fmCV[channel]);
     SQINFO("total transCV %f", transposeCV);
     SQINFO("final amt, after exp = %f", transposeAmt);
     SQINFO("will turn on needs transpose for now...");
+#endif
     //  player.setTranspose(channel, patchInfo.needsTranspose, transposeAmt);
     player.setTranspose(channel, true, transposeAmt);
 #else

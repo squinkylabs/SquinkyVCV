@@ -338,16 +338,22 @@ inline void Samp<TBase>::serviceFMMod() {
     lfmGain_n = float_4(depth);  // store as a float_4, since that's what we want in process();
 
     //------------------ now Exp FM -----------
-    //   PITCH_PARAM,
-    //   PITCH_TRIM_PARAM,
     const float_4 expPitchOffset = TBase::params[PITCH_PARAM].value;
     const float_4 expPitchCVTrim = TBase::params[PITCH_TRIM_PARAM].value;
-    Port& fmInput = TBase::inputs[PITCH_INPUT];
+    Port& fmInput = TBase::inputs[FM_INPUT];
     for (int bank = 0; bank < numBanks_n; ++bank) {
         float_4 rawInput = fmInput.getPolyVoltageSimd<float_4>(bank * 4);
         float_4 scaledInput = rawInput * expPitchCVTrim;
         float_4 finalBankFM = scaledInput + expPitchOffset;
         playback[bank].setExpFM(finalBankFM);
+#if 0
+        if (bank == 0) {
+            float_4 x = fmInput.getVoltageSimd<float_4>(bank * 4);
+            SQINFO("p0=%f, trim=%f cv=%f x=%f res=%f", expPitchOffset[0], expPitchCVTrim[0], rawInput[0], x[0], finalBankFM[0]);
+            SQINFO("  simdin=%s", toStr(rawInput).c_str());
+            
+        }
+#endif
     }
 }
 
