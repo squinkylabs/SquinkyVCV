@@ -203,7 +203,7 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
 }
 
 void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
-    if (testMode != Tests::None) {
+    if (ciTestMode != Tests::None) {
         return playTestMode(info, params, loader, sampleRate);
     }
     info.valid = false;
@@ -220,7 +220,7 @@ void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
 
 void CompiledInstrument::playTestMode(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     float release = 0;
-    switch(testMode) {
+    switch(ciTestMode) {
         case Tests::MiddleC:
             release = .6f;
             break;

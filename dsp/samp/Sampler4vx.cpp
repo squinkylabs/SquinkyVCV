@@ -10,12 +10,18 @@ void Sampler4vx::setPatch(CompiledInstrumentPtr inst) {
     patch = inst;
 }
 
+const float Sampler4vx::defaultAttackSec = { .001f };
+const float Sampler4vx::defaultDecaySec = { .1f };
+const float Sampler4vx::defaultReleaseSec = { .3f };
+
 void Sampler4vx::setLoader(WaveLoaderPtr loader) {
     waves = loader;
-    adsr.setASec(.001f);
-    adsr.setDSec(.1f);
+
+    // While we are at it, let's initialize the ADSR.
+    adsr.setASec(defaultAttackSec);
+    adsr.setDSec(defaultDecaySec);
     adsr.setS(1);
-    adsr.setRSec(.3f);
+    adsr.setRSec(defaultReleaseSec);
 }
 
 #ifdef _SAMPFM

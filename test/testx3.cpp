@@ -407,7 +407,6 @@ static void shouldFindMalformed(const char* input) {
     if (!err.empty()) SQFATAL(err.c_str());
     assert(err.empty());
 
-    SQINFO("now will compile");
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     assert(cinst);

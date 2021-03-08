@@ -73,7 +73,7 @@ public:
     void play(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
     void _setTestMode(Tests t) {
-        testMode = t;
+        ciTestMode = t;
     }
 
     /**
@@ -98,7 +98,7 @@ public:
 
 private:
     RegionPool regionPool;
-    Tests testMode = Tests::None;
+    Tests ciTestMode = Tests::None;
     InstrumentInfoPtr info;
 
     AudioMath::RandomUniformFunc rand = AudioMath::random();

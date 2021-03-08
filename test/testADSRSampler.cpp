@@ -4,9 +4,9 @@
 
 static float measureRelease(float r)
 {
-    float sampleTime = 1 / 44100.f;
+    const float sampleTime = 1 / 44100.f;
 
-    float minus85Db = (float) AudioMath::gainFromDb(-85);
+    const float minus85Db = (float) AudioMath::gainFromDb(-85);
 
     ADSRSampler a;
 
@@ -54,8 +54,28 @@ static void testSub(float time, float ptcTolerance = 5.f) {
   //  printf("time input = %f, measured = %f\n", time, r);
 }
 
+static void debug(float seconds) {
+    float r = measureRelease(seconds);
+    SQINFO("at %f seconds measure %f", seconds, r);
+}
+
+#if 0
+static void debug() {
+    for (float x = .1f; x < 1; x += .1f) {
+        debug(x);
+    }
+    for (float x = 1; x < 10; x += 1) {
+        debug(x);
+    }
+}
+#endif
+
 static void test0() {
   //  SQINFO("----------- test0");
+
+  //  debug();
+
+    testSub(.3f);
     testSub(1.f);
     testSub(2.f);
     testSub(4.f);

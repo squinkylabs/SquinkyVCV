@@ -79,6 +79,10 @@ public:
         waves.reset();
     }
 
+    static const float defaultAttackSec;
+    static const float defaultDecaySec;
+    static const float defaultReleaseSec;
+
 private:
     CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;
@@ -96,7 +100,7 @@ private:
      */
     float_4 fmCV = {0};
     float_4 pitchCVFromKeyboard = {0};
-   // float_4 pitchMod = {0};
+    // float_4 pitchMod = {0};
     void updatePitch();
     int myIndex = -1;
 };

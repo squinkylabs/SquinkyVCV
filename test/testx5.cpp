@@ -88,7 +88,6 @@ std::shared_ptr<Sampler4vx> makeTest(CompiledInstrument::Tests citest, WaveLoade
 
 // This mostly tests that the test infrastructure works.
 static void testSamplerTestOutput() {
-    SQINFO("---- testSamplerTestOutput");
     auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
     const int channel = 0;
@@ -137,17 +136,20 @@ static unsigned measureRelease(ProcFunc f, float threshold) {
 }
 
 static void testSamplerAttack() {
-    SQINFO("----- testSamplerAttack");
     auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
     const int channel = 0;
     const int midiPitch = 60;
     const int midiVel = 60;
+
+    const float sampleTime = 1.f / 44100.f;
+    float_4 lowGates = float_4::zero();
+    s->step(lowGates, sampleTime, 0, false);
     s->note_on(channel, midiPitch, midiVel, 0);
 
     float_4 gates = SimdBlocks::maskTrue();
-    ProcFunc lambda = [s, &gates] {
-        const float sampleTime = 1.f / 44100.f;
+    ProcFunc lambda = [s, &gates, sampleTime] {
+      
 
         const float_4 x = s->step(gates, sampleTime, 0, false);
         return x[0];
@@ -155,10 +157,9 @@ static void testSamplerAttack() {
 
     const auto attackSamples = measureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
 
-    // These are arbitrary "known good" values,
-    // but the point is to be sure the default attack is "fast"
-    assertGT(attackSamples, 100);
-    assertLT(attackSamples, 200);
+    // default for attack is 1 ms
+    const int expectedAttack = 44100 / 1000;
+    assertClosePct(attackSamples, expectedAttack, 10);
 }
 
 static void prime(std::shared_ptr<Sampler4vx> s) {
@@ -169,7 +170,6 @@ static void prime(std::shared_ptr<Sampler4vx> s) {
 }
 
 static void testSamplerRelease() {
-    SQINFO("----- testSamplerRelease");
     auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
     const int channel = 0;
@@ -192,7 +192,8 @@ static void testSamplerRelease() {
     const float releaseMeasureThreshold = minus85Db * Sampler4vx::_outputGain()[0];
     const auto releaseSamples = measureRelease(lambda, releaseMeasureThreshold);
 
-    // I think .6 should give me about 26k samples,
+
+    // .6 is what Tests::MiddleC uses for release
     const float f = .6 * 44100.f;
     assertClosePct(releaseSamples, f, 10);
 }
@@ -227,6 +228,7 @@ static void testSamplerRelease2() {
 
 // validate that the release envelope kicks in a the end of the sample
 // no longer valid: that feature removed
+#if 0
 static void testSamplerEnd() {
     assert(false);
     auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
@@ -258,11 +260,11 @@ static void testSamplerEnd() {
     const float f = .6 * 44100.f;
     assertClosePct(releaseSamples2, f, 10);
 }
+#endif
 
 // no longer valide since no env at end
 // perhaps could be re-written
 static void testSampleRetrigger() {
-    SQINFO("------ testSampleRetrigger");
     auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
     prime(s);
 
@@ -342,7 +344,7 @@ static void testSampQantizer() {
 
 // This test is just to force compile errors in Samp.h
 // Later, when there are real tests for Samp, this could go away
-static void testSampBUilds() {
+static void testSampBuilds() {
     using Comp = Samp<TestComposite>;
     Comp::ProcessArgs arg;
     std::shared_ptr<Comp> pcomp = std::make_shared<Comp>();
@@ -354,17 +356,13 @@ void testx5() {
     testSampler();
     testSamplerTestOutput();
 
-    printf("put back all of these!\n");
-    // testSamplerAttack();
     testSamplerRelease();
-    // testSamplerEnd();
+    testSamplerAttack();   
+    // no working any more
     //testSamplerRealSound();
-
-    printf("put back test release 2!!!!\n");
     testSamplerRelease2();
-
     testSampQantizer();
-    testSampBUilds();
+    testSampBuilds();
 
     // testSampleRetrigger();      // now write a test for retriggering played out voice
 }
