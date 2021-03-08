@@ -18,7 +18,6 @@ void Sampler4vx::setLoader(WaveLoaderPtr loader) {
     adsr.setRSec(.3f);
 }
 
-
 #ifdef _SAMPFM
 float_4 Sampler4vx::step(const float_4& gates, float sampleTime, const float_4& lfm, bool lfmEnabled) {
     sampleTime_ = sampleTime;
@@ -33,6 +32,10 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime, const float_4& 
         return 0;
     }
     return 0.f;
+}
+
+void Sampler4vx::setExpFM(const float_4& value) {
+    fmCV = value;
 }
 #endif
 
@@ -74,20 +77,28 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     assert(waveInfo->valid);
     assert(waveInfo->numChannels == 1);
     player.setSample(channel, waveInfo->data, int(waveInfo->totalFrameCount));
-    
+
     player.setGain(channel, patchInfo.gain);
 
     // I don't think this test cares what we set the player too
 
-
 #ifdef _SAMPFM
-    const float transposeAmt = PitchUtils::semitoneToFreqRatio(patchInfo.transposeV * 12);
-    SQINFO("Sampler4x cv=%f, ratio=%f", patchInfo.transposeV, transposeAmt);
-    player.setTranspose(channel, patchInfo.needsTranspose, transposeAmt);
+    // TODO: we will need to do this on step calls, too, to handle dynamic modulation
+    const float transposeCV = patchInfo.transposeV * 12 + 12 * fmCV[channel];
+ //const float transposeCV = patchInfo.transposeV * 12;       // temp - put back like it was?
+
+    const float transposeAmt = PitchUtils::semitoneToFreqRatio(transposeCV);
+    // SQINFO("Sampler4x cv=%f, cvm=%f, ratio=%f", patchInfo.transposeV, fmCV[channel], transposeAmt);
+    SQINFO("");
+    SQINFO("trans from patch = %f trans from fm = %f", patchInfo.transposeV * 12, fmCV[channel]);
+    SQINFO("total transCV %f", transposeCV);
+    SQINFO("final amt, after exp = %f", transposeAmt);
+    SQINFO("will turn on needs transpose for now...");
+    //  player.setTranspose(channel, patchInfo.needsTranspose, transposeAmt);
+    player.setTranspose(channel, true, transposeAmt);
 #else
     player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
 #endif
-
 
     std::string sample = waveInfo->fileName.getFilenamePart();
     // SQINFO("play vel=%d pitch=%d gain=%f samp=%s", midiVelocity, midiPitch, patchInfo.gain, sample.c_str());

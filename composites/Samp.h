@@ -328,13 +328,27 @@ inline void Samp<TBase>::serviceKeySwitch() {
 
 template <class TBase>
 inline void Samp<TBase>::serviceFMMod() {
+    //------------------- first do the linear FM
     lfmConnected_n = TBase::inputs[LFM_INPUT].isConnected();
 
     // lfm gain = audio_taper( knob / 10);
     float depth = TBase::params[LFM_DEPTH_PARAM].value;
     depth /= 10.f;  // scale it to 0..1
     depth = LookupTable<float>::lookup(*audioTaperLookupParams, depth);
-    lfmGain_n = float_4(depth);
+    lfmGain_n = float_4(depth);  // store as a float_4, since that's what we want in process();
+
+    //------------------ now Exp FM -----------
+    //   PITCH_PARAM,
+    //   PITCH_TRIM_PARAM,
+    const float_4 expPitchOffset = TBase::params[PITCH_PARAM].value;
+    const float_4 expPitchCVTrim = TBase::params[PITCH_TRIM_PARAM].value;
+    Port& fmInput = TBase::inputs[PITCH_INPUT];
+    for (int bank = 0; bank < numBanks_n; ++bank) {
+        float_4 rawInput = fmInput.getPolyVoltageSimd<float_4>(bank * 4);
+        float_4 scaledInput = rawInput * expPitchCVTrim;
+        float_4 finalBankFM = scaledInput + expPitchOffset;
+        playback[bank].setExpFM(finalBankFM);
+    }
 }
 
 template <class TBase>
@@ -420,7 +434,7 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
     switch (i) {
 #ifdef _SAMPFM
         case Samp<TBase>::PITCH_PARAM:
-            ret = {0, 10, 3, "Pitch"};
+            ret = {-5, 5, 0, "Pitch"};
             break;
         case Samp<TBase>::PITCH_TRIM_PARAM:
             ret = {-1, 1, 0, "Pitch trim"};

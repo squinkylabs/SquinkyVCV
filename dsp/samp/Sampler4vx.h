@@ -61,6 +61,7 @@ public:
      */
     void setNumVoices(int voices);
 #ifdef _SAMPFM
+    void setExpFM(const float_4& value);
     float_4 step(const float_4& gates, float sampleTime, const float_4& lfm, bool lfmEnabled);
 #else
     float_4 step(const float_4& gates, float sampleTime);
@@ -88,6 +89,7 @@ private:
     void step_n();
     float sampleTime_ = 0;
     float_4 releaseTime_ = {0};
+    float_4 fmCV = {0};
 
     // Accumulator acc = {100};
 };
