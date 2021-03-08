@@ -66,7 +66,7 @@ static void testStreamValues() {
     assertEQ(x[0], .6f);
 
     s.setSample(channel, x, 6);
-    s.setTranspose(channel, false, 1.f);
+    s.setTranspose(float_4(1));
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {
         s._assertValid();
@@ -86,7 +86,7 @@ static void testStreamXpose1() {
     assertEQ(x[0], .6f);
 
     s.setSample(channel, x, 6);
-    s.setTranspose(channel, true, 1.f);
+    s.setTranspose(float_4(1));
     assert(s.canPlay(channel));
     s._assertValid();
     s.step(0, false);
@@ -105,7 +105,7 @@ static void testStreamXpose2() {
     assertEQ(x[0], 6);
 
     s.setSample(channel, x, 7);
-    s.setTranspose(channel, true, 2.f);
+    s.setTranspose(float_4(2));
     assert(s.canPlay(channel));
     for (int i = 0; i < 3; ++i) {
         float_4 v = s.step(0, false);
@@ -124,7 +124,7 @@ static void testStreamRetrigger() {
     float x[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
 
     s.setSample(channel, x, 6);
-    s.setTranspose(channel, false, 1.f);
+    s.setTranspose(float_4(1));
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {
         s._assertValid();
@@ -151,7 +151,7 @@ static void testBugCaseHighFreq() {
 
     float x[6] = {0};
     s.setSample(channel, x, 6);
-    s.setTranspose(0, true, 33.4f);
+    s.setTranspose(float_4(33.4f));
 
     assert(s.canPlay(channel));
     for (int i = 0; i < 6; ++i) {

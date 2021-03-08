@@ -55,6 +55,7 @@ public:
 
     void setPatch(CompiledInstrumentPtr inst);
     void setLoader(WaveLoaderPtr loader);
+    void setIndex(int i) { myIndex = i; }
 
     /**
      * zero to 4
@@ -89,7 +90,13 @@ private:
     void step_n();
     float sampleTime_ = 0;
     float_4 releaseTime_ = {0};
-    float_4 fmCV = {0};
 
-    // Accumulator acc = {100};
+    /**
+     * fmCV and pitchCVFromKeyboard get added in updatePitch
+     */
+    float_4 fmCV = {0};
+    float_4 pitchCVFromKeyboard = {0};
+   // float_4 pitchMod = {0};
+    void updatePitch();
+    int myIndex = -1;
 };

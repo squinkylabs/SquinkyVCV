@@ -256,6 +256,7 @@ inline void Samp<TBase>::init() {
 
     for (int i = 0; i < 4; ++i) {
         lastGate4[i] = float_4(0);
+        playback[i].setIndex(i);
     }
 }
 

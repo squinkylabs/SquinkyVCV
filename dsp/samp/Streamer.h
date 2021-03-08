@@ -11,11 +11,21 @@
 class Streamer {
 public:
     void setSample(int chan, float* data, int frames);
-    void setTranspose(int chan, bool doTranspoe, float amount);
+  //  void setTranspose(int chan, bool doTranspose, float amount);
+
+    /**
+     * set the instantaneous pitch.
+     * @param amount is the ratio, so 1 means no transpose.
+     */
+    void setTranspose(float_4 amount);
     bool canPlay(int chan);
     void clearSamples();
     void clearSamples(int channel);
     void setGain(int chan, float gain);
+
+    /** here "fm" is the linear fm modulation,
+     * not the pitch modulation
+     */
     float_4 step(float_4 fm, bool fmEnabled);
     void _assertValid();
 

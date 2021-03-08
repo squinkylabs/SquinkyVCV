@@ -36,6 +36,7 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime, const float_4& 
 
 void Sampler4vx::setExpFM(const float_4& value) {
     fmCV = value;
+    updatePitch();
 }
 #endif
 
@@ -56,6 +57,22 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
     return 0.f;
 }
 #endif
+
+void Sampler4vx::updatePitch() {
+    // TODO: get rid of all this crazy semitone/ocatve stuff!!
+
+    float_4 combinedCV = fmCV * 12 + pitchCVFromKeyboard;
+    float_4 transposeAmt;
+    for (int i = 0; i < 4; ++i) {
+        transposeAmt[i] = PitchUtils::semitoneToFreqRatio(combinedCV[i]);
+    }
+    player.setTranspose(transposeAmt);
+#if 0
+    if (myIndex == 0) {
+        SQINFO("Sampler4vx::updatePitch %s", toStr(transposeAmt).c_str());
+    }
+#endif
+}
 
 void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
     if (!patch || !waves) {
@@ -83,10 +100,12 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     // I don't think this test cares what we set the player too
 
 #ifdef _SAMPFM
-    // TODO: we will need to do this on step calls, too, to handle dynamic modulation
-    const float transposeCV = patchInfo.transposeV * 12 + 12 * fmCV[channel];
- //const float transposeCV = patchInfo.transposeV * 12;       // temp - put back like it was?
 
+    const float transposeCV = patchInfo.transposeV * 12;
+    pitchCVFromKeyboard[channel] = transposeCV;
+    updatePitch();
+#if 0  // old way
+    const float transposeCV = patchInfo.transposeV * 12 + 12 * fmCV[channel];
     const float transposeAmt = PitchUtils::semitoneToFreqRatio(transposeCV);
 
 #if 0
@@ -97,7 +116,10 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     SQINFO("will turn on needs transpose for now...");
 #endif
     //  player.setTranspose(channel, patchInfo.needsTranspose, transposeAmt);
+
     player.setTranspose(channel, true, transposeAmt);
+#endif
+
 #else
     player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
 #endif

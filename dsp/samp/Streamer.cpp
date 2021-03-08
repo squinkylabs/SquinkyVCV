@@ -40,10 +40,10 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
 
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
     float ret = 0;
- //   assert(cd.transposeEnabled);
-  //  assert(lfm == 0);
+    //   assert(cd.transposeEnabled);
+    //  assert(lfm == 0);
 
-  //  SQINFO("St:Step% %f", lfm);
+    //  SQINFO("St:Step% %f", lfm);
 
     if (CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         if (!cd.arePlaying) {
@@ -125,6 +125,24 @@ void Streamer::clearSamples(int channel) {
     setSample(channel, nullptr, 0);
 }
 
+void Streamer::setTranspose(float_4 amount) {
+    // TODO: make more efficient!!
+    for (int channel = 0; channel < 4; ++channel) {
+        ChannelData& cd = channels[channel];
+        float xpose = amount[channel];
+        float delta = std::abs(xpose - 1);
+        bool doTranspose = delta > .0001;  // TODO: is this in tune enough?
+        cd.transposeEnabled = doTranspose;
+        cd.transposeMultiplier = xpose;
+    #if 0
+        if (myIndex == 0 && channel == 0) {
+            SQINFO("Streamer::setTranspose %f, %d", xpose, doTranspose)
+        }
+    #endif
+    }
+}
+
+#if 0
 void Streamer::setTranspose(int channel, bool doTranspose, float amount) {
     SQINFO("streamer trans ch=%d amt=%f\n", channel, amount);
     assert(channel < 4);
@@ -132,6 +150,7 @@ void Streamer::setTranspose(int channel, bool doTranspose, float amount) {
     cd.transposeEnabled = doTranspose;
     cd.transposeMultiplier = amount;
 }
+#endif
 
 void Streamer::ChannelData::_dump() const {
     SQINFO("dumping %p", this);
