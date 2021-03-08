@@ -29,6 +29,9 @@ public:
     float_4 step(float_4 fm, bool fmEnabled);
     void _assertValid();
 
+    bool _isTransposed(int channel) const;
+    float _transAmt(int channel) const;
+
 public:
     class ChannelData {
     public:

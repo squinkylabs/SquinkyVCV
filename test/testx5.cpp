@@ -333,7 +333,7 @@ static void testSampQantizer() {
     assertEQ(Comp::quantize(1 + 2 * semiV), 62 + 12);
     assertEQ(Comp::quantize(1 + 3 * semiV), 63 + 12);
     assertEQ(Comp::quantize(1 + 4 * semiV), 64 + 12);
-    assertEQ(Comp::quantize(1 + 5 * semiV), 65 + 12);
+    assertEQ(Comp::quantize(1 + 5 * semiV), 65 + 12)
 
     assertEQ(Comp::quantize(-1 + 1 * semiV), 61 - 12);
     assertEQ(Comp::quantize(-1 + 2 * semiV), 62 - 12);
@@ -352,6 +352,50 @@ static void testSampBuilds() {
     pcomp->process(arg);
 }
 
+static void testSampPitch0(int channel) {
+    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
+
+   // const int channel = 0;
+    const int midiPitch = 60;
+    const int midiVel = 60;
+    s->note_on(channel, midiPitch, midiVel, 0);
+    const bool isTrans= s->_isTransposed(channel);
+    const float transAmt = s->_transAmt(channel);
+
+    assert(!isTrans);
+    assertEQ(transAmt, 1.f);
+}
+
+static void testSampPitch1(int channel) {
+    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
+    const int midiPitch = 60;
+    const int midiVel = 60;
+
+
+    s->note_on(channel, midiPitch, midiVel, 0);
+
+    float_4 mod = float_4::zero();
+    mod[channel] = 1;               // let's go up an octabe (1V/8)
+    s->setExpFM(mod);
+    for (int i = 0; i < 4; ++i) {
+        const bool isTrans = s->_isTransposed(i);
+        const float transAmt = s->_transAmt(i);
+
+        assertEQ(isTrans, (i == channel));
+        const float expectedTrans = (i == channel) ? 2.f : 1.f;
+        assertClose(transAmt, expectedTrans, .0001f);
+    }
+}
+
+
+static void testSampPitch() {
+    for (int i = 0; i < 4; ++i) {
+        testSampPitch0(i);
+        testSampPitch1(i);
+    }
+    
+}
+
 void testx5() {
     testSampler();
     testSamplerTestOutput();
@@ -363,6 +407,8 @@ void testx5() {
     testSamplerRelease2();
     testSampQantizer();
     testSampBuilds();
+
+    testSampPitch();
 
     // testSampleRetrigger();      // now write a test for retriggering played out voice
 }

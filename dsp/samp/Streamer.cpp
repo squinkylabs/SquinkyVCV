@@ -176,3 +176,17 @@ void Streamer::_assertValid() {
         }
     }
 }
+
+bool Streamer::_isTransposed(int channel) const {
+    assert(channel < 4);
+    const ChannelData& cd = channels[channel];
+    return cd.transposeEnabled;
+
+}
+
+float Streamer::_transAmt(int channel) const {
+    
+    assert(channel < 4);
+    const ChannelData& cd = channels[channel];
+    return cd.transposeMultiplier;
+}

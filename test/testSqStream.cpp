@@ -69,6 +69,7 @@ static void test7()
     std::string a = s.str();
     assertEQ(a, "x");
 }
+
 void testSqStream()
 {
     test0();

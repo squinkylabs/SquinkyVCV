@@ -83,6 +83,9 @@ public:
     static const float defaultDecaySec;
     static const float defaultReleaseSec;
 
+    bool _isTransposed(int channel) const;
+    float _transAmt(int channel) const;
+
 private:
     CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;

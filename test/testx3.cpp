@@ -155,12 +155,9 @@ static void testSnareBasic() {
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     VoicePlayInfo info;
-    // cinst->_dump(0);
 }
 
 static void testAllSal() {
-    SQINFO("\n------- testAllSal");
-
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     auto err = SParse::goFile(allSal, inst);
@@ -174,7 +171,6 @@ static void testAllSal() {
 }
 
 static void testKeswitchCompiled() {
-    SQINFO("\n------ testKeyswitchCompiled");
     static char* patch = R"foo(
        <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 sw_hikey=15
@@ -217,7 +213,6 @@ static void testKeswitchCompiled() {
 
 // two regions at same pitch, but never on at the same time
 static void testKeswitchCompiledOverlap() {
-    SQINFO("\n------ testKeyswitchCompiled");
     static char* patch = R"foo(
        <group>
         lokey=9
@@ -247,15 +242,6 @@ static void testKeswitchCompiledOverlap() {
 }
 
 static void testKeyswitch() {
-    SQINFO("\n------ testKeyswitch");
-#if 0  // this one made the lexer freak out. Let's investigage (later)
-    static char* patch = R"foo(
-        <group> sw_last=10 sw_label=key switch label
-        sw_lokey=5 swhikey=15
-        sw_default=10
-        <region>
-        z)foo";
-#endif
     static char* patch = R"foo(
        <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 sw_hikey=15
@@ -280,7 +266,6 @@ static void testKeyswitch() {
 
 // this one has not default
 static void testKeyswitch15() {
-    SQINFO("\n------ testKeyswitch15");
     static char* patch = R"foo(
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15
@@ -340,7 +325,6 @@ static void testKeyswitch15() {
 }
 
 static void testKeyswitch2() {
-    SQINFO("\n------ testKeyswitch 2");
     static char* patch = R"foo(
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15

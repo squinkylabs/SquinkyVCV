@@ -10,9 +10,9 @@ void Sampler4vx::setPatch(CompiledInstrumentPtr inst) {
     patch = inst;
 }
 
-const float Sampler4vx::defaultAttackSec = { .001f };
-const float Sampler4vx::defaultDecaySec = { .1f };
-const float Sampler4vx::defaultReleaseSec = { .3f };
+const float Sampler4vx::defaultAttackSec = {.001f};
+const float Sampler4vx::defaultDecaySec = {.1f};
+const float Sampler4vx::defaultReleaseSec = {.3f};
 
 void Sampler4vx::setLoader(WaveLoaderPtr loader) {
     waves = loader;
@@ -141,4 +141,12 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
 }
 
 void Sampler4vx::setNumVoices(int voices) {
+}
+
+bool Sampler4vx::_isTransposed(int channel) const {
+    return player._isTransposed(channel);
+}
+
+float Sampler4vx::_transAmt(int channel) const {
+    return player._transAmt(channel);
 }
