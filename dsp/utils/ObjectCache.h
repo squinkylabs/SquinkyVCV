@@ -18,6 +18,8 @@ class ObjectCache
 {
 public:
     static std::shared_ptr<LookupTableParams<T>> getBipolarAudioTaper();
+
+    // default is 24db
     static std::shared_ptr<LookupTableParams<T>> getAudioTaper();
     static std::shared_ptr<LookupTableParams<T>> getAudioTaper18();
     static std::shared_ptr<LookupTableParams<T>> getSinLookup();

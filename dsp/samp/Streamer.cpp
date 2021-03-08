@@ -54,7 +54,7 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
         ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
         cd.curFloatSampleOffset += cd.transposeMultiplier;
         cd.curFloatSampleOffset += lfm;
-        cd.curFloatSampleOffset = std::max<float>(2.f, cd.curFloatSampleOffset);
+        cd.curFloatSampleOffset = std::max(2.0, cd.curFloatSampleOffset);
     }
 
     if (!CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {

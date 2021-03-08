@@ -59,7 +59,7 @@ inline void PopupMenuParamWidget::onChange(const ::rack::event::Change &e) {
 
     // process ourself to update the text label
     const int index = (int)std::round(this->paramQuantity->getValue());
-    INFO("PopupMenuParamWidget::onChange raw index = %d", index);
+    // INFO("PopupMenuParamWidget::onChange raw index = %d", index);
     if (!labels.empty()) {
         if (index < 0 || index >= (int)labels.size()) {
             WARN("index is outside label ranges %d", index);

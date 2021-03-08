@@ -31,7 +31,7 @@
 //#define _F2
 //#define _F4
 #define _SAMP
-#define _TESTM
+//#define _TESTM
 
 
 //#define _BLANKMODULE

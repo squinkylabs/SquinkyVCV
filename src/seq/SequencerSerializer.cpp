@@ -158,8 +158,8 @@ json_t* SequencerSerializer::toJson(const SubrangeLoop& lp)
 {
     json_t* loop = json_object();
     json_object_set_new(loop, "enabled", json_boolean(lp.enabled));
-    json_object_set_new(loop, "startTime", json_boolean(lp.startTime));
-    json_object_set_new(loop, "endTime", json_boolean(lp.endTime));
+    json_object_set_new(loop, "startTime", json_integer(lp.startTime));
+    json_object_set_new(loop, "endTime", json_integer(lp.endTime));
     return loop;
 }
 
@@ -410,7 +410,7 @@ MidiTrackPtr SequencerSerializer::fromJsonTrack(json_t *data, int index, MidiLoc
         track->insertEvent(event);
     }
     if (0 == track->size()) {
-        printf("bad track\n"); fflush(stdout);
+        WARN("bad track");
         track->insertEnd(4);            // make a legit blank trac
     }
     return track;
@@ -434,7 +434,7 @@ MidiEventPtr SequencerSerializer::fromJsonEvent(json_t *data)
             event = fromJsonEndEvent(data);
             break;
         default:
-            printf("event type unrecognixed %d\n", type);
+            WARN("event type unrecognixed %d", type);
     }
     return event;
 }

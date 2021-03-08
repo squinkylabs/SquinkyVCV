@@ -213,6 +213,8 @@ private:
     // I think this goes ins sSampler4vx
     //  std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
     std::shared_ptr<LookupTableParams<float>> audioTaperLookupParams = ObjectCache<float>::getAudioTaper();
+    std::shared_ptr<LookupTableParams<float>> bipolarAudioTaperLookupParams = ObjectCache<float>::getBipolarAudioTaper();
+
     std::unique_ptr<ThreadClient> thread;
 
     // sent in on UI thread (should be atomic)
@@ -339,12 +341,19 @@ inline void Samp<TBase>::serviceFMMod() {
     lfmGain_n = float_4(depth);  // store as a float_4, since that's what we want in process();
 
     //------------------ now Exp FM -----------
+    // this one is -5 to +5
     const float_4 expPitchOffset = TBase::params[PITCH_PARAM].value;
-    const float_4 expPitchCVTrim = TBase::params[PITCH_TRIM_PARAM].value;
+
+    // this one is -1 to +1
+    const float pitchCVTrimRaw = TBase::params[PITCH_TRIM_PARAM].value;
+    SQINFO("raw trim is %f", pitchCVTrimRaw);
+  //  SQINFO("params min/max = %f %f", audioTaperLookupParams->xMin, audioTaperLookupParams->xMax);
+    const float scaledPitchCVTrim =  LookupTable<float>::lookup(*bipolarAudioTaperLookupParams, pitchCVTrimRaw);
+    const float_4 pitchCVTrim(scaledPitchCVTrim);
     Port& fmInput = TBase::inputs[FM_INPUT];
     for (int bank = 0; bank < numBanks_n; ++bank) {
         float_4 rawInput = fmInput.getPolyVoltageSimd<float_4>(bank * 4);
-        float_4 scaledInput = rawInput * expPitchCVTrim;
+        float_4 scaledInput = rawInput * pitchCVTrim;
         float_4 finalBankFM = scaledInput + expPitchOffset;
         playback[bank].setExpFM(finalBankFM);
 #if 0
