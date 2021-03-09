@@ -346,7 +346,7 @@ inline void Samp<TBase>::serviceFMMod() {
 
     // this one is -1 to +1
     const float pitchCVTrimRaw = TBase::params[PITCH_TRIM_PARAM].value;
-    SQINFO("raw trim is %f", pitchCVTrimRaw);
+ //   SQINFO("raw trim is %f", pitchCVTrimRaw);
   //  SQINFO("params min/max = %f %f", audioTaperLookupParams->xMin, audioTaperLookupParams->xMax);
     const float scaledPitchCVTrim =  LookupTable<float>::lookup(*bipolarAudioTaperLookupParams, pitchCVTrimRaw);
     const float_4 pitchCVTrim(scaledPitchCVTrim);

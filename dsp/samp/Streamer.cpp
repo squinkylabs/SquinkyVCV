@@ -9,6 +9,14 @@
 #include "CubicInterpolator.h"
 #include "SqLog.h"
 
+#define _INTERP
+
+#if 0
+Streamer::Streamer() :  e(.05f, "streamer") {
+    
+}
+#endif
+
 float_4 Streamer::step(float_4 fm, bool fmEnabled) {
     float_4 ret;
     // SQINFO("St:Step %d, %s", fmEnabled, toStr(fm).c_str());
@@ -35,6 +43,7 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
             ret[channel] = 0;
         }
     }
+  //  e.sample(ret[0]);
     return ret;
 }
 
@@ -51,14 +60,28 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
             assert(false);
         }
 
+#ifdef _INTERP
         ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
+#else
+        size_t index = cd.curFloatSampleOffset;
+        ret = cd.data[index];
+#endif
+        double x = cd.curFloatSampleOffset;
+
         cd.curFloatSampleOffset += cd.transposeMultiplier;
         cd.curFloatSampleOffset += lfm;
         cd.curFloatSampleOffset = std::max(2.0, cd.curFloatSampleOffset);
+#if 0
+        if (e.sample(ret)) {
+            SQINFO("offset was %f now %f fm=%f, mul=%f", x, cd.curFloatSampleOffset, lfm, cd.transposeMultiplier);
+        }
+#endif
     }
+
 
     if (!CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         cd.arePlaying = false;
+        SQWARN("at end");
     }
 
     return ret * cd.vol;
@@ -132,13 +155,23 @@ void Streamer::setTranspose(float_4 amount) {
         float xpose = amount[channel];
         float delta = std::abs(xpose - 1);
         bool doTranspose = delta > .0001;  // TODO: is this in tune enough?
+
+#if 0
+        if ((doTranspose != cd.transposeEnabled) || (xpose != cd.transposeMultiplier)) {
+            SQINFO("");
+            SQINFO("pose was %d / %f", cd.transposeEnabled, cd.transposeMultiplier);
+            SQINFO("will be %d / %f", doTranspose, xpose);
+        }
+#endif
         cd.transposeEnabled = doTranspose;
         cd.transposeMultiplier = xpose;
-    #if 0
+
+
+#if 0
         if (myIndex == 0 && channel == 0) {
             SQINFO("Streamer::setTranspose %f, %d", xpose, doTranspose)
         }
-    #endif
+#endif
     }
 }
 
@@ -162,10 +195,8 @@ void Streamer::_assertValid() {
         ChannelData& cd = channels[channel];
 
         if (cd.transposeEnabled) {
-            SQINFO("finihs overrun checking!");
             if (cd.arePlaying)
                 assert(CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames));
-
         } else {
             // these can be equal, if we play past end
             if (cd.arePlaying) {
@@ -181,11 +212,9 @@ bool Streamer::_isTransposed(int channel) const {
     assert(channel < 4);
     const ChannelData& cd = channels[channel];
     return cd.transposeEnabled;
-
 }
 
 float Streamer::_transAmt(int channel) const {
-    
     assert(channel < 4);
     const ChannelData& cd = channels[channel];
     return cd.transposeMultiplier;
