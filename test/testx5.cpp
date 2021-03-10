@@ -333,7 +333,7 @@ static void testSampQantizer() {
     assertEQ(Comp::quantize(1 + 2 * semiV), 62 + 12);
     assertEQ(Comp::quantize(1 + 3 * semiV), 63 + 12);
     assertEQ(Comp::quantize(1 + 4 * semiV), 64 + 12);
-    assertEQ(Comp::quantize(1 + 5 * semiV), 65 + 12)
+    assertEQ(Comp::quantize(1 + 5 * semiV), 65 + 12);
 
     assertEQ(Comp::quantize(-1 + 1 * semiV), 61 - 12);
     assertEQ(Comp::quantize(-1 + 2 * semiV), 62 - 12);
