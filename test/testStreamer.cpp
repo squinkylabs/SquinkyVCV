@@ -1,5 +1,6 @@
 
 #include "CubicInterpolator.h"
+#include "FixedPointAccumulator.h"
 #include "SqLog.h"
 #include "Streamer.h"
 #include "TestSignal.h"
@@ -279,6 +280,34 @@ static void testClick() {
 }
 #endif
 
+static void testFixedPoint0() {
+    FixedPointAccumulator a;
+    a.add(1);
+    a.add(2);
+    assertClose(a.getAsDouble(), 3, .00000001);
+}
+
+static void testFixedPoint1() {
+    FixedPointAccumulator a;
+    a.add(1);
+    a.add(.999999999);
+    assertClose(a.getAsDouble(), 2, .00000001);
+}
+
+static void testFixedPoint2() {
+    FixedPointAccumulator a;
+    a.add(1);
+    a.add(1.000000001);
+    assertClose(a.getAsDouble(), 2, .00000001);
+}
+
+static void testFixedPoint() {
+    testFixedPoint0();
+    testFixedPoint1();
+    testFixedPoint2();
+
+}
+
 void testStreamer() {
     testCubicInterp();
 
@@ -292,4 +321,5 @@ void testStreamer() {
 
     testBugCaseHighFreq();
     //testClick();
+    testFixedPoint();
 }
