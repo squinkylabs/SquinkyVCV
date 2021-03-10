@@ -313,8 +313,11 @@ void testStreamer() {
 
     testStream();
     testStreamEnd();
-    testStreamValues();
-    testStreamRetrigger();
+
+    // since no-tranpose mode disable, this test doesn't work
+   // testStreamValues();
+  //  testStreamRetrigger();
+
     testStreamXpose1();
     // printf("fix testStreamXpose2\n");
     //testStreamXpose2();

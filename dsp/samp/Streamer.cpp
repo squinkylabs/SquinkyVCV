@@ -11,11 +11,6 @@
 
 #define _INTERP
 
-#if 0
-Streamer::Streamer() :  e(.05f, "streamer") {
-    
-}
-#endif
 
 float_4 Streamer::step(float_4 fm, bool fmEnabled) {
     float_4 ret;
@@ -24,8 +19,9 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
         ChannelData& cd = channels[channel];
 
         if (cd.data) {
-            const bool doInterp = cd.transposeEnabled || fmEnabled;
-            // SQWARN("do in = %d fm=%d", doInterp, fmEnabled);
+            const bool doInterp = true;         // until we can figure out a way to enable it without pops, we will leave "no transpose" disabled.
+            //const bool doInterp = cd.transposeEnabled || fmEnabled;
+
             float scalarData = doInterp ? stepTranspose(cd, fm[channel]) : stepNoTranspose(cd);
 
             const float acceptable = 1.1f;
@@ -43,16 +39,11 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
             ret[channel] = 0;
         }
     }
-  //  e.sample(ret[0]);
     return ret;
 }
 
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
     float ret = 0;
-    //   assert(cd.transposeEnabled);
-    //  assert(lfm == 0);
-
-    //  SQINFO("St:Step% %f", lfm);
 
     if (CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         if (!cd.arePlaying) {
@@ -66,29 +57,22 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
         size_t index = cd.curFloatSampleOffset;
         ret = cd.data[index];
 #endif
-        double x = cd.curFloatSampleOffset;
-
+        // advance the sample offset
         cd.curFloatSampleOffset += cd.transposeMultiplier;
         cd.curFloatSampleOffset += lfm;
         cd.curFloatSampleOffset = std::max(2.0, cd.curFloatSampleOffset);
-#if 0
-        if (e.sample(ret)) {
-            SQINFO("offset was %f now %f fm=%f, mul=%f", x, cd.curFloatSampleOffset, lfm, cd.transposeMultiplier);
-        }
-#endif
     }
 
 
     if (!CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         cd.arePlaying = false;
-        SQWARN("at end");
     }
 
     return ret * cd.vol;
 }
 
 float Streamer::stepNoTranspose(ChannelData& cd) {
-    // SQINFO("step no tran");
+    assert(false);
     float ret = 0;
     assert(!cd.transposeEnabled);
 

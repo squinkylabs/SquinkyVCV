@@ -4,39 +4,6 @@
 #include "SimdBlocks.h"
 #include "SqLog.h"
 
-class EdgeCatcher {
-    public:
-    EdgeCatcher(float thresh, const char* l) : threshold (thresh), label(l) {}
-    bool sample(float s) {
-        if (isFirstValue) {
-            lastValue = s;
-            isFirstValue = false;
-            return false;
-        }
-        bool r = false;
-        float delta = std::abs(lastValue - s);
-        if (delta > threshold) {
-            if (!havePrinted) {
-                SQINFO("");
-                SQINFO("jump detectd at %s size %f", label.c_str(), delta);
-                SQINFO("value is %f, was %f", s, lastValue);
-                havePrinted = true;
-                r = true;
-            }
-           
-        }
-        lastValue = s;
-        return r;
-    }
-private:
-    float threshold;
-    float lastValue;
-    bool isFirstValue = true;
-    std::string label;
-    bool havePrinted = false;
-
-};
-
 /**
  * This is a four channel streamer.
  * Streamer is the thing that plays out a block of samples, possibly at an
