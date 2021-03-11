@@ -12,20 +12,30 @@ static void process(Comp& comp, int times) {
     }
 }
 
-static void testSampComposite0() {
+static void testMod(int channelToTest, float trimValue, float cvValue, float expectedTranspose) {
     Comp comp;
     initComposite(comp);
 
+    assert(channelToTest == 0);
+
+    comp.inputs[Comp::PITCH_INPUT].channels = 1;
+    
+    comp.params[Comp::PITCH_TRIM_PARAM].value = trimValue;        // turn pitch vc trim up
     comp.inputs[Comp::GATE_INPUT].setVoltage(5, 0);  // set gate high on channel 0
+    comp.inputs[Comp::FM_INPUT].setVoltage(cvValue, 0);  // 1V fm
     process(comp, 32);
 
-    float x = comp._getTranspose(0);
-    assertEQ(x, 1);
+    float x = comp._getTranspose(channelToTest);
+    assertClose(x, expectedTranspose, .0001f);
 }
 
-static void testSampComposite1() {
-    Comp comp;
-    initComposite(comp);
+static void testSampComposite0() {
+    testMod(0, 0, 0, 1);
+    testMod(0, 1, 1, 2);
+    testMod(0, -1, 1, .5);
+    testMod(0, .5, 1, 1.11612f);
+}
+
 
     /*
         zeroMix(sub);
@@ -37,18 +47,10 @@ static void testSampComposite1() {
     assert(sub.inputs[Comp::MAIN1_LEVEL_INPUT].isConnected());
     */
 
-    comp.inputs[Comp::PITCH_INPUT].channels = 1;
-    
-    comp.params[Comp::PITCH_TRIM_PARAM].value = 1;        // turn pitch vc trim up
-    comp.inputs[Comp::GATE_INPUT].setVoltage(5, 0);  // set gate high on channel 0
-    comp.inputs[Comp::FM_INPUT].setVoltage(1, 0);  // 1V fm
-    process(comp, 32);
 
-    float x = comp._getTranspose(0);
-    assertEQ(x, 2);
-}
+
 
 void testSampComposite() {
     testSampComposite0();
-    testSampComposite1();
+
 }
