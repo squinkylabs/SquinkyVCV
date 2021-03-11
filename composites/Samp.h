@@ -185,6 +185,8 @@ public:
 
     static int quantize(float pitchCV);
 
+    float _getTranspose(int voice) const;
+
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
                              // SInstrumentPtr instrument;
@@ -365,6 +367,13 @@ inline void Samp<TBase>::serviceFMMod() {
         }
 #endif
     }
+}
+
+template <class TBase>
+inline float Samp<TBase>::_getTranspose(int voice) const {
+    const int bank = voice / 4;
+    const int subChannel = voice - bank * 4;
+    return playback[bank]._transAmt(subChannel);
 }
 
 template <class TBase>
