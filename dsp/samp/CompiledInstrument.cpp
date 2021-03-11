@@ -192,9 +192,7 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
         if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
             info.needsTranspose = true;
 #ifdef _SAMPFM
-            //assert(false); 
             info.transposeV += PitchUtils::freqRatioToSemitone(float(waveSampleRate) / sampleRate) / 12.f ;
-            SQINFO("set tranposeV for SM to %f", info.transposeV);
 #else
             info.transposeAmt *= sampleRate / float(waveSampleRate);
 #endif

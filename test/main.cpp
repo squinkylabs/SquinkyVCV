@@ -119,6 +119,7 @@ extern void testCmprsr();
 extern void testCompressor();
 extern void testCompressorParamHolder();
 extern void testStreamer();
+extern void  testSampComposite();
 
 #if 0
 #include <iostream>
@@ -218,6 +219,7 @@ int main(int argc, char** argv) {
     testx3();
     testx4();
     testx5();
+    testSampComposite();
    
 #else
     printf("------ sampl tests diabled\n");

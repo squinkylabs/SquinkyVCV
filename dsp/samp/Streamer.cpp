@@ -54,6 +54,7 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
 #ifdef _INTERP
         ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
 #else
+a b
         size_t index = cd.curFloatSampleOffset;
         ret = cd.data[index];
 #endif
