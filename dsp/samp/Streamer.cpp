@@ -123,7 +123,7 @@ void Streamer::setSample(int channel, float* d, int f) {
 }
 
 void Streamer::clearSamples() {
-    SQINFO("Streamer::clearSamples()");
+    // SQINFO("Streamer::clearSamples()");
     for (int channel = 0; channel < 4; ++channel) {
         clearSamples(channel);
     }

@@ -61,34 +61,6 @@ WaveLoader::LoaderState WaveLoader::load2() {
     return ret;
 }
 
-#if 0
-bool WaveLoader::load() {
-    assert(!didLoad);
-    didLoad = true;
-    SQINFO("loader started loading waves");
-    for (FilePath& file : filesToLoad) {
-        // SQINFO("wave loader loading %s", file.c_str());
-        WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
-        std::string err;
-        const bool b = waveInfo->load(err);
-        if (!b) {
-            // bail on first error
-            assert(!err.empty());
-            lastError = err;
-            SQINFO("wave loader leaving with error %s", lastError.c_str());
-            return false;
-        }
-
-        finalInfo.push_back(waveInfo);
-    }
-    SQINFO("loader loaded all wave files");
-#ifndef NDEBUG
-    validate();
-#endif
-    return true;
-}
-#endif
-
 void WaveLoader::validate() {
     for (auto info : finalInfo) {
         info->validate();

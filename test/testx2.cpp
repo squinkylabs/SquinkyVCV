@@ -4,6 +4,7 @@
 #include "CompiledInstrument.h"
 #include "CompiledRegion.h"
 #include "FilePath.h"
+#include "InstrumentInfo.h"
 #include "SInstrument.h"
 #include "Sampler4vx.h"
 #include "SamplerSchema.h"
@@ -281,6 +282,15 @@ static void testParseControl() {
     // TODO: does this test work?
 }
 
+static void testParseInclude() {
+    const char* data = R"foo(<global>bend_up=1200
+        bend_down=-1200
+        #include "vc_arco_sus_map.sfz")foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+    assert(err.empty());
+}
+
 static void testParseLabel() {
     const char* data = R"foo(<region>sw_label=abd def ghi)foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -390,6 +400,30 @@ static void testTranspose1() {
     float pitchMul = float(std::pow(2, semiOffset / 12.0));
     assertEQ(info.transposeAmt, pitchMul);
 #endif
+}
+
+
+// make compiler fail to parse something, see what it does
+static void testCompileCrash() {
+    const char* data = R"foo("abc >dfk z")foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+    assert(!err.empty());
+
+
+    //SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(err);
+    assert(cinst);
+    auto emsg = cinst->getInfo()->errorMessage;
+
+    assert(!emsg.empty());
+    assert(cinst->isInError());
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    
+    cinst->play(info, params, nullptr, 44100);
 }
 
 static void testCompiledRegion() {
@@ -1359,6 +1393,11 @@ void testx2() {
     testParseControl();
     testParseLabel();
 
+    // can't parse these yet
+    //testParseInclude();
+
+    testCompileCrash();
+   
     testCompiledRegion();
     testCompiledRegionAddedOpcodes();
     testCompiledRegionInherit();

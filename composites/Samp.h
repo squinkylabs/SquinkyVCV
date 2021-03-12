@@ -396,10 +396,12 @@ inline int Samp<TBase>::quantize(float pitchCV) {
 
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
+ //   SQINFO("pin");
     divn.step();
+    
 
     // is there some "off by one error" here?
-    assert(numBanks_n < 4);
+    assert(numBanks_n <= 4);
     for (int bank = 0; bank < numBanks_n; ++bank) {
         // prepare 4 gates. note that ADSR / Sampler4vx must see simd mask (0 or nan)
         // but our logic needs to see numbers (we use 1 and 0).
@@ -446,6 +448,7 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
         lastGate4[bank] = gate4;
     }
+//    SQINFO("pout");
 }
 
 template <class TBase>
@@ -512,20 +515,20 @@ public:
 
         // now load it, and then return it.
         auto err = SParse::goFile(fullPath.toString(), inst);
-        if (!err.empty()) {
-            sendMessageToClient(msg);
-            return;
-        };
 
+        SQINFO("about to compile");
         // TODO: need a way for compiler to return error;
         SamplerErrorContext errc;
-        CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+        CompiledInstrumentPtr cinst = err.empty()  ? CompiledInstrument::make(errc, inst) : CompiledInstrument::make(err);
+        SQINFO("back from comp");
         errc.dump();
         if (!cinst) {
+            SQWARN("comp was null (should never happen)");
             sendMessageToClient(msg);
             return;
         }
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
+        assert(cinst->getInfo());
 
         //  samplePath += cinst->getDefaultPath();
         samplePath.concat(cinst->getDefaultPath());
@@ -548,20 +551,20 @@ public:
             }
         }
 
+        SQINFO("preparing to return cinst to caller, err=%d", cinst->isInError());
         smsg->instrument = cinst;
         smsg->waves = loadedState == WaveLoader::LoaderState::Done ? waves : nullptr;
+
+        // this "info" is kept with the compiled instrument.
+        // but we can modify it here and the UI will "see" it.
         auto info = cinst->getInfo();
+        assert(info);
 
-        SQINFO("samp thread back, info error = %s", info->errorMessage.c_str());
         if (info->errorMessage.empty() && loadedState != WaveLoader::LoaderState::Done) {
-            // SQINFO("main error empty");
-            // SQINFO("error from ")
             info->errorMessage = waves->lastError;
-            SQINFO("returning error message %s", info->errorMessage.c_str());
         }
-        //   a b // return error now.
-        SQINFO("** loader thread returning %d", int(loadedState));
 
+        SQINFO("****** loader thread returning %d", int(loadedState));
         sendMessageToClient(msg);
     }
 
@@ -576,15 +579,11 @@ private:
      * this path will then be used to locate all samples.
      */
     void parsePath(SampMessage* msg) {
-        SQINFO("parse path 348");
         if (msg->pathToSfz) {
             // maybe we should allow raw strings to come in this way. but it's probably fine
-            fullPath = FilePath(*(msg->pathToSfz));
-            SQINFO("parse path 351 %s", fullPath.toString().c_str());
-            SQINFO("about to delete %p", msg->pathToSfz);
+            fullPath = FilePath(*(msg->pathToSfz));   
             delete msg->pathToSfz;
             msg->pathToSfz = nullptr;
-            SQINFO("parse path 354");
         }
 #if 0  // when we add this back
         if (!msg->defaultPath.empty()) {
@@ -668,9 +667,13 @@ void Samp<TBase>::serviceMessagesReturnedToComposite() {
     // see if any messages came back for us
     ThreadMessage* newMsg = thread->getMessage();
     if (newMsg) {
+        SQINFO("new patch message back from worker thread!");
         assert(newMsg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(newMsg);
         setNewPatch(smsg);
+        SQINFO("new patch message back from worker thread done!");
         messagePool.push(smsg);
+        SQINFO("leave snpm");
     }
+    
 }

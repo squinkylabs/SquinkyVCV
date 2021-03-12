@@ -1,5 +1,13 @@
 
 #include "CompiledInstrument.h"
+
+#include <assert.h>
+
+#include <algorithm>
+#include <cmath>
+#include <set>
+#include <string>
+
 #include "CompiledRegion.h"
 #include "InstrumentInfo.h"
 #include "PitchUtils.h"
@@ -8,12 +16,6 @@
 #include "SamplerPlayback.h"
 #include "SqLog.h"
 #include "WaveLoader.h"
-
-#include <assert.h>
-#include <algorithm>
-#include <cmath>
-#include <set>
-#include <string>
 
 using Opcode = SamplerSchema::Opcode;
 using OpcodeType = SamplerSchema::OpcodeType;
@@ -116,31 +118,37 @@ CompiledInstrumentPtr CompiledInstrument::CompiledInstrument::make(SamplerErrorC
     expandAllKV(err, inst);
     CompiledInstrumentPtr instOut = std::make_shared<CompiledInstrument>();
     const bool result = instOut->compile(inst);
-    return result ? instOut : nullptr;
+    if (!result) {
+        SQINFO("unexpected compile error");
+        if (!instOut->info) {
+            instOut->info = std::make_shared<InstrumentInfo>();
+        }
+        instOut->info->errorMessage = "unknown compile error";
+        instOut->_isInError = true;
+    }
+    assert(instOut->info);
+    return instOut;
 }
 
-#if 0
-float CompiledInstrument::velToGain2(int midiVelocity, float veltrack) {
-    assert(veltrack == 1);
-    assert(midiVelocity >= 1);
-    assert(midiVelocity < 128);
-    float x = float(127 * 127) / (midiVelocity * midiVelocity);
-    return -float(AudioMath::db(x));
+CompiledInstrumentPtr CompiledInstrument::make(const std::string& parseError) {
+    CompiledInstrumentPtr instOut = std::make_shared<CompiledInstrument>();
+    instOut->info = std::make_shared<InstrumentInfo>();
+    instOut->info->errorMessage = parseError;
+    instOut->_isInError = true;
+    assert(instOut->info);
+    return instOut;
 }
-#endif
 
 float CompiledInstrument::velToGain1(int midiVelocity, float veltrack) {
     const float v = float(midiVelocity);
-   // const float t = veltrack;
-  //  const float x = (v * t / 100.f) + (100.f - t) * (127.f / 100.f);
+    // const float t = veltrack;
+    //  const float x = (v * t / 100.f) + (100.f - t) * (127.f / 100.f);
 
     // let's simplify for now
     // scale down to -1..1 (and noone ever uses negative)
     veltrack /= 100.f;
-   
 
-    float x = v;    // veloc 1..127
-
+    float x = v;  // veloc 1..127
 
     // temp = 0...1
     auto temp = float(x) / 127.f;
@@ -150,11 +158,11 @@ float CompiledInstrument::velToGain1(int midiVelocity, float veltrack) {
 
     float final = (veltrack * temp) + (1 - veltrack);
     return final;
-} 
+}
 
 float CompiledInstrument::velToGain(int midiVelocity, float veltrack) {
     return velToGain1(midiVelocity, veltrack);
-} 
+}
 
 void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack, float regionVolumeDb) {
     float regionGainMult = float(AudioMath::gainFromDb(regionVolumeDb));
@@ -162,7 +170,6 @@ void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float re
 }
 
 void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate) {
-   
     // first base pitch
     const int semiOffset = midiPitch - regionKeyCenter;
     if (semiOffset == 0 && tuneCents == 0) {
@@ -192,7 +199,7 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
         if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
             info.needsTranspose = true;
 #ifdef _SAMPFM
-            info.transposeV += PitchUtils::freqRatioToSemitone(float(waveSampleRate) / sampleRate) / 12.f ;
+            info.transposeV += PitchUtils::freqRatioToSemitone(float(waveSampleRate) / sampleRate) / 12.f;
 #else
             info.transposeAmt *= sampleRate / float(waveSampleRate);
 #endif
@@ -206,6 +213,7 @@ void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
     }
     info.valid = false;
     float r = rand();
+
     const CompiledRegion* region = regionPool.play(params, r);
     if (region) {
         info.sampleIndex = region->sampleIndex;
@@ -218,7 +226,7 @@ void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
 
 void CompiledInstrument::playTestMode(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     float release = 0;
-    switch(ciTestMode) {
+    switch (ciTestMode) {
         case Tests::MiddleC:
             release = .6f;
             break;
@@ -234,8 +242,7 @@ void CompiledInstrument::playTestMode(VoicePlayInfo& info, const VoicePlayParame
     info.valid = true;
     info.needsTranspose = false;
 
-   
-    info.ampeg_release = release; 
+    info.ampeg_release = release;
 #ifdef _SAMPFM
     info.transposeV = 0;
 #else

@@ -85,6 +85,9 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
         SQDEBUG("4vx not intit");
         return;
     }
+    if (patch->isInError()) {
+        assert(false);
+    }
     VoicePlayInfo patchInfo;
     VoicePlayParameter params;
     params.midiPitch = midiPitch;

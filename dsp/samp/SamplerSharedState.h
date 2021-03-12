@@ -21,7 +21,7 @@
 class SamplerSharedState {
 public:
     ~SamplerSharedState() {
-        SQINFO("dtor of SamplerSharedState");
+        // SQINFO("dtor of SamplerSharedState");
     }
     /** called from UI thread or worker thread
     */

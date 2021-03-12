@@ -68,8 +68,13 @@ public:
     /**
      * high level entry point to compile an instrument.
      * will return null if error, and log the error cause as best it can.
+     * 
+     * TODO: resolve InstrumentInfo vs. SamplerErrorContext. what goes is which one?
+     * I'm thinking get rid of error context and put all in info?
      */
     static CompiledInstrumentPtr make(SamplerErrorContext&, const SInstrumentPtr);
+    static CompiledInstrumentPtr make(const std::string& parseError);
+
     void play(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
     void _setTestMode(Tests t) {
@@ -96,6 +101,7 @@ public:
     static float velToGain2(int midiVelocity, float veltrack);
     static float velToGain(int midiVelocity, float veltrack);
 
+    bool isInError() const { return _isInError; }
 private:
     RegionPool regionPool;
     Tests ciTestMode = Tests::None;
@@ -104,6 +110,7 @@ private:
     AudioMath::RandomUniformFunc rand = AudioMath::random();
 
     FilePath defaultPath;
+    bool _isInError = false;
 
     /**
      * Track all the unique relative paths here
