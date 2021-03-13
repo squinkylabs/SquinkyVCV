@@ -80,6 +80,30 @@ static void testOverlap() {
     testOverlap(false);
 }
 
+static void testParitalOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, float expectedOverlap) {
+    assert(mina <= maxa);
+    assert(minb <= maxb);
+    SGroupPtr gp = std::make_shared<SGroup>(1234);
+    SamplerErrorContext errc;
+    gp->compiledValues = SamplerSchema::compile(errc, gp->values);
+    auto regionA = makeTestRegion(gp, testPitch, std::to_string(mina), std::to_string(maxa));
+    auto regionB = makeTestRegion(gp, testPitch, std::to_string(minb), std::to_string(maxb));
+    float overlap = testPitch ? regionA->overlapPitchAmount(*regionB) : regionA->overlapVelocityAmount(*regionB);
+   // assertEQ(overlap, shouldOverlap)
+    assertClose(overlap, expectedOverlap, .01);
+}
+
+static void testPartialOverlap(bool testPitch) {
+    testParitalOverlapSub(testPitch, 10, 20, 30, 40, 0);
+    testParitalOverlapSub(testPitch, 10, 20, 10, 20, 1);
+    testParitalOverlapSub(testPitch, 10, 20, 15, 25, .5f);
+    testParitalOverlapSub(testPitch, 15, 25, 10, 20, .5f);
+}
+static void testPartialOverlap() {
+    testPartialOverlap(false);
+    testPartialOverlap(true); 
+}
+
 static char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo";
 static char* snare = R"foo(D:\samples\SalamanderDrumkit\snare.sfz)foo";
 static char* allSal = R"foo(D:\samples\SalamanderDrumkit\all.sfz)foo";
@@ -439,6 +463,8 @@ static void testOverlapVel() {
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 
+    SQINFO("finish test");
+#if 0
     params.midiVelocity = 31;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
@@ -446,6 +472,7 @@ static void testOverlapVel() {
 
     
     assert(false);
+#endif
 }
 
 static void shouldFindMalformed(const char* input) {
@@ -498,6 +525,7 @@ void testx3() {
 
     //  testVelSwitch1();
     testOverlap();
+    testPartialOverlap();
 
     testSmallPianoVelswitch();
 

@@ -61,6 +61,11 @@ public:
     bool overlapsRand(const CompiledRegion&) const;
     bool sameSequence(const CompiledRegion&) const;
 
+    // 1.0 means complete overlap
+    // 0 means no overlap at all
+    float overlapVelocityAmount(const CompiledRegion&) const;
+    float overlapPitchAmount(const CompiledRegion&) const;
+
     int lokey = 0;
     int hikey = 127;
 

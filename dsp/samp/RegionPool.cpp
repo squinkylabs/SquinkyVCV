@@ -9,6 +9,7 @@
 
 // #define _LOGOV
 
+// checks to see if the region is playable
 bool RegionPool::checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random) {
     bool passesCheck = false;
 #ifdef _SFZ_RANDOM
@@ -177,6 +178,25 @@ void RegionPool::fillRegionLookup() {
 
 // #define _LOGOV
 
+bool RegionPool::evaluateOverlaps(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion) {
+#ifdef _LOGOV
+        printf("overlap comparing line %d with %d\n", first->lineNumber, second->lineNumber);
+        printf("  first pitch=%d,%d, vel=%d,%d\n", first->lokey, first->hikey, first->lovel, first->hivel);
+        printf("  second pitch=%d,%d, vel=%d,%d\n", second->lokey, second->hikey, second->lovel, second->hivel);
+
+        printf("  first sw_ range=%d, %d. second=%d, %d", first->sw_lolast, first->sw_hilast, second->sw_lolast, second->sw_hilast);
+        printf("  overlap pitch = %d, overlap vel = %d\n", first->overlapsPitch(*second), first->overlapsVelocity(*second));
+#endif
+    bool deleteRegion = false;
+    if (firstRegion->overlapsPitch(*secondRegion) &&
+        firstRegion->overlapsVelocity(*secondRegion) &&
+        firstRegion->overlapsRand(*secondRegion) &&
+        firstRegion->sameSequence(*secondRegion)) {
+        deleteRegion = true;
+    }
+    return deleteRegion;
+}
+
 void RegionPool::removeOverlaps() {
 #ifdef _LOGOV
     printf("enter remove overlaps there are %d regions\n",
@@ -201,18 +221,9 @@ void RegionPool::removeOverlaps() {
         }
         CompiledRegionPtr first = *it;
         CompiledRegionPtr second = *itNext;
-#ifdef _LOGOV
-        printf("overlap comparing line %d with %d\n", first->lineNumber, second->lineNumber);
-        printf("  first pitch=%d,%d, vel=%d,%d\n", first->lokey, first->hikey, first->lovel, first->hivel);
-        printf("  second pitch=%d,%d, vel=%d,%d\n", second->lokey, second->hikey, second->lovel, second->hivel);
 
-        printf("  first sw_ range=%d, %d. second=%d, %d", first->sw_lolast, first->sw_hilast, second->sw_lolast, second->sw_hilast);
-        printf("  overlap pitch = %d, overlap vel = %d\n", first->overlapsPitch(*second), first->overlapsVelocity(*second));
-#endif
-        if (first->overlapsPitch(*second) &&
-            first->overlapsVelocity(*second) &&
-            first->overlapsRand(*second) &&
-            first->sameSequence(*second)) {
+
+           if (evaluateOverlaps(first, second)) {
             // keep the region with the smallest pitch range
             const int firstPitchRange = first->hikey - first->lokey;
             const int secondPitchRange = second->hikey - second->lokey;

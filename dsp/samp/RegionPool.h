@@ -60,4 +60,5 @@ private:
     void removeOverlaps();
     void maybeAddToKeyswitchList(CompiledRegionPtr);
     static bool checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random);
+    static bool evaluateOverlaps( CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
 };
