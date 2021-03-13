@@ -36,7 +36,7 @@ class CompiledRegion {
 public:
   //  CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
     void addRegionInfo(SamplerSchema::KeysAndValuesPtr);
-    CompiledRegion() {
+    CompiledRegion(int ln) : lineNumber (ln) {
         // SQINFO("Compiled REgion def ctor %p", this);
         ++compileCount;
     }
@@ -137,6 +137,7 @@ private:
  * We need multi-regions when we run into a group that defines multiple regions
  * that get picked at runtime.
  */
+#if 0 // unused?
 class CompiledMultiRegion : public CompiledRegion {
 public:
     /** This constructor makes a multi-region from a group.
@@ -170,6 +171,7 @@ public:
     CompiledRandomRegion() = default;
     Type type() const override { return Type::Random; }
 };
+#endif
 
 /**
  * Every Compiled Region had a compiled group as a parent

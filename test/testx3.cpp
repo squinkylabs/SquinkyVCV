@@ -35,7 +35,7 @@ static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::
     sr->compiledValues = SamplerSchema::compile(errc, sr->values);
     assert(errc.empty());
 
-    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>();
+    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(45);
     r0->addRegionInfo(sr->compiledValues);
 
     //  //CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
@@ -384,6 +384,70 @@ static void testKeyswitch2() {
     assertEQ(info.sampleIndex, 1);
 }
 
+static void testOverlapVel() {
+    SQINFO("---- testOverlapVel");
+    static char* patch = R"foo(
+    <group> // kick - snares on
+    key=48
+    volume=10
+    <region> 
+    sample=a
+    lovel=0
+    hivel=30
+    <region>
+    sample=b
+    lovel=30
+    hivel=60
+    <region>
+    sample=c
+    lovel=60
+    hivel=90
+    <region>
+    sample=c
+    lovel=90
+        )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(patch, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    assert(errc.empty());
+
+    std::vector<CompiledRegionPtr> regions;
+    cinst->_pool()._getAllRegions(regions);
+    const size_t c = regions.size();
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    
+    params.midiPitch= 48;
+    params.midiVelocity = 1;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 1);
+
+    params.midiVelocity = 30;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 1);
+
+    params.midiVelocity = 31;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+
+    
+    assert(false);
+}
+
 static void shouldFindMalformed(const char* input) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -452,6 +516,8 @@ void testx3() {
 
     testMalformedRelease();
     testMalformedKey();
+
+    testOverlapVel();
 
     assert(parseCount == 0);
     assert(compileCount == 0);

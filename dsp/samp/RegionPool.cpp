@@ -124,7 +124,7 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
                
                 
                 // SQWARN("need to add global info");
-                CompiledRegionPtr cReg = std::make_shared<CompiledRegion>();
+                CompiledRegionPtr cReg = std::make_shared<CompiledRegion>(reg->lineNumber);
                 cReg->addRegionInfo(in->global.compiledValues);
                 cReg->addRegionInfo(group->compiledValues);
                 cReg->addRegionInfo(reg->compiledValues);
@@ -142,8 +142,10 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
             }
         }
     }
+    SQINFO(" buildCompiledTree 145 there are %d", regions.size());
     bool bRet = fixupCompiledTree();
     fillRegionLookup();
+     SQINFO(" leaving buildCompiledTree 145 there are %d", regions.size());
     return bRet;
 }
 
@@ -215,9 +217,9 @@ void RegionPool::removeOverlaps() {
             const int firstPitchRange = first->hikey - first->lokey;
             const int secondPitchRange = second->hikey - second->lokey;
             if (firstPitchRange <= secondPitchRange) {
-#ifdef _LOGOV
-                printf("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
-#endif
+
+                SQINFO("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
+
                 // if we want to erase the second one, do that.
                 // it still points at first, but next iteration there will be a different next;
                 regions.erase(itNext);

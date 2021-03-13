@@ -212,6 +212,7 @@ CompiledRegion::CompiledRegion(CompiledRegionPtr prototype) {
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#if 0
 CompiledMultiRegion::CompiledMultiRegion(CompiledGroupPtr parent) : CompiledRegion(parent->regions[0]) {
     for (auto region : parent->regions) {
         originalRegions.push_back(region);
@@ -226,6 +227,7 @@ CompiledRoundRobinRegion::CompiledRoundRobinRegion(CompiledGroupPtr parent) : Co
 
 CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -23,7 +23,7 @@ public:
         assert(err.empty());
         assert(errc.unrecognizedOpcodes.empty());
 
-        CompiledRegionPtr cr = std::make_shared<CompiledRegion>();
+        CompiledRegionPtr cr = std::make_shared<CompiledRegion>(23);        // pass fake line number
         cr->addRegionInfo(group->compiledValues);
         cr->addRegionInfo(region->compiledValues);
         return cr;
