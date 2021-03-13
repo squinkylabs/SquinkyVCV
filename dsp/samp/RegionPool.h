@@ -59,11 +59,14 @@ private:
     void fillRegionLookup();
     void removeOverlaps();
     void maybeAddToKeyswitchList(CompiledRegionPtr);
-    static bool checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random);
+ //   static bool checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random);
+    static bool shouldRegionPlayNow(const VoicePlayParameter& params, const CompiledRegion* region, float random);
 
     /**
      * returns true if overlap cannot be corrected.
      * If overlap can be corrected, regions will be tweaked and false will be returned;
      */
-    static bool evaluateOverlaps( CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
+    static bool evaluateOverlapsAndAttemptRepair( CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
+    static bool attemptOverlapRepairWithVel(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
+    static bool attemptOverlapRepairWithPitch(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
 };

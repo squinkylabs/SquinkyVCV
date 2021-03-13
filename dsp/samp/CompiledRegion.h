@@ -56,6 +56,7 @@ public:
 #endif
 
     int velRange() const;
+    int pitchRange() const;
 
     bool overlapsPitch(const CompiledRegion&) const;
     bool overlapsVelocity(const CompiledRegion&) const;

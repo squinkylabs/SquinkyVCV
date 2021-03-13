@@ -555,7 +555,7 @@ static void testOverlapPitch() {
     params.midiPitch = 30;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
-  //  assertEQ(info.sampleIndex, 2);
+    assertEQ(info.sampleIndex, 2);
 
     params.midiPitch = 31;
     cinst->play(info, params, nullptr, 0);

@@ -133,7 +133,6 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
 
     findValue(tune, values, SamplerSchema::Opcode::TUNE);
     findValue(volume, values, SamplerSchema::Opcode::VOLUME);
-
 }
 
 bool CompiledRegion::shouldIgnore() const {
@@ -150,8 +149,6 @@ bool CompiledRegion::shouldIgnore() const {
     }
     return !dontIgnore;
 }
-
-
 
 // Int version: if ranges have a value in common, they overlap
 static bool overlapRangeInt(int alo, int ahi, int blo, int bhi) {
@@ -171,7 +168,6 @@ static bool overlapRangeFloat(float alo, float ahi, float blo, float bhi) {
 
 // should only be called when overlapping
 static CompiledRegion::OverlapPair overlapRangeIntAmount(int alo, int ahi, int blo, int bhi) {
-
     assert(overlapRangeInt(alo, ahi, blo, bhi));
 
     const float totalRange = .5f * (1 + (ahi - alo) + 1 + (bhi - blo));
@@ -179,16 +175,15 @@ static CompiledRegion::OverlapPair overlapRangeIntAmount(int alo, int ahi, int b
     const int overlapEnd = std::min(ahi, bhi);
     const int overlapStart = std::max(alo, blo);
     const int overlapAmountInt = 1 + overlapEnd - overlapStart;
-    assert(overlapAmountInt >= 1);      // we did assert on overlap, after all
+    assert(overlapAmountInt >= 1);  // we did assert on overlap, after all
 
-  //  const float overlapAmount = float(overlapEnd - overlapStart);
+    //  const float overlapAmount = float(overlapEnd - overlapStart);
     const float overlapAmount = float(overlapAmountInt);
     const float overlapFloat = overlapAmount / totalRange;
     assert(overlapFloat >= 0);
     assert(overlapFloat <= 1);
     return std::make_pair(overlapAmountInt, overlapFloat);
 }
-
 
 bool CompiledRegion::overlapsPitch(const CompiledRegion& that) const {
     // of both regions have valid sw_last info
@@ -246,9 +241,13 @@ CompiledRegion::CompiledRegion(CompiledRegionPtr prototype) {
     *this = *prototype;
 }
 
- int CompiledRegion::velRange() const {
-     return 1 + hivel - lovel;
- }
+int CompiledRegion::velRange() const {
+    return 1 + hivel - lovel;
+}
+
+int CompiledRegion::pitchRange() const {
+    return 1 + hikey - lokey;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
