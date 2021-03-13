@@ -67,6 +67,7 @@ private:
      * If overlap can be corrected, regions will be tweaked and false will be returned;
      */
     static bool evaluateOverlapsAndAttemptRepair( CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
+    //static bool evaluateOverlapsAndAttemptRepairOnce( CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
     static bool attemptOverlapRepairWithVel(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
     static bool attemptOverlapRepairWithPitch(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
 };

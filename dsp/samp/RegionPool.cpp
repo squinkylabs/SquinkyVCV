@@ -250,7 +250,10 @@ bool RegionPool::attemptOverlapRepairWithPitch(CompiledRegionPtr firstRegion, Co
     return false;
 }
 
+
 bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion) {
+    // TODO: we should restore regions after if we don't succeed
+    assert(false);
 #ifdef _LOGOV
     printf("overlap comparing line %d with %d\n", first->lineNumber, second->lineNumber);
     printf("  first pitch=%d,%d, vel=%d,%d\n", first->lokey, first->hikey, first->lovel, first->hivel);
@@ -260,24 +263,31 @@ bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion,
     printf("  overlap pitch = %d, overlap vel = %d\n", first->overlapsPitch(*second), first->overlapsVelocity(*second));
 #endif
 
+    // If there is no overlap, then everything is fine. 
+    // Can keep and use regions as they are
     if (!regionsOverlap(firstRegion, secondRegion)) {
         return false;
     }
 
-    bool failed = attemptOverlapRepairWithVel(firstRegion, secondRegion);
-    if (failed) {
-        return true;
-    }
+    // ok, there is overlap. maybe we can tweak regions
+    // to make them not overlap any longer
+    auto pitchOverlap = firstRegion->overlapPitchAmount(*secondRegion);
+    auto velOverlap = firstRegion->overlapVelocityAmount(*secondRegion);
+    const bool velLessOverlap = velOverlap.second < pitchOverlap.second;
 
-    // if regions are good now, then stope
+    // first try to repair the property with the least overlap (pitch or velocity)
+    velLessOverlap ? attemptOverlapRepairWithVel(firstRegion, secondRegion) : attemptOverlapRepairWithPitch(firstRegion, secondRegion);
+
+    // if regions are good now, then stop
     if (!regionsOverlap(firstRegion, secondRegion)) {
         return false;
     }
 
-    failed = attemptOverlapRepairWithPitch(firstRegion, secondRegion);
-    if (failed) {
-        return true;
-    }
+    // If we still aren't good, might as well try patching the other one.
+    // After all one of these regsions will get discared if we can't fix it.
+    velLessOverlap ? attemptOverlapRepairWithPitch(firstRegion, secondRegion) : attemptOverlapRepairWithVel(firstRegion, secondRegion);
+    attemptOverlapRepairWithPitch(firstRegion, secondRegion);
+
 
     bool stillBad = regionsOverlap(firstRegion, secondRegion);
     if (stillBad) {

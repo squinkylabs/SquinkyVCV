@@ -578,15 +578,17 @@ static void testOverlapPitch() {
     assert(info.valid);
     assertEQ(info.sampleIndex, 3);
 
-    params.midiVelocity = 90;
+    params.midiPitch = 90;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 3);
 
-    params.midiVelocity = 91;
+    params.midiPitch = 91;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 4);
+
+
 
     params.midiPitch = 127;
     cinst->play(info, params, nullptr, 0);
