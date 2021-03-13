@@ -35,13 +35,13 @@ only non-parser thing:
 std::string SParse::goFile(const std::string& sPath, SInstrumentPtr inst) {
     std::ifstream t(sPath);
     if (!t.good()) {
-        printf("can't open file\n");
-        return nullptr;
+      //  printf("can't open file\n");
+        return "can't open source file: " + sPath;
     }
     std::string str((std::istreambuf_iterator<char>(t)),
                     std::istreambuf_iterator<char>());
     if (str.empty()) {
-        return nullptr;
+        return "file empty: " + sPath;
     }
     return go(str, inst);
 }
@@ -49,6 +49,7 @@ std::string SParse::goFile(const std::string& sPath, SInstrumentPtr inst) {
 std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
     SLexPtr lex = SLex::go(s);
     if (!lex) {
+        // TODO: we need a way to return lexer errors.
         printf("lexer failed\n");
         return "";
     }

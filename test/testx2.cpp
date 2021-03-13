@@ -288,7 +288,9 @@ static void testParseInclude() {
         #include "vc_arco_sus_map.sfz")foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
-    assert(err.empty());
+
+    // for now, include give us parse errors.
+    assert(!err.empty());
 }
 
 static void testParseLabel() {
@@ -424,6 +426,29 @@ static void testCompileCrash() {
     VoicePlayParameter params;
     
     cinst->play(info, params, nullptr, 44100);
+}
+
+static void testCompileCrash2() {
+   const char* data = "F:\\foo\\bar.sfz";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::goFile(data, inst);
+    assert(!err.empty());
+
+
+    //SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(err);
+    assert(cinst);
+    auto emsg = cinst->getInfo()->errorMessage;
+
+    assert(!emsg.empty());
+    assert(cinst->isInError());
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    
+    cinst->play(info, params, nullptr, 44100);
+    assert(!info.valid);
 }
 
 static void testCompiledRegion() {
@@ -1394,9 +1419,10 @@ void testx2() {
     testParseLabel();
 
     // can't parse these yet
-    //testParseInclude();
+    testParseInclude();
 
     testCompileCrash();
+    testCompileCrash2();
    
     testCompiledRegion();
     testCompiledRegionAddedOpcodes();
