@@ -588,12 +588,78 @@ static void testOverlapPitch() {
     assert(info.valid);
     assertEQ(info.sampleIndex, 4);
 
-
-
     params.midiPitch = 127;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 4);
+}
+
+static void testOverlapRestore() {
+     static char* patch = R"foo(
+    <region> 
+    sample=a
+    lokey=0
+    hikey=127
+    <region>
+    sample=b
+    lokey=30
+    hikey=60
+        )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(patch, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    assert(errc.empty());
+
+    std::vector<CompiledRegionPtr> regions;
+    cinst->_pool()._getAllRegions(regions);
+    const size_t c = regions.size();
+    CompiledRegion* r = regions[0].get();
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+
+    // big region deleted, small one intact
+    params.midiPitch = 1;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
+
+    params.midiPitch = 29;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
+
+    params.midiPitch = 30;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 1);
+
+    params.midiPitch = 60;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 1);
+  
+    params.midiPitch = 61;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
+
+    params.midiPitch = 127;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
 }
 
 static void shouldFindMalformed(const char* input) {
@@ -668,6 +734,7 @@ void testx3() {
 
     testOverlapVel();
     testOverlapPitch();
+    testOverlapRestore();
 
     assert(parseCount == 0);
     assert(compileCount == 0);

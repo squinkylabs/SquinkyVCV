@@ -215,7 +215,7 @@ private:
     // I think this goes ins sSampler4vx
     //  std::function<float(float)> expLookup = ObjectCache<float>::getExp2Ex();
     std::shared_ptr<LookupTableParams<float>> audioTaperLookupParams = ObjectCache<float>::getAudioTaper();
-    std::shared_ptr<LookupTableParams<float>> bipolarAudioTaperLookupParams = ObjectCache<float>::getBipolarAudioTaper();
+    std::shared_ptr<LookupTableParams<float>> bipolarAudioTaperLookupParams = ObjectCache<float>::getBipolarAudioTaper42();
 
     std::unique_ptr<ThreadClient> thread;
 
@@ -348,9 +348,7 @@ inline void Samp<TBase>::serviceFMMod() {
 
     // this one is -1 to +1
     const float pitchCVTrimRaw = TBase::params[PITCH_TRIM_PARAM].value;
- //   SQINFO("raw trim is %f", pitchCVTrimRaw);
-  //  SQINFO("params min/max = %f %f", audioTaperLookupParams->xMin, audioTaperLookupParams->xMax);
-    const float scaledPitchCVTrim =  LookupTable<float>::lookup(*bipolarAudioTaperLookupParams, pitchCVTrimRaw);
+    const float scaledPitchCVTrim = LookupTable<float>::lookup(*bipolarAudioTaperLookupParams, pitchCVTrimRaw);
     const float_4 pitchCVTrim(scaledPitchCVTrim);
     Port& fmInput = TBase::inputs[FM_INPUT];
     for (int bank = 0; bank < numBanks_n; ++bank) {
@@ -396,9 +394,8 @@ inline int Samp<TBase>::quantize(float pitchCV) {
 
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
- //   SQINFO("pin");
+    //   SQINFO("pin");
     divn.step();
-    
 
     // is there some "off by one error" here?
     assert(numBanks_n <= 4);
@@ -448,7 +445,7 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
         lastGate4[bank] = gate4;
     }
-//    SQINFO("pout");
+    //    SQINFO("pout");
 }
 
 template <class TBase>
@@ -519,7 +516,7 @@ public:
         SQINFO("about to compile");
         // TODO: need a way for compiler to return error;
         SamplerErrorContext errc;
-        CompiledInstrumentPtr cinst = err.empty()  ? CompiledInstrument::make(errc, inst) : CompiledInstrument::make(err);
+        CompiledInstrumentPtr cinst = err.empty() ? CompiledInstrument::make(errc, inst) : CompiledInstrument::make(err);
         SQINFO("back from comp");
         errc.dump();
         if (!cinst) {
@@ -581,7 +578,7 @@ private:
     void parsePath(SampMessage* msg) {
         if (msg->pathToSfz) {
             // maybe we should allow raw strings to come in this way. but it's probably fine
-            fullPath = FilePath(*(msg->pathToSfz));   
+            fullPath = FilePath(*(msg->pathToSfz));
             delete msg->pathToSfz;
             msg->pathToSfz = nullptr;
         }
@@ -675,5 +672,4 @@ void Samp<TBase>::serviceMessagesReturnedToComposite() {
         messagePool.push(smsg);
         SQINFO("leave snpm");
     }
-    
 }

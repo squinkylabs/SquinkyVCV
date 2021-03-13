@@ -24,6 +24,7 @@ public:
      * domain (x) = -1 .. +1
      */
     static void makeBipolarAudioTaper(LookupTableParams<T>& params);
+    static void makeBipolarAudioTaper(LookupTableParams<T>& params, double knee);
 
 
     static void makeMixerPanL(LookupTableParams<T>& params);
@@ -196,8 +197,14 @@ inline void LookupTableFactory<T>::makeExp2ExLow(LookupTableParams<T>& params)
 template<typename T>
 inline void LookupTableFactory<T>::makeBipolarAudioTaper(LookupTableParams<T>& params)
 {
+    makeBipolarAudioTaper(params, audioTaperKnee());
+}
+
+template<typename T>
+inline void LookupTableFactory<T>::makeBipolarAudioTaper(LookupTableParams<T>& params, double knee)
+{
     const int bins = 32;
-    std::function<double(double)> audioTaper = AudioMath::makeFunc_AudioTaper(audioTaperKnee());
+    std::function<double(double)> audioTaper = AudioMath::makeFunc_AudioTaper(knee);
     const T xMin = -1;
     const T xMax = 1;
     LookupTable<T>::init(params, bins, xMin, xMax, [audioTaper](double x) {
