@@ -80,7 +80,7 @@ static void testOverlap() {
     testOverlap(false);
 }
 
-static void testParitalOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, float expectedOverlap) {
+static void testParitalOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, float expectedOverlap, int expectedIntOverlap) {
     assert(mina <= maxa);
     assert(minb <= maxb);
     SGroupPtr gp = std::make_shared<SGroup>(1234);
@@ -88,16 +88,19 @@ static void testParitalOverlapSub(bool testPitch, int mina, int maxa, int minb, 
     gp->compiledValues = SamplerSchema::compile(errc, gp->values);
     auto regionA = makeTestRegion(gp, testPitch, std::to_string(mina), std::to_string(maxa));
     auto regionB = makeTestRegion(gp, testPitch, std::to_string(minb), std::to_string(maxb));
-    float overlap = testPitch ? regionA->overlapPitchAmount(*regionB) : regionA->overlapVelocityAmount(*regionB);
+    auto overlap = testPitch ? regionA->overlapPitchAmount(*regionB) : regionA->overlapVelocityAmount(*regionB);
    // assertEQ(overlap, shouldOverlap)
-    assertClose(overlap, expectedOverlap, .01);
+    assertClose(overlap.second, expectedOverlap, .01);
+    assertEQ(overlap.first, expectedIntOverlap);
 }
 
 static void testPartialOverlap(bool testPitch) {
-    testParitalOverlapSub(testPitch, 10, 20, 30, 40, 0);
-    testParitalOverlapSub(testPitch, 10, 20, 10, 20, 1);
-    testParitalOverlapSub(testPitch, 10, 20, 15, 25, .5f);
-    testParitalOverlapSub(testPitch, 15, 25, 10, 20, .5f);
+    testParitalOverlapSub(testPitch, 10, 20, 30, 40, 0, 0);         // no overlap
+    testParitalOverlapSub(testPitch, 1, 2, 2, 3, .5f, 1);           // one overlap, simple case
+    testParitalOverlapSub(testPitch, 10, 20, 20, 30, .1f, 1);       // one overlap
+    testParitalOverlapSub(testPitch, 10, 20, 10, 20, 1, 11);
+    testParitalOverlapSub(testPitch, 10, 20, 15, 25, 6.f / 11.f, 6);
+    testParitalOverlapSub(testPitch, 15, 25, 10, 20, 6.f / 11.f, 6);
 }
 static void testPartialOverlap() {
     testPartialOverlap(false);

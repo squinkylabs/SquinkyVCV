@@ -148,52 +148,10 @@ bool CompiledRegion::shouldIgnore() const {
         }
 #endif
     }
-
     return !dontIgnore;
 }
 
-// should only be called when overlapping
-static float overlapRangeIntAmount(int alo, int ahi, int blo, int bhi) {
-    assert(alo <= ahi);
-    assert(blo <= bhi);
 
-    const float totalRange = .5f * ((ahi - alo) + (bhi - blo));
-
-    const int overlapEnd = std::min(ahi, bhi);
-    const int overlapStart = std::max(alo, blo);
-    const float overlapAmount = float(overlapEnd - overlapStart);
-
-    const float x = overlapAmount / totalRange;
-    assert(x >= 0);
-    assert(x <= 1);
-    return x;
-}
-
-
-#if 0
-static float overlapRangeIntAmount(int alo, int ahi, int blo, int bhi) {
-    assert(alo <= ahi);
-    assert(blo <= bhi);
-
-    float totalRange = .5f * ((ahi - alo) + (bhi - blo));
-    float overlapAmount = 0;
-    //          BL       BH
-    //      AL      AH
-    if (blo <= ahi && bhi >= alo) {
-        overlapAmount = float(ahi - blo);
-
-    //        BL         BH
-    //             AL       AH
-    } else if (alo <= bhi && ahi >= blo) {
-        overlapAmount = float(bhi - alo);
-    }
-
-    float x =  overlapAmount / totalRange;
-    assert(x >= 0);
-    assert(x <= 1);
-    return x;
-}
-#endif
 
 // Int version: if ranges have a value in common, they overlap
 static bool overlapRangeInt(int alo, int ahi, int blo, int bhi) {
@@ -210,6 +168,27 @@ static bool overlapRangeFloat(float alo, float ahi, float blo, float bhi) {
     return (blo < ahi && bhi > alo) ||
            (alo < bhi && ahi > blo);
 }
+
+// should only be called when overlapping
+static CompiledRegion::OverlapPair overlapRangeIntAmount(int alo, int ahi, int blo, int bhi) {
+
+    assert(overlapRangeInt(alo, ahi, blo, bhi));
+
+    const float totalRange = .5f * (1 + (ahi - alo) + 1 + (bhi - blo));
+
+    const int overlapEnd = std::min(ahi, bhi);
+    const int overlapStart = std::max(alo, blo);
+    const int overlapAmountInt = 1 + overlapEnd - overlapStart;
+    assert(overlapAmountInt >= 1);      // we did assert on overlap, after all
+
+  //  const float overlapAmount = float(overlapEnd - overlapStart);
+    const float overlapAmount = float(overlapAmountInt);
+    const float overlapFloat = overlapAmount / totalRange;
+    assert(overlapFloat >= 0);
+    assert(overlapFloat <= 1);
+    return std::make_pair(overlapAmountInt, overlapFloat);
+}
+
 
 bool CompiledRegion::overlapsPitch(const CompiledRegion& that) const {
     // of both regions have valid sw_last info
@@ -229,16 +208,16 @@ bool CompiledRegion::overlapsVelocity(const CompiledRegion& that) const {
     return overlapRangeInt(this->lovel, this->hivel, that.lovel, that.hivel);
 }
 
-float CompiledRegion::overlapVelocityAmount(const CompiledRegion& that) const {
+CompiledRegion::OverlapPair CompiledRegion::overlapVelocityAmount(const CompiledRegion& that) const {
     if (!overlapsVelocity(that)) {
-        return 0;
+        return std::make_pair(0, 0.f);
     }
     return overlapRangeIntAmount(this->lovel, this->hivel, that.lovel, that.hivel);
-
 }
-float CompiledRegion::overlapPitchAmount(const CompiledRegion& that) const {
+
+CompiledRegion::OverlapPair CompiledRegion::overlapPitchAmount(const CompiledRegion& that) const {
     if (!overlapsPitch(that)) {
-        return 0;
+        return std::make_pair(0, 0.f);
     }
     return overlapRangeIntAmount(this->lokey, this->hikey, that.lokey, that.hikey);
 }

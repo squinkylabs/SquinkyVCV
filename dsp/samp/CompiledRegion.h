@@ -61,10 +61,17 @@ public:
     bool overlapsRand(const CompiledRegion&) const;
     bool sameSequence(const CompiledRegion&) const;
 
-    // 1.0 means complete overlap
-    // 0 means no overlap at all
-    float overlapVelocityAmount(const CompiledRegion&) const;
-    float overlapPitchAmount(const CompiledRegion&) const;
+    /** 
+     * Find out by how much two regsions overlap.
+     * result = <intergerAmount:floatRatio>
+     * 
+     * float ratio 1.0 means complete overlap
+     * float ratio  0 means no overlap at all
+    */
+    using OverlapPair = std::pair<int, float>;
+
+    OverlapPair overlapVelocityAmount(const CompiledRegion&) const;
+    OverlapPair overlapPitchAmount(const CompiledRegion&) const;
 
     int lokey = 0;
     int hikey = 127;
