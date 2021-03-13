@@ -246,6 +246,10 @@ CompiledRegion::CompiledRegion(CompiledRegionPtr prototype) {
     *this = *prototype;
 }
 
+ int CompiledRegion::velRange() const {
+     return 1 + hivel - lovel;
+ }
+
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #if 0

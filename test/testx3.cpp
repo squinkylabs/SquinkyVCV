@@ -430,7 +430,7 @@ static void testOverlapVel() {
     lovel=60
     hivel=90
     <region>
-    sample=c
+    sample=d
     lovel=90
         )foo";
 
@@ -461,21 +461,137 @@ static void testOverlapVel() {
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 
+    // first region gets shrunk, so second region plays here
     params.midiVelocity = 30;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
-    assertEQ(info.sampleIndex, 1);
+    assertEQ(info.sampleIndex, 2);  
 
-    SQINFO("finish test");
-#if 0
     params.midiVelocity = 31;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
 
-    
-    assert(false);
-#endif
+    params.midiVelocity = 59;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+
+    // second gets shrunk
+    params.midiVelocity = 60;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiVelocity = 61;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiVelocity = 90;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiVelocity = 91;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 4);
+
+    params.midiVelocity = 127;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 4);
+}
+
+static void testOverlapPitch() {
+    SQINFO("---- testOverlapVel");
+    static char* patch = R"foo(
+    <region> 
+    sample=a
+    lokey=0
+    hikey=30
+    <region>
+    sample=b
+    lokey=30
+    hikey=60
+    <region>
+    sample=c
+    lokey=60
+    hikey=90
+    <region>
+    sample=d
+    lokey=90
+        )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(patch, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    assert(errc.empty());
+
+    std::vector<CompiledRegionPtr> regions;
+    cinst->_pool()._getAllRegions(regions);
+    const size_t c = regions.size();
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+
+    params.midiPitch = 1;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 1);
+
+    // first region gets shrunk, so second region plays here
+    params.midiPitch = 30;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+  //  assertEQ(info.sampleIndex, 2);
+
+    params.midiPitch = 31;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+
+    params.midiPitch = 59;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+
+    // second gets shrunk
+    params.midiPitch = 60;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiPitch = 61;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiVelocity = 90;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiVelocity = 91;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 4);
+
+    params.midiPitch = 127;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 4);
 }
 
 static void shouldFindMalformed(const char* input) {
@@ -549,6 +665,7 @@ void testx3() {
     testMalformedKey();
 
     testOverlapVel();
+    testOverlapPitch();
 
     assert(parseCount == 0);
     assert(compileCount == 0);

@@ -44,6 +44,7 @@ public:
     void _dump(int depth) const;
 
     // still used??
+#if 1
     enum class Type {
         Base,
         RoundRobin,  // group and regions where we RR between the regions in the one group.
@@ -51,7 +52,10 @@ public:
         GRandom,     // probability is on each group, so multiple groups involved.
         GRoundRobbin
     };
-    virtual Type type() const { return Type::Base; }
+    
+#endif
+
+    int velRange() const;
 
     bool overlapsPitch(const CompiledRegion&) const;
     bool overlapsVelocity(const CompiledRegion&) const;
@@ -143,6 +147,9 @@ private:
     static void findValue(int& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
     static void findValue(std::string& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
     static void findValue(SamplerSchema::DiscreteValue& returnVAlue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
+
+    // not used ??
+    virtual Type type() const { return Type::Base; }
 };
 
 /**
