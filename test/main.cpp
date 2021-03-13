@@ -20,6 +20,7 @@ extern void testAudioMath();
 extern void initPerf();
 extern void perfTest();
 extern void perfTest2();
+extern void perfTest3();
 extern void testFrequencyShifter();
 extern void testStateVariable();
 extern void testVocalAnimator();
@@ -203,13 +204,11 @@ int main(int argc, char** argv) {
 
     if (runPerf) {
         initPerf();
+        perfTest3();
         perfTest2();
         perfTest();
-
         return 0;
     }
-
-#if 1
 
     testADSRSampler();
     testStreamer();
@@ -221,11 +220,6 @@ int main(int argc, char** argv) {
     testx5();
     testSampComposite();
    
-#else
-    printf("------ sampl tests diabled\n");
-#endif
-
-
     testADSR();
     testCompressorParamHolder();
     testWavThread();

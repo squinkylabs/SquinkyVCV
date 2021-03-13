@@ -16,8 +16,6 @@
 #include "Compressor.h"
 #endif
 
-#include "Samp.h"
-
 #include "ObjectCache.h"
 #include "Slew4.h"
 #include "TestComposite.h"
@@ -278,29 +276,6 @@ static void testMixM()
 
 
 #ifndef _MSC_VER
-
-static void testSamp1() {
-    using Comp = Samp<TestComposite>;
-    Comp comp;
-
-    comp.init();
-
-  //  comp.inputs[Comp::AUDIO_INPUT].setVoltage(0, 0);
- //   comp.inputs[Comp::AUDIO_INPUT].channels = 1;
- 
-    Comp::ProcessArgs args;
-    args.sampleTime = 1.f / 44100.f;
-    args.sampleRate = 44100;
-    int iter=0;
-
-    // need to make this real. need samples to play, and stuff.
-
-    MeasureTime<float>::run(overheadInOut, "testSamp basic", [&comp, args, &iter]() {
-       // comp.inputs[Comp::A_INPUT].setVoltage(TestBuffers<float>::get());
-        comp.process(args);
-        return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
-        }, 1); 
-}
 
 static void testF2_Poly1()
 {
@@ -606,7 +581,7 @@ void perfTest2()
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
 #ifndef _MSC_VER
-    testSamp1();
+  
     testF2_Poly1();
     testF2_Poly16();
     testF2_Poly16_hires();

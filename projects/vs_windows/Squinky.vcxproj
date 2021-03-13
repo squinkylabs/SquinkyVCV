@@ -95,6 +95,7 @@
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\perfTest.cpp" />
     <ClCompile Include="..\..\test\perfTest2.cpp" />
+    <ClCompile Include="..\..\test\perfTest3.cpp" />
     <ClCompile Include="..\..\test\simd_testBiquad.cpp" />
     <ClCompile Include="..\..\test\SqWaveFile.cpp" />
     <ClCompile Include="..\..\test\testACDetector.cpp" />
