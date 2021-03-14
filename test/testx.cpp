@@ -308,14 +308,28 @@ static void testLexMarimba() {
     //  assertEQ(fname->idName, "abc def ghi");
 }
 
+
+static void testLexIncludeBad() {
+    std::string str("#includ \"abc\"");
+    std::string err;
+    auto lex = SLex::go(str, &err);
+    assert(!lex);
+    assert(!err.empty());
+    assertEQ(err, "Malformed #include at line 1");
+}
+
 static void testLexInclude() {
     std::string str("#include \"abc\"");
-    auto lex = SLex::go(str);
-    assert(lex);
-    lex->validate();
-    lex->_dump();
+    std::string err;
+    auto lex = SLex::go(str, &err);
+
+    assert(!err.empty());
+    assertEQ(err, "Can't open abc included at line 1");
+
+    // this should error out, as "abc" can't be opened.
+    assert(!lex);
     SQINFO("-------------------------- put lex include back -------------------");
-   // assert(false);
+    assert(false);
 }
 
 static void testparse1() {
@@ -568,7 +582,9 @@ void testx() {
     testLexSpaces2();
     testLexLabel();
     testLexMarimba();
+    testLexIncludeBad();
     testLexInclude();
+
 
     testparse1();
     testParseRegion();

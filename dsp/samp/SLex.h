@@ -45,7 +45,15 @@ using SLexItemPtr = std::shared_ptr<SLexItem>;
 
 class SLex {
 public:
-    static SLexPtr go(const std::string& s);
+    /**
+     * @param sContent is the input data to analyze (typically the contents of an SFZ file).
+     * @param errorTest is in out parameter for returning lexing errors.
+     * @param includeDepth is passed when lexing recursively for #include resolution.
+     * @returns lexer full of tokens, or null if error
+     */
+  
+    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0);
+    SLex(std::string* errorText, int includeDepth);
     std::vector<SLexItemPtr> items;
     SLexItemPtr next() {
         return currentIndex < int(items.size()) ? items[currentIndex] : nullptr;
@@ -61,16 +69,21 @@ public:
     void validate() const;
 
 private:
+   
     // return true if no error
     bool procNextChar(char c);
     bool procFreshChar(char c);
     bool procNextTagChar(char c);
     bool procNextCommentChar(char c);
+    bool procNextIncludeChar(char c);
     bool procEnd();
     bool procNextIdentifierChar(char c);
     bool procEqualsSignInIdentifier();
+    bool error(const std::string&);
+    bool handleIncludeFile(const std::string&);
 
     void addCompletedItem(SLexItemPtr, bool clearCurItem);
+    bool handleInclude(const std::string&);
 
     enum class State {
         Ready,
@@ -80,19 +93,26 @@ private:
         InInclude
     };
 
-    State state;
-#if 0
-    bool inComment = false;
-    bool inTag = false;
-    bool inIdentifier = false;
-    bool inInclude = false;
-#endif
+    State state = State::Ready;
+
+    enum class IncludeSubState {
+        MatchingOpcode,
+        MatchingSpace,
+        MatchingFileName
+    };
+    IncludeSubState includeSubState = IncludeSubState::MatchingOpcode;
+    int spaceCount = 0;
     
     std::string curItem;
     SamplerSchema::OpcodeType lastIdentifierType;
+    std::string* const outErrorStringPtr;
+    const int includeRecursionDepth;
 
     int currentIndex = 0;
+
+    // internally it's zero based, but we make it one based for things we expose.
     int currentLine = 0;
+
 
     static void validateName(const std::string&);
 };
