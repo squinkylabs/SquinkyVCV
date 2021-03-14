@@ -273,8 +273,6 @@ inline float Samp<TBase>::getProgressPct() const {
 
 template <class TBase>
 inline void Samp<TBase>::_setupPerfTest() {
-
-    SQINFO("enter _setupPerfTest");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     SamplerErrorContext errc;
@@ -283,15 +281,11 @@ inline void Samp<TBase>::_setupPerfTest() {
     w->_setTestMode( WaveLoader::Tests::DCTenSec);
 
     cinst->_setTestMode(CompiledInstrument::Tests::MiddleC11);  // I don't know what this test mode does now, but probably not enough?
- //   gcInstrument = cinst;
- //   gcWaveLoader = w;
 
     SampMessage sm;
     sm.instrument = cinst;
     sm.waves = w;
     setNewPatch(&sm);
-    SQINFO("leave _setupPerfTest");
-
 }
 
 // Called when a patch has come back from thread server
@@ -689,12 +683,12 @@ void Samp<TBase>::serviceMessagesReturnedToComposite() {
     // see if any messages came back for us
     ThreadMessage* newMsg = thread->getMessage();
     if (newMsg) {
-        SQINFO("new patch message back from worker thread!");
+        // SQINFO("new patch message back from worker thread!");
         assert(newMsg->type == ThreadMessage::Type::SAMP);
         SampMessage* smsg = static_cast<SampMessage*>(newMsg);
         setNewPatch(smsg);
-        SQINFO("new patch message back from worker thread done!");
+        // SQINFO("new patch message back from worker thread done!");
         messagePool.push(smsg);
-        SQINFO("leave snpm");
+        // SQINFO("leave snpm");
     }
 }
