@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+class FilePath;
 class SLex;
 using SLexPtr = std::shared_ptr<SLex>;
 
@@ -52,8 +53,8 @@ public:
      * @returns lexer full of tokens, or null if error
      */
   
-    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0);
-    SLex(std::string* errorText, int includeDepth);
+    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, FilePath* yourFilePath = nullptr);
+    SLex(std::string* errorText, int includeDepth, FilePath* yourFilePath);
     std::vector<SLexItemPtr> items;
     SLexItemPtr next() {
         return currentIndex < int(items.size()) ? items[currentIndex] : nullptr;
@@ -106,6 +107,7 @@ private:
     std::string curItem;
     SamplerSchema::OpcodeType lastIdentifierType;
     std::string* const outErrorStringPtr;
+    FilePath* const myFilePath;
     const int includeRecursionDepth;
 
     int currentIndex = 0;

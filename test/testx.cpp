@@ -2,6 +2,7 @@
 
 #include <set>
 
+#include "FilePath.h"
 #include "RandomRange.h"
 #include "SInstrument.h"
 #include "SLex.h"
@@ -309,7 +310,7 @@ static void testLexMarimba() {
 }
 
 
-static void testLexIncludeBad() {
+static void testLexIncludeMalformed() {
     std::string str("#includ \"abc\"");
     std::string err;
     auto lex = SLex::go(str, &err);
@@ -318,18 +319,17 @@ static void testLexIncludeBad() {
     assertEQ(err, "Malformed #include at line 1");
 }
 
-static void testLexInclude() {
+static void testLexIncludeBadFile() {
     std::string str("#include \"abc\"");
     std::string err;
-    auto lex = SLex::go(str, &err);
+    FilePath fp("fake");
+    auto lex = SLex::go(str, &err, 0, &fp);
 
     assert(!err.empty());
     assertEQ(err, "Can't open abc included at line 1");
 
     // this should error out, as "abc" can't be opened.
     assert(!lex);
-    SQINFO("-------------------------- put lex include back -------------------");
-    assert(false);
 }
 
 static void testparse1() {
@@ -582,8 +582,8 @@ void testx() {
     testLexSpaces2();
     testLexLabel();
     testLexMarimba();
-    testLexIncludeBad();
-    testLexInclude();
+    testLexIncludeMalformed();
+    testLexIncludeBadFile();
 
 
     testparse1();

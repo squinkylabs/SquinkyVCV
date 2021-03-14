@@ -2,17 +2,19 @@
 
 #include "SLex.h"
 
-#include <assert.h>
-
+#include "FilePath.h"
 #include "SqLog.h"
 #include "SqStream.h"
 
-SLex::SLex(std::string* errorText, int includeDepth) : outErrorStringPtr(errorText), includeRecursionDepth(includeDepth) {
+#include <assert.h>
+#include <fstream>
+
+SLex::SLex(std::string* errorText, int includeDepth, FilePath* filePath) : outErrorStringPtr(errorText), includeRecursionDepth(includeDepth), myFilePath(filePath) {
 }
 
-SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includeDepth) {
+SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includeDepth, FilePath* yourFilePath) {
     int count = 0;
-    SLexPtr result = std::make_shared<SLex>(errorText, includeDepth);
+    SLexPtr result = std::make_shared<SLex>(errorText, includeDepth, yourFilePath);
 
     for (const char& c : sContent) {
         if (c == '\n') {
@@ -110,10 +112,6 @@ bool SLex::error(const std::string& err) {
         *outErrorStringPtr = st.str();
     }
     return false;
-}
-
-bool SLex::handleIncludeFile(const std::string&) {
-    return error("can't prod include file");
 }
 
 bool SLex::procNextIncludeChar(char c) {
@@ -327,4 +325,39 @@ std::string SLexItem::lineNumberAsString() const {
     // sprintf_s(buf, "%d", lineNumber);
     snprintf(buf, sizeof(buf), "%d", lineNumber);
     return buf;
+}
+
+bool SLex::handleIncludeFile(const std::string& fileName) {
+    assert(!fileName.empty());
+
+    if (fileName.front() != '"' || fileName.back() != '"') {
+        return error("Include filename not quoted");
+    }
+    std::string rawFilename = fileName.substr(1, fileName.length()-2);
+    if (!myFilePath) {
+        return error("Can't resolve include with no context");
+    }
+    FilePath path(*myFilePath);
+    FilePath namePart(rawFilename);
+    path.concat(namePart);
+  
+    std::ifstream t(path.toString());
+    if (!t.good()) {
+      //  printf("can't open file\n");
+       // return "can't open source file: " + sPath;
+
+       SqStream s;
+       s.add("Can't open ");
+       s.add(rawFilename);
+       s.add(" included");
+       return error(s.str());
+    }
+    std::string str((std::istreambuf_iterator<char>(t)),
+                    std::istreambuf_iterator<char>());
+    if (str.empty()) {
+        return error("Include file empty ");
+    }
+
+    assert(false);      // finish
+    return false;
 }
