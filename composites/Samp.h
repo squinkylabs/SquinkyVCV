@@ -187,6 +187,8 @@ public:
 
     float _getTranspose(int voice) const;
 
+    void _setupPerfTest();
+
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
                              // SInstrumentPtr instrument;
@@ -267,6 +269,29 @@ inline void Samp<TBase>::init() {
 template <class TBase>
 inline float Samp<TBase>::getProgressPct() const {
     return sharedState->uiw_getProgressPercent();
+}
+
+template <class TBase>
+inline void Samp<TBase>::_setupPerfTest() {
+
+    SQINFO("enter _setupPerfTest");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    WaveLoaderPtr w = std::make_shared<WaveLoader>();
+    w->_setTestMode( WaveLoader::Tests::DCTenSec);
+
+    cinst->_setTestMode(CompiledInstrument::Tests::MiddleC11);  // I don't know what this test mode does now, but probably not enough?
+ //   gcInstrument = cinst;
+ //   gcWaveLoader = w;
+
+    SampMessage sm;
+    sm.instrument = cinst;
+    sm.waves = w;
+    setNewPatch(&sm);
+    SQINFO("leave _setupPerfTest");
+
 }
 
 // Called when a patch has come back from thread server

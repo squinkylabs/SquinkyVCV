@@ -1,9 +1,13 @@
 #pragma once
 
+#include "SimdBlocks.h"
+
 #include <functional>
 #define __STDC_FORMAT_MACROS 
 #include <inttypes.h>
 #include "TimeStatsCollector.h"
+
+
 
 template <typename T>
 class TestBuffers;
