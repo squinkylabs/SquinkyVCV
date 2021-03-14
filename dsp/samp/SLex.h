@@ -67,16 +67,28 @@ private:
     bool procNextTagChar(char c);
     bool procNextCommentChar(char c);
     bool procEnd();
-    bool proxNextIdentifierChar(char c);
+    bool procNextIdentifierChar(char c);
     bool procEqualsSignInIdentifier();
 
     void addCompletedItem(SLexItemPtr, bool clearCurItem);
 
+    enum class State {
+        Ready,
+        InComment,
+        InTag,
+        InIdentifier,
+        InInclude
+    };
+
+    State state;
+#if 0
     bool inComment = false;
     bool inTag = false;
     bool inIdentifier = false;
+    bool inInclude = false;
+#endif
+    
     std::string curItem;
-  //  std::string lastIdentifier;
     SamplerSchema::OpcodeType lastIdentifierType;
 
     int currentIndex = 0;

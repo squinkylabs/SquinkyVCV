@@ -308,6 +308,16 @@ static void testLexMarimba() {
     //  assertEQ(fname->idName, "abc def ghi");
 }
 
+static void testLexInclude() {
+    std::string str("#include \"abc\"");
+    auto lex = SLex::go(str);
+    assert(lex);
+    lex->validate();
+    lex->_dump();
+    SQINFO("-------------------------- put lex include back -------------------");
+   // assert(false);
+}
+
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -558,6 +568,7 @@ void testx() {
     testLexSpaces2();
     testLexLabel();
     testLexMarimba();
+    testLexInclude();
 
     testparse1();
     testParseRegion();

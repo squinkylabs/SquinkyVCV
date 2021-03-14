@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #include "SqLog.h"
+
 SLexPtr SLex::go(const std::string& s) {
     int count = 0;
     SLexPtr result = std::make_shared<SLex>();
@@ -21,7 +22,6 @@ SLexPtr SLex::go(const std::string& s) {
     }
     bool ret = result->procEnd();
     return ret ? result : nullptr;
-    ;
 }
 
 void SLex::validateName(const std::string& name) {
@@ -79,21 +79,30 @@ void SLex::_dump() const {
 }
 
 bool SLex::procNextChar(char c) {
-    if (!inTag && !inIdentifier && !inComment) {
-        return procFreshChar(c);
-    } else if (inTag) {
-        return procNextTagChar(c);
-    } else if (inComment) {
-        return procNextCommentChar(c);
-    } else {
-        assert(inIdentifier);
-        return proxNextIdentifierChar(c);
+    switch (state) {
+        case State::Ready:
+            return procFreshChar(c);
+        case State::InTag:
+            return procNextTagChar(c);
+        case State::InComment:
+            return procNextCommentChar(c);
+        case State::InInclude:
+            assert(false);
+            return true;
+        case State::InIdentifier:
+            return procNextIdentifierChar(c);
+        default:
+            assert(false);
     }
+
+    assert(false);
+    return true;
 }
 
 bool SLex::procNextCommentChar(char c) {
     if (c == 10 || c == 13) {
-        inComment = false;
+        //inComment = false;
+        state = State::Ready;
     }
     return true;
 }
@@ -104,7 +113,8 @@ bool SLex::procFreshChar(char c) {
         return true;  // eat whitespace
     }
     if (c == '<') {
-        inTag = true;
+        //inTag = true;
+        state = State::InTag;
         return true;
     }
 
@@ -114,11 +124,13 @@ bool SLex::procFreshChar(char c) {
     }
 
     if (c == '/') {
-        inComment = true;
+        //inComment = true;
+        state = State::InComment;
         return true;
     }
 
-    inIdentifier = true;
+   // inIdentifier = true;
+   state = State::InIdentifier;
     curItem.clear();
     curItem += c;
     //printf("119, curItem = %s\n", curItem.c_str());
@@ -138,7 +150,8 @@ bool SLex::procNextTagChar(char c) {
     if (c == '>') {
         validateName(curItem);
         addCompletedItem(std::make_shared<SLexTag>(curItem, currentLine), true);
-        inTag = false;
+        //inTag = false;
+        state = State::Ready;
         return true;
     }
 
@@ -149,13 +162,13 @@ bool SLex::procNextTagChar(char c) {
 }
 
 bool SLex::procEnd() {
-    if (inIdentifier) {
+    if (state == State::InIdentifier) {
         validateName(curItem);
         addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
         return true;
     }
 
-    if (inTag) {
+    if (state == State::InTag) {
         //printf("final tag unterminated\n");terminatingSpace
         return false;
     }
@@ -163,15 +176,7 @@ bool SLex::procEnd() {
     return true;
 }
 
-bool SLex::proxNextIdentifierChar(char c) {
-    // printf("proc next ident char = >%c<\n", c);
-#if 0
-    printf("itesm size =%d\n", int(items.size()));
-    if (items.size() >= 2) {
-        printf("back type = %d\n", items.back()->itemType);
-        printf("before that %d\n", items[items.size() - 2]->itemType);
-    }
-#endif
+bool SLex::procNextIdentifierChar(char c) {
     if (c == '=') {
         return procEqualsSignInIdentifier();
     }
@@ -179,7 +184,8 @@ bool SLex::proxNextIdentifierChar(char c) {
     // TODO, should the middle one be '>'? is that just an error?
     if (c == '<' || c == '<' || c == '=' || c == '\n') {
         addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
-        inIdentifier = false;
+        //inIdentifier = false;
+        state = State::Ready;
         return procFreshChar(c);
     }
 
@@ -188,10 +194,12 @@ bool SLex::proxNextIdentifierChar(char c) {
     // terminate on these, but don't proc
     if (terminatingSpace) {
         addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
-        inIdentifier = false;
+        //inIdentifier = false;
+        state = State::Ready;
         return true;
     }
-    assert(inIdentifier);
+    //assert(inIdentifier);
+    assert(state == State::InIdentifier);
     curItem += c;
     validateName(curItem);
     return true;
@@ -222,13 +230,15 @@ bool SLex::procEqualsSignInIdentifier() {
 
         addCompletedItem(std::make_shared<SLexIdentifier>(fileName, currentLine), true);
         addCompletedItem(std::make_shared<SLexIdentifier>(nextId, currentLine), true);
-        inIdentifier = false;
+        //inIdentifier = false;
+        state = State::Ready;
         return procFreshChar('=');
     } else {
         // if it's not a sample file, then process normally. Just finish identifier
         // and go on with the equals sign/
         addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
-        inIdentifier = false;
+       // inIdentifier = false;
+        state = State::Ready;
         return procFreshChar('=');
     }
 }

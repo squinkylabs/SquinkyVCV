@@ -369,9 +369,6 @@
     <ClInclude Include="..\..\test\TimeStatsCollector.h" />
     <ClInclude Include="..\..\util\FilteredIterator.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\test\testx.cpp()" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{5DAF445F-56A2-5B5C-EB47-1D24590CF72A}</ProjectGuid>

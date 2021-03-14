@@ -1197,9 +1197,4 @@
       <Filter>Header Files\test</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\test\testx.cpp()">
-      <Filter>Source Files\test</Filter>
-    </None>
-  </ItemGroup>
 </Project>
