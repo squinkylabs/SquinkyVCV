@@ -114,7 +114,7 @@ static char* allSal = R"foo(D:\samples\SalamanderDrumkit\all.sfz)foo";
 static void testSmallPianoVelswitch() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-    auto err = SParse::goFile(smallPiano, inst);
+    auto err = SParse::goFile(FilePath(smallPiano), inst);
     assert(err.empty());
 
     SamplerErrorContext errc;
@@ -176,7 +176,7 @@ static void testSnareBasic() {
     printf("\n------- testSnareBasic\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-    auto err = SParse::goFile(snare, inst);
+    auto err = SParse::goFile(FilePath(snare), inst);
     assert(err.empty());
 
     SamplerErrorContext errc;
@@ -187,7 +187,7 @@ static void testSnareBasic() {
 static void testAllSal() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-    auto err = SParse::goFile(allSal, inst);
+    auto err = SParse::goFile(FilePath(allSal), inst);
     if (!err.empty()) SQFATAL(err.c_str());
     assert(err.empty());
 

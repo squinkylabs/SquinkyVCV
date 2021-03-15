@@ -74,7 +74,7 @@ static void testPlayInfo() {
 static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-    auto err = SParse::goFile(patch, inst);
+    auto err = SParse::goFile(FilePath(patch), inst);
     assert(err.empty());
 
     SamplerErrorContext errc;
@@ -127,7 +127,7 @@ void testPlayInfoSmallPiano() {
 static void testLoadWavesPiano() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     //  const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
-    auto err = SParse::goFile(tinnyPiano, inst);
+    auto err = SParse::goFile(FilePath(tinnyPiano), inst);
     assert(err.empty());
 
     SamplerErrorContext errc;
@@ -432,7 +432,7 @@ static void testCompileCrash2() {
    const char* data = "F:\\foo\\bar.sfz";
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    auto err = SParse::goFile(data, inst);
+    auto err = SParse::goFile(FilePath(data), inst);
     assert(!err.empty());
 
 
@@ -1202,7 +1202,7 @@ static void testCompileSort() {
 
 static void testComp(const std::string& path) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-    auto err = SParse::goFile(path, inst);
+    auto err = SParse::goFile(FilePath(path), inst);
     if (!err.empty()) {
         SQWARN("parse ret %s", err.c_str());
     }

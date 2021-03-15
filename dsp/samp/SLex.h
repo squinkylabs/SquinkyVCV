@@ -53,8 +53,8 @@ public:
      * @returns lexer full of tokens, or null if error
      */
   
-    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, FilePath* yourFilePath = nullptr);
-    SLex(std::string* errorText, int includeDepth, FilePath* yourFilePath);
+    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
+    SLex(std::string* errorText, int includeDepth, const FilePath* yourFilePath);
     std::vector<SLexItemPtr> items;
     SLexItemPtr next() {
         return currentIndex < int(items.size()) ? items[currentIndex] : nullptr;
@@ -107,7 +107,7 @@ private:
     std::string curItem;
     SamplerSchema::OpcodeType lastIdentifierType;
     std::string* const outErrorStringPtr;
-    FilePath* const myFilePath;
+    const FilePath* const myFilePath;
     const int includeRecursionDepth;
 
     int currentIndex = 0;

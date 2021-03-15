@@ -8,6 +8,7 @@
 #include "SqLog.h"
 
 extern int parseCount;
+class FilePath;
 
 class SKeyValuePair {
 public:
@@ -73,7 +74,8 @@ using SInstrumentPtr = std::shared_ptr<SInstrument>;
 class SParse {
 public:
     static std::string go(const std::string& s, SInstrumentPtr);
-    static std::string goFile(const std::string& s, SInstrumentPtr);
+    static std::string goFile(const FilePath& filePath, SInstrumentPtr);
+   
 
 private:
     class Result {
@@ -86,6 +88,8 @@ private:
         };
         Res res = Res::ok;
     };
+
+    static std::string goCommon(const std::string& sContent, SInstrumentPtr outParsedInstrument, const FilePath* fullPathToSFZ);
 
     /* What is a "heading"?
      * it's something that can modify following regions: group, control, etc...

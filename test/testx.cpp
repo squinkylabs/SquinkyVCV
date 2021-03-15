@@ -332,6 +332,27 @@ static void testLexIncludeBadFile() {
     assert(!lex);
 }
 
+
+// This uses a "real" sfz on disk
+static void testLexIncludeSuccess() {
+    FilePath filePath(R"foo(D:\samples\test\test-include.sfz)foo");
+    std::ifstream t(filePath.toString());
+    assert(t.good());
+
+    std::string sContent((std::istreambuf_iterator<char>(t)),
+                    std::istreambuf_iterator<char>());
+
+    std::string err;
+    auto lex = SLex::go(sContent, &err, 0, &filePath);
+
+    assert(lex && err.empty());
+
+    assertEQ(lex->items.size(), 2);
+    assertEQ(int(lex->items[0]->itemType), int(SLexItem::Type::Tag));
+    assertEQ(int(lex->items[1]->itemType), int(SLexItem::Type::Tag));
+}
+
+
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -486,14 +507,14 @@ static void testParseGlobalWithData() {
 static void testparse_piano1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
-    auto err = SParse::goFile(p, inst);
+    auto err = SParse::goFile(FilePath(p), inst);
     assert(err.empty());
 }
 
 static void testparse_piano2() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     const char* p = R"foo(D:\samples\k18-Upright-Piano\k18-Upright-Piano.sfz)foo";
-    auto err = SParse::goFile(p, inst);
+    auto err = SParse::goFile(FilePath(p), inst);
     assert(err.empty());
 }
 
@@ -549,7 +570,7 @@ static void testParseDX() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     // maybe need to compile this...
-    auto err = SParse::goFile("D:\\samples\\__test\\BS-DX7-Bright-Bow.sfz", inst);
+    auto err = SParse::goFile(FilePath("D:\\samples\\__test\\BS-DX7-Bright-Bow.sfz"), inst);
     assert(err.empty());
     assertEQ(inst->groups.size(), 1);
 }
@@ -584,6 +605,7 @@ void testx() {
     testLexMarimba();
     testLexIncludeMalformed();
     testLexIncludeBadFile();
+    testLexIncludeSuccess();
 
 
     testparse1();

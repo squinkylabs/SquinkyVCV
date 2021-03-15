@@ -530,7 +530,7 @@ public:
         SInstrumentPtr inst = std::make_shared<SInstrument>();
 
         // now load it, and then return it.
-        auto err = SParse::goFile(fullPath.toString(), inst);
+        auto err = SParse::goFile(fullPath, inst);
 
         SQINFO("about to compile");
         // TODO: need a way for compiler to return error;

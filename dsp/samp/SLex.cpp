@@ -9,10 +9,10 @@
 #include <assert.h>
 #include <fstream>
 
-SLex::SLex(std::string* errorText, int includeDepth, FilePath* filePath) : outErrorStringPtr(errorText), includeRecursionDepth(includeDepth), myFilePath(filePath) {
+SLex::SLex(std::string* errorText, int includeDepth, const FilePath* filePath) : outErrorStringPtr(errorText), includeRecursionDepth(includeDepth), myFilePath(filePath) {
 }
 
-SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includeDepth, FilePath* yourFilePath) {
+SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includeDepth, const FilePath* yourFilePath) {
     int count = 0;
     SLexPtr result = std::make_shared<SLex>(errorText, includeDepth, yourFilePath);
 
@@ -329,6 +329,9 @@ std::string SLexItem::lineNumberAsString() const {
 
 bool SLex::handleIncludeFile(const std::string& fileName) {
     assert(!fileName.empty());
+    if (includeRecursionDepth > 10) {
+        return error("include nesting too deep");
+    }
 
     if (fileName.front() != '"' || fileName.back() != '"') {
         return error("Include filename not quoted");
@@ -337,11 +340,13 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
     if (!myFilePath) {
         return error("Can't resolve include with no context");
     }
-    FilePath path(*myFilePath);
+    FilePath origPath(*myFilePath);
+    FilePath origFolder = origPath.getPathPart();
     FilePath namePart(rawFilename);
-    path.concat(namePart);
+    FilePath fullPath = origFolder;
+    fullPath.concat(namePart);
   
-    std::ifstream t(path.toString());
+    std::ifstream t(fullPath.toString());
     if (!t.good()) {
       //  printf("can't open file\n");
        // return "can't open source file: " + sPath;
@@ -358,6 +363,23 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
         return error("Include file empty ");
     }
 
-    assert(false);      // finish
-    return false;
+    // ok, we have the content of the include.
+    // we must:
+    // 1) lex it.
+    //    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
+    auto includeLexer = SLex::go(str, outErrorStringPtr, includeRecursionDepth + 1, &fullPath);
+    if (!includeLexer) {
+        return false;           // error should already be in outErrorStringPtr
+    }
+    // 2) copy the tokens from include to this.
+    this->items.insert(
+        this->items.end(),
+        std::make_move_iterator(includeLexer->items.begin()),
+        std::make_move_iterator(includeLexer->items.end())
+    );
+    // 3 continue lexing
+    state = State::Ready;
+    return true;
+   // assert(false);      // finish
+   // return false;
 }

@@ -1,17 +1,18 @@
 
 #include "SParse.h"
 
-#include <assert.h>
 
-#include <fstream>
-#include <set>
-#include <streambuf>
-#include <string>
-
+#include "FilePath.h"
 #include "SInstrument.h"
 #include "SLex.h"
 #include "SqLog.h"
 #include "SqStream.h"
+
+#include <assert.h>
+#include <fstream>
+#include <set>
+#include <streambuf>
+#include <string>
 
 // global for mem leak detection
 int parseCount = 0;
@@ -32,26 +33,70 @@ only non-parser thing:
     eliminate the getPath accessor from ci.
 */
 
-std::string SParse::goFile(const std::string& sPath, SInstrumentPtr inst) {
-    std::ifstream t(sPath);
+std::string SParse::goFile(const FilePath& filePath, SInstrumentPtr inst) {
+  // assert(false);  // this path doesn't return errors
+    std::ifstream t(filePath.toString());
     if (!t.good()) {
       //  printf("can't open file\n");
-        return "can't open source file: " + sPath;
+        return "can't open source file: " + filePath.toString();
     }
     std::string str((std::istreambuf_iterator<char>(t)),
                     std::istreambuf_iterator<char>());
     if (str.empty()) {
-        return "file empty: " + sPath;
+        return "file empty: " + filePath.toString();
     }
-    return go(str, inst);
+    return goCommon(str, inst, &filePath);
 }
 
 std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
-    SLexPtr lex = SLex::go(s);
+    return goCommon(s, inst, nullptr);
+}
+
+std::string SParse::goCommon(const std::string& sContent, SInstrumentPtr outParsedInstrument, const FilePath* fullPathToSFZ) {
+    std::string lexError;
+    SLexPtr lex = SLex::go(sContent, &lexError, 0, fullPathToSFZ);
     if (!lex) {
-        // TODO: we need a way to return lexer errors.
-        printf("lexer failed\n");
-        return "";
+        assert(!lexError.empty());
+        return lexError;
+    }
+
+    std::string sError = matchHeadingGroups(outParsedInstrument, lex);
+    if (!sError.empty()) {
+        return sError;
+    }
+    if (lex->next() != nullptr) {
+        auto item = lex->next();
+        auto type = item->itemType;
+        auto lineNumber = item->lineNumber;
+        SqStream errorStream;
+        errorStream.add("extra tok line number ");
+        errorStream.add(int(lineNumber));
+        errorStream.add(" type= ");
+        errorStream.add(int(type));
+        errorStream.add(" index=");
+        errorStream.add(lex->_index());
+        //printf("extra tok line number %d type = %d index=%d\n", int(lineNumber), int(type), lex->_index());
+        if (type == SLexItem::Type::Identifier) {
+            SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
+            // printf("id name is %s\n", id->idName.c_str());
+            errorStream.add(" id name is ");
+            errorStream.add(id->idName);
+        }
+        return errorStream.str();
+    }
+    if (outParsedInstrument->groups.empty()) {
+        return "no groups or regions";
+    }
+    return sError;
+}
+
+#if 0
+std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
+    std::string lexError;
+    SLexPtr lex = SLex::go(s, &lexError);
+    if (!lex) {
+        assert(!lexError.empty());
+        return lexError;
     }
 
     std::string sError = matchHeadingGroups(inst, lex);
@@ -83,6 +128,7 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
     }
     return sError;
 }
+#endif
 
 std::string SParse::matchHeadingGroups(SInstrumentPtr inst, SLexPtr lex) {
     for (bool done = false; !done;) {
