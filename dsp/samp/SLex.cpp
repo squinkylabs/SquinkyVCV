@@ -85,6 +85,7 @@ void SLex::_dump() const {
 }
 
 bool SLex::procNextChar(char c) {
+    //SQINFO("proc next: %c", c);
     switch (state) {
         case State::Ready:
             return procFreshChar(c);
@@ -120,6 +121,7 @@ bool SLex::procNextIncludeChar(char c) {
         case IncludeSubState::MatchingOpcode:
             curItem += c;
             if (includeStr.find(curItem) != 0) {
+                SQINFO("bad item: >%s<", curItem.c_str());
                 return error("Malformed #include");
             }
             if (curItem == includeStr) {
@@ -190,6 +192,8 @@ bool SLex::procFreshChar(char c) {
         case '#':
             state = State::InInclude;
             includeSubState = IncludeSubState::MatchingOpcode;
+            curItem.clear();
+            SQINFO("going into incl, curItem=%s", curItem.c_str());
             return true;
     }
 
@@ -254,7 +258,8 @@ bool SLex::procNextIdentifierChar(char c) {
     }
 
     // We only terminate on a space if we are not parsing a String type opcode
-    const bool terminatingSpace = isspace(c) && (lastIdentifierType != SamplerSchema::OpcodeType::String);
+   // const bool terminatingSpace = isspace(c) && (lastIdentifierType != SamplerSchema::OpcodeType::String);
+    const bool terminatingSpace = isspace(c) && !lastIdentifierIsString;
     // terminate on these, but don't proc
     if (terminatingSpace) {
         addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
@@ -270,7 +275,7 @@ bool SLex::procNextIdentifierChar(char c) {
 }
 
 bool SLex::procEqualsSignInIdentifier() {
-    if (lastIdentifierType == SamplerSchema::OpcodeType::String) {
+    if (lastIdentifierIsString) {
         // If we get an equals sign in the middle of a sample file name (or other string), then we need to adjust.
         // for things other than sample we don't accept spaces, so there is no issue.
 
@@ -315,7 +320,8 @@ void SLex::addCompletedItem(SLexItemPtr item, bool clearCurItem) {
     if (item->itemType == SLexItem::Type::Identifier) {
         SLexIdentifier* ident = static_cast<SLexIdentifier*>(item.get());
         // lastIdentifier = ident->idName;
-        lastIdentifierType = SamplerSchema::keyTextToType(ident->idName, true);
+     //   lastIdentifierType = SamplerSchema::keyTextToType(ident->idName, true);
+        lastIdentifierIsString = SamplerSchema::isFreeTextType(ident->idName);
         // printf("just pushed new id : >%s<\n", lastIdentifier.c_str());
     }
 }
@@ -362,6 +368,7 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
     if (str.empty()) {
         return error("Include file empty ");
     }
+    SQINFO("going into %s", fullPath.toString().c_str());
 
     // ok, we have the content of the include.
     // we must:
@@ -377,8 +384,11 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
         std::make_move_iterator(includeLexer->items.begin()),
         std::make_move_iterator(includeLexer->items.end())
     );
+    SQINFO("finished incl, curItem=%s", curItem.c_str());
+    curItem.clear();
     // 3 continue lexing
     state = State::Ready;
+     SQINFO("back frm %s", fullPath.toString().c_str());
     return true;
    // assert(false);      // finish
    // return false;

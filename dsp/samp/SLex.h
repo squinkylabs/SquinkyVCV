@@ -105,7 +105,8 @@ private:
     int spaceCount = 0;
     
     std::string curItem;
-    SamplerSchema::OpcodeType lastIdentifierType;
+    //SamplerSchema::OpcodeType lastIdentifierType;
+    bool lastIdentifierIsString = false;
     std::string* const outErrorStringPtr;
     const FilePath* const myFilePath;
     const int includeRecursionDepth;

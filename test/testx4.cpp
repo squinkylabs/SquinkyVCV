@@ -1,5 +1,6 @@
 
 #include "FilePath.h"
+#include "SamplerSchema.h"
 #include "SqLog.h"
 #include "asserts.h"
 #include "samplerTests.h"
@@ -129,7 +130,7 @@ static void testFilePathGetFilenamePart3() {
     assertEQ(fileName, "");
 }
 
-static void testFilePathGetFilenamePartNoExtension()  {
+static void testFilePathGetFilenamePartNoExtension() {
     FilePath a("abc/def.hij");
     std::string fileName = a.getFilenamePartNoExtension();
     assertEQ(fileName, "def");
@@ -155,6 +156,30 @@ static void testFilePathDoubleDot() {
     assertEQ(fp1.toString(), expected.toString());
 }
 
+static void testSchemaFreeText1() {
+    bool b;
+    b = SamplerSchema::isFreeTextType("foo");
+    assert(!b);
+    b = SamplerSchema::isFreeTextType("sample");
+    assert(b);
+    b = SamplerSchema::isFreeTextType("label_cc7");
+    assert(b);
+}
+
+static void testSchemaTextBuiltIn() {
+    // validate that we have all the known ones
+    std::vector<std::string> known = SamplerSchema::_getKnownTextOpcodes();
+    for (auto opcode : known) {
+        assert(SamplerSchema::isFreeTextType(opcode));
+    }
+
+     std::vector<std::string> knownNot =SamplerSchema::_getKnownNonTextOpcodes();
+     for (auto opcode : knownNot) {
+          assert(!SamplerSchema::isFreeTextType(opcode));
+     }
+}
+
+//lastIdentifierType = SamplerSchema::keyTextToType(ident->idName, true);
 
 void testx4() {
     testFilePath0();
@@ -174,4 +199,7 @@ void testx4() {
     testFilePathGetFilenamePartNoExtension();
     testFilePathGetFilenamePartNoExtension2();
     testFilePathDoubleDot();
+
+    testSchemaFreeText1();
+    testSchemaTextBuiltIn();
 }

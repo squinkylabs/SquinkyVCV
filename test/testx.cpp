@@ -347,9 +347,16 @@ static void testLexIncludeSuccess() {
 
     assert(lex && err.empty());
 
-    assertEQ(lex->items.size(), 2);
+    assertEQ(lex->items.size(), 3);
     assertEQ(int(lex->items[0]->itemType), int(SLexItem::Type::Tag));
     assertEQ(int(lex->items[1]->itemType), int(SLexItem::Type::Tag));
+    assertEQ(int(lex->items[2]->itemType), int(SLexItem::Type::Tag));
+}
+
+static void testLexLabel2() {
+    auto lex = SLex::go("label_cc7=Master Vol");
+    assert(lex);
+    assertEQ(lex->items.size(), 3);
 }
 
 
@@ -606,6 +613,7 @@ void testx() {
     testLexIncludeMalformed();
     testLexIncludeBadFile();
     testLexIncludeSuccess();
+    testLexLabel2();
 
 
     testparse1();

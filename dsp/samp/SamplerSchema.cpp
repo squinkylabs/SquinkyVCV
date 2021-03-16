@@ -274,3 +274,60 @@ SamplerSchema::Opcode SamplerSchema::translate(const std::string& s, bool suppre
         return entry->second;
     }
 }
+
+std::set<std::string> SamplerSchema::freeTextFields = {
+    "sample",
+    "label_cc*",
+    "label_key*",
+    "default_path",
+    "sw_label",
+    "delay_filter",
+    "filter_type",
+    "global_label",
+    "group_label",
+    "image",
+    "vendor_specific",
+    "static_filter",
+    "region_label",
+    "master_label",
+    "md5"
+
+};
+
+bool SamplerSchema::isFreeTextType(const std::string& key) {
+    // string input("aasdf43");
+    std::string stringToMatch = key;
+
+    static std::string matches("0123456789");
+    auto offset = key.find_first_of(matches);
+    if (offset != std::string::npos) {
+        stringToMatch = key.substr(0, offset) + '*';
+    }
+
+    auto it = freeTextFields.find(stringToMatch);
+    return it != freeTextFields.end();
+}
+
+std::vector<std::string> SamplerSchema::_getKnownTextOpcodes() {
+    std::vector<std::string> ret;
+    for (auto x : opcodes) {
+        const Opcode oc = x.second;
+        auto type = keyType[oc];
+        if (type == OpcodeType::String) {
+            ret.push_back(x.first);
+        }
+    }
+    return ret;
+}
+
+std::vector<std::string> SamplerSchema::_getKnownNonTextOpcodes() {
+    std::vector<std::string> ret;
+    for (auto x : opcodes) {
+        const Opcode oc = x.second;
+        auto type = keyType[oc];
+        if (type != OpcodeType::String) {
+            ret.push_back(x.first);
+        }
+    }
+    return ret;
+}

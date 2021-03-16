@@ -35,6 +35,7 @@ only non-parser thing:
 
 std::string SParse::goFile(const FilePath& filePath, SInstrumentPtr inst) {
   // assert(false);  // this path doesn't return errors
+    SQINFO("SParse::goFile %s", filePath.toString().c_str());
     std::ifstream t(filePath.toString());
     if (!t.good()) {
       //  printf("can't open file\n");
@@ -53,15 +54,20 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
 }
 
 std::string SParse::goCommon(const std::string& sContent, SInstrumentPtr outParsedInstrument, const FilePath* fullPathToSFZ) {
+    SQINFO("SParse::goCommon");
     std::string lexError;
     SLexPtr lex = SLex::go(sContent, &lexError, 0, fullPathToSFZ);
     if (!lex) {
         assert(!lexError.empty());
+        SQINFO("gc exit62 %s", lexError.c_str());
         return lexError;
     }
 
+SQINFO("SParse::goCommon 65");
+lex->_dump();
     std::string sError = matchHeadingGroups(outParsedInstrument, lex);
     if (!sError.empty()) {
+        SQINFO("SParse::goCommon exit92 (parse error) %s", sError.c_str());
         return sError;
     }
     if (lex->next() != nullptr) {
@@ -87,6 +93,7 @@ std::string SParse::goCommon(const std::string& sContent, SInstrumentPtr outPars
     if (outParsedInstrument->groups.empty()) {
         return "no groups or regions";
     }
+    SQINFO("SParse::goCommon ret %s", sError.c_str());
     return sError;
 }
 
