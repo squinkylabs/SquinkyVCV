@@ -138,10 +138,8 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
             }
         }
     }
-    SQINFO(" buildCompiledTree 145 there are %d", regions.size());
     bool bRet = fixupCompiledTree();
     fillRegionLookup();
-    SQINFO(" leaving buildCompiledTree 145 there are %d", regions.size());
     return bRet;
 }
 
@@ -187,7 +185,11 @@ bool RegionPool::attemptOverlapRepairWithVel(CompiledRegionPtr firstRegion, Comp
             SQINFO("velocity overlap %f too large to repair at %d and %d", velOverlap.second, firstRegion->lineNumber, secondRegion->lineNumber);
             return true;
         }
-        assert(firstRegion->lovel <= secondRegion->lovel);  // sorted
+        //assert(firstRegion->lovel <= secondRegion->lovel);  // sorted
+        if (firstRegion->lovel > secondRegion->lovel) {
+             SQWARN("in overlap vel, first=%d second=%d  ilnes %d,%d", firstRegion->lovel, secondRegion->lovel, firstRegion->lineNumber, secondRegion->lineNumber);
+            return true;
+        }
         while (velOverlap.first) {
             const int firstRange = firstRegion->velRange();
             const int secondRange = secondRegion->velRange();
@@ -222,7 +224,12 @@ bool RegionPool::attemptOverlapRepairWithPitch(CompiledRegionPtr firstRegion, Co
             SQINFO("pitch overlap %f too large to repair at %d and %d", pitchOverlap.second, firstRegion->lineNumber, secondRegion->lineNumber);
             return true;
         }
-        assert(firstRegion->lokey <= secondRegion->lokey);  // sorted
+        // If we have patched so much that we are our of order, give up
+        if (firstRegion->lokey > secondRegion->lokey) {
+            SQWARN("in overlap pitch, first=%d second=%d  ilnes %d,%d", firstRegion->lokey, secondRegion->lokey, firstRegion->lineNumber, secondRegion->lineNumber);
+            return true;
+            //assert(firstRegion->lokey <= secondRegion->lokey);  // sorted
+        }
         while (pitchOverlap.first) {
             const int firstRange = firstRegion->pitchRange();
             const int secondRange = secondRegion->pitchRange();
@@ -262,12 +269,12 @@ bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion,
     const int lv2 = secondRegion->lovel;
 
 #ifdef _LOGOV
-    printf("overlap comparing line %d with %d\n", first->lineNumber, second->lineNumber);
-    printf("  first pitch=%d,%d, vel=%d,%d\n", first->lokey, first->hikey, first->lovel, first->hivel);
-    printf("  second pitch=%d,%d, vel=%d,%d\n", second->lokey, second->hikey, second->lovel, second->hivel);
+    printf("overlap comparing line %d with %d\n", firstRegion->lineNumber, secondRegion->lineNumber);
+    printf("  first pitch=%d,%d, vel=%d,%d\n", firstRegion->lokey, firstRegion->hikey, firstRegion->lovel, firstRegion->hivel);
+    printf("  second pitch=%d,%d, vel=%d,%d\n", firstRegion->lokey, secondRegion->hikey, secondRegion->lovel, secondRegion->hivel);
 
-    printf("  first sw_ range=%d, %d. second=%d, %d", first->sw_lolast, first->sw_hilast, second->sw_lolast, second->sw_hilast);
-    printf("  overlap pitch = %d, overlap vel = %d\n", first->overlapsPitch(*second), first->overlapsVelocity(*second));
+    printf("  first sw_ range=%d, %d. second=%d, %d", firstRegion->sw_lolast, firstRegion->sw_hilast, secondRegion->sw_lolast, secondRegion->sw_hilast);
+    printf("  overlap pitch = %d, overlap vel = %d\n", firstRegion->overlapsPitch(*secondRegion), firstRegion->overlapsVelocity(*secondRegionn));
 #endif
 
     // If there is no overlap, then everything is fine.
@@ -328,6 +335,9 @@ void RegionPool::removeOverlaps() {
         //return removed;
     }
     sortByPitchAndVelocity(regions);
+
+
+
     using iterator = std::vector<CompiledRegionPtr>::iterator;
     for (iterator it = regions.begin(); it != regions.end();) {
         iterator itNext = it + 1;

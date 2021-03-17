@@ -302,11 +302,7 @@ static void testLexMarimba() {
     assert(lex);
     lex->validate();
     const size_t items = lex->items.size();
-    lex->_dump();
     assert(items == 16);
-    // assert(false);
-    // SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
-    //  assertEQ(fname->idName, "abc def ghi");
 }
 
 
@@ -354,9 +350,9 @@ static void testLexIncludeSuccess() {
 }
 
 static void testLexLabel2() {
-    auto lex = SLex::go("label_cc7=Master Vol");
+    auto lex = SLex::go("label_cc7=Master Vol\nsample=\"abc def\"");
     assert(lex);
-    assertEQ(lex->items.size(), 3);
+    assertEQ(lex->items.size(), 6);
 }
 
 
@@ -389,6 +385,15 @@ static void testparse2() {
     SKeyValuePairPtr kv = region->values[0];
     assertEQ(kv->key, "pitch_keycenter");
     assertEQ(kv->value, "24");
+}
+
+// this sfz doesn't start with a heading,
+// we currently give a terrible error message
+static void testParseLabel2() {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("label_cc7=Master Vol\nsample=abc", inst);
+    assert(!err.empty());
+    assertEQ(err.find("extra tok"), 0);
 }
 
 static void testParseMutliControls() {
@@ -626,6 +631,7 @@ void testx() {
     testParseGroups();
     testParseMutliControls();
     testParseGroupAndValues();
+    testParseLabel2();
 
     testParseGlobalWithData();
     testParseTwoGroupsA();

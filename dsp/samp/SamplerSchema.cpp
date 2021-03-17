@@ -93,6 +93,9 @@ static std::map<std::string, DiscreteValue> discreteValues = {
     {"one_shot", DiscreteValue::ONE_SHOT},
     {"attack", DiscreteValue::ATTACK},
     {"release", DiscreteValue::RELEASE},
+    {"first", DiscreteValue::RELEASE},
+    {"legato", DiscreteValue::RELEASE},
+    {"release_key", DiscreteValue::RELEASE}
 };
 
 DiscreteValue SamplerSchema::translated(const std::string& s) {
@@ -238,8 +241,13 @@ void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValu
             vp->string = input->value;
             break;
         case OpcodeType::Discrete: {
-            DiscreteValue dv = translated(input->value);
-            assert(dv != DiscreteValue::NONE);
+            const DiscreteValue dv = translated(input->value);
+            if (dv ==  DiscreteValue::NONE) {
+                SQINFO("malformed discrete kb = %s, %s", input->key.c_str(), input->value.c_str());
+                err.sawMalformedInput = true;
+                return;
+            }
+ 
             vp->discrete = dv;
         } break;
         default:

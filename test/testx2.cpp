@@ -979,8 +979,6 @@ static void testCompileAmpVel() {
     auto ci = CompiledInstrument::make(errc, inst);
     assert(errc.empty());
 
-    ci->_dump(0);
-
     VoicePlayInfo info;
     VoicePlayParameter params;
 
