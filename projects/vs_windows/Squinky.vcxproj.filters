@@ -151,6 +151,12 @@
     <Filter Include="Source Files\dsp\samp">
       <UniqueIdentifier>{1a158232-c412-421c-81fa-99a58e1e5370}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\dsp\third-party\flac">
+      <UniqueIdentifier>{683d1705-8044-4338-bd03-9dde6adfe820}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\dsp\third-party\flac\src">
+      <UniqueIdentifier>{2566534d-a3d8-4019-a245-823ffba00809}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp">
@@ -716,6 +722,42 @@
     </ClCompile>
     <ClCompile Include="..\..\test\perfTest3.cpp">
       <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testFlac.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\flac\src\stream_decoder.c">
+      <Filter>Source Files\dsp\third-party\flac\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\flac\src\windows_unicode_filenames.c">
+      <Filter>Source Files\dsp\third-party\flac\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\flac\src\bitreader.c">
+      <Filter>Source Files\dsp\third-party\flac\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\flac\src\crc.c">
+      <Filter>Source Files\dsp\third-party\flac\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\flac\src\cpu.c">
+      <Filter>Source Files\dsp\third-party\flac\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\flac\src\fixed.c">
+      <Filter>Source Files\dsp\third-party\flac\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\flac\src\format.c">
+      <Filter>Source Files\dsp\third-party\flac\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\flac\src\lpc.c">
+      <Filter>Source Files\dsp\third-party\flac\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\flac\src\md5.c">
+      <Filter>Source Files\dsp\third-party\flac\src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\samp\FlacReader.cpp">
+      <Filter>Source Files\dsp\samp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\third-party\flac\src\memory.c">
+      <Filter>Source Files\dsp\third-party\flac\src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

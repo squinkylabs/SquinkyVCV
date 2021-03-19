@@ -120,7 +120,8 @@ extern void testCmprsr();
 extern void testCompressor();
 extern void testCompressorParamHolder();
 extern void testStreamer();
-extern void  testSampComposite();
+extern void testSampComposite();
+extern void testFlac();
 
 #if 0
 #include <iostream>
@@ -162,7 +163,7 @@ static void setupMem()
 #endif
 
 int main(int argc, char** argv) {
-   // setupMem();
+    // setupMem();
 
     bool runPerf = false;
     bool extended = false;
@@ -210,17 +211,20 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    testFlac();
     testADSRSampler();
     testStreamer();
-    testx4();
+
     testx();
-    testx6();
+
     testx2();
     testx3();
-
+    testx4();
     testx5();
+    testx6();
+
     testSampComposite();
-   
+
     testADSR();
     testCompressorParamHolder();
     testWavThread();
