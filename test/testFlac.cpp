@@ -9,7 +9,7 @@ static void test0() {
 
 static void test1() {
     FlacReader r;
-    r.read("D:\\samples\\UI_METAL-GTX\\Samples\\Brush_Down\\a2_Brush_Down1.flac");
+    r.read("D:\\samples\\test\\flac\\mono16.flac");
     assert(r.ok());
 }
 
