@@ -3,6 +3,7 @@
 #include "SqLog.h"
 
 #include <assert.h>
+#include <stdlib.h>
 //#include "stream_decoder.h"
 
 void FlacReader::read(const char* filePath) {
@@ -32,16 +33,28 @@ void FlacReader::read(const char* filePath) {
 
 }
 
-
+/*
 static FLAC__uint64 total_samples = 0;
 static unsigned sample_rate = 0;
 static unsigned channels = 0;
 static unsigned bps = 0;
+*/
 
 FlacReader::~FlacReader() {
 	delete decoder;
+	free(monoData);
 }
 
+void FlacReader::onFormat(uint64_t totalSamples, unsigned sampleRate, unsigned channels) {
+	samplesExpected = totalSamples / channels;
+	assert(!monoData);
+	void* p = malloc(samplesExpected / channels);
+	monoData = reinterpret_cast<float*>(p);
+}
+
+void FlacReader::onData(const void* data, unsigned samples) {
+	SQINFO("data callback with %d samples", samples);
+}
 /*
 	FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE,
 < The write was OK and decoding can continue. 
@@ -53,26 +66,24 @@ FLAC__StreamDecoderWriteStatus FlacReader::write_callback(const FLAC__StreamDeco
 //	return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 	SQINFO("write_callback");
 	SQINFO("sample number = %lld", frame->header.number.sample_number);
+	FlacReader* client = reinterpret_cast<FlacReader *>(client_data);
+	client->onData(buffer, frame->header.blocksize);
+	
+
 	return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
 }
 void FlacReader::metadata_callback(const FLAC__StreamDecoder* decoder, const FLAC__StreamMetadata* metadata, void* client_data) {
 	
 	SQINFO("metadata callback");
+	
 
 	if (metadata->type == FLAC__METADATA_TYPE_STREAMINFO) {
-		/* save for later */
-		total_samples = metadata->data.stream_info.total_samples;
-		sample_rate = metadata->data.stream_info.sample_rate;
-		channels = metadata->data.stream_info.channels;
-		bps = metadata->data.stream_info.bits_per_sample;
-
-		SQINFO("sample rate    : %u Hz\n", sample_rate);
-		SQINFO("channels       : %u\n", channels);
-		SQINFO("bits per sample: %u\n", bps);
-		SQINFO("total samples  : %lld", total_samples);
+		FlacReader* client = reinterpret_cast<FlacReader*>(client_data);
+		client->onFormat(metadata->data.stream_info.total_samples, metadata->data.stream_info.sample_rate, metadata->data.stream_info.channels);
 	}
 
 }
 void FlacReader::error_callback(const FLAC__StreamDecoder* decoder, FLAC__StreamDecoderErrorStatus status, void* client_data) {
+	// TODO
 	assert(false);
 }
