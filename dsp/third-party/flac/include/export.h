@@ -61,8 +61,10 @@
 
 #elif defined(_WIN32)
 #ifdef FLAC_API_EXPORTS
+a b c
 #define	FLAC_API __declspec(dllexport)
 #else
+d e f
 #define FLAC_API __declspec(dllimport)
 #endif
 

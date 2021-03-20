@@ -57,7 +57,6 @@
  */
 
 // SquinkyLabs 2020: easiest to define here
-#define FLAC__NO_DLL
 #define FLAC__HAS_OGG 0
 #define _CRT_SECURE_NO_WARNINGS
 #define PACKAGE_VERSION '1.3.3'
