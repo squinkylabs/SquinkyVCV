@@ -10,9 +10,11 @@ public:
     void read(const char* filePath);
 	bool ok() const { return isOk; }
 
+	const float* getSamples() const { return monoData; }
+	uint64_t getNumSamples() const { return framesRead; }
+private:
 	static float read16Bit(const void *);
 	static float read24Bit(const void *);
-private:
 
 	FLAC__StreamDecoder *decoder = nullptr;
 	bool isOk = false;
@@ -20,7 +22,8 @@ private:
 	float* monoData = nullptr;
 	float* writePtr = nullptr;
 
-	uint64_t samplesExpected = 0;
+	uint64_t framesExpected = 0;
+	uint64_t framesRead = 0;
 	unsigned bitsPerSample = 0;
 	unsigned channels_ = 0;
 	unsigned bitsPerSample_ = 0;
@@ -35,5 +38,6 @@ private:
 	static FLAC__StreamDecoderWriteStatus write_callback(const FLAC__StreamDecoder* decoder, const FLAC__Frame* frame, const FLAC__int32* const buffer[], void* client_data);
 	static void metadata_callback(const FLAC__StreamDecoder* decoder, const FLAC__StreamMetadata* metadata, void* client_data);
 	static void error_callback(const FLAC__StreamDecoder* decoder, FLAC__StreamDecoderErrorStatus status, void* client_data);
-
 };
+
+

@@ -3351,7 +3351,6 @@ FLAC__StreamDecoderReadStatus file_read_callback_(const FLAC__StreamDecoder *dec
 {
 	(void)client_data;
 
-	printf("in file_read_callback_ %lld\n", *bytes); fflush(stdout);
 	assert(decoder->private_->file);
 
 	if(*bytes > 0) {

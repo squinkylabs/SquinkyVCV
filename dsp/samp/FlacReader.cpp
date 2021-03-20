@@ -47,9 +47,13 @@ FlacReader::~FlacReader() {
 }
 
 void FlacReader::onFormat(uint64_t totalSamples, unsigned sampleRate, unsigned channels, unsigned bitspersample) {
-	samplesExpected = totalSamples / channels;
+	// flac calls something a "sample" even if it's a single multi-channel frame.
+	framesExpected = totalSamples;
+	framesRead = 0;
 	assert(!monoData);
-	void* p = malloc(samplesExpected / channels);
+
+	// since we convert to mono on the fly, frames on input -> samples on output.
+	void* p = malloc(framesExpected * sizeof(float));
 	monoData = reinterpret_cast<float*>(p);
 	writePtr = monoData;
 	channels_ = channels;
@@ -73,11 +77,10 @@ float FlacReader::read24Bit(const void* data) {
 }
 
 bool FlacReader::onData(const void* data, unsigned samples) {
-	const unsigned samplesInBlock = samples;
-	SQINFO("--- data callback with %d samples", samples);
-	//SQINFO("samples / 6 = %f", double(samples) / 6.0);
 
-	if(samplesExpected == 0) {
+	const unsigned framesInBlock = samples;
+
+	if(framesExpected == 0) {
 		SQWARN("empty flac");
 		return false;
 	}
@@ -89,6 +92,14 @@ bool FlacReader::onData(const void* data, unsigned samples) {
 	if(bitsPerSample_ != 16 && bitsPerSample_ != 24) {
 		SQWARN("can only accept 16 and 24 bit flac\n");
 		return false;
+	}
+
+	if (framesRead == 0) {
+		SQINFO("first frame");
+		const uint8_t* p = reinterpret_cast<const uint8_t*>(data); 
+		for (int i=0; i<16; ++i) {
+			SQINFO("byte[%d]=%x", i, p[i]);
+		}
 	}
 
 	// copy data
@@ -127,24 +138,16 @@ bool FlacReader::onData(const void* data, unsigned samples) {
 		}
 	} else assert(false);
 
-	samplesExpected -= samplesInBlock;
-	if (samplesExpected == 0) {
+	framesRead += framesInBlock;
+	if (framesRead >= framesExpected) {
 		isOk = true;
 	}
-	SQINFO("laving block with %d samples %lld expected", samples, samplesExpected);
+	if (isOk) SQINFO("leaving block with %d framesRaad %lld expected", framesRead, framesExpected);
 	return true;
 }
-/*
-	FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE,
-< The write was OK and decoding can continue. 
 
-	FLAC__STREAM_DECODER_WRITE_STATUS_ABORT
-	*/
 FLAC__StreamDecoderWriteStatus FlacReader::write_callback(const FLAC__StreamDecoder* decoder, const FLAC__Frame* frame, const FLAC__int32* const buffer[], void* client_data) {
-//	assert(false);
-//	return FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
-	SQINFO("write_callback");
-	SQINFO("sample number = %lld", frame->header.number.sample_number);
+
 	FlacReader* client = reinterpret_cast<FlacReader *>(client_data);
 	const bool ok = client->onData(buffer, frame->header.blocksize);
 	
@@ -152,10 +155,6 @@ FLAC__StreamDecoderWriteStatus FlacReader::write_callback(const FLAC__StreamDeco
 	return ok ? FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE : FLAC__STREAM_DECODER_WRITE_STATUS_ABORT;
 }
 void FlacReader::metadata_callback(const FLAC__StreamDecoder* decoder, const FLAC__StreamMetadata* metadata, void* client_data) {
-	
-	SQINFO("metadata callback");
-	
-
 	if (metadata->type == FLAC__METADATA_TYPE_STREAMINFO) {
 		FlacReader* client = reinterpret_cast<FlacReader*>(client_data);
 		client->onFormat(metadata->data.stream_info.total_samples,
@@ -164,7 +163,6 @@ void FlacReader::metadata_callback(const FLAC__StreamDecoder* decoder, const FLA
 			metadata->data.stream_info.bits_per_sample
 			);
 	}
-
 }
 void FlacReader::error_callback(const FLAC__StreamDecoder* decoder, FLAC__StreamDecoderErrorStatus status, void* client_data) {
 	// TODO
