@@ -215,10 +215,10 @@ int main(int argc, char** argv) {
     testADSRSampler();
     testStreamer();
 
-    testx4();
     testx();
     testx2();
     testx3();
+    testx4();
     testx5();
     testx6();
 

@@ -1,12 +1,9 @@
 
-#include "WaveLoader.h"
-
 #include "SqLog.h"
+#include "WaveLoader.h"
 
 #define DR_WAV_IMPLEMENTATION
 #include "dr_wav.h"
-
-
 
 /*
 class WaveInfoInterface {
@@ -41,15 +38,15 @@ class WaveFileLoader : public LoaderBase {
 public:
     WaveFileLoader(const FilePath& fp) : LoaderBase(fp) {}
     bool load(std::string& errorMsg) override;
+
 private:
     void convertToMono();
-
 };
 
 bool WaveFileLoader::load(std::string& errorMessage) {
     unsigned int numChannels = 0;
-  //  unsigned int sampleRate = 0;
- //   uint64_t totalFrameCount = 0;
+    //  unsigned int sampleRate = 0;
+    //   uint64_t totalFrameCount = 0;
 
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fp.toString().c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
     if (pSampleData == NULL) {
@@ -76,7 +73,7 @@ bool WaveFileLoader::load(std::string& errorMessage) {
 
 void WaveFileLoader::convertToMono() {
     //  SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
-  //  const int origChannels = numChannels;
+    //  const int origChannels = numChannels;
     uint64_t newBufferSize = 1 + totalFrameCount;
     void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
     float* dest = reinterpret_cast<float*>(x);
@@ -92,7 +89,7 @@ void WaveFileLoader::convertToMono() {
         assert(monoSampleValue >= -1);
         dest[outputIndex] = monoSampleValue;
     }
-  
+
     //  SQINFO("leaving, not total frames = %d", totalFrameCount);
     DRWAV_FREE(data);
     data = dest;
@@ -101,7 +98,7 @@ void WaveFileLoader::convertToMono() {
 //----------------------------------------------------------------
 class FlacFileLoader : public LoaderBase {
 public:
-    FlacFileLoader(const FilePath& fp)  : LoaderBase(fp) {}
+    FlacFileLoader(const FilePath& fp) : LoaderBase(fp) {}
 
     bool load(std::string& errorMsg) override {
         assert(false);
@@ -110,20 +107,41 @@ public:
     }
 };
 
+//-------------------------------------------
 class TestFileLoader : public LoaderBase {
 public:
-    TestFileLoader(const FilePath& fp)  : LoaderBase(fp) {}
+    TestFileLoader(const FilePath& fp, WaveLoader::Tests test) : LoaderBase(fp), _test(test) { valid = true; }
 
     bool load(std::string& errorMsg) override {
-        assert(false);
-        errorMsg = "nimp";
-        return false;
+        switch (_test) {
+            case WaveLoader::Tests::DCOneSec:
+                setupDC(1);
+                break;
+            case WaveLoader::Tests::DCTenSec:
+               setupDC(10);
+                break;
+            default:
+                assert(false);
+        }
+        return true;
     }
+
+private:
+    void setupDC(int seconds) {
+        data = reinterpret_cast<float*>(DRWAV_MALLOC(44100 * seconds * sizeof(float)));
+        sampleRate = 44100;
+        totalFrameCount = 44100 * seconds;
+        for (uint64_t i = 0; i < totalFrameCount; ++i) {
+            data[i] = 1;
+        }
+    }
+    const WaveLoader::Tests _test = WaveLoader::Tests::None;
 };
 
+//-------------------------------------------------
 class NullFileLoader : public LoaderBase {
 public:
-    NullFileLoader(const FilePath& fp)  : LoaderBase(fp) {}
+    NullFileLoader(const FilePath& fp) : LoaderBase(fp) {}
     bool isValid() {
         assert(false);
         return false;
@@ -148,4 +166,42 @@ WaveLoader::WaveInfoPtr WaveLoader::loaderFactory(const FilePath& file) {
     }
 
     return loader;
+}
+
+void WaveLoader::_setTestMode(Tests test) {
+    //  _testMode = test;
+    WaveInfoPtr wav = std::make_shared<TestFileLoader>(FilePath(), test);
+    switch (test) {
+        case Tests::None:
+            break;
+        case Tests::DCTenSec:
+        case Tests::DCOneSec: {
+            // auto info = std::make_shared<TestFileLoader>(FilePath(), test);
+            finalInfo.push_back(wav);
+            std::string err;
+            const bool b = wav->load(err);
+            assert(b);
+            //   addNextSample(info);
+            didLoad = true;
+        } break;
+        default:
+            assert(false);
+    }
+#if 0
+    //  curLoadIndex = 0;       // let's force a load
+    for (bool done = false; !done;) {
+        WaveLoader::LoaderState loadedState = this->loadNextFile();
+        switch (loadedState) {
+            case WaveLoader::LoaderState::Progress:
+                // smsg->sharedState->uiw_setLoadProgress(waves->getProgressPercent());
+                break;
+            case WaveLoader::LoaderState::Done:
+            case WaveLoader::LoaderState::Error:
+                done = true;
+                break;
+            default:
+                assert(false);
+        }
+    }
+#endif
 }

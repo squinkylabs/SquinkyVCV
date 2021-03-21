@@ -67,24 +67,6 @@ WaveLoader::LoaderState WaveLoader::loadNextFile() {
     return ret;
 }
 
-void WaveLoader::_setTestMode(Tests test) {
-    assert(false);
-#if 0
-    _testMode = test;
-    switch (_testMode) {
-        case Tests::None:
-            break;
-        case Tests::DCTenSec:
-        case Tests::DCOneSec: {
-            auto info = std::make_shared<WaveInfo>(_testMode);
-            finalInfo.push_back(info);
-            didLoad = true;
-        } break;
-        default:
-            assert(false);
-    }
-    #endif
-}
 
 #if 0
 WaveLoader::LoaderState WaveLoader::load2() {

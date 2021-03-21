@@ -27,6 +27,50 @@ public:
     };
     using WaveInfoPtr = std::shared_ptr<WaveInfoInterface>;
 
+    /** Sample files are added one at a time until "all"
+     * are loaded.
+     */
+    void addNextSample(const FilePath& fileName);
+
+    /**
+     * load() is called one - after all the samples have been added.
+     * load will load all of them.
+     * will return true is they all load.
+     */
+
+    enum class LoaderState {
+        Done,
+        Error,
+        Progress
+    };
+
+    // load up all the registered files
+    
+    LoaderState loadNextFile();
+    float getProgressPercent() const;
+
+    /**
+     * Index is one based. 
+     */
+    WaveInfoPtr getInfo(int index) const;
+    std::string lastError;
+
+
+    void _setTestMode(Tests);
+private:
+   // Tests _testMode = Tests::None;
+
+    std::vector<FilePath> filesToLoad;
+    std::vector<WaveInfoPtr> finalInfo;
+    static WaveInfoPtr loaderFactory(const FilePath& file);
+    void clear();
+    bool didLoad = false;
+    void validate();
+    int curLoadIndex = -1;
+};
+
+using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
+
 #if 0
     class WaveInfo {
     public:
@@ -55,48 +99,4 @@ public:
         // static float* convertToMono(float* data, uint64_t frames, int channels);
         void convertToMono();
     };
-   
-#endif
-
-    /** Sample files are added one at a time until "all"
-     * are loaded.
-     */
-    void addNextSample(const FilePath& fileName);
-
-    /**
-     * load() is called one - after all the samples have been added.
-     * load will load all of them.
-     * will return true is they all load.
-     */
-
-    enum class LoaderState {
-        Done,
-        Error,
-        Progress
-    };
-
-    // load up all the registered files
-    LoaderState loadNextFile();
-    float getProgressPercent() const;
-
-    /**
-     * Index is one based. 
-     */
-    WaveInfoPtr getInfo(int index) const;
-    std::string lastError;
-
-
-    void _setTestMode(Tests);
-private:
-   // Tests _testMode = Tests::None;
-
-    std::vector<FilePath> filesToLoad;
-    std::vector<WaveInfoPtr> finalInfo;
-    static WaveInfoPtr loaderFactory(const FilePath& file);
-    void clear();
-    bool didLoad = false;
-    void validate();
-    int curLoadIndex = -1;
-};
-
-using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
+   #endif
