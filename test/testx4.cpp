@@ -156,6 +156,23 @@ static void testFilePathDoubleDot() {
     assertEQ(fp1.toString(), expected.toString());
 }
 
+static void testFilePathExt() {
+    FilePath fp1("a.b");
+    assertEQ(fp1.getExtensionLC(), "b");
+
+    FilePath fp2("a.b.c");
+    assertEQ(fp2.getExtensionLC(), "c");
+
+    FilePath fp3("a");
+    assertEQ(fp3.getExtensionLC(), "");
+
+    FilePath fp4("");
+    assertEQ(fp4.getExtensionLC(), "");
+
+    FilePath fp5("a.WAVeFILE");
+    assertEQ(fp5.getExtensionLC(), "wavefile");
+}
+
 static void testSchemaFreeText1() {
     bool b;
     b = SamplerSchema::isFreeTextType("foo");
@@ -199,6 +216,7 @@ void testx4() {
     testFilePathGetFilenamePartNoExtension();
     testFilePathGetFilenamePartNoExtension2();
     testFilePathDoubleDot();
+    testFilePathExt();
 
     testSchemaFreeText1();
     testSchemaTextBuiltIn();

@@ -125,7 +125,13 @@ std::string FilePath::getFilenamePartNoExtension() const {
     return pos == std::string::npos ? s : s.substr(0, pos);
 }
 
-std::string FilePath::getExtension() const {
-    assert(false);
-    return "";
+std::string FilePath::getExtensionLC() const {
+    std::string s = getFilenamePart();
+    auto pos = s.rfind('.');
+    s = (pos == std::string::npos) ? "" : s.substr(pos + 1);
+
+    //  td::string data = "Abc";
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+    return s;
 }

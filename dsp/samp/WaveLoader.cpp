@@ -8,8 +8,8 @@
 #include "SqLog.h"
 
 // Instantiate the dr_wav functions in this file
-#define DR_WAV_IMPLEMENTATION
-#include "dr_wav.h"
+//#define DR_WAV_IMPLEMENTATION
+//#include "dr_wav.h"
 
 void WaveLoader::clear() {
     finalInfo.clear();
@@ -35,15 +35,16 @@ float WaveLoader::getProgressPercent() const {
     return 100 * done / total;
 }
 
-WaveLoader::LoaderState WaveLoader::loadAllFiles() {
+WaveLoader::LoaderState WaveLoader::loadNextFile() {
     if (curLoadIndex >= filesToLoad.size()) {
         return LoaderState::Done;
     }
 
-    FilePath& file = filesToLoad[curLoadIndex];
-    const std::string extension = file.getExtension();
 
-    WaveInfoPtr fileLoader = this->loaderFactory(extension);
+    FilePath& file = filesToLoad[curLoadIndex];
+   // const std::string extension = file.getExtensionLC();
+
+    WaveInfoPtr fileLoader = loaderFactory(file);
 
 
  //   WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);

@@ -20,7 +20,7 @@ static const char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-P
 static void testWaveLoader0() {
     WaveLoader w;
     w.addNextSample(FilePath("fake file name"));
-    auto b = w.loadAllFiles();
+    auto b = w.loadNextFile();
     assertEQ(int(b), int(WaveLoader::LoaderState::Error));
     assertEQ(w.getProgressPercent(), 0);
 }
@@ -28,7 +28,7 @@ static void testWaveLoader0() {
 static void testWaveLoader1() {
     WaveLoader w;
     w.addNextSample(FilePath("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav"));
-    auto b = w.loadAllFiles();
+    auto b = w.loadNextFile();
     assertEQ(int(b), int(WaveLoader::LoaderState::Done));
     auto x = w.getInfo(1);
     assert(x->isValid());
@@ -41,7 +41,7 @@ static void testWaveLoader1() {
 static void testWaveLoader2() {
     WaveLoader w;
     w.addNextSample(FilePath("D:/samples/UprightPianoKW-small-SFZ-20190703/samples/A3vH.wav"));
-    auto b = w.loadAllFiles();
+    auto b = w.loadNextFile();
     assertEQ(int(b), int(WaveLoader::LoaderState::Done));
     auto x = w.getInfo(1);
     assert(x->isValid());
@@ -53,7 +53,7 @@ static void testWaveLoaderNot44() {
     WaveLoader w;
     w.addNextSample(FilePath("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav"));
 
-    auto b = w.loadAllFiles();
+    auto b = w.loadNextFile();
     assertEQ(int(b), int(WaveLoader::LoaderState::Done));
 
     auto x = w.getInfo(1);
@@ -135,7 +135,7 @@ static void testLoadWavesPiano() {
 
     // const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
     cinst->setWaves(loader, FilePath(tinnyPianoRoot));
-    loader->loadAllFiles();
+    loader->loadNextFile();
     // assert(false);
 }
 
@@ -1308,7 +1308,7 @@ static void testSampleRate() {
     // TODO: change back to k18 orig when test is done
     w.addNextSample(FilePath("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav"));
 
-    w.loadAllFiles();
+    w.loadNextFile();
     auto x = w.getInfo(1);
     assert(x->isValid());
     assertEQ(x->getSampleRate(), 48000);

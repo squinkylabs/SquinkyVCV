@@ -42,7 +42,7 @@ static void testSamplerRealSound() {
 
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
     w->addNextSample(FilePath(p));
-    w->loadAllFiles();
+    w->loadNextFile();
 
     WaveLoader::WaveInfoPtr info = w->getInfo(1);
     assert(info->isValid());

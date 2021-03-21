@@ -13,7 +13,7 @@ public:
     virtual ~WaveInfoInterface() = default;
     virtual unsigned int getSampleRate() = 0;
     virtual uint64_t getTotalFrameCount() = 0;
-    virtual bool isValid() = 0;
+    virtual bool isValid() const = 0;
     virtual const float* getData() = 0;
     virtual bool load(std::string& errorMsg) = 0;
 };
@@ -76,7 +76,7 @@ public:
     };
 
     // load up all the registered files
-    LoaderState loadAllFiles();
+    LoaderState loadNextFile();
     float getProgressPercent() const;
 
     /**
@@ -92,7 +92,7 @@ private:
 
     std::vector<FilePath> filesToLoad;
     std::vector<WaveInfoPtr> finalInfo;
-    static WaveInfoPtr loaderFactory(const std::string& extension);
+    static WaveInfoPtr loaderFactory(const FilePath& file);
     void clear();
     bool didLoad = false;
     void validate();
