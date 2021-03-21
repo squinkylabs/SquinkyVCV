@@ -3393,6 +3393,9 @@ FLAC__StreamDecoderTellStatus file_tell_callback_(const FLAC__StreamDecoder *dec
 	}
 }
 
+
+
+
 FLAC__StreamDecoderLengthStatus file_length_callback_(const FLAC__StreamDecoder *decoder, FLAC__uint64 *stream_length, void *client_data)
 {
 	struct flac_stat_s filestats;
@@ -3401,8 +3404,13 @@ FLAC__StreamDecoderLengthStatus file_length_callback_(const FLAC__StreamDecoder 
 	if(decoder->private_->file == stdin)
 		return FLAC__STREAM_DECODER_LENGTH_STATUS_UNSUPPORTED;
 
-	// SquinkyLabs 2020: change fileno to _fileno. Should this only be for Visual C++?
+
+	// SquinkyLabs 2020: change fileno to _fileno. Only needed for for Visual C++?
+#if defined(_MSC_VER)
 	else if(flac_fstat(_fileno(decoder->private_->file), &filestats) != 0)
+#else
+	else if (flac_fstat(fileno(decoder->private_->file), &filestats) != 0)
+#endif
 		return FLAC__STREAM_DECODER_LENGTH_STATUS_ERROR;
 	else {
 		*stream_length = (FLAC__uint64)filestats.st_size;

@@ -33,6 +33,10 @@
 #ifndef FLAC__ASSERT_H
 #define FLAC__ASSERT_H
 
+// Squinky Labs 2020 - just one more hack to get things to build.
+// we already turn off asserts in release builds, so NP.
+#include <assert.h>
+
 /* we need this since some compilers (like MSVC) leave assert()s on release code (and we don't want to use their ASSERT) */
 #ifndef NDEBUG
 #include <assert.h>

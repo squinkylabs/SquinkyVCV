@@ -17,7 +17,8 @@ CXXFLAGS +=
 # compile for V1 vs 0.6
 FLAGS += -D __V1x 
 FLAGS += -D _SEQ
-FLAGS += -D FLAC__NO_DLL -D HAVE_FSEEKO -D HAVE_LROUND
+# since we didn't use autofonf so set up flac, we need to fake some thing:
+FLAGS += -D FLAC__NO_DLL -D HAVE_FSEEKO -D HAVE_LROUND -D HAVE_STDINT_H
 
 # Command line variable to turn on "experimental" modules
 ifdef _EXP

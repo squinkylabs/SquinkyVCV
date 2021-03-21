@@ -30,6 +30,7 @@
  */
 
 // Squinky Labs 2020
+#ifdef ARCH_WIN
 #define _CRT_SECURE_NO_WARNINGS
 
 #ifdef HAVE_CONFIG_H
@@ -188,3 +189,4 @@ FLAC_API int flac_internal_rename_utf8(const char *oldname, const char *newname)
 		return ret;
 	}
 }
+#endif
