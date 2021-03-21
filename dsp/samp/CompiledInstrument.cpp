@@ -195,7 +195,7 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
     // then sample rate correction
     if (loader) {
         // do we need to adapt to changed sample rate?
-        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->sampleRate;
+        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->getSampleRate();
         if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
             info.needsTranspose = true;
 #ifdef _SAMPFM

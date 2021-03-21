@@ -101,7 +101,7 @@ void Streamer::setGain(int channel, float gain) {
     cd.gain = gain;
 }
 
-void Streamer::setSample(int channel, float* d, int f) {
+void Streamer::setSample(int channel, const float* d, int f) {
     assert(channel < 4);
     ChannelData& cd = channels[channel];
 

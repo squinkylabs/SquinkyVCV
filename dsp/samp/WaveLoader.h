@@ -7,6 +7,17 @@
 
 #include "FilePath.h"
 
+// Abstract interface for audio files
+class WaveInfoInterface {
+public:
+    virtual ~WaveInfoInterface() = default;
+    virtual unsigned int getSampleRate() = 0;
+    virtual uint64_t getTotalFrameCount() = 0;
+    virtual bool isValid() = 0;
+    virtual const float* getData() = 0;
+    virtual bool load(std::string& errorMsg) = 0;
+};
+
 class WaveLoader {
 public:
     enum class Tests {
@@ -14,7 +25,9 @@ public:
         DCOneSec,  // let's make one fake wave file that has one second of DC
         DCTenSec
     };
+    using WaveInfoPtr = std::shared_ptr<WaveInfoInterface>;
 
+#if 0
     class WaveInfo {
     public:
         WaveInfo(const FilePath& fileName);
@@ -42,7 +55,8 @@ public:
         // static float* convertToMono(float* data, uint64_t frames, int channels);
         void convertToMono();
     };
-    using WaveInfoPtr = std::shared_ptr<WaveInfo>;
+   
+#endif
 
     /** Sample files are added one at a time until "all"
      * are loaded.
@@ -60,7 +74,9 @@ public:
         Error,
         Progress
     };
-    LoaderState load2();
+
+    // load up all the registered files
+    LoaderState loadAllFiles();
     float getProgressPercent() const;
 
     /**
@@ -72,10 +88,11 @@ public:
 
     void _setTestMode(Tests);
 private:
-    Tests _testMode = Tests::None;
+   // Tests _testMode = Tests::None;
 
     std::vector<FilePath> filesToLoad;
     std::vector<WaveInfoPtr> finalInfo;
+    static WaveInfoPtr loaderFactory(const std::string& extension);
     void clear();
     bool didLoad = false;
     void validate();

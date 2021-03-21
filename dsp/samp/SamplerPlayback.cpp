@@ -32,7 +32,7 @@ void SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& para
     cachedInfoToPlayInfo(info, params, data);
     if (loader) {
         // do we need to adapt to changed sample rate?
-        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->sampleRate;
+        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->getSampleRate();
         if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
             info.needsTranspose = true;
 #ifdef _SAMPFM

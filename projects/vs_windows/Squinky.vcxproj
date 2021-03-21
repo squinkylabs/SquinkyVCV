@@ -40,6 +40,7 @@
     <ClCompile Include="..\..\dsp\samp\SParse.cpp" />
     <ClCompile Include="..\..\dsp\samp\Streamer.cpp" />
     <ClCompile Include="..\..\dsp\samp\WaveLoader.cpp" />
+    <ClCompile Include="..\..\dsp\samp\WaveLoaders.cpp" />
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp" />
     <ClCompile Include="..\..\dsp\third-party\flac\src\bitreader.c" />
     <ClCompile Include="..\..\dsp\third-party\flac\src\cpu.c" />

@@ -42,10 +42,10 @@ static void testSamplerRealSound() {
 
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\samples\C4vH.wav)foo";
     w->addNextSample(FilePath(p));
-    w->load2();
+    w->loadAllFiles();
 
     WaveLoader::WaveInfoPtr info = w->getInfo(1);
-    assert(info->valid);
+    assert(info->isValid());
 
     s.setLoader(w);
     s.setNumVoices(1);
@@ -77,7 +77,7 @@ std::shared_ptr<Sampler4vx> makeTest(CompiledInstrument::Tests citest, WaveLoade
     cinst->_setTestMode(citest);  // I don't know what this test mode does now, but probably not enough?
 
     WaveLoader::WaveInfoPtr info = w->getInfo(1);
-    assert(info->valid);
+    assert(info->isValid());
 
     s->setLoader(w);
     s->setNumVoices(1);

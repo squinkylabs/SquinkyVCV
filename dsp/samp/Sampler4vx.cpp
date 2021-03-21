@@ -100,10 +100,9 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     }
 
     WaveLoader::WaveInfoPtr waveInfo = waves->getInfo(patchInfo.sampleIndex);
-    assert(waveInfo->valid);
-    assert(waveInfo->numChannels == 1);
-    player.setSample(channel, waveInfo->data, int(waveInfo->totalFrameCount));
+    assert(waveInfo->isValid());
 
+    player.setSample(channel, waveInfo->getData(), int(waveInfo->getTotalFrameCount()));
     player.setGain(channel, patchInfo.gain);
 
     // I don't think this test cares what we set the player too
@@ -133,7 +132,7 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
 #endif
 
-    std::string sample = waveInfo->fileName.getFilenamePart();
+   // std::string sample = waveInfo->fileName.getFilenamePart();
     // SQINFO("play vel=%d pitch=%d gain=%f samp=%s", midiVelocity, midiPitch, patchInfo.gain, sample.c_str());
 
     // this is a little messed up - the adsr should really have independent

@@ -35,6 +35,57 @@ float WaveLoader::getProgressPercent() const {
     return 100 * done / total;
 }
 
+WaveLoader::LoaderState WaveLoader::loadAllFiles() {
+    if (curLoadIndex >= filesToLoad.size()) {
+        return LoaderState::Done;
+    }
+
+    FilePath& file = filesToLoad[curLoadIndex];
+    const std::string extension = file.getExtension();
+
+    WaveInfoPtr fileLoader = this->loaderFactory(extension);
+
+
+ //   WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
+    std::string err;
+    const bool b = fileLoader->load(err);
+    if (!b) {
+        // bail on first error
+        assert(!err.empty());
+        lastError = err;
+        SQINFO("wave loader leaving with error %s", lastError.c_str());
+        return LoaderState::Error;
+    }
+
+    finalInfo.push_back(fileLoader);
+    curLoadIndex++;
+    auto ret = curLoadIndex >= filesToLoad.size() ? LoaderState::Done : LoaderState::Progress;
+    if (ret == LoaderState::Done) {
+        didLoad = true;
+    }
+    return ret;
+}
+
+void WaveLoader::_setTestMode(Tests test) {
+    assert(false);
+#if 0
+    _testMode = test;
+    switch (_testMode) {
+        case Tests::None:
+            break;
+        case Tests::DCTenSec:
+        case Tests::DCOneSec: {
+            auto info = std::make_shared<WaveInfo>(_testMode);
+            finalInfo.push_back(info);
+            didLoad = true;
+        } break;
+        default:
+            assert(false);
+    }
+    #endif
+}
+
+#if 0
 WaveLoader::LoaderState WaveLoader::load2() {
     if (curLoadIndex >= filesToLoad.size()) {
         return LoaderState::Done;
@@ -61,11 +112,14 @@ WaveLoader::LoaderState WaveLoader::load2() {
     return ret;
 }
 
+
 void WaveLoader::validate() {
     for (auto info : finalInfo) {
         info->validate();
     }
 }
+
+
 
 void WaveLoader::_setTestMode(Tests test) {
     _testMode = test;
@@ -82,9 +136,12 @@ void WaveLoader::_setTestMode(Tests test) {
             assert(false);
     }
 }
+#endif
+
 
 //***********************************************************************************************************************
 
+#if 0 // now movied doe WaveLoaders.h
 WaveLoader::WaveInfo::WaveInfo(const FilePath& path) : fileName(path) {
 }
 
@@ -165,3 +222,5 @@ WaveLoader::WaveInfo::~WaveInfo() {
         data = nullptr;
     }
 }
+
+#endif

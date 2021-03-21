@@ -24,6 +24,7 @@ public:
     FilePath getPathPart() const;
     std::string getFilenamePart() const;
     std::string getFilenamePartNoExtension() const;
+    std::string getExtension() const;
 private:
     std::string data;
 

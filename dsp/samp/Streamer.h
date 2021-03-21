@@ -12,7 +12,7 @@
 class Streamer {
 public:
    // Streamer();
-    void setSample(int chan, float* data, int frames);
+    void setSample(int chan, const float* data, int frames);
   //  void setTranspose(int chan, bool doTranspose, float amount);
 
     /**
@@ -37,7 +37,7 @@ public:
 public:
     class ChannelData {
     public:
-        float* data = nullptr;
+        const float* data = nullptr;
         int frames = 0;
 
         float vol = 1;  // this will go away when we have envelopes

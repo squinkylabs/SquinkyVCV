@@ -553,7 +553,7 @@ public:
 
         WaveLoader::LoaderState loadedState;
         for (bool done = false; !done;) {
-            loadedState = waves->load2();
+            loadedState = waves->loadAllFiles();
             switch (loadedState) {
                 case WaveLoader::LoaderState::Progress:
                     smsg->sharedState->uiw_setLoadProgress(waves->getProgressPercent());

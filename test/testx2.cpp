@@ -20,7 +20,7 @@ static const char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-P
 static void testWaveLoader0() {
     WaveLoader w;
     w.addNextSample(FilePath("fake file name"));
-    auto b = w.load2();
+    auto b = w.loadAllFiles();
     assertEQ(int(b), int(WaveLoader::LoaderState::Error));
     assertEQ(w.getProgressPercent(), 0);
 }
@@ -28,10 +28,10 @@ static void testWaveLoader0() {
 static void testWaveLoader1() {
     WaveLoader w;
     w.addNextSample(FilePath("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav"));
-    auto b = w.load2();
+    auto b = w.loadAllFiles();
     assertEQ(int(b), int(WaveLoader::LoaderState::Done));
     auto x = w.getInfo(1);
-    assert(x->valid);
+    assert(x->isValid());
     x = w.getInfo(0);
     assert(!x);
 
@@ -41,10 +41,10 @@ static void testWaveLoader1() {
 static void testWaveLoader2() {
     WaveLoader w;
     w.addNextSample(FilePath("D:/samples/UprightPianoKW-small-SFZ-20190703/samples/A3vH.wav"));
-    auto b = w.load2();
+    auto b = w.loadAllFiles();
     assertEQ(int(b), int(WaveLoader::LoaderState::Done));
     auto x = w.getInfo(1);
-    assert(x->valid);
+    assert(x->isValid());
     x = w.getInfo(0);
     assert(!x);
 }
@@ -53,13 +53,12 @@ static void testWaveLoaderNot44() {
     WaveLoader w;
     w.addNextSample(FilePath("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav"));
 
-    auto b = w.load2();
+    auto b = w.loadAllFiles();
     assertEQ(int(b), int(WaveLoader::LoaderState::Done));
 
     auto x = w.getInfo(1);
-    assert(x->valid);
-    assertEQ(x->sampleRate, 48000);  // we keep the input sample rate
-    assertEQ(x->numChannels, 1);     // but we convert to mono
+    assert(x->isValid());
+    assertEQ(x->getSampleRate(), 48000);  // we keep the input sample rate
 }
 
 static void testWaveLoaderNotMono() {
@@ -136,7 +135,7 @@ static void testLoadWavesPiano() {
 
     // const char* pRoot = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\)foo";
     cinst->setWaves(loader, FilePath(tinnyPianoRoot));
-    loader->load2();
+    loader->loadAllFiles();
     // assert(false);
 }
 
@@ -1309,11 +1308,10 @@ static void testSampleRate() {
     // TODO: change back to k18 orig when test is done
     w.addNextSample(FilePath("D:\\samples\\K18-Upright-Piano\\K18\\A0.f.wav"));
 
-    w.load2();
+    w.loadAllFiles();
     auto x = w.getInfo(1);
-    assert(x->valid);
-    assertEQ(x->sampleRate, 48000);
-    assertEQ(x->numChannels, 1);  // loader already made mono
+    assert(x->isValid());
+    assertEQ(x->getSampleRate(), 48000);
 
     CompiledRegionPtr cr1 = st::makeRegion(R"foo(<region>sample=a key=60 seq_position=200)foo");
 

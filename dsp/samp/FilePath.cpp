@@ -124,3 +124,8 @@ std::string FilePath::getFilenamePartNoExtension() const {
     auto pos = s.rfind('.');
     return pos == std::string::npos ? s : s.substr(0, pos);
 }
+
+std::string FilePath::getExtension() const {
+    assert(false);
+    return "";
+}

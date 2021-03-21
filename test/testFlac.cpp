@@ -49,10 +49,9 @@ static void testStereo24() {
 }
 
 void testFlac() {
-    //  test0();
-  //  testMono16();
-  //  testStereo16();
-   // testMono24();
-      testStereo24();
-    assert(false);
+    test0();
+    testMono16();
+    testStereo16();
+    testMono24();
+    testStereo24();
 }
