@@ -46,7 +46,8 @@
 # include <unistd.h>
 #endif
 
-#if defined _MSC_VER || defined __BORLANDC__ || defined __MINGW32__
+// Squinky Labs 2020
+#if defined _MSC_VER || defined __BORLANDC__ || defined __MINGW32__ || 1
 #include <sys/types.h> /* for off_t */
 #define FLAC__off_t __int64 /* use this instead of off_t to fix the 2 GB limit */
 #if !defined __MINGW32__

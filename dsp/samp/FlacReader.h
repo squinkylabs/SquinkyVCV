@@ -13,8 +13,8 @@ public:
 	const float* getSamples() const { return monoData; }
 	uint64_t getNumSamples() const { return framesRead; }
 private:
-	static float read16Bit(const void *);
-	static float read24Bit(const void *);
+	static float read16Bit(const int32_t*);
+	static float read24Bit(const int32_t*);
 
 	FLAC__StreamDecoder *decoder = nullptr;
 	bool isOk = false;
@@ -31,9 +31,10 @@ private:
 	void onFormat(uint64_t totalSamples, unsigned sampleRate, unsigned channels, unsigned bitsPerSampl );
 
 	/**
-	 * returns true if ok
+	 * returns true if ok.
+	 * @param rightData will be null for mono data.
 	 */
-	bool onData(const void* data, unsigned samples);
+	bool onData(unsigned samples, const int32_t* leftData, const int32_t* rightData);
 
 	static FLAC__StreamDecoderWriteStatus write_callback(const FLAC__StreamDecoder* decoder, const FLAC__Frame* frame, const FLAC__int32* const buffer[], void* client_data);
 	static void metadata_callback(const FLAC__StreamDecoder* decoder, const FLAC__StreamMetadata* metadata, void* client_data);

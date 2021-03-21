@@ -5,6 +5,7 @@ SLUG = squinkylabs-plug1
 FLAGS += -I./dsp/generators -I./dsp/utils -I./dsp/filters
 FLAGS += -I./dsp/third-party/falco -I./dsp/third-party/kiss_fft130 
 FLAGS += -I./dsp/third-party/kiss_fft130/tools -I./dsp/third-party/src -I./dsp/third-party/midifile
+FLAGS += -I./dsp/third-party/flac/include
 FLAGS += -I./dsp -I./dsp/samp -I./dsp/third-party/pugixml
 FLAGS += -I./sqsrc/thread -I./dsp/fft -I./composites
 FLAGS += -I./sqsrc/noise -I./sqsrc/util -I./sqsrc/clock -I./sqsrc/grammar -I./sqsrc/delay
@@ -14,8 +15,9 @@ CFLAGS +=
 CXXFLAGS +=
 
 # compile for V1 vs 0.6
-FLAGS += -D __V1x
+FLAGS += -D __V1x 
 FLAGS += -D _SEQ
+FLAGS += -D FLAC__NO_DLL -D HAVE_FSEEKO -D HAVE_LROUND
 
 # Command line variable to turn on "experimental" modules
 ifdef _EXP
@@ -49,6 +51,8 @@ SOURCES += $(wildcard midi/**/*.cpp)
 SOURCES += $(wildcard src/third-party/*.cpp)
 SOURCES += $(wildcard src/seq/*.cpp)
 SOURCES += $(wildcard src/kbd/*.cpp)
+SOURCES += $(wildcard dsp/third-party/flac/src/*.c)
+# SOURCES += dsp/third-party/flac/src/*.c
 
 # include res and presets folder
 DISTRIBUTABLES += $(wildcard LICENSE*) res presets
