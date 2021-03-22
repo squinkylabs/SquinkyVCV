@@ -1,4 +1,5 @@
 
+#include "FlacReader.h"
 #include "SqLog.h"
 #include "WaveLoader.h"
 
@@ -101,10 +102,17 @@ public:
     FlacFileLoader(const FilePath& fp) : LoaderBase(fp) {}
 
     bool load(std::string& errorMsg) override {
-        assert(false);
-        errorMsg = "nimp";
+        r.read(fp);
+        if (r.ok()) {
+            valid = true;
+            return true;
+        }
+        errorMsg = "can't open " +  fp.getFilenamePart();
         return false;
     }
+
+private:
+    FlacReader r;
 };
 
 //-------------------------------------------
@@ -118,7 +126,7 @@ public:
                 setupDC(1);
                 break;
             case WaveLoader::Tests::DCTenSec:
-               setupDC(10);
+                setupDC(10);
                 break;
             default:
                 assert(false);

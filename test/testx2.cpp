@@ -25,9 +25,22 @@ static void testWaveLoader0() {
     assertEQ(w.getProgressPercent(), 0);
 }
 
-static void testWaveLoader1() {
+static void testWaveLoader1Wav() {
     WaveLoader w;
     w.addNextSample(FilePath("D:\\samples\\UprightPianoKW-small-SFZ-20190703\\samples\\A3vH.wav"));
+    auto b = w.loadNextFile();
+    assertEQ(int(b), int(WaveLoader::LoaderState::Done));
+    auto x = w.getInfo(1);
+    assert(x->isValid());
+    x = w.getInfo(0);
+    assert(!x);
+
+    assertEQ(w.getProgressPercent(), 100);
+}
+
+static void testWaveLoader1Flac() {
+    WaveLoader w;
+    w.addNextSample(FilePath("D:\\samples\\test\\flac\\mono24.flac"));
     auto b = w.loadNextFile();
     assertEQ(int(b), int(WaveLoader::LoaderState::Done));
     auto x = w.getInfo(1);
@@ -386,7 +399,6 @@ static void testTranspose1() {
 
     // figure the expected transpose for pitch 26
     int semiOffset = -1;
-   
 
     VoicePlayParameter params;
     params.midiPitch = 26;
@@ -395,14 +407,13 @@ static void testTranspose1() {
     assert(info.valid);
     assert(info.needsTranspose);
 #ifdef _SAMPFM
-    
+
     assertClose(info.transposeV, -1.f / 12.f, .0001);
 #else
     float pitchMul = float(std::pow(2, semiOffset / 12.0));
     assertEQ(info.transposeAmt, pitchMul);
 #endif
 }
-
 
 // make compiler fail to parse something, see what it does
 static void testCompileCrash() {
@@ -412,7 +423,6 @@ static void testCompileCrash() {
     auto err = SParse::go(data, inst);
     assert(!err.empty());
 
-
     //SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(err);
     assert(cinst);
@@ -423,18 +433,17 @@ static void testCompileCrash() {
 
     VoicePlayInfo info;
     VoicePlayParameter params;
-    
+
     cinst->play(info, params, nullptr, 44100);
 }
 
 static void testCompileCrash2() {
-   const char* data = "F:\\foo\\bar.sfz";
+    const char* data = "F:\\foo\\bar.sfz";
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::goFile(FilePath(data), inst);
     assert(!err.empty());
 
-
     //SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(err);
     assert(cinst);
@@ -445,7 +454,7 @@ static void testCompileCrash2() {
 
     VoicePlayInfo info;
     VoicePlayParameter params;
-    
+
     cinst->play(info, params, nullptr, 44100);
     assert(!info.valid);
 }
@@ -467,7 +476,7 @@ static void testCompiledRegion() {
 }
 
 static void testCompiledRegionAddedOpcodes() {
-   SQINFO("---- starting testCompiledRegionAddedOpcodes");
+    SQINFO("---- starting testCompiledRegionAddedOpcodes");
     CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=a key=64 tune=11 volume=-13)foo");
 
     assertEQ(cr->tune, 11);
@@ -759,7 +768,6 @@ static void testCompileMultiPitch() {
 #else
     assertGT(info.transposeAmt, 1);
 #endif
-
 }
 
 static void testCompileMultiVel() {
@@ -1373,10 +1381,10 @@ static void testPlayVolumeAndTune() {
 
     const float expectedGain = float(AudioMath::gainFromDb(-13));
 
-    
     assertEQ(info.gain, expectedGain);
     assert(info.needsTranspose);
-    assert(info.needsTranspose);;
+    assert(info.needsTranspose);
+    ;
 #ifdef _SAMPFM
     const float cvOffset = 11.f / 1200.f;
     assertClose(info.transposeV, cvOffset, .0001);
@@ -1388,13 +1396,14 @@ static void testPlayVolumeAndTune() {
     assertEQ(info.transposeAmt, expectedTransposeMult);
 #endif
 }
-   
 
 void testx2() {
     assert(parseCount == 0);
     assert(compileCount == 0);
     testWaveLoader0();
-    testWaveLoader1();
+    testWaveLoader1Wav();
+    testWaveLoader1Flac();
+
     testWaveLoader2();
     testWaveLoaderNot44();
     testPlayInfo();
@@ -1419,7 +1428,7 @@ void testx2() {
 
     testCompileCrash();
     testCompileCrash2();
-   
+
     testCompiledRegion();
     testCompiledRegionAddedOpcodes();
     testCompiledRegionInherit();

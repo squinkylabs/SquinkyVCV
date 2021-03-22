@@ -3,11 +3,13 @@
 #include "stream_decoder.h"
 #include <stdio.h>
 
+class FilePath;
 
 class FlacReader {
 public:
 	~FlacReader();
-    void read(const char* filePath);
+  //  void read(const char* filePath);
+   void read(const FilePath& filePath);
 	bool ok() const { return isOk; }
 
 	const float* getSamples() const { return monoData; }

@@ -1,4 +1,5 @@
 
+#include "FilePath.h"
 #include "FlacReader.h"
 
 #include <assert.h>
@@ -9,8 +10,8 @@
 #include "SqLog.h"
 //#include "stream_decoder.h"
 
-void FlacReader::read(const char* filePath) {
-    if (!filePath) {
+void FlacReader::read(const FilePath& filePath) {
+    if (filePath.empty()) {
         SQWARN("bogus path");
         return;
     }
@@ -21,14 +22,17 @@ void FlacReader::read(const char* filePath) {
 
     FLAC__stream_decoder_set_md5_checking(decoder, false);
 
-    auto init_status = FLAC__stream_decoder_init_file(decoder, filePath, write_callback, metadata_callback, error_callback, /*client_data=*/this);
+    auto init_status = FLAC__stream_decoder_init_file(decoder, filePath.toString().c_str(), write_callback, metadata_callback, error_callback, /*client_data=*/this);
     if (init_status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
         SQWARN("ERROR: initializing decoder: %s", FLAC__StreamDecoderInitStatusString[init_status]);
+        SQWARN("file path: >%s<", filePath.toString().c_str());
         isOk = false;
         return;
     }
 
     FLAC__bool ok = FLAC__stream_decoder_process_until_end_of_stream(decoder);
+    FLAC__stream_decoder_finish(decoder);
+    
     isOk = (ok != false);
 }
 
@@ -150,14 +154,14 @@ bool FlacReader::onData(unsigned samples, const int32_t* leftData, const int32_t
     if (framesRead >= framesExpected) {
         isOk = true;
     }
-    if (isOk) SQINFO("leaving block with %d framesRaad %lld expected", framesRead, framesExpected);
+    // if (isOk) SQINFO("leaving block with %d framesRaad %lld expected", framesRead, framesExpected);
     return true;
 }
 
 FLAC__StreamDecoderWriteStatus FlacReader::write_callback(const FLAC__StreamDecoder* decoder, const FLAC__Frame* frame, const FLAC__int32* const buffer[], void* client_data) {
     FlacReader* client = reinterpret_cast<FlacReader*>(client_data);
 
-#if 1  // from example
+#if 0  // from example
     for (int i = 0; i < 5; ++i) {
         auto x = buffer[0];
         auto y = buffer[0][i];
@@ -181,7 +185,7 @@ FLAC__StreamDecoderWriteStatus FlacReader::write_callback(const FLAC__StreamDeco
 
 void FlacReader::metadata_callback(const FLAC__StreamDecoder* decoder, const FLAC__StreamMetadata* metadata, void* client_data) {
     if (metadata->type == FLAC__METADATA_TYPE_STREAMINFO) {
-        auto pp = metadata->data.stream_info;
+        // auto pp = metadata->data.stream_info;
         FlacReader* client = reinterpret_cast<FlacReader*>(client_data);
         client->onFormat(metadata->data.stream_info.total_samples,
                          metadata->data.stream_info.sample_rate,
