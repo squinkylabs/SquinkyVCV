@@ -12,8 +12,11 @@ public:
    void read(const FilePath& filePath);
 	bool ok() const { return isOk; }
 
-	const float* getSamples() const { return monoData; }
-	uint64_t getNumSamples() const { return framesRead; }
+	const float* getSamples() const;
+	float* takeSampleBuffer();
+	uint64_t getNumSamples() const;
+	unsigned int getSampleRate();
+    virtual uint64_t getTotalFrameCount();
 private:
 	static float read16Bit(const int32_t*);
 	static float read24Bit(const int32_t*);
@@ -21,14 +24,16 @@ private:
 	FLAC__StreamDecoder *decoder = nullptr;
 	bool isOk = false;
 
+	// Who owns this
 	float* monoData = nullptr;
 	float* writePtr = nullptr;
 
 	uint64_t framesExpected = 0;
 	uint64_t framesRead = 0;
-	unsigned bitsPerSample = 0;
+	//unsigned bitsPerSample = 0;
 	unsigned channels_ = 0;
 	unsigned bitsPerSample_ = 0;
+	unsigned sampleRate_ = 0;
 	// bps = metadata->data.stream_info.bits_per_sample;
 	void onFormat(uint64_t totalSamples, unsigned sampleRate, unsigned channels, unsigned bitsPerSampl );
 

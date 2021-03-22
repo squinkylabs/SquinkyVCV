@@ -29,6 +29,10 @@ public:
 protected:
     unsigned int sampleRate = 0;
     uint64_t totalFrameCount = 0;
+
+    // who owns this data. I think I should own it, and delete it maysel. I do,
+    // but should I transer ownership to outer object?
+    // Or maybe I should keep it and outer caller gets it to play?
     float* data = nullptr;
     const FilePath fp;
     bool valid = false;
@@ -102,9 +106,13 @@ public:
     FlacFileLoader(const FilePath& fp) : LoaderBase(fp) {}
 
     bool load(std::string& errorMsg) override {
-        r.read(fp);
-        if (r.ok()) {
+        reader.read(fp);
+        if (reader.ok()) {
             valid = true;
+            data = reader.takeSampleBuffer();
+            sampleRate = reader.getSampleRate();
+            totalFrameCount = reader.getTotalFrameCount();
+
             return true;
         }
         errorMsg = "can't open " +  fp.getFilenamePart();
@@ -112,7 +120,7 @@ public:
     }
 
 private:
-    FlacReader r;
+    FlacReader reader;
 };
 
 //-------------------------------------------

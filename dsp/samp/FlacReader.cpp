@@ -1,5 +1,4 @@
 
-#include "FilePath.h"
 #include "FlacReader.h"
 
 #include <assert.h>
@@ -7,8 +6,30 @@
 
 #include <limits>
 
+#include "FilePath.h"
 #include "SqLog.h"
-//#include "stream_decoder.h"
+
+const float* FlacReader::getSamples() const {
+     return monoData;
+      }
+float* FlacReader::takeSampleBuffer() {
+    // transfer ownership to caller.
+    float* ret = monoData;
+    monoData = nullptr;
+    return ret;
+}
+
+uint64_t FlacReader::getNumSamples() const { 
+    return framesRead;
+ }
+
+unsigned int FlacReader::getSampleRate() {
+    return sampleRate_;
+}
+
+uint64_t FlacReader::getTotalFrameCount() {
+    return framesRead;
+}
 
 void FlacReader::read(const FilePath& filePath) {
     if (filePath.empty()) {
@@ -32,16 +53,9 @@ void FlacReader::read(const FilePath& filePath) {
 
     FLAC__bool ok = FLAC__stream_decoder_process_until_end_of_stream(decoder);
     FLAC__stream_decoder_finish(decoder);
-    
+
     isOk = (ok != false);
 }
-
-/*
-static FLAC__uint64 total_samples = 0;
-static unsigned sample_rate = 0;
-static unsigned channels = 0;
-static unsigned bps = 0;
-*/
 
 FlacReader::~FlacReader() {
     delete decoder;
@@ -60,6 +74,7 @@ void FlacReader::onFormat(uint64_t totalSamples, unsigned sampleRate, unsigned c
     writePtr = monoData;
     channels_ = channels;
     bitsPerSample_ = bitspersample;
+    sampleRate_ = sampleRate;
 }
 
 float FlacReader::read16Bit(const int32_t* data) {
@@ -71,14 +86,14 @@ float FlacReader::read16Bit(const int32_t* data) {
 }
 
 float FlacReader::read24Bit(const int32_t* data) {
-  //  const uint8_t* lsb = reinterpret_cast<const uint8_t*>(data);
-  //  const int16_t* data16 = reinterpret_cast<const int16_t*>(lsb + 1);
-  //  assert(false);
+    //  const uint8_t* lsb = reinterpret_cast<const uint8_t*>(data);
+    //  const int16_t* data16 = reinterpret_cast<const int16_t*>(lsb + 1);
+    //  assert(false);
     const float one_over_max24 = 1.f / float(std::numeric_limits<int16_t>::max() * 256);
 
     int32_t input = *data;
     float x = float(input) * one_over_max24;
-	 assert(x >= -1.01 && x <= 1.01);
+    assert(x >= -1.01 && x <= 1.01);
     return x;
 }
 
@@ -121,7 +136,7 @@ bool FlacReader::onData(unsigned samples, const int32_t* leftData, const int32_t
     if (channels_ == 1 && bitsPerSample_ == 16) {
         while (samples) {
             float x = read16Bit(leftData++);
-          //  ++leftData;
+            //  ++leftData;
             *writePtr++ = x;
             samples -= 1;
         }

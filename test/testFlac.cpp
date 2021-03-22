@@ -31,6 +31,7 @@ static void testWithFlac(const FilePath& f) {
     SQINFO("min = %f, max = %f", y, x);
     assertClose(x, 1, .0001);
     assertClose(y, -1, .0001);
+    assertEQ(r.getSampleRate(), 44100);
 }
 
 static void testMono16() {
@@ -54,6 +55,7 @@ static void testStereo24() {
      FlacReader r;
      r.read(FilePath(path));
      assert(r.ok());
+     assertEQ(r.getSampleRate(), 44100);
    
  }
 
