@@ -133,7 +133,12 @@ std::pair<bool, int> SamplerSchema::convertToInt(SamplerErrorContext& err, const
     bool sharp = false;
 
     if (s.length() >= 2) {
-        const int firstChar = s[0];
+        int firstChar = s[0];
+
+        // They may not be legal? but we see pitches upper case sometimes
+        if ((firstChar >= 'A' && firstChar <= 'G')) {
+            firstChar -= ('A' - 'a');
+        }
         if (firstChar >= 'a' && firstChar <= 'g') {
             switch (firstChar) {
                 case 'a':

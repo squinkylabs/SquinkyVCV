@@ -169,11 +169,30 @@ static void testCIKeysAndValues() {
     testCIKeysAndValues("12", 12);
 }
 
-static void testCIKeysAndValuesNotes() {
+static void testCIKeysAndValuesNotesLC() {
     // c0 = 12
     // c6 - 84
     testCIKeysAndValues("c6", 12 * (6 + 1));
+    testCIKeysAndValues("d6", 2 + 12 * (6 + 1));
+    testCIKeysAndValues("e6", 4 + 12 * (6 + 1));
+    testCIKeysAndValues("f6", 5 + 12 * (6 + 1));
+    testCIKeysAndValues("g6", 7 + 12 * (6 + 1));
+    testCIKeysAndValues("a6", 9 + 12 * (6 + 1));
+
     testCIKeysAndValues("b5", 12 * (6 + 1) - 1);
+}
+
+static void testCIKeysAndValuesNotesUC() {
+    // c0 = 12
+    // c6 - 84
+    testCIKeysAndValues("C6", 12 * (6 + 1));
+    testCIKeysAndValues("D6", 2 + 12 * (6 + 1));
+    testCIKeysAndValues("E6", 4 + 12 * (6 + 1));
+    testCIKeysAndValues("F6", 5 + 12 * (6 + 1));
+    testCIKeysAndValues("G6", 7 + 12 * (6 + 1));
+    testCIKeysAndValues("A6", 9 + 12 * (6 + 1));
+
+    testCIKeysAndValues("B5", 12 * (6 + 1) - 1);
 }
 
 static void testCIKeysAndValuesNotesSharp() {
@@ -1415,7 +1434,8 @@ void testx2() {
     //testStreamXpose2();
 
     testCIKeysAndValues();
-    testCIKeysAndValuesNotes();
+    testCIKeysAndValuesNotesLC();
+    testCIKeysAndValuesNotesUC();
     testCIKeysAndValuesNotesSharp();
     testParseGlobalAndRegionCompiled();
     testParseGlobalWithKVAndRegionCompiled();

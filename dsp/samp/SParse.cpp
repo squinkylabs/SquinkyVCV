@@ -89,46 +89,6 @@ std::string SParse::goCommon(const std::string& sContent, SInstrumentPtr outPars
     return sError;
 }
 
-#if 0
-std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
-    std::string lexError;
-    SLexPtr lex = SLex::go(s, &lexError);
-    if (!lex) {
-        assert(!lexError.empty());
-        return lexError;
-    }
-
-    std::string sError = matchHeadingGroups(inst, lex);
-    if (!sError.empty()) {
-        return sError;
-    }
-    if (lex->next() != nullptr) {
-        auto item = lex->next();
-        auto type = item->itemType;
-        auto lineNumber = item->lineNumber;
-        SqStream errorStream;
-        errorStream.add("extra tok line number ");
-        errorStream.add(int(lineNumber));
-        errorStream.add(" type= ");
-        errorStream.add(int(type));
-        errorStream.add(" index=");
-        errorStream.add(lex->_index());
-        //printf("extra tok line number %d type = %d index=%d\n", int(lineNumber), int(type), lex->_index());
-        if (type == SLexItem::Type::Identifier) {
-            SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
-            // printf("id name is %s\n", id->idName.c_str());
-            errorStream.add(" id name is ");
-            errorStream.add(id->idName);
-        }
-        return errorStream.str();
-    }
-    if (inst->groups.empty()) {
-        return "no groups or regions";
-    }
-    return sError;
-}
-#endif
-
 std::string SParse::matchHeadingGroups(SInstrumentPtr inst, SLexPtr lex) {
     for (bool done = false; !done;) {
         auto result = matchHeadingGroup(inst, lex);
