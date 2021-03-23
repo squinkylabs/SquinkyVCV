@@ -2,12 +2,13 @@
 
 #include "SLex.h"
 
+#include <assert.h>
+
+#include <fstream>
+
 #include "FilePath.h"
 #include "SqLog.h"
 #include "SqStream.h"
-
-#include <assert.h>
-#include <fstream>
 
 SLex::SLex(std::string* errorText, int includeDepth, const FilePath* filePath) : outErrorStringPtr(errorText), includeRecursionDepth(includeDepth), myFilePath(filePath) {
 }
@@ -97,6 +98,10 @@ bool SLex::procNextChar(char c) {
             return procNextIncludeChar(c);
         case State::InIdentifier:
             return procNextIdentifierChar(c);
+        case State::InDefine:
+            return procStateNextDefineChar(c);
+        case State::InHash:
+            return procStateNextHashChar(c);
         default:
             assert(false);
     }
@@ -113,6 +118,110 @@ bool SLex::error(const std::string& err) {
         *outErrorStringPtr = st.str();
     }
     return false;
+}
+
+bool SLex::procStateNextHashChar(char c) {
+    switch (c) {
+        case 'i':
+            state = State::InInclude;
+            includeSubState = IncludeSubState::MatchingOpcode;
+            curItem = "i";
+            SQINFO("going into incl, curItem=%s", curItem.c_str());
+            return true;
+        case 'd':
+            state = State::InDefine;
+            defineSubState = DefineSubState::MatchingOpcode;
+            curItem = "d";
+            SQINFO("going into define, curItem=%s", curItem.c_str());
+            return true;
+        default:
+            // TODO: tests case #xx
+            assert(false);
+            return false;
+    }
+}
+
+bool SLex::procStateNextDefineChar(char c) {
+    static std::string defineStr("define");
+    switch (defineSubState) {
+        case DefineSubState::MatchingOpcode:
+            curItem += c;
+            if (defineStr.find(curItem) != 0) {
+                SQINFO("bad item: >%s<", curItem.c_str());
+                return error("Malformed #define");
+            }
+            if (curItem == defineStr) {
+                defineSubState = DefineSubState::MatchingSpace;
+                spaceCount = 0;
+            }
+            return true;
+
+        case DefineSubState::MatchingSpace:
+            if (isspace(c)) {
+                spaceCount++;
+                return true;
+            }
+            if (spaceCount > 0) {
+                defineSubState = DefineSubState::MatchingLhs;
+                // curItem = c;
+                // assert(curItem.size() == 1);
+                return true;
+            }
+            // TODO: test cases!
+            assert(false);
+            return false;
+
+        case DefineSubState::MatchingSpace2:
+            if (isspace(c)) {
+                spaceCount++;
+                return true;
+            }
+            if (spaceCount > 0) {
+                defineSubState = DefineSubState::MatchingRhs;
+                // curItem = c;
+                // assert(curItem.size() == 1);
+                return true;
+            }
+            // TODO: test cases!
+            assert(false);
+            return false;
+
+        case DefineSubState::MatchingLhs:
+            SQINFO("match lhs, got %c", c);
+            if (isspace(c)) {
+                defineSubState = DefineSubState::MatchingSpace2;
+                spaceCount = 1;
+                return true;
+            }
+            return true;
+#if 0
+        if (c == '\n') {
+            assert(false);
+            return false;
+        }
+        curItem += c;
+        if ((c == '"') && curItem.size() > 1) {
+            // OK, here we found a file name!
+            assert(false);
+            return handleIncludeFile(curItem);
+        }
+        return true;
+#endif
+        case DefineSubState::MatchingRhs:
+            SQINFO("match rhs, got %c", c);
+            if (isspace(c)) {
+                // when we finish rhs, we are done
+                curItem.clear();
+                // 3 continue lexing
+                state = State::Ready;
+                return true;
+            }
+            return true;
+
+        default:
+            assert(false);
+    }
+    return true;
 }
 
 bool SLex::procNextIncludeChar(char c) {
@@ -160,7 +269,6 @@ bool SLex::procNextIncludeChar(char c) {
             assert(false);
     }
 
-
     // for now just keep eating chars
     //assert(false);
     return true;
@@ -190,11 +298,15 @@ bool SLex::procFreshChar(char c) {
             addCompletedItem(std::make_shared<SLexEqual>(currentLine), false);
             return true;
         case '#':
+            state = State::InHash;
+            return true;
+            /*
             state = State::InInclude;
             includeSubState = IncludeSubState::MatchingOpcode;
             curItem.clear();
             SQINFO("going into incl, curItem=%s", curItem.c_str());
             return true;
+            */
     }
 
     // inIdentifier = true;
@@ -258,7 +370,7 @@ bool SLex::procNextIdentifierChar(char c) {
     }
 
     // We only terminate on a space if we are not parsing a String type opcode
-   // const bool terminatingSpace = isspace(c) && (lastIdentifierType != SamplerSchema::OpcodeType::String);
+    // const bool terminatingSpace = isspace(c) && (lastIdentifierType != SamplerSchema::OpcodeType::String);
     const bool terminatingSpace = isspace(c) && !lastIdentifierIsString;
     // terminate on these, but don't proc
     if (terminatingSpace) {
@@ -320,7 +432,7 @@ void SLex::addCompletedItem(SLexItemPtr item, bool clearCurItem) {
     if (item->itemType == SLexItem::Type::Identifier) {
         SLexIdentifier* ident = static_cast<SLexIdentifier*>(item.get());
         // lastIdentifier = ident->idName;
-     //   lastIdentifierType = SamplerSchema::keyTextToType(ident->idName, true);
+        //   lastIdentifierType = SamplerSchema::keyTextToType(ident->idName, true);
         lastIdentifierIsString = SamplerSchema::isFreeTextType(ident->idName);
         // printf("just pushed new id : >%s<\n", lastIdentifier.c_str());
     }
@@ -342,7 +454,7 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
     if (fileName.front() != '"' || fileName.back() != '"') {
         return error("Include filename not quoted");
     }
-    std::string rawFilename = fileName.substr(1, fileName.length()-2);
+    std::string rawFilename = fileName.substr(1, fileName.length() - 2);
     if (!myFilePath) {
         return error("Can't resolve include with no context");
     }
@@ -351,17 +463,17 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
     FilePath namePart(rawFilename);
     FilePath fullPath = origFolder;
     fullPath.concat(namePart);
-  
+
     std::ifstream t(fullPath.toString());
     if (!t.good()) {
-      //  printf("can't open file\n");
-       // return "can't open source file: " + sPath;
+        //  printf("can't open file\n");
+        // return "can't open source file: " + sPath;
 
-       SqStream s;
-       s.add("Can't open ");
-       s.add(rawFilename);
-       s.add(" included");
-       return error(s.str());
+        SqStream s;
+        s.add("Can't open ");
+        s.add(rawFilename);
+        s.add(" included");
+        return error(s.str());
     }
     std::string str((std::istreambuf_iterator<char>(t)),
                     std::istreambuf_iterator<char>());
@@ -376,20 +488,19 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
     //    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
     auto includeLexer = SLex::go(str, outErrorStringPtr, includeRecursionDepth + 1, &fullPath);
     if (!includeLexer) {
-        return false;           // error should already be in outErrorStringPtr
+        return false;  // error should already be in outErrorStringPtr
     }
     // 2) copy the tokens from include to this.
     this->items.insert(
         this->items.end(),
         std::make_move_iterator(includeLexer->items.begin()),
-        std::make_move_iterator(includeLexer->items.end())
-    );
+        std::make_move_iterator(includeLexer->items.end()));
     SQINFO("finished incl, curItem=%s", curItem.c_str());
     curItem.clear();
     // 3 continue lexing
     state = State::Ready;
-     SQINFO("back frm %s", fullPath.toString().c_str());
+    SQINFO("back frm %s", fullPath.toString().c_str());
     return true;
-   // assert(false);      // finish
-   // return false;
+    // assert(false);      // finish
+    // return false;
 }

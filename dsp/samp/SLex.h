@@ -80,6 +80,11 @@ private:
     bool procEnd();
     bool procNextIdentifierChar(char c);
     bool procEqualsSignInIdentifier();
+    bool procStateNextDefineChar(char c);
+    bool procStateNextHashChar(char c);
+
+
+
     bool error(const std::string&);
     bool handleIncludeFile(const std::string&);
 
@@ -91,7 +96,9 @@ private:
         InComment,
         InTag,
         InIdentifier,
-        InInclude
+        InHash,
+        InInclude,
+        InDefine
     };
 
     State state = State::Ready;
@@ -101,11 +108,24 @@ private:
         MatchingSpace,
         MatchingFileName
     };
+
+    // #define a b
+    // a is lhs, b is rhs
+    // match: opcode, space, lhs, space2, rhs
+    enum class DefineSubState {
+        MatchingOpcode,
+        MatchingSpace,
+        MatchingLhs,
+        MatchingSpace2,
+        MatchingRhs,
+    };
+
     IncludeSubState includeSubState = IncludeSubState::MatchingOpcode;
+    DefineSubState defineSubState = DefineSubState::MatchingOpcode;
+
     int spaceCount = 0;
     
     std::string curItem;
-    //SamplerSchema::OpcodeType lastIdentifierType;
     bool lastIdentifierIsString = false;
     std::string* const outErrorStringPtr;
     const FilePath* const myFilePath;

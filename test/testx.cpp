@@ -349,6 +349,16 @@ static void testLexIncludeSuccess() {
     assertEQ(int(lex->items[2]->itemType), int(SLexItem::Type::Tag));
 }
 
+// can ew parse a simple define?
+static void testLexDefineSuccess() {
+   std::string content (R"foo(#define A 22)foo");
+    std::string err;
+    auto lex = SLex::go(content, &err, 0);
+
+    assert(lex && err.empty());
+    assertEQ(lex->items.size(), 0);
+}
+
 static void testLexLabel2() {
     auto lex = SLex::go("label_cc7=Master Vol\nsample=\"abc def\"");
     assert(lex);
@@ -618,6 +628,7 @@ void testx() {
     testLexIncludeMalformed();
     testLexIncludeBadFile();
     testLexIncludeSuccess();
+    testLexDefineSuccess();
     testLexLabel2();
 
 
