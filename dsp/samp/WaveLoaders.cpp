@@ -25,6 +25,7 @@ public:
     uint64_t getTotalFrameCount() override { return totalFrameCount; }
     const float* getData() override { return data; }
     bool isValid() const override { return valid; }
+    std::string getFileName() { return fp.toString(); }
 
 protected:
     unsigned int sampleRate = 0;

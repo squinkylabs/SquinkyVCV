@@ -16,6 +16,7 @@ public:
     virtual bool isValid() const = 0;
     virtual const float* getData() = 0;
     virtual bool load(std::string& errorMsg) = 0;
+    virtual std::string getFileName() = 0;
 };
 
 class WaveLoader {
