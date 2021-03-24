@@ -163,11 +163,9 @@ bool SLex::procStateNextDefineChar(char c) {
             }
             if (spaceCount > 0) {
                 defineSubState = DefineSubState::MatchingLhs;
-                // curItem = c;
-                // assert(curItem.size() == 1);
                 return true;
             }
-            // TODO: test cases!
+
             assert(false);
             return false;
 
@@ -178,11 +176,10 @@ bool SLex::procStateNextDefineChar(char c) {
             }
             if (spaceCount > 0) {
                 defineSubState = DefineSubState::MatchingRhs;
-                // curItem = c;
-                // assert(curItem.size() == 1);
+                // need to save off char we just saw (in the future, if we care about the content
                 return true;
             }
-            // TODO: test cases!
+
             assert(false);
             return false;
 
@@ -194,19 +191,6 @@ bool SLex::procStateNextDefineChar(char c) {
                 return true;
             }
             return true;
-#if 0
-        if (c == '\n') {
-            assert(false);
-            return false;
-        }
-        curItem += c;
-        if ((c == '"') && curItem.size() > 1) {
-            // OK, here we found a file name!
-            assert(false);
-            return handleIncludeFile(curItem);
-        }
-        return true;
-#endif
         case DefineSubState::MatchingRhs:
             SQINFO("match rhs, got %c", c);
             if (isspace(c)) {
@@ -431,8 +415,6 @@ void SLex::addCompletedItem(SLexItemPtr item, bool clearCurItem) {
     }
     if (item->itemType == SLexItem::Type::Identifier) {
         SLexIdentifier* ident = static_cast<SLexIdentifier*>(item.get());
-        // lastIdentifier = ident->idName;
-        //   lastIdentifierType = SamplerSchema::keyTextToType(ident->idName, true);
         lastIdentifierIsString = SamplerSchema::isFreeTextType(ident->idName);
         // printf("just pushed new id : >%s<\n", lastIdentifier.c_str());
     }

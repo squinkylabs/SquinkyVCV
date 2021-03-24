@@ -311,7 +311,8 @@ bool SamplerSchema::isFreeTextType(const std::string& key) {
     // string input("aasdf43");
     std::string stringToMatch = key;
 
-    static std::string matches("0123456789");
+    // dollar sign goes in because we don't tranlate #define
+    static std::string matches("0123456789$");
     auto offset = key.find_first_of(matches);
     if (offset != std::string::npos) {
         stringToMatch = key.substr(0, offset) + '*';

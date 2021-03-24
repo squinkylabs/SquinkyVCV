@@ -349,15 +349,53 @@ static void testLexIncludeSuccess() {
     assertEQ(int(lex->items[2]->itemType), int(SLexItem::Type::Tag));
 }
 
-// can ew parse a simple define?
+// can we parse a simple define?
 static void testLexDefineSuccess() {
-   std::string content (R"foo(#define A 22)foo");
+    std::string content (R"foo(#define A 22)foo");
     std::string err;
     auto lex = SLex::go(content, &err, 0);
 
     assert(lex && err.empty());
     assertEQ(lex->items.size(), 0);
 }
+
+static void testLexDefineSuccess2() {
+    std::string content(R"foo(a=b #define A 22 c=d)foo");
+    std::string err;
+    auto lex = SLex::go(content, &err, 0);
+
+    assert(lex && err.empty());
+    assertEQ(lex->items.size(), 6);
+}
+
+static void testLexDefineSuccess3() {
+    std::string content(R"foo(
+<control>
+default_path=Soft String Spurs Samples/
+
+label_cc$MW=MW ($MW)
+)foo");
+    std::string err;
+    auto lex = SLex::go(content, &err, 0);
+    lex->_dump();
+
+    assert(lex && err.empty());
+    assertEQ(lex->items.size(), 7);
+}
+
+
+
+#if 0
+static void testLexDefineFail() {
+    std::string content(R"foo(#define A x=y)foo");
+    std::string err;
+    
+    auto lex = SLex::go(content, &err, 0);
+
+    assert(!lex && !err.empty());
+
+}
+#endif
 
 static void testLexLabel2() {
     auto lex = SLex::go("label_cc7=Master Vol\nsample=\"abc def\"");
@@ -629,6 +667,9 @@ void testx() {
     testLexIncludeBadFile();
     testLexIncludeSuccess();
     testLexDefineSuccess();
+    testLexDefineSuccess2();
+    testLexDefineSuccess3();
+  //  testLexDefineFail();
     testLexLabel2();
 
 
