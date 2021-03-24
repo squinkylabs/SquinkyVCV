@@ -204,7 +204,7 @@ std::pair<bool, int> SamplerSchema::convertToInt(SamplerErrorContext& err, const
 }
 
 void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
-    Opcode opcode = translate(input->key, false);
+    Opcode opcode = translate(input->key, true);
     if (opcode == Opcode::NONE) {
         //  std::string e = std::string("could not translate opcode ") + input->key.c_str();
         err.unrecognizedOpcodes.insert(input->key);

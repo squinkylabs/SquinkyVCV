@@ -260,7 +260,7 @@ void SampWidget::pollForStateChange() {
 void SampWidget::pollNewState() {
     if (nextUIState != curUIState) {
         removeKeyswitchPopup();
-        INFO("found ui state change. going to %d", nextUIState);
+        // INFO("found ui state change. going to %d", nextUIState);
         switch (nextUIState) {
             case State::Empty:
                 updateUIForEmpty();
@@ -557,7 +557,7 @@ static void shouldFindMalformed(const char* input) {
     if (!err.empty()) SQFATAL(err.c_str());
     assert(err.empty());
 
-    SQINFO("now will compile");
+    // SQINFO("now will compile");
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     if (!cinst) {

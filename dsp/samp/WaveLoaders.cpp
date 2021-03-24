@@ -165,7 +165,8 @@ public:
     }
     bool load(std::string& errorMsg) override {
         //assert(false);
-        errorMsg = "nimp";
+
+        errorMsg = "unable to load ." + fp.getExtensionLC() + " file type.";
         return false;
     }
 };
