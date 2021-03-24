@@ -498,6 +498,15 @@ void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp)
     float knobsY2 = knobsY + 40;
 
     addLabel(
+        Vec(knobsX - 6 - knobsDx, labelY),
+        "Vol");
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(knobsX - knobsDx, knobsY),
+        module,
+        Comp::VOLUME_PARAM));
+
+    addLabel(
         Vec(knobsX - 6, labelY),
         "Pitch");
     addParam(SqHelper::createParam<Blue30Knob>(

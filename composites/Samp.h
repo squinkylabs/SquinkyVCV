@@ -114,6 +114,7 @@ public:
         PITCH_TRIM_PARAM,
         LFM_DEPTH_PARAM,
 #endif
+        VOLUME_PARAM,
         NUM_PARAMS
     };
 
@@ -210,6 +211,8 @@ private:
     int numBanks_n = 1;
     bool lfmConnected_n = false;
     float_4 lfmGain_n = {0};
+    float rawVolume_n=0;
+    float taperedVolume_n=0;
 
     float_4 lastGate4[4];
     Divider divn;
@@ -222,7 +225,6 @@ private:
     std::unique_ptr<ThreadClient> thread;
 
     // sent in on UI thread (should be atomic)
-    //std::string patchRequest;
     std::atomic<std::string*> patchRequestFromUI = {nullptr};
     bool _isSampleLoaded = false;
     std::atomic<bool> _isNewInstrument = {false};
@@ -330,6 +332,12 @@ inline void Samp<TBase>::step_n() {
     numBanks_n = numChannels_n / 4;
     if (numBanks_n * 4 < numChannels_n) {
         numBanks_n++;
+    }
+
+    float newVolume_n = TBase::params[VOLUME_PARAM].value;
+    if (newVolume_n != rawVolume_n) {
+        rawVolume_n = newVolume_n;
+        taperedVolume_n = 10 * LookupTable<float>::lookup(*audioTaperLookupParams, rawVolume_n / 100);
     }
 
     servicePendingPatchRequest();
@@ -461,6 +469,7 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
             // SQINFO("read fm=%s, raw=%s", toStr(fm).c_str(), toStr(rawInput).c_str());
         }
         auto output = playback[bank].step(gmask, args.sampleTime, fm, lfmConnected_n);
+        output *= taperedVolume_n;
         TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
         lastGate4[bank] = gate4;
     }
@@ -490,6 +499,9 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
 #endif
         case Samp<TBase>::DUMMYKS_PARAM:
             ret = {-1, 127, -1, "Key Switch"};
+            break;
+        case Samp<TBase>::VOLUME_PARAM:
+            ret = {0, 100, 50, "Volume"};
             break;
 
         default:
