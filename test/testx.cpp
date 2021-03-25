@@ -305,7 +305,6 @@ static void testLexMarimba() {
     assert(items == 16);
 }
 
-
 static void testLexIncludeMalformed() {
     std::string str("#includ \"abc\"");
     std::string err;
@@ -328,7 +327,6 @@ static void testLexIncludeBadFile() {
     assert(!lex);
 }
 
-
 // This uses a "real" sfz on disk
 static void testLexIncludeSuccess() {
     FilePath filePath(R"foo(D:\samples\test\test-include.sfz)foo");
@@ -336,7 +334,7 @@ static void testLexIncludeSuccess() {
     assert(t.good());
 
     std::string sContent((std::istreambuf_iterator<char>(t)),
-                    std::istreambuf_iterator<char>());
+                         std::istreambuf_iterator<char>());
 
     std::string err;
     auto lex = SLex::go(sContent, &err, 0, &filePath);
@@ -351,7 +349,7 @@ static void testLexIncludeSuccess() {
 
 // can we parse a simple define?
 static void testLexDefineSuccess() {
-    std::string content (R"foo(#define A 22)foo");
+    std::string content(R"foo(#define A 22)foo");
     std::string err;
     auto lex = SLex::go(content, &err, 0);
 
@@ -383,8 +381,6 @@ label_cc$MW=MW ($MW)
     assertEQ(lex->items.size(), 7);
 }
 
-
-
 #if 0
 static void testLexDefineFail() {
     std::string content(R"foo(#define A x=y)foo");
@@ -402,7 +398,6 @@ static void testLexLabel2() {
     assert(lex);
     assertEQ(lex->items.size(), 6);
 }
-
 
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -599,6 +594,24 @@ static void testParseSimpleDrum() {
     assertEQ(inst->groups.size(), 2);
 }
 
+// make sure we dont' crash from parsing unused regions.
+static void testParseCurve() {
+    const char* p = R"foo(
+//--------------------------
+<curve>
+curve_index=7
+v000=0
+v001=1
+v127=1
+
+ )foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(p, inst);
+    assert(err.empty());
+    assertEQ(inst->groups.size(), 1);       // we should just have the one group
+    assertEQ(inst->groups[0]->regions.size(), 0);   // no regions
+}
+
 static void testRandomRange0() {
     RandomRange<float> r(0);
     r.addRange(.33f);
@@ -669,9 +682,8 @@ void testx() {
     testLexDefineSuccess();
     testLexDefineSuccess2();
     testLexDefineSuccess3();
-  //  testLexDefineFail();
+    //  testLexDefineFail();
     testLexLabel2();
-
 
     testparse1();
     testParseRegion();
@@ -695,6 +707,7 @@ void testx() {
     testRandomRange0();
     testRandomRange1();
     testParseDX();
+    testParseCurve();
 
     assert(parseCount == 0);
 }

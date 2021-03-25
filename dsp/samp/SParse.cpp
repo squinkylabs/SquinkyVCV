@@ -75,6 +75,11 @@ std::string SParse::goCommon(const std::string& sContent, SInstrumentPtr outPars
         errorStream.add(" index=");
         errorStream.add(lex->_index());
         //printf("extra tok line number %d type = %d index=%d\n", int(lineNumber), int(type), lex->_index());
+        if (type == SLexItem::Type::Tag) {
+            auto tag = std::static_pointer_cast<SLexTag>(item);
+            SQINFO("extra tok = %s", tag->tagName.c_str());
+        }
+      
         if (type == SLexItem::Type::Identifier) {
             SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
             // printf("id name is %s\n", id->idName.c_str());
@@ -115,9 +120,15 @@ static std::set<std::string> headingTags = {
     {"group"},
     {"global"},
     {"control"},
-    {"master"}};
+    {"master"},
+    {"curve"},
+    {"effect"},
+    {"midi"},
+    {"sample"}
+    };
 
 static bool isHeadingName(const std::string& s) {
+    SQINFO("chekcing heading name %s", s.c_str());
     return headingTags.find(s) != headingTags.end();
 }
 
@@ -159,10 +170,14 @@ std::pair<SParse::Result, bool> SParse::matchSingleHeading(SInstrumentPtr inst, 
     } else if (tagName == "group") {
         dest = &inst->currentGroup;
         isGroup = true;
+    } else {
+        SQINFO("skipping heading: %s", tagName.c_str());
     }
 
-
-    dest->values = std::move(keysAndValues);
+    // it it's not a heading we know or care about, just drop the values
+    if (dest) {
+        dest->values = std::move(keysAndValues);
+    }
     return std::make_pair(result, isGroup);
 }
 

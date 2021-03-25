@@ -23,11 +23,13 @@ SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includ
         }
         bool ret = result->procNextChar(c);
         if (!ret) {
+            // SQWARN("leaving lex early on false");
             return nullptr;
         }
         ++count;
     }
     bool ret = result->procEnd();
+    // SQINFO("leaving at end");
     return ret ? result : nullptr;
 }
 
@@ -192,8 +194,10 @@ bool SLex::procStateNextDefineChar(char c) {
             }
             return true;
         case DefineSubState::MatchingRhs:
-            SQINFO("match rhs, got %c", c);
+            //SQINFO("match rhs, got %c", c);
+            //SQINFO("Line: %d", currentLine);
             if (isspace(c)) {
+                //SQINFO("in match, is space");
                 // when we finish rhs, we are done
                 curItem.clear();
                 // 3 continue lexing
@@ -267,7 +271,7 @@ bool SLex::procNextCommentChar(char c) {
 }
 
 bool SLex::procFreshChar(char c) {
-    // printf("proc fresh char>%c<\n", c);
+    // SQINFO("proc fresh char>%c< line %d\n", c, currentLine);
     if (isspace(c)) {
         return true;  // eat whitespace
     }
@@ -284,13 +288,6 @@ bool SLex::procFreshChar(char c) {
         case '#':
             state = State::InHash;
             return true;
-            /*
-            state = State::InInclude;
-            includeSubState = IncludeSubState::MatchingOpcode;
-            curItem.clear();
-            SQINFO("going into incl, curItem=%s", curItem.c_str());
-            return true;
-            */
     }
 
     // inIdentifier = true;
