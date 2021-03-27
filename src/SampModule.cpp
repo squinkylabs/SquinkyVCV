@@ -371,7 +371,7 @@ void SampWidget::buildKeyswitchUI() {
 
 std::string SampWidget::buildPitchrangeUIString() {
     SqStream s;
-    s.add("Pitch Range: ");
+    s.add("Pitch range: ");
     s.add(info->minPitch);
     s.add("-");
     s.add(info->maxPitch);
@@ -551,7 +551,7 @@ SampWidget::SampWidget(SampModule* module) {
     _module = module;
     SqHelper::setPanel(this, "res/samp_panel.svg");
 
-    addLabel(Vec(80, 10), "-Sample Player-");
+    addLabel(Vec(80, 10), "SFZ Player");
 
     textField = createWidget<TextDisplaySamp>(mm2px(Vec(3.39962, 14.8373)));
     textField->box.size = Vec(250, 100);
