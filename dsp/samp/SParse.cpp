@@ -128,7 +128,7 @@ static std::set<std::string> headingTags = {
     };
 
 static bool isHeadingName(const std::string& s) {
-    SQINFO("chekcing heading name %s", s.c_str());
+    // SQINFO("checking heading name %s", s.c_str());
     return headingTags.find(s) != headingTags.end();
 }
 

@@ -193,6 +193,16 @@ static void testCIKeysAndValuesNotesUC() {
     testCIKeysAndValues("A6", 9 + 12 * (6 + 1));
 
     testCIKeysAndValues("B5", 12 * (6 + 1) - 1);
+
+    testCIKeysAndValues("C5", 12 * (5 + 1));
+    testCIKeysAndValues("C4", 12 * (4 + 1));
+    testCIKeysAndValues("C3", 12 * (3 + 1));
+    testCIKeysAndValues("C2", 12 * (2 + 1));
+    testCIKeysAndValues("C1", 12 * (1 + 1));
+    testCIKeysAndValues("C0", 12 * (0 + 1));
+    testCIKeysAndValues("C-1", 12 * (-1 + 1));
+    testCIKeysAndValues("C-2", 12 * (-2 + 1));
+
 }
 
 static void testCIKeysAndValuesNotesSharp() {

@@ -115,6 +115,7 @@ public:
         LFM_DEPTH_PARAM,
 #endif
         VOLUME_PARAM,
+        SCHEMA_PARAM,
         NUM_PARAMS
     };
 
@@ -124,6 +125,7 @@ public:
         GATE_INPUT,
         FM_INPUT,
         LFM_INPUT,
+        LFM_DEPTH,
         NUM_INPUTS
     };
 
@@ -503,6 +505,9 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
         case Samp<TBase>::VOLUME_PARAM:
             ret = {0, 100, 50, "Volume"};
             break;
+        case Samp<TBase>::SCHEMA_PARAM:
+            ret = {0, 10, 0, "SCHEMA"};
+            break;
 
         default:
             assert(false);
@@ -555,6 +560,7 @@ public:
             sendMessageToClient(msg);
             return;
         }
+        cinst->_dump(0);
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
         assert(cinst->getInfo());
 
