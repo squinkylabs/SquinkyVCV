@@ -114,8 +114,8 @@ void SampModule::process(const ProcessArgs& args) {
 
 #define _TW
 
-// static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/booty-shifter.md";
-static const char* helpUrl = "https://docs.google.com/document/d/1u0aNMgU48jRmy7Hd8WDtvvvUDQd9pOlNtknvWKs5qf0";
+ static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/mar/docs/sfz-player.md";
+//static const char* helpUrl = "https://docs.google.com/document/d/1u0aNMgU48jRmy7Hd8WDtvvvUDQd9pOlNtknvWKs5qf0";
 
 struct SampWidget : ModuleWidget {
     SampWidget(SampModule* m);
@@ -431,10 +431,11 @@ void SampWidget::getRootFolder() {
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
     float jacksY = 323;
+    float jacksY0 =  jacksY - 50;
     float jacksX = 15;
     float jacksDx = 40;
     float labelY = jacksY - 25;
-
+    float labelY0 = jacksY0 - 25;
     addLabel(
         Vec(jacksX + 0 * jacksDx - 5, labelY),
         "Out");
@@ -484,12 +485,20 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
         Vec(jacksX + 5 * jacksDx, jacksY),
         module,
         Comp::LFM_INPUT));
+
+    addLabel(
+        Vec(jacksX + 5 * jacksDx - 6, labelY0),
+        "Dpth");
+    addInput(createInput<PJ301MPort>(
+        Vec(jacksX + 5 * jacksDx, jacksY0),
+        module,
+        Comp::LFM_DEPTH));
 }
 
 void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp) {
     float knobsY = 200;
     //  float knobsX = 15;
-    float knobsX = 180;
+    float knobsX = 173;
     float knobsDx = 40;
 
     float labelDy = 25;
