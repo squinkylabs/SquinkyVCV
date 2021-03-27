@@ -42,10 +42,11 @@ public:
     void setSamplePath(const std::string& s) {
         samp->setSamplePath_UI(s);
     }
-
+#ifndef _KS2
     void setKeySwitch(int pitch) {
         samp->setKeySwitch_UI(pitch);
     }
+#endif
 
     float getProgressPct() {
         return samp->getProgressPct();
@@ -114,7 +115,7 @@ void SampModule::process(const ProcessArgs& args) {
 
 #define _TW
 
- static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/mar/docs/sfz-player.md";
+static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/mar/docs/sfz-player.md";
 //static const char* helpUrl = "https://docs.google.com/document/d/1u0aNMgU48jRmy7Hd8WDtvvvUDQd9pOlNtknvWKs5qf0";
 
 struct SampWidget : ModuleWidget {
@@ -177,8 +178,10 @@ struct SampWidget : ModuleWidget {
 
     SampModule* _module;
 
-    std::vector<int> keySwitchForIndex;
+    std::vector<InstrumentInfo::PitchRange> keySwitchForIndex;
+#ifndef _KS2
     int lastKeySwitchSent = -1;
+#endif
 
     /************************************************************************************** 
      * Stuff related to UI state and implementing it
@@ -335,17 +338,27 @@ void SampWidget::buildKeyswitchUI() {
         std::vector<std::string> labels;
         if (info->defaultKeySwitch < 0) {
             labels.push_back("(no default key switch)");
-            keySwitchForIndex.push_back(-1);
+            keySwitchForIndex.push_back(std::make_pair(-1, -1));
         }
+        std::map<int, int> conversionMap;
         for (auto it : info->keyswitchData) {
             labels.push_back(it.first);
-            const int pitch = it.second.first;
-            if (pitch != it.second.second) {
-                SQWARN("skipping ks range > 1");
+            //    const int pitch = it.second.first;
+            //   if (pitch != it.second.second) {
+            //       SQWARN("skipping ks range > 1");
+            //   }
+            // keySwitchForIndex.push_back(pitch);
+            SQINFO("adding data for %s", it.first.c_str());
+            InstrumentInfo::PitchRange pitchRange = it.second;
+            const int index = keySwitchForIndex.size();
+            keySwitchForIndex.push_back(pitchRange);
+
+            for (int i = pitchRange.first; i <= pitchRange.second; ++i) {
+                conversionMap[i] = index;
             }
-            keySwitchForIndex.push_back(pitch);
         }
 
+        SQINFO("about to create control");
         keyswitchPopup = SqHelper::createParam<PopupMenuParamWidget>(
             nullptr,
             Vec(leftSide, keyswitchy),
@@ -353,18 +366,51 @@ void SampWidget::buildKeyswitchUI() {
             Comp::DUMMYKS_PARAM);
         keyswitchPopup->box.size.x = 160;  // width
         keyswitchPopup->box.size.y = 22;   // should set auto like button does
-        keyswitchPopup->text = "noise";
+        keyswitchPopup->text = "noise";    // TODO: do we still need this?
+
+        
+        keyswitchPopup->setValueToIndexFunction([conversionMap](int value) {
+            SQINFO("in  value to index onversion lambda(%d)", value);
+            auto it = conversionMap.find(value);
+            int index = 0;
+            if (it != conversionMap.end()) {
+                index = it->second;
+                SQINFO("found conversion to %d", index);
+            }
+            return index;
+        });
+
+        //std::vector<InstrumentInfo::PitchRange> keySwitchForIndex;
+        auto lookup = keySwitchForIndex;
+        keyswitchPopup->setIndexToValueFunction([lookup](int index) {
+            INFO("in index to value function index=%d", index);
+            auto x = lookup[index];
+            return float(x.first);
+        });
+
+
+        SQINFO("about to set lables");
         keyswitchPopup->setLabels(labels);
         addParam(keyswitchPopup);
-        keyswitchPopup->setCallback([this](int index) {
+        SQINFO("about to set callback");
+        keyswitchPopup->setNotificationCallback([this](int index) {
             if (index < 0) {
                 return;
             }
+
+#ifdef _KS2
+            InstrumentInfo::PitchRange pitchRange = keySwitchForIndex[index];
+            SQINFO("ui notification callback would be setting ks to %d", pitchRange.first);
+            SQINFO("do we even need this notification? will cut it");
+            //  APP->engine->setParam(module, Comp::DUMMYKS_PARAM, pitchRange.first);
+
+#else
             const int pitch = keySwitchForIndex[index];
             if (pitch != lastKeySwitchSent) {
                 _module->setKeySwitch(pitch);
                 lastKeySwitchSent = pitch;
             }
+#endif
         });
     }
 }
@@ -402,7 +448,9 @@ void SampWidget::loadSamplerFile() {
 
     //FATAL("finish file load");
     if (pathC) {
+#ifndef _KS2
         lastKeySwitchSent = -1;
+#endif
         this->requestNewSampleSet(FilePath(pathC));
         nextUIState = State::Loading;
     }
@@ -431,7 +479,7 @@ void SampWidget::getRootFolder() {
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
     float jacksY = 323;
-    float jacksY0 =  jacksY - 50;
+    float jacksY0 = jacksY - 50;
     float jacksX = 15;
     float jacksDx = 40;
     float labelY = jacksY - 25;

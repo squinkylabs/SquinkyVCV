@@ -28,7 +28,8 @@
 //   #define ARCH_WIN
 #endif
 
-#define _ATOM
+#define _ATOM       // use atomic operations.
+#define _KS2        // new key-switch with params
 
 namespace rack {
 namespace engine {
@@ -176,9 +177,11 @@ public:
         SQWARN("Samp::setSamplePath unused");
     }
 
+#ifndef _KS2
     void setKeySwitch_UI(int ks) {
         _nextKeySwitchRequest = ks;
     }
+#endif
 
     bool _sampleLoaded() {
         return _isSampleLoaded;
@@ -230,7 +233,12 @@ private:
     std::atomic<std::string*> patchRequestFromUI = {nullptr};
     bool _isSampleLoaded = false;
     std::atomic<bool> _isNewInstrument = {false};
+
+#ifdef _KS2
+    int lastServicedKeyswitchValue = { -1 };
+#else
     std::atomic<int> _nextKeySwitchRequest = {-1};
+#endif
 
     bool lastGate = false;  // just for test now
 
@@ -349,6 +357,18 @@ inline void Samp<TBase>::step_n() {
     serviceFMMod();
 }
 
+#ifdef _KS2
+template <class TBase>
+inline void Samp<TBase>::serviceKeySwitch() {
+   const int val = int(std::round( TBase::params[DUMMYKS_PARAM].value));
+   if (val !=lastServicedKeyswitchValue) {
+       SQINFO("comp saw ks param change from %d to %d", lastServicedKeyswitchValue, val);
+       lastServicedKeyswitchValue = val;
+       playback[0].note_on(0, val, 64, 44100.f);
+   }
+
+}
+#else
 template <class TBase>
 inline void Samp<TBase>::serviceKeySwitch() {
     if (_nextKeySwitchRequest >= 1) {
@@ -359,6 +379,7 @@ inline void Samp<TBase>::serviceKeySwitch() {
         playback[0].note_on(0, midiPitch, 64, 44100.f);
     }
 }
+#endif
 
 template <class TBase>
 inline void Samp<TBase>::serviceFMMod() {
@@ -508,7 +529,6 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
         case Samp<TBase>::SCHEMA_PARAM:
             ret = {0, 10, 0, "SCHEMA"};
             break;
-
         default:
             assert(false);
     }

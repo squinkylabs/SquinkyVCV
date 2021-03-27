@@ -24,17 +24,30 @@ public:
         onChange(e);
     }
 
-    using Callback = std::function<void(int index)>;
-    void setCallback(Callback);
+    using NotificationCallback = std::function<void(int index)>;
+    void setNotificationCallback(NotificationCallback);
+
+    // input is paramter value (quantized), output is control index/
+    using IndexToValueFunction = std::function<float(int index)>;
+    using ValueToIndexFunction = std::function<int(float value)>;
+  //  void setConversionCallback(ConversionCallback);
+    void setIndexToValueFunction(IndexToValueFunction);
+    void setValueToIndexFunction(ValueToIndexFunction);
+
 
     void draw(const DrawArgs &arg) override;
     void onButton(const ::rack::event::Button &e) override;
     void onChange(const ::rack::event::Change &e) override;
     void onAction(const ::rack::event::Action &e) override;
     void randomize() override;
+
+    friend class PopupMenuItem;
 private:
 
-    Callback optionalCallback = {nullptr};
+    NotificationCallback optionalNotificationCallback = {nullptr};
+    IndexToValueFunction optionalIndexToValueFunction = {nullptr};
+    ValueToIndexFunction optionalValueToIndexFunction = {nullptr};
+   // ConversionCallback optionalConversionCallback = {nullptr};
     int curIndex = 0;
 };
 
@@ -48,31 +61,46 @@ inline void PopupMenuParamWidget::randomize() {
 	}
 }
 
-inline void PopupMenuParamWidget::setCallback(Callback callback) {
-    optionalCallback = callback;
+inline void PopupMenuParamWidget::setNotificationCallback(NotificationCallback callback) {
+    optionalNotificationCallback = callback;
+}
+
+inline void PopupMenuParamWidget::setIndexToValueFunction(IndexToValueFunction fn) {
+    optionalIndexToValueFunction = fn;
+}
+
+inline void PopupMenuParamWidget::setValueToIndexFunction(ValueToIndexFunction fn) {
+    optionalValueToIndexFunction = fn;
 }
 
 inline void PopupMenuParamWidget::onChange(const ::rack::event::Change &e) {
+    INFO("--- PopupMenuParamWidget::onChange ----");
     if (!this->paramQuantity) {
         return;  // no module
     }
 
-    // process ourself to update the text label
-    const int index = (int)std::round(this->paramQuantity->getValue());
+    // process our self to update the text label
+   
+    int index = (int)std::round(this->paramQuantity->getValue());
+    if (optionalValueToIndexFunction) {
+        float value = this->paramQuantity->getValue();
+        index = optionalValueToIndexFunction(value);
+    }
     // INFO("PopupMenuParamWidget::onChange raw index = %d", index);
     if (!labels.empty()) {
         if (index < 0 || index >= (int)labels.size()) {
-            WARN("index is outside label ranges %d", index);
+            WARN("onChange: index is outside label ranges is %d", index);
             return;
         }
+        INFO("on change will set label text idc=%d test=%s", index, labels[index].c_str());
         this->text = labels[index];
         curIndex = index;               // remember it
     }
 
     // Delegate to base class to change param value
     ParamWidget::onChange(e);
-    if (optionalCallback) {
-        optionalCallback(index);
+    if (optionalNotificationCallback) {
+        optionalNotificationCallback(index);
     }
 }
 
@@ -108,7 +136,13 @@ public:
         ::rack::event::Change ce;
         // DEBUG("popup onAction, parent = %p, paramq = %p", parent, parent->paramQuantity);
         if (parent->paramQuantity) {
-            parent->paramQuantity->setValue(index);
+            INFO("onAction handler setting param to %d", index);
+
+            float value = index;
+            if (parent->optionalIndexToValueFunction) {
+                value = parent->optionalIndexToValueFunction(index);
+            }
+            parent->paramQuantity->setValue(value);
         }
         parent->onChange(ce);
     }
