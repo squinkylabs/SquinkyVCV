@@ -30,7 +30,6 @@ public:
     // input is paramter value (quantized), output is control index/
     using IndexToValueFunction = std::function<float(int index)>;
     using ValueToIndexFunction = std::function<int(float value)>;
-  //  void setConversionCallback(ConversionCallback);
     void setIndexToValueFunction(IndexToValueFunction);
     void setValueToIndexFunction(ValueToIndexFunction);
 
@@ -47,17 +46,14 @@ private:
     NotificationCallback optionalNotificationCallback = {nullptr};
     IndexToValueFunction optionalIndexToValueFunction = {nullptr};
     ValueToIndexFunction optionalValueToIndexFunction = {nullptr};
-   // ConversionCallback optionalConversionCallback = {nullptr};
     int curIndex = 0;
 };
 
 inline void PopupMenuParamWidget::randomize() {  
 	if (paramQuantity && paramQuantity->isBounded()) {
 		float value = rack::math::rescale(rack::random::uniform(), 0.f, 1.f, paramQuantity->getMinValue(), paramQuantity->getMaxValue());
-		//if (snap)
 		value = std::round(value);
 		paramQuantity->setValue(value);
-		//oldValue = snapValue = paramQuantity->getValue();
 	}
 }
 
@@ -74,7 +70,6 @@ inline void PopupMenuParamWidget::setValueToIndexFunction(ValueToIndexFunction f
 }
 
 inline void PopupMenuParamWidget::onChange(const ::rack::event::Change &e) {
-    INFO("--- PopupMenuParamWidget::onChange ----");
     if (!this->paramQuantity) {
         return;  // no module
     }
@@ -92,7 +87,6 @@ inline void PopupMenuParamWidget::onChange(const ::rack::event::Change &e) {
             WARN("onChange: index is outside label ranges is %d", index);
             return;
         }
-        INFO("on change will set label text idc=%d test=%s", index, labels[index].c_str());
         this->text = labels[index];
         curIndex = index;               // remember it
     }
@@ -134,10 +128,7 @@ public:
     void onAction(const ::rack::event::Action &e) override {
         parent->text = this->text;
         ::rack::event::Change ce;
-        // DEBUG("popup onAction, parent = %p, paramq = %p", parent, parent->paramQuantity);
         if (parent->paramQuantity) {
-            INFO("onAction handler setting param to %d", index);
-
             float value = index;
             if (parent->optionalIndexToValueFunction) {
                 value = parent->optionalIndexToValueFunction(index);

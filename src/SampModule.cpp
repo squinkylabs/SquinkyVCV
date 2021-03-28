@@ -8,6 +8,7 @@
 #include <osdialog.h>
 
 #include "InstrumentInfo.h"
+#include "PitchUtils.h"
 #include "Samp.h"
 #include "SqStream.h"
 #include "ctrl/PopupMenuParamWidget.h"
@@ -323,8 +324,9 @@ void SampWidget::pollForDeserializedPatch() {
 }
 
 void SampWidget::updateUIForLoaded() {
-    std::string s = "Samples: ";
-    s += curBaseFileName;
+    // std::string s = "Samples: ";
+    // s += curBaseFileName;
+    std::string s(curBaseFileName);
     s += "\n";
     s += buildPitchrangeUIString();
     textField->setText(s);
@@ -343,12 +345,6 @@ void SampWidget::buildKeyswitchUI() {
         std::map<int, int> conversionMap;
         for (auto it : info->keyswitchData) {
             labels.push_back(it.first);
-            //    const int pitch = it.second.first;
-            //   if (pitch != it.second.second) {
-            //       SQWARN("skipping ks range > 1");
-            //   }
-            // keySwitchForIndex.push_back(pitch);
-            SQINFO("adding data for %s", it.first.c_str());
             InstrumentInfo::PitchRange pitchRange = it.second;
             const int index = keySwitchForIndex.size();
             keySwitchForIndex.push_back(pitchRange);
@@ -358,7 +354,6 @@ void SampWidget::buildKeyswitchUI() {
             }
         }
 
-        SQINFO("about to create control");
         keyswitchPopup = SqHelper::createParam<PopupMenuParamWidget>(
             nullptr,
             Vec(leftSide, keyswitchy),
@@ -366,61 +361,40 @@ void SampWidget::buildKeyswitchUI() {
             Comp::DUMMYKS_PARAM);
         keyswitchPopup->box.size.x = 160;  // width
         keyswitchPopup->box.size.y = 22;   // should set auto like button does
-        keyswitchPopup->text = "noise";    // TODO: do we still need this?
+                                           // keyswitchPopup->text = "noise";    // TODO: do we still need this?
 
-        
         keyswitchPopup->setValueToIndexFunction([conversionMap](int value) {
-            SQINFO("in  value to index onversion lambda(%d)", value);
             auto it = conversionMap.find(value);
             int index = 0;
             if (it != conversionMap.end()) {
                 index = it->second;
-                SQINFO("found conversion to %d", index);
             }
             return index;
         });
 
-        //std::vector<InstrumentInfo::PitchRange> keySwitchForIndex;
         auto lookup = keySwitchForIndex;
         keyswitchPopup->setIndexToValueFunction([lookup](int index) {
-            INFO("in index to value function index=%d", index);
             auto x = lookup[index];
             return float(x.first);
         });
 
-
-        SQINFO("about to set lables");
         keyswitchPopup->setLabels(labels);
         addParam(keyswitchPopup);
-        SQINFO("about to set callback");
-        keyswitchPopup->setNotificationCallback([this](int index) {
-            if (index < 0) {
-                return;
-            }
-
-#ifdef _KS2
-            InstrumentInfo::PitchRange pitchRange = keySwitchForIndex[index];
-            SQINFO("ui notification callback would be setting ks to %d", pitchRange.first);
-            SQINFO("do we even need this notification? will cut it");
-            //  APP->engine->setParam(module, Comp::DUMMYKS_PARAM, pitchRange.first);
-
-#else
-            const int pitch = keySwitchForIndex[index];
-            if (pitch != lastKeySwitchSent) {
-                _module->setKeySwitch(pitch);
-                lastKeySwitchSent = pitch;
-            }
-#endif
-        });
     }
 }
 
 std::string SampWidget::buildPitchrangeUIString() {
     SqStream s;
+
+    const float lowCV = PitchUtils::semitoneToCV(info->minPitch - 12);
+    std::string lowName = PitchUtils::pitch2str(lowCV);
+    const float hiCV = PitchUtils::semitoneToCV(info->maxPitch - 12);
+    std::string hiName = PitchUtils::pitch2str(hiCV);
+    // SQINFO("build range, %d, %f, %s %s",  info->minPitch, lowCV, lowName.c_str(), hiName.c_str());
     s.add("Pitch range: ");
-    s.add(info->minPitch);
-    s.add("-");
-    s.add(info->maxPitch);
+    s.add(lowName);
+    s.add(" to ");
+    s.add(hiName);
     return s.str();
 }
 
@@ -540,7 +514,7 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
     addInput(createInput<PJ301MPort>(
         Vec(jacksX + 5 * jacksDx, jacksY0),
         module,
-        Comp::LFM_DEPTH));
+        Comp::LFMDEPTH_INPUT));
 }
 
 void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp) {
