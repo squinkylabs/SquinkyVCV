@@ -51,7 +51,8 @@ private:
 
 class Sampler4vx {
 public:
-    void note_on(int channel, int midiPitch, int midiVelocity, float sampleRate);
+    // returns true if caused a key switch
+    bool note_on(int channel, int midiPitch, int midiVelocity, float sampleRate);
 
     void setPatch(CompiledInstrumentPtr inst);
     void setLoader(WaveLoaderPtr loader);

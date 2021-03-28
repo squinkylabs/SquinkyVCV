@@ -28,7 +28,7 @@ VoicePlayInfo::VoicePlayInfo(CompiledRegionPtr region, int midiPitch, int sample
     }
 }
 
-void SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
+bool SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     cachedInfoToPlayInfo(info, params, data);
     if (loader) {
         // do we need to adapt to changed sample rate?
@@ -45,6 +45,7 @@ void SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& para
 #endif
         }
     }
+    return false;       // I think key switch processed higher...
 }
 
 #if 0

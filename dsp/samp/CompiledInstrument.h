@@ -75,7 +75,8 @@ public:
     static CompiledInstrumentPtr make(SamplerErrorContext&, const SInstrumentPtr);
     static CompiledInstrumentPtr make(const std::string& parseError);
 
-    void play(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
+    // returns true if caused keyswitch
+    bool play(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
     void _setTestMode(Tests t) {
         ciTestMode = t;
@@ -140,5 +141,5 @@ private:
     static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate);
     static void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack, float regionVolumeDb);
 
-    void playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate);
+    bool playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate);
 };

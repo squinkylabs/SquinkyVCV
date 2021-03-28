@@ -207,14 +207,15 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
     }
 }
 
-void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
+bool CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     if (ciTestMode != Tests::None) {
         return playTestMode(info, params, loader, sampleRate);
     }
     info.valid = false;
     float r = rand();
 
-    const CompiledRegion* region = regionPool.play(params, r);
+    bool didKS = false;
+    const CompiledRegion* region = regionPool.play(params, r, didKS);
     if (region) {
         info.sampleIndex = region->sampleIndex;
         info.valid = true;
@@ -222,9 +223,10 @@ void CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
         getPlayPitch(info, params.midiPitch, region->keycenter, region->tune, loader, sampleRate);
         getGain(info, params.midiVelocity, region->amp_veltrack, region->volume);
     }
+    return didKS;
 }
 
-void CompiledInstrument::playTestMode(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
+bool CompiledInstrument::playTestMode(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     float release = 0;
     switch (ciTestMode) {
         case Tests::MiddleC:
@@ -248,6 +250,7 @@ void CompiledInstrument::playTestMode(VoicePlayInfo& info, const VoicePlayParame
 #else
     info.transposeAmt = 1;
 #endif
+    return false;       // don't care about KS for tests.
 }
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath) {

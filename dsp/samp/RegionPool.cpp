@@ -28,10 +28,11 @@ bool RegionPool::shouldRegionPlayNow(const VoicePlayParameter& params, const Com
     return passesCheck;
 }
 
-const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random) {
+const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random, bool& didKS) {
     // printf("\n... play(%d)\n", params.midiPitch);
     if (!(params.midiPitch >= 0 && params.midiPitch <= 127 && params.midiVelocity > 0 && params.midiVelocity <= 127)) {
         SQWARN("value out of range: pitch = %d, vel = %d\n", params.midiPitch, params.midiVelocity);
+        didKS = false;
         return nullptr;
     }
 
@@ -47,6 +48,9 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
         }
         currentSwitch_ = params.midiPitch;
         // SQINFO("setting currentSwitch to %d", params.midiPitch);
+        didKS = true;
+    } else {
+        didKS = false;
     }
 
     for (auto& region : lastKeyswitchLists_[params.midiPitch]) {

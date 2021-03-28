@@ -80,10 +80,10 @@ void Sampler4vx::updatePitch() {
 #endif
 }
 
-void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
+bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
     if (!patch || !waves) {
         SQDEBUG("4vx not intit");
-        return;
+        return false;
     }
     if (patch->isInError()) {
         assert(false);
@@ -92,11 +92,11 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     VoicePlayParameter params;
     params.midiPitch = midiPitch;
     params.midiVelocity = midiVelocity;
-    patch->play(patchInfo, params, waves.get(), sampleRate);
+    const bool didKS = patch->play(patchInfo, params, waves.get(), sampleRate);
     if (!patchInfo.valid) {
         SQINFO("could not get play info pitch %d vel%d", midiPitch, midiVelocity);
         player.clearSamples(channel);
-        return;
+        return didKS;
     }
 
     WaveLoader::WaveInfoPtr waveInfo = waves->getInfo(patchInfo.sampleIndex);
@@ -143,6 +143,7 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     R[channel] = patchInfo.ampeg_release;
     adsr.setRSec(R[channel]);
     releaseTime_ = patchInfo.ampeg_release;
+    return didKS;
 }
 
 void Sampler4vx::setNumVoices(int voices) {

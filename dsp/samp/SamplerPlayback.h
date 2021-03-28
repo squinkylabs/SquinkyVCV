@@ -55,8 +55,9 @@ public:
      * @param params are not play parameters.
      * @param loader is all the wave files. may be null for some tests.
      * @param sampleRate is the current sample rate. Ignored if loader is nullptr
+     * @returns true is note caused a key-switch
      */
-    virtual void play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) = 0;
+    virtual bool play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) = 0;
     virtual void _dump(int depth) const = 0;
 
 protected:
@@ -150,7 +151,7 @@ public:
                                                                                lineNumber(reg->lineNumber) {
         assert(sampleIndex > 0);
     }
-    void play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
+    bool play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override {
         indent(depth);
         printf("simple voice player si=%d\n", data.sampleIndex);

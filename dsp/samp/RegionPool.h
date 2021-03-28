@@ -26,7 +26,7 @@ public:
      * After the pool is built, this function is called 
      * every time a note needs to be played.
      */
-    const CompiledRegion* play(const VoicePlayParameter& params, float random);
+    const CompiledRegion* play(const VoicePlayParameter& params, float random, bool& didKeyswitch);
 
     void _dump(int depth) const;
     void _getAllRegions(std::vector<CompiledRegionPtr>&) const;

@@ -259,6 +259,7 @@ private:
     void serviceKeySwitch();
     void serviceFMMod();
 
+    void updateKeySwitch(int midiPitch);
     // server thread stuff
     // void servicePatchLoader();
 };
@@ -366,7 +367,11 @@ inline void Samp<TBase>::serviceKeySwitch() {
        lastServicedKeyswitchValue = val;
        playback[0].note_on(0, val, 64, 44100.f);
    }
+}
 
+template <class TBase>
+inline void Samp<TBase>::updateKeySwitch(int midiPitch) {
+    TBase::params[DUMMYKS_PARAM].value = float(midiPitch);
 }
 #else
 template <class TBase>
@@ -479,7 +484,10 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
                             midiVelocity = 1;
                         }
                     }
-                    playback[bank].note_on(iSub, midiPitch, midiVelocity, args.sampleRate);
+                    const bool isKs = playback[bank].note_on(iSub, midiPitch, midiVelocity, args.sampleRate);
+                    if (isKs) {
+                        updateKeySwitch(midiPitch);
+                    }
                     // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
                 }
             }
