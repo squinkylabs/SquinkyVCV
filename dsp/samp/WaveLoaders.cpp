@@ -2,21 +2,10 @@
 #include "FlacReader.h"
 #include "SqLog.h"
 #include "WaveLoader.h"
+#include "share/windows_unicode_filenames.h"
 
 #define DR_WAV_IMPLEMENTATION
 #include "dr_wav.h"
-
-/*
-class WaveInfoInterface {
-public:
-    virtual ~WaveInfoInterface() = default;
-    virtual unsigned int getSampleRate() = 0;
-    virtual uint64_t getTotalFrameCount() = 0;
-    virtual bool isValid() = 0;
-    virtual const float* getData() = 0;
-    virtual bool load(std::string& errorMsg) = 0;
-};
-*/
 
 class LoaderBase : public WaveInfoInterface {
 public:
@@ -25,13 +14,13 @@ public:
     uint64_t getTotalFrameCount() override { return totalFrameCount; }
     const float* getData() override { return data; }
     bool isValid() const override { return valid; }
-    std::string getFileName() { return fp.toString(); }
+    std::string getFileName() override { return fp.toString(); }
 
 protected:
     unsigned int sampleRate = 0;
     uint64_t totalFrameCount = 0;
 
-    // who owns this data. I think I should own it, and delete it maysel. I do,
+    // Who owns this data? I think I should own it, and delete it myself. I do,
     // but should I transer ownership to outer object?
     // Or maybe I should keep it and outer caller gets it to play?
     float* data = nullptr;
@@ -47,14 +36,30 @@ public:
 
 private:
     void convertToMono();
+    float* loadData(unsigned& numChannels);          // no format conversion or checking
 };
+
+#ifdef ARCH_WIN
+
+//extern "C" {
+//    extern wchar_t* wchar_from_utf8(const char* str);
+//}
+float* WaveFileLoader::loadData(unsigned& numChannels) {
+    wchar_t* widePath = wchar_from_utf8(fp.toString().c_str());
+    float* ret = drwav_open_file_and_read_pcm_frames_f32_w(widePath, &numChannels, &sampleRate, &totalFrameCount, nullptr);
+    free(widePath);
+    return ret;
+}
+#else
+float* WaveFileLoader::loadData(unsigned& numChannels) {
+    return drwav_open_file_and_read_pcm_frames_f32(fp.toString().c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
+}
+#endif
 
 bool WaveFileLoader::load(std::string& errorMessage) {
     unsigned int numChannels = 0;
-    //  unsigned int sampleRate = 0;
-    //   uint64_t totalFrameCount = 0;
 
-    float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fp.toString().c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
+    float* pSampleData = loadData(numChannels);
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
         errorMessage += "can't open ";
@@ -76,6 +81,7 @@ bool WaveFileLoader::load(std::string& errorMessage) {
     valid = true;
     return true;
 }
+
 
 void WaveFileLoader::convertToMono() {
     //  SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
@@ -205,21 +211,4 @@ void WaveLoader::_setTestMode(Tests test) {
         default:
             assert(false);
     }
-#if 0
-    //  curLoadIndex = 0;       // let's force a load
-    for (bool done = false; !done;) {
-        WaveLoader::LoaderState loadedState = this->loadNextFile();
-        switch (loadedState) {
-            case WaveLoader::LoaderState::Progress:
-                // smsg->sharedState->uiw_setLoadProgress(waves->getProgressPercent());
-                break;
-            case WaveLoader::LoaderState::Done:
-            case WaveLoader::LoaderState::Error:
-                done = true;
-                break;
-            default:
-                assert(false);
-        }
-    }
-#endif
 }

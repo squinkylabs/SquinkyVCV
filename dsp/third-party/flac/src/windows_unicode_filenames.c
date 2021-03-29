@@ -44,7 +44,7 @@
 /*** FIXME: KLUDGE: export these syms for flac.exe, metaflac.exe, etc. ***/
 
 /* convert UTF-8 back to WCHAR. Caller is responsible for freeing memory */
-static wchar_t *wchar_from_utf8(const char *str)
+wchar_t *wchar_from_utf8(const char *str)
 {
 	wchar_t *widestr;
 	int len;

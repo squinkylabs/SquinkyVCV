@@ -7,6 +7,7 @@
 #include "SLex.h"
 #include "SqLog.h"
 #include "SqStream.h"
+#include "share/windows_unicode_filenames.h"
 
 #include <assert.h>
 #include <fstream>
@@ -33,19 +34,35 @@ only non-parser thing:
     eliminate the getPath accessor from ci.
 */
 
+#ifdef ARCH_WIN 
+std::shared_ptr<std::ifstream> SParse::open(const FilePath& fp) {
+    wchar_t* widePath = wchar_from_utf8(fp.toString().c_str());
+    auto ret = std::make_shared<std::ifstream>(widePath);
+    free(widePath);
+    return ret;
+}
+#else
+std::shared_ptr<std::ifstream> SParse::open(FilePath& fp) {
+
+    return std::make_shared<std::ifstream>(fp.toString());
+}
+#endif
+
+
 std::string SParse::goFile(const FilePath& filePath, SInstrumentPtr inst) {
-    std::ifstream t(filePath.toString());
-    if (!t.good()) {
-      //  printf("can't open file\n");
+    auto stream = open(filePath);
+    if (!stream->good()) {
+        SQWARN("parser can't open >%s<", filePath.toString());
         return "can't open source file: " + filePath.toString();
     }
-    std::string str((std::istreambuf_iterator<char>(t)),
-                    std::istreambuf_iterator<char>());
+    std::string str((std::istreambuf_iterator<char>(*stream)),
+                    std::istreambuf_iterator<char>(*stream));
     if (str.empty()) {
         return "file empty: " + filePath.toString();
     }
     return goCommon(str, inst, &filePath);
 }
+
 
 std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
     return goCommon(s, inst, nullptr);

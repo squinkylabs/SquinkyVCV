@@ -58,6 +58,9 @@ FLAC_API int flac_internal_utime_utf8(const char *filename, struct utimbuf *time
 FLAC_API int flac_internal_unlink_utf8(const char *filename);
 FLAC_API int flac_internal_rename_utf8(const char *oldname, const char *newname);
 
+// Squinky Labs 2020 - want to expose this
+wchar_t *wchar_from_utf8(const char *str);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

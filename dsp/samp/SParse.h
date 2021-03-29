@@ -89,6 +89,8 @@ private:
         Res res = Res::ok;
     };
 
+    static std::shared_ptr<std::ifstream> open(const FilePath& fp);
+
     static std::string goCommon(const std::string& sContent, SInstrumentPtr outParsedInstrument, const FilePath* fullPathToSFZ);
 
     /* What is a "heading"?

@@ -8,10 +8,13 @@
 
 #include "FilePath.h"
 #include "SqLog.h"
+#include "share/windows_unicode_filenames.h"
+
 
 const float* FlacReader::getSamples() const {
-     return monoData;
-      }
+    return monoData;
+}
+
 float* FlacReader::takeSampleBuffer() {
     // transfer ownership to caller.
     float* ret = monoData;
@@ -19,9 +22,9 @@ float* FlacReader::takeSampleBuffer() {
     return ret;
 }
 
-uint64_t FlacReader::getNumSamples() const { 
+uint64_t FlacReader::getNumSamples() const {
     return framesRead;
- }
+}
 
 unsigned int FlacReader::getSampleRate() {
     return sampleRate_;
@@ -42,7 +45,7 @@ void FlacReader::read(const FilePath& filePath) {
     }
 
     FLAC__stream_decoder_set_md5_checking(decoder, false);
-
+    flac_set_utf8_filenames(true);
     auto init_status = FLAC__stream_decoder_init_file(decoder, filePath.toString().c_str(), write_callback, metadata_callback, error_callback, /*client_data=*/this);
     if (init_status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
         SQWARN("ERROR: initializing decoder: %s", FLAC__StreamDecoderInitStatusString[init_status]);
