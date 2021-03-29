@@ -34,7 +34,7 @@ only non-parser thing:
     eliminate the getPath accessor from ci.
 */
 
-#ifdef ARCH_WIN 
+#if defined(ARCH_WIN) && 1 
 
 static void testWin(wchar_t* test) {
     std::ifstream mystream;
