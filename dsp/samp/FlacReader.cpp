@@ -45,7 +45,9 @@ void FlacReader::read(const FilePath& filePath) {
     }
 
     FLAC__stream_decoder_set_md5_checking(decoder, false);
+#ifdef ARCH_WIN
     flac_set_utf8_filenames(true);
+#endif
     auto init_status = FLAC__stream_decoder_init_file(decoder, filePath.toString().c_str(), write_callback, metadata_callback, error_callback, /*client_data=*/this);
     if (init_status != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
         SQWARN("ERROR: initializing decoder: %s", FLAC__StreamDecoderInitStatusString[init_status]);

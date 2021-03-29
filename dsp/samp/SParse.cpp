@@ -35,8 +35,15 @@ only non-parser thing:
 */
 
 #ifdef ARCH_WIN 
+
+static void testWin(wchar_t* test) {
+    std::ifstream mystreamn(test);
+}
+
 std::shared_ptr<std::ifstream> SParse::open(const FilePath& fp) {
+  
     wchar_t* widePath = wchar_from_utf8(fp.toString().c_str());
+    testWin(widePath);
     auto ret = std::make_shared<std::ifstream>(widePath);
     free(widePath);
     return ret;
