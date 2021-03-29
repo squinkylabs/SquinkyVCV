@@ -51,7 +51,7 @@ std::shared_ptr<std::ifstream> SParse::open(const FilePath& fp) {
     return ret;
 }
 #else
-std::shared_ptr<std::ifstream> SParse::open(FilePath& fp) {
+std::shared_ptr<std::ifstream> SParse::open(const FilePath& fp) {
 
     return std::make_shared<std::ifstream>(fp.toString());
 }
