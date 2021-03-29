@@ -37,7 +37,9 @@ only non-parser thing:
 #ifdef ARCH_WIN 
 
 static void testWin(wchar_t* test) {
-    std::ifstream mystreamn(test);
+    std::ifstream mystream;
+    mystream.open(test);
+
 }
 
 std::shared_ptr<std::ifstream> SParse::open(const FilePath& fp) {
