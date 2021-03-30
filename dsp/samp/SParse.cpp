@@ -1,6 +1,15 @@
 
+
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "SParse.h"
 
+#include <assert.h>
+
+#include <fstream>
+#include <set>
+#include <streambuf>
+#include <string>
 
 #include "FilePath.h"
 #include "SInstrument.h"
@@ -8,12 +17,6 @@
 #include "SqLog.h"
 #include "SqStream.h"
 #include "share/windows_unicode_filenames.h"
-
-#include <assert.h>
-#include <fstream>
-#include <set>
-#include <streambuf>
-#include <string>
 
 // global for mem leak detection
 int parseCount = 0;
@@ -34,44 +37,51 @@ only non-parser thing:
     eliminate the getPath accessor from ci.
 */
 
-#if defined(ARCH_WIN) && 0 
+#if defined(ARCH_WIN)
 
-static void testWin(wchar_t* test) {
-    std::ifstream mystream;
-    mystream.open(test);
-
+FILE* SParse::openFile(const FilePath& fp) {
+    return flac_internal_fopen_utf8(fp.toString().c_str(), "r");
 }
 
-std::shared_ptr<std::ifstream> SParse::open(const FilePath& fp) {
-  
-    wchar_t* widePath = wchar_from_utf8(fp.toString().c_str());
-    testWin(widePath);
-    auto ret = std::make_shared<std::ifstream>(widePath);
-    free(widePath);
-    return ret;
-}
 #else
-std::shared_ptr<std::ifstream> SParse::open(const FilePath& fp) {
 
-    return std::make_shared<std::ifstream>(fp.toString());
+FILE* SParse::openFile(const FilePath& fp) {
+    return fopen(fp.toString().c_str(), "r");
 }
+
 #endif
 
+std::string SParse::readFileIntoString(FILE* fp) {
+    if (fseek(fp, 0, SEEK_END) < 0)
+        return "";
 
-std::string SParse::goFile(const FilePath& filePath, SInstrumentPtr inst) {
-    auto stream = open(filePath);
-    if (!stream->good()) {
-        SQWARN("parser can't open >%s<", filePath.toString());
-        return "can't open source file: " + filePath.toString();
+    const long size = ftell(fp);
+    if (size < 0)
+        return "";
+
+    if (fseek(fp, 0, SEEK_SET) < 0)
+        return "";
+
+    std::string res;
+    res.resize(size);
+
+    const auto numRead = fread(const_cast<char*>(res.data()), 1, size, fp);
+    //  SQINFO("requested: %d, read %d", size, numRead);
+    if (numRead != size) {
+        res.resize(numRead);
     }
-    std::string str((std::istreambuf_iterator<char>(*stream)),
-                    std::istreambuf_iterator<char>(*stream));
-    if (str.empty()) {
-        return "file empty: " + filePath.toString();
-    }
-    return goCommon(str, inst, &filePath);
+    return res;
 }
 
+std::string SParse::goFile(const FilePath& filePath, SInstrumentPtr inst) {
+    FILE* fp = fopen(filePath.toString().c_str(), "r");
+    if (!fp) {
+        return "can't open " + filePath.toString();
+    }
+    std::string sContent = readFileIntoString(fp);
+    fclose(fp);
+    return goCommon(sContent, inst, &filePath);
+}
 
 std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
     return goCommon(s, inst, nullptr);
@@ -84,6 +94,7 @@ std::string SParse::goCommon(const std::string& sContent, SInstrumentPtr outPars
         assert(!lexError.empty());
         return lexError;
     }
+    //lex->_dump();
 
     std::string sError = matchHeadingGroups(outParsedInstrument, lex);
     if (!sError.empty()) {
@@ -105,7 +116,7 @@ std::string SParse::goCommon(const std::string& sContent, SInstrumentPtr outPars
             auto tag = std::static_pointer_cast<SLexTag>(item);
             SQINFO("extra tok = %s", tag->tagName.c_str());
         }
-      
+
         if (type == SLexItem::Type::Identifier) {
             SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
             // printf("id name is %s\n", id->idName.c_str());
@@ -150,8 +161,7 @@ static std::set<std::string> headingTags = {
     {"curve"},
     {"effect"},
     {"midi"},
-    {"sample"}
-    };
+    {"sample"}};
 
 static bool isHeadingName(const std::string& s) {
     // SQINFO("checking heading name %s", s.c_str());
@@ -212,7 +222,7 @@ std::pair<SParse::Result, bool> SParse::matchSingleHeading(SInstrumentPtr inst, 
 
 SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
     bool matchedOneHeading = false;
-    for (bool done=false; !done; ) {
+    for (bool done = false; !done;) {
         std::pair<Result, bool> temp = matchSingleHeading(inst, lex);
 
         switch (temp.first.res) {
@@ -326,7 +336,7 @@ SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
 
     keyToken = lex->next();
     if (!keyToken) {
-        result.errorMessage = "= unexpected end of tokens" ;
+        result.errorMessage = "= unexpected end of tokens";
         result.res = Result::error;
         return result;
     }

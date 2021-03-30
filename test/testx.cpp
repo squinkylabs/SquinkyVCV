@@ -399,6 +399,13 @@ static void testLexLabel2() {
     assertEQ(lex->items.size(), 6);
 }
 
+static void testLexNewLine() {
+    auto lex = SLex::go("sample=BS DX7 Bright Bow-000-084-c5.wav\r\n");
+    assert(lex);
+    lex->_dump();
+    assertEQ(lex->items.size(), 3);
+}
+
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -684,6 +691,7 @@ void testx() {
     testLexDefineSuccess3();
     //  testLexDefineFail();
     testLexLabel2();
+    testLexNewLine();
 
     testparse1();
     testParseRegion();

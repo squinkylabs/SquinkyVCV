@@ -211,11 +211,12 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+testx();
     testFlac();
     testADSRSampler();
     testStreamer();
 
-    testx();
+  
     testx2();
     testx3();
     testx4();
