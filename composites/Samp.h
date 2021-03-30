@@ -600,7 +600,7 @@ public:
             sendMessageToClient(msg);
             return;
         }
-        cinst->_dump(0);
+      //  cinst->_dump(0);
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
         assert(cinst->getInfo());
 

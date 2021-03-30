@@ -181,6 +181,8 @@ WaveLoader::WaveInfoPtr WaveLoader::loaderFactory(const FilePath& file) {
     WaveLoader::WaveInfoPtr loader;
 
     const std::string extension = file.getExtensionLC();
+    assert(extension.find('\n') == extension.npos);
+    assert(extension.find('\r') == extension.npos);
     if (extension == "wav") {
         loader = std::make_shared<WaveFileLoader>(file);
     } else if (extension == "flac") {
