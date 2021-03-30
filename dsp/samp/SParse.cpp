@@ -68,7 +68,7 @@ std::string SParse::readFileIntoString(FILE* fp) {
     std::string res;
     res.resize(size);
 
-    const auto numRead = fread(const_cast<char*>(res.data()), 1, size, fp);
+    const long numRead = fread(const_cast<char*>(res.data()), 1, size, fp);
   SQINFO("requested: %d, read %d", size, numRead);
     if (numRead != size) {
         res.resize(numRead);
@@ -95,7 +95,18 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
     return goCommon(s, inst, nullptr);
 }
 
-std::string SParse::goCommon(const std::string& sContent, SInstrumentPtr outParsedInstrument, const FilePath* fullPathToSFZ) {
+static std::string filter(const std::string& sInput) {
+    std::string ret;
+    for (char c : sInput) {
+        if (c != '\r') {
+            ret.push_back(c);
+        }
+    }
+    return ret;
+}
+
+std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outParsedInstrument, const FilePath* fullPathToSFZ) {
+    std::string sContent = filter(sContentIn);
     std::string lexError;
     SLexPtr lex = SLex::go(sContent, &lexError, 0, fullPathToSFZ);
     if (!lex) {
