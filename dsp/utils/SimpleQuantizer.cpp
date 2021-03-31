@@ -45,7 +45,7 @@ SimpleQuantizer::SimpleQuantizer(std::vector<SimpleQuantizer::Scales>& scales, S
     pitches_12just.insert(8.f / 5 - 1);
     pitches_12just.insert(5.f / 3 - 1);
     pitches_12just.insert(9.f / 5 - 1);
-    pitches_12just.insert(15.f / 18 - 1);
+    pitches_12just.insert(15.f / 8 - 1);
     pitches_12just.insert(2.f / 1 - 1);
 
     setScale(scale);

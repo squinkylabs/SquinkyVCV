@@ -11,7 +11,7 @@ std::shared_ptr<SimpleQuantizer> makeTest(SimpleQuantizer::Scales scale = Simple
     return std::shared_ptr<SimpleQuantizer>(ptr);
 }
 
-static void testSimpleQuanizerOctave(SimpleQuantizer::Scales scale)
+static void testSimpleQuantizerOctave(SimpleQuantizer::Scales scale)
 {
     auto q = makeTest();
     q->setScale(scale);
@@ -20,17 +20,21 @@ static void testSimpleQuanizerOctave(SimpleQuantizer::Scales scale)
     assertEQ(q->quantize(1), 1);
     assertEQ(q->quantize(-1), -1);
     assertEQ(q->quantize(10), 10);
+
+    // check that we round towards even semis
+    assertEQ(q->quantize(0 + PitchUtils::semitone * .4f), 0);
+    assertEQ(q->quantize(0 - PitchUtils::semitone * .4f), 0);
 }
 
-static void testSimpleQuanizerOctave() 
+static void testSimpleQuantizerOctave() 
 {
-    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_12Even);
-    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_8Even);
-    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_12Just);
-    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_8Just);
+    testSimpleQuantizerOctave(SimpleQuantizer::Scales::_12Even);
+    testSimpleQuantizerOctave(SimpleQuantizer::Scales::_8Even);
+    testSimpleQuantizerOctave(SimpleQuantizer::Scales::_12Just);
+    testSimpleQuantizerOctave(SimpleQuantizer::Scales::_8Just);
 }
 
-static void testSimpleQuanizer12Even()
+static void testSimpleQuantizer12Even()
 {
     auto q = makeTest();
     for (int i = -12; i <= 12; ++i) {
@@ -39,7 +43,7 @@ static void testSimpleQuanizer12Even()
     }
 }
 
-static void testSimpleQuanizer8Even()
+static void testSimpleQuantizer8Even()
 {
     std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Even,  SimpleQuantizer::Scales::_8Even };
     SimpleQuantizer* p = new SimpleQuantizer(scales,
@@ -62,10 +66,10 @@ static void testSimpleQuanizer8Even()
     assertClose(q->quantize(6 * s), 5 * s, .0001);      // F#
     assertClose(q->quantize(8 * s), 7 * s, .0001);      // C#
     assertClose(q->quantize(10 * s), 9 * s, .0001);      // C#
-    
+
 }
 
-static  void testSimpleQuanizerOff()
+static  void testSimpleQuantizerOff()
 {
     auto q = makeTest(SimpleQuantizer::Scales::_off);
 
@@ -76,11 +80,61 @@ static  void testSimpleQuanizerOff()
 }
 
 
+static void testSimpleQuantizer12J(float evenPitch)
+{
+    std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Just };
+    SimpleQuantizer* p = new SimpleQuantizer(scales,
+        SimpleQuantizer::Scales::_12Just);
+    auto q = std::shared_ptr<SimpleQuantizer>(p);
+    assertClose(q->quantize(evenPitch), evenPitch, .0001);
+}
+
+static void testSimpleQuantizer12J()
+{
+    testSimpleQuantizer12J(0);
+    testSimpleQuantizer12J(-1 + 16.f/15);
+    testSimpleQuantizer12J(-1 + 9.f/8);
+    testSimpleQuantizer12J(-1 + 6.f/5);
+    testSimpleQuantizer12J(-1 + 5.f/4);
+    testSimpleQuantizer12J(-1 + 4.f/3);
+    testSimpleQuantizer12J(-1 + 45.f/32);
+    testSimpleQuantizer12J(-1 + 3.f/2);
+    testSimpleQuantizer12J(-1 + 8.f / 5);
+    testSimpleQuantizer12J(-1 + 5.f/3);
+    testSimpleQuantizer12J(-1 + 9.f/5);
+    testSimpleQuantizer12J(-1 + 15.f/8);
+    testSimpleQuantizer12J(1);
+}
+
+static void testSimpleQuantizer8J(float evenPitch)
+{
+    std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_8Just };
+    SimpleQuantizer* p = new SimpleQuantizer(scales,
+        SimpleQuantizer::Scales::_8Just);
+    auto q = std::shared_ptr<SimpleQuantizer>(p);
+    assertClose(q->quantize(evenPitch), evenPitch, .0001);
+}
+
+static void testSimpleQuantizer8J()
+{
+    testSimpleQuantizer8J(0);
+    testSimpleQuantizer8J(-1 + 9.f/8);
+    testSimpleQuantizer8J(-1 + 5.f/4);
+    testSimpleQuantizer8J(-1 + 4.f/ 3);
+    testSimpleQuantizer8J(-1 + 3.f/2);
+    testSimpleQuantizer8J(-1 + 5.f/3);
+    testSimpleQuantizer8J(-1 + 15.f/8);
+    testSimpleQuantizer8J(1);
+}
+
 void testSimpleQuantizer()
 {
-    testSimpleQuanizerOctave();
-    testSimpleQuanizer12Even();
-    testSimpleQuanizer8Even();
-    testSimpleQuanizerOff();
+    testSimpleQuantizerOctave();
+    testSimpleQuantizer12Even();
+    testSimpleQuantizer8Even();
+    testSimpleQuantizerOff();
+    testSimpleQuantizer8J();
+    testSimpleQuantizer12J();
+
 
 }
