@@ -15,13 +15,35 @@ Because SFZ files are simple text files, and the SFZ format is well documented, 
 
 ## Using the player
 
-[TBD] short sections on what the controls and CV do
-
 You must patch something to the V/Oct input and the Gate input, otherwise you won't get any sound. A typical minimal starting patch would use VCV MIDI-CV, SFZ player and an audio output module. Patch the V/OCT, GATE, and VEL outputs from the MIDI-CV to SFZ Player. Patch the output of SFZ player to the audio output. Select a convenient keyboard from MIDI-CV, and set the polyphony to 4 (or whatever you like).
 
 You must also load an SFZ instrument. See section below on where to get one, if you do not already have any. Bring up the context menu by right clicking on the SFZ Player, and select "Load sample file.". You should see the main display at the top begin to load files. This can be instantaneous to tens of seconds, depending on how large the sample library is. When everything loads correctly the display will show you the name of the SFZ Instrument, and the range of pitches over which it responds.
 
 At this you would be able to play on the keyboard and have it respond like a typical sampler. If something goes wrong, there will be an error message in the main display.
+
+CV Inputs:
+
+* V/Oct. A polyphonic pitch input that follow the VCV voltage standard. 0V = C4. The polyphony of the V/Oct input will determine the overall polyphony of SFZ Player.
+
+* Gate. A polyphonic gate input that turns the notes on and off. Below 1 V is considered "off" and over 1 V is "on".
+
+* Vel. Polyphonic Velocity input. Unipolar, where 0 V is MIDI velocity zero, and 10V is MIDI Velocity 127. Individula SFZ instrumentents will use velocity in different ways. A very common one is to use velocity for choosing differnt samples. Controlling volume is also common.
+
+* FM. An exponential pitch modulation input. May be used for vibrato, pitch bend, or more creative uses. The associated attenuverter will scale the range of this input. Input may be thought of as bipolar, where 0v will be no change, positive voltage will shift pitch up, and negative will shift pitch down.
+
+* LFM. A true "through zero" linear FM. This allows unusual effects where the sample is the "carrier" and the signal on the LFM input is the "modulator". This signal is usually an audio rate signal. It can be considered bipolar, but since (like everyone else) we use phase modulation rather than frequency modulation it doesn't really matter - any DC on the input will not be audible.
+
+* Depth. An optional CV that controls the depth of the LFM. Think of it as an optional VCA on the LFM input. A typical use would be to route in an ADRS to control the amount of FM. This signal is unipolar. 0V is off, and +10 V is fully on. When nothing is plugged in it is as if 10 volts were applied - no change.
+
+Controls:
+
+* Pitch. Tunes SFZ player over a 10 octave range. Normally you will use small pitch offsets for fine tuning. It would be a "special effect" to move the pitch of a sample by as much as an octave.
+
+* Vol. Overall master volume control.
+
+* Pitch Trim. An atternuverter that scales the FM input before adding it to the pitch knob.
+
+* Depth. Linear FM modulation depth.
 
 ## Where to find SFZ
 
@@ -47,13 +69,16 @@ The SFZ specification is huge, and really designed for implementing a super high
 
 The result for the user is that any given SFZ instrument may play perfectly, or may play poorly or not at all. So it’s going to be a matter of trial and error. Often the instrument will play just fine. Sometimes not. Unless you are in incurable tinkerer, there isn’t much you can do if an instrument doesn’t play correctly in our player. Time to move on and try an alternative.
 
-## Links [TBD]
-[More information about SFZ files](./sfz-player-about-sfz)
+## Links
+
+[More information about SFZ files](./sfz-player-about-sfz.md)
+
 [How does it work](./sfz-player-how-does-it-work.md)
-More on obtaining good SFZ files
-More about SFZ compatibility, and what opcode are implemented.
+
+More on obtaining good SFZ files [TBD]
+
+More about SFZ compatibility, and what opcode are implemented, [here](./sfz-player-compatibility.md)
+
 [How to make your own SFZ files](./sfz-player-make.md)
-Converting sample files to play better in player
 
-
-
+Converting sample files to play better in player [TBD]
