@@ -1,7 +1,7 @@
 # SFZ Player
 
 ## What does the player does
-It is a VCV module that can load an SFZ instrument, and convert CV and Gate into the sounds. You can think of is as a sampler like Kontakt (from NI), only more stripped down. And free.
+It is a VCV module that can load an SFZ instrument, and convert CV and Gate into sounds. You can think of is as a sampler like Kontakt (from NI), only more stripped down. And free.
 
 It is fully polyphonic, uses very little CPU, and sounds very good.
 
@@ -10,7 +10,8 @@ In addition to the basic CV and Gate, the player has velocity and pitch modulati
 ## What are SFZ instruments
 
 SFZ Instruments, for the uninitiated, are sample libraries. They are usually free or inexpensive. There are many, many excellent libraries out there for download. Plenty of great sounding pianos, drum kits, orchestral instruments, and on to crazy things.
-Because SFZ files are simple text files, and the SFZ format is well documented, it is also easy to make your own SFZ instruments. All you need are some sample files and a text editor/
+
+Because SFZ files are simple text files, and the SFZ format is well documented, it is also easy to make your own SFZ instruments. All you need are some sample files and a text editor.
 
 ## Using the player
 
@@ -24,7 +25,7 @@ At this you would be able to play on the keyboard and have it respond like a typ
 
 ## Where to find SFZ
 
-You will need to download some SFZ instrument to get any sound. There are many our there - here are just a few of them. The following aare popular and work well with SFZ player. All are free.
+You will need to download some SFZ instrument to get any sound. There are many our there - here are just a few of them. The following are popular and work well with SFZ player. All are free.
 
 **Versilian Studios**: https://vis.versilstudios.com/index.html
 Many free SFZ and many reasonably prices ones. They have two must have collections:
@@ -32,13 +33,13 @@ Many free SFZ and many reasonably prices ones. They have two must have collectio
 * VCSL: a collection of all kinds of sampled instruments.
 * VSCO-2: a collection of mostly orchestral instruments.
 
-The **K18 upright piano** is very popular:  http://rudifiasco.altervista.org/
+The **K18 upright piano** is very popular. It's also not huge:  http://rudifiasco.altervista.org/
 
 The **Ivy Piano** is very high quality. Due to the large size, download it usually via torrent or small donation: https://www.ivyaudio.com/Piano-in-162
 
 The **Salamander drum** kit is also a popular instrument. https://archive.org/details/SalamanderDrumkit.
 
-Just using the free instruments listed above will give you many, many useful and good sounding. But there are an enormous number of them out there if you are willing to do a little web searching.
+Just using the free instruments listed above will give you a lot of useful and good sounding instruments. But there are an enormous number of them out there if you are willing to do a little web searching.
 
 ## Plays a subset of SFZ
 
@@ -47,10 +48,12 @@ The SFZ specification is huge, and really designed for implementing a super high
 The result for the user is that any given SFZ instrument may play perfectly, or may play poorly or not at all. So it’s going to be a matter of trial and error. Often the instrument will play just fine. Sometimes not. Unless you are in incurable tinkerer, there isn’t much you can do if an instrument doesn’t play correctly in our player. Time to move on and try an alternative.
 
 ## Links [TBD]
-How does it work
-More about SFZ compatibility, and what opcode are implemented.
-How to make your own SFZ files.
-Converting sample files to play better in player
+[More information about SFZ files](./sfz-player-about-sfz)
+[How does it work](./sfz-player-how-does-it-work.md)
 More on obtaining good SFZ files
+More about SFZ compatibility, and what opcode are implemented.
+[How to make your own SFZ files](./sfz-player-make.md)
+Converting sample files to play better in player
+
 
 
