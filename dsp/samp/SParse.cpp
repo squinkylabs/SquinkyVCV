@@ -40,8 +40,8 @@ only non-parser thing:
 #if defined(ARCH_WIN)
 
 FILE* SParse::openFile(const FilePath& fp) {
-    SQINFO("in win wide version open file");
-     flac_set_utf8_filenames(true);
+    // SQINFO("in win wide version open file");
+    flac_set_utf8_filenames(true);
     return flac_internal_fopen_utf8(fp.toString().c_str(), "r");
 }
 
@@ -54,7 +54,7 @@ FILE* SParse::openFile(const FilePath& fp) {
 #endif
 
 std::string SParse::readFileIntoString(FILE* fp) {
-    SQINFO("read f %p", fp );
+    // SQINFO("read f %p", fp );
     if (fseek(fp, 0, SEEK_END) < 0)
         return "";
 
@@ -68,8 +68,8 @@ std::string SParse::readFileIntoString(FILE* fp) {
     std::string res;
     res.resize(size);
 
-    const long numRead = fread(const_cast<char*>(res.data()), 1, size, fp);
-  SQINFO("requested: %d, read %d", size, numRead);
+    const size_t numRead = fread(const_cast<char*>(res.data()), 1, size, fp);
+    // SQINFO("requested: %d, read %d", size, numRead);
     if (numRead != size) {
         res.resize(numRead);
     }
@@ -77,16 +77,16 @@ std::string SParse::readFileIntoString(FILE* fp) {
 }
 
 std::string SParse::goFile(const FilePath& filePath, SInstrumentPtr inst) {
-    SQINFO("in Parse::go file with %s", filePath.toString().c_str());
-  //  FILE* fp = fopen(filePath.toString().c_str(), "r");
+    // SQINFO("in Parse::go file with %s", filePath.toString().c_str());
+    //  FILE* fp = fopen(filePath.toString().c_str(), "r");
     FILE* fp = openFile(filePath);
-    SQINFO("ret %p\n", fp);
+    //SQINFO("ret %p\n", fp);
     if (!fp) {
-    SQINFO("Parse::go canot open sfz");
+        // SQINFO("Parse::go canot open sfz");
         return "can't open " + filePath.toString();
     }
     std::string sContent = readFileIntoString(fp);
-    SQINFO("read content: %s", sContent.c_str());
+    // SQINFO("read content: %s", sContent.c_str());
     fclose(fp);
     return goCommon(sContent, inst, &filePath);
 }
