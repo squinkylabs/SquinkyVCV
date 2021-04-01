@@ -7,7 +7,7 @@ You can get a free download [here](https://www.plogue.com/products/sforzando.htm
 
 ## General compatibility
 
-In general you will find that a majority of the free SFZ files will play just fine. There are some very elaborate, high=end SFZ that won't play so well. The ones from Piano Book, for example.
+In general you will find that a majority of the free SFZ files will play just fine. There are some very elaborate, high-end SFZ that won't play so well. The ones from Piano Book, for example.
 
 As we mentioned earlier, SFZ Player implements a subset of the SFZ specification. So when you load an SFZ, you can expect one of several outcomes:
 
@@ -20,15 +20,15 @@ As we mentioned earlier, SFZ Player implements a subset of the SFZ specification
 
 If you load an SFZ file and have an problem, you can ignore it and move on, or you can log an issue with us on our [GitHub Page](https://github.com/squinkylabs/SquinkyVCV/issues). It's your choice.
 
-If you have an SFZ that crashes SFZ player, or gives an unexpected error message, plese report it. If possible zip the SFZ and include it (the SFZ is a pretty small file - it's the samples that are big).
+If you have an SFZ that crashes SFZ player, or gives an unexpected error message, please report it. If possible zip the SFZ and include it (the SFZ is a pretty small file - it's the samples that are big).
 
 If a file loads but doesn't sound right you can edit the SFZ yourself, if you are that sort. Or you can log an issue with us with a link to download the SFZ. Or you can move on. Your choice.
 
 ## Description of capabilities
 
-It can only play one sample per voice at a time. So, for example, it can’t play a “damper pedal noise” on top of a piano note. There are no doubt ensemble patches that rely on many instruments playing from one note - they will probably sound very bad.
+SFZ Player can only play one sample per voice at a time. So, for example, it can’t play a “damper pedal noise” on top of a piano note. There are no doubt ensemble patches that rely on many instruments playing from one note - they will probably sound very bad. When we load an SFZ that attempts to play multiple samples on the same note, we attempt to figure out which one is more important, and we play that one. Sometimes we guess wrong.
 
-No continuous controller. Many sample libraries use the “mod wheel” to select/fade alternate samples. Like open and closed hi hat. We don’t implement that.
+No continuous controller. Many sample libraries use the “mod wheel” to select/fade alternate samples. For example open and closed hi hat. We don’t implement that.
 
 No built in modulation. An SFZ might have vibrato mapped to a controller. We don’t support any modulation from the SFZ file.
 
@@ -36,7 +36,13 @@ Many piano samples use “release samples” to accurately record the sound of l
 
 SFZ Player does not implement any form of looping. Because of this many older SFZ that were converted from Sound Fonts will not play correctly.
 
-SFZ may have many different types of sample files, although the huge majority use wav of flac. We do not read ogg or aif files, so if you find the rare SFZ instrument that uses them you are out of luck. Unless you are motivated enough to convert them yourself.
+SFZ may have many different types of sample files, although the huge majority use wav or flac. We do not read ogg or aif files, so if you find the rare SFZ instrument that uses them you are out of luck. Unless you are motivated enough to convert them yourself.
+
+"Aria Format" is a superset of SFZ. Aria libraries use a different method of locating their samples which we do not support.
+
+## Future enhancements
+
+Most of the limitations listed can be addressed. Please feel free to contact us and let us know if there is something you would like addressed.
 
 ## SFZ Opcodes implemented
 

@@ -451,77 +451,77 @@ void SampWidget::getRootFolder() {
     });
 }
 
+const float dx = 38;
+
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
     float jacksY = 323;
     float jacksY0 = jacksY - 50;
     float jacksX = 15;
-    float jacksDx = 40;
+  //  float jacksDx = 40;
     float labelY = jacksY - 25;
     float labelY0 = jacksY0 - 25;
     addLabel(
-        Vec(jacksX + 0 * jacksDx - 5, labelY),
+        Vec(jacksX + 5 * dx - 5, labelY),
         "Out");
     addOutput(createOutput<PJ301MPort>(
-        Vec(jacksX + 0 * jacksDx, jacksY),
+        Vec(jacksX + 5 * dx, jacksY),
         module,
         Comp::AUDIO_OUTPUT));
 
     addLabel(
-        Vec(jacksX + 1 * jacksDx - 10, labelY),
+        Vec(jacksX + 0 * dx - 10, labelY),
         "V/Oct");
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 1 * jacksDx, jacksY),
+        Vec(jacksX + 0 * dx, jacksY),
         module,
         Comp::PITCH_INPUT));
 
     addLabel(
-        Vec(jacksX + 2 * jacksDx - 10, labelY),
+        Vec(jacksX + 1 * dx - 10, labelY),
         "Gate");
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 2 * jacksDx, jacksY),
+        Vec(jacksX + 1 * dx, jacksY),
         module,
         Comp::GATE_INPUT));
 
     addLabel(
-        Vec(jacksX + 3 * jacksDx - 6, labelY),
+        Vec(jacksX + 2 * dx - 6, labelY),
         "Vel");
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 3 * jacksDx, jacksY),
+        Vec(jacksX + 2 * dx, jacksY),
         module,
         Comp::VELOCITY_INPUT));
 
     //    FM_INPUT,
 
     addLabel(
-        Vec(jacksX + 4 * jacksDx - 6, labelY),
+        Vec(jacksX + 3 * dx - 6, labelY),
         "FM");
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 4 * jacksDx, jacksY),
+        Vec(jacksX + 3 * dx, jacksY),
         module,
         Comp::FM_INPUT));
     //  LFM_INPUT
     addLabel(
-        Vec(jacksX + 5 * jacksDx - 6, labelY),
+        Vec(jacksX + 4 * dx - 6, labelY),
         "LFM");
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 5 * jacksDx, jacksY),
+        Vec(jacksX + 4 * dx, jacksY),
         module,
         Comp::LFM_INPUT));
 
     addLabel(
-        Vec(jacksX + 5 * jacksDx - 6, labelY0),
+        Vec(jacksX + 4 * dx - 6, labelY0),
         "Dpth");
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 5 * jacksDx, jacksY0),
+        Vec(jacksX + 4 * dx, jacksY0),
         module,
         Comp::LFMDEPTH_INPUT));
 }
 
 void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp) {
     float knobsY = 200;
-    //  float knobsX = 15;
-    float knobsX = 173;
-    float knobsDx = 40;
+    float knobsX = 173 - 46;
 
     float labelDy = 25;
     float labelY = knobsY - labelDy;
@@ -529,11 +529,11 @@ void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp)
     float knobsY2 = knobsY + 40;
 
     addLabel(
-        Vec(knobsX - 6 - knobsDx, labelY),
+        Vec(knobsX - 6 - dx, labelY),
         "Vol");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(knobsX - knobsDx, knobsY),
+        Vec(knobsX - dx, knobsY),
         module,
         Comp::VOLUME_PARAM));
 
@@ -547,17 +547,17 @@ void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp)
         Comp::PITCH_PARAM));
 
     addLabel(
-        Vec(knobsX - 6 + 1 * knobsDx, labelY),
+        Vec(knobsX - 6 + 1 * dx, labelY),
         "Depth");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(knobsX + 1 * knobsDx, knobsY),
+        Vec(knobsX + 1 * dx, knobsY),
         module,
         Comp::LFM_DEPTH_PARAM));
 
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
-        Vec(knobsX + 6 + +0 * knobsDx, knobsY2),
+        Vec(knobsX + 6 + +0 * dx, knobsY2),
         module,
         Comp::PITCH_TRIM_PARAM));
 }
@@ -576,7 +576,7 @@ SampWidget::SampWidget(SampModule* module) {
     addLabel(Vec(80, 10), "SFZ Player");
 
     textField = createWidget<TextDisplaySamp>(mm2px(Vec(3.39962, 14.8373)));
-    textField->box.size = Vec(250, 100);
+    textField->box.size = Vec(220, 100);
     addChild(textField);
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();

@@ -75,7 +75,7 @@ The result for the user is that any given SFZ instrument may play perfectly, or 
 
 [How does it work](./sfz-player-how-does-it-work.md)
 
-More on obtaining good SFZ files [TBD]
+More on obtaining good SFZ files [here](./sfz-player-obtain-instruments.md)
 
 More about SFZ compatibility, and what opcode are implemented, [here](./sfz-player-compatibility.md)
 
