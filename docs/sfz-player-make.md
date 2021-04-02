@@ -23,7 +23,7 @@ That's all you need to do - save that into a file with the extension *.sfz* and 
 
 // Putting ampeg_release in a group like this will apply it to all the following regions.
 <group> 
-ampeg_release=.5
+ampeg_release=0.5
 <region> key=c4 sample=c.wav
 <region> key=d4 sample=d.wav
 <region> key=e4 sample=e.wav
@@ -45,4 +45,8 @@ hikey=5
 pitch_keycenter=a4
 ```
 
+## Visual Studio Code
 
+Below is a screen-shot of the sample SFZ from above, as seen in Visual Studio Code. Note that in one place we intentionally misspelled "region", and the plugin can spot this error and highlight it read. The plugin is *vscode-sfz* by Arne Jokela.
+
+![VS Code  image](./vscode.png)
