@@ -642,12 +642,14 @@ void SampWidget::debug() {
     const char* input = "12345";
     int intValue;
     SamplerSchema::stringToInt(input, &intValue);
-
+ SQINFO(" debug 645");
 
     input = "abc";
     float floatValue;
     SamplerSchema::stringToFloat(input, &floatValue);
+    SQINFO(" debug 650");
     testMalformedRelease();
+    SQINFO(" debug 652");
     testMalformedKey();
     SQINFO("test finished");
 }

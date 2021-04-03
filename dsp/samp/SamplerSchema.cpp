@@ -278,6 +278,7 @@ bool SamplerSchema::stringToFloat(const char* s, float* outValue) {
 #endif
 
 void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
+    SQINFO("SamplerSchema::compile 281");
     Opcode opcode = translate(input->key, true);
     if (opcode == Opcode::NONE) {
         //  std::string e = std::string("could not translate opcode ") + input->key.c_str();
@@ -291,6 +292,7 @@ void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValu
         assert(false);
         return;
     }
+    SQINFO("SamplerSchema::compile 295");
 
     const OpcodeType type = typeIter->second;
 
@@ -306,6 +308,17 @@ void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValu
             vp->numericInt = foo.second;
         } break;
         case OpcodeType::Float:
+        {
+            float floatValue = 0;
+            bool floatOK = stringToFloat(input->value.c_str(), &floatValue);
+            if (!floatOK) {
+                 SQWARN("could not convert %s to float. key=%s", input->value.c_str(), input->key.c_str());
+                err.sawMalformedInput = true;
+                return;
+            }
+            vp->numericFloat = floatValue;
+        }
+#if 0
             try {
                 float x = std::stof(input->value);
                 vp->numericFloat = x;
@@ -315,6 +328,7 @@ void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValu
                 err.sawMalformedInput = true;
                 return;
             }
+    #endif
             break;
         case OpcodeType::String:
             vp->string = input->value;
