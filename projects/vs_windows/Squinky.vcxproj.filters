@@ -142,9 +142,6 @@
     <Filter Include="Header Files\dsp\third-party\pugixml">
       <UniqueIdentifier>{7573ade3-6b63-4b11-a7dd-3d8424e0cd5e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\dsp\third-party\pugixml">
-      <UniqueIdentifier>{2a9ebd66-c0b0-4217-9705-dd4e6da37f72}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\dsp\samp">
       <UniqueIdentifier>{1419667e-a14e-4d18-bcdb-6cfcac686f3b}</UniqueIdentifier>
     </Filter>
@@ -635,9 +632,6 @@
     </ClCompile>
     <ClCompile Include="..\..\test\testx.cpp">
       <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\dsp\third-party\pugixml\pugixml.cpp">
-      <Filter>Source Files\dsp\third-party\pugixml</Filter>
     </ClCompile>
     <ClCompile Include="..\..\dsp\samp\SLex.cpp">
       <Filter>Source Files\dsp\samp</Filter>

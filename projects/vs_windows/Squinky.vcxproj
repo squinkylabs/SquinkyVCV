@@ -59,7 +59,6 @@
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiEventList.cpp" />
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiFile.cpp" />
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiMessage.cpp" />
-    <ClCompile Include="..\..\dsp\third-party\pugixml\pugixml.cpp" />
     <ClCompile Include="..\..\dsp\third-party\src\minblep.cpp" />
     <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />

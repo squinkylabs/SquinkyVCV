@@ -9,8 +9,9 @@
 #include "SParse.h"
 #include "SqLog.h"
 #include "asserts.h"
-#include "pugixml.hpp"
+//#include "pugixml.hpp"
 
+#if 0
 static void testx0() {
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file("fale_path.xml");
@@ -18,6 +19,7 @@ static void testx0() {
     int x = 5;
     assertEQ(status, pugi::xml_parse_status::status_file_not_found);
 }
+#endif
 
 static void testx1() {
     SLexPtr lex = SLex::go("<global>");
@@ -661,7 +663,7 @@ void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
 
-    testx0();
+    //testx0();
     testx1();
     testx2();
     testx3();
