@@ -4,7 +4,7 @@ The main manual listed a couple of good SFZ Instruments that work well with SFZ 
 
 ## Curated lists of good SFZ
 
-This list of good SFZ instruments has been around for a while. We haven't tried all of them, but the ones we have tried worked will and were good: https://www.laptopmusician.net/2019/06/the-ultimate-free-sfz-instruments-list.html
+This list of good SFZ instruments has been around for a while. We haven't tried all of them, but the ones we have tried worked well and sounded good: https://www.laptopmusician.net/2019/06/the-ultimate-free-sfz-instruments-list.html
 
 The Sfz format site has a list of free SFZ. We haven't tried them, but it seems like a good list: https://sfzinstruments.github.io
 
