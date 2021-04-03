@@ -220,7 +220,7 @@ std::pair<bool, int> SamplerSchema::convertToInt(SamplerErrorContext& err, const
 #endif
 }
 
-#if 0 // old versions with exceptions
+#if 0  // old versions with exceptions
 bool SamplerSchema::stringToFloat(const char* s, float* outValue) {
     if (!outValue) {
         return false;
@@ -255,12 +255,12 @@ bool SamplerSchema::stringToInt(const char* s, int* outValue) {
         return false;
     }
     char* end = nullptr;
-    long ll =   std::strtol(s, &end, 10);
+    long ll = std::strtol(s, &end, 10);
     *outValue = ll;
-   
+
     // to be like the old std::stoi,
     // we want it to be an error if we don't match any
-    return end > s;    
+    return end > s;
 }
 
 bool SamplerSchema::stringToFloat(const char* s, float* outValue) {
@@ -278,7 +278,6 @@ bool SamplerSchema::stringToFloat(const char* s, float* outValue) {
 #endif
 
 void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
-    SQINFO("SamplerSchema::compile 281");
     Opcode opcode = translate(input->key, true);
     if (opcode == Opcode::NONE) {
         //  std::string e = std::string("could not translate opcode ") + input->key.c_str();
@@ -292,7 +291,6 @@ void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValu
         assert(false);
         return;
     }
-    SQINFO("SamplerSchema::compile 295");
 
     const OpcodeType type = typeIter->second;
 
@@ -307,29 +305,18 @@ void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValu
             }
             vp->numericInt = foo.second;
         } break;
-        case OpcodeType::Float:
-        {
+        case OpcodeType::Float: {
             float floatValue = 0;
             bool floatOK = stringToFloat(input->value.c_str(), &floatValue);
             if (!floatOK) {
-                 SQWARN("could not convert %s to float. key=%s", input->value.c_str(), input->key.c_str());
+                SQWARN("could not convert %s to float. key=%s", input->value.c_str(), input->key.c_str());
                 err.sawMalformedInput = true;
                 return;
             }
             vp->numericFloat = floatValue;
         }
-#if 0
-            try {
-                float x = std::stof(input->value);
-                vp->numericFloat = x;
-            } catch (std::exception&) {
-                isValid = false;
-                SQWARN("could not convert %s to float. key=%s", input->value.c_str(), input->key.c_str());
-                err.sawMalformedInput = true;
-                return;
-            }
-    #endif
-            break;
+
+        break;
         case OpcodeType::String:
             vp->string = input->value;
             break;
