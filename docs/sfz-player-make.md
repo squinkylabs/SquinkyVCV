@@ -57,4 +57,4 @@ pitch_keycenter=a4
 
 Below is a screen-shot of the sample SFZ from above, as seen in Visual Studio Code. Note that in one place we intentionally misspelled "region", and the plugin can spot this error and highlight it read. The plugin is *vscode-sfz* by Arne Jokela.
 
-![VS Code  image](./vscode.png){width=50%}
+![VS Code  image](./vscode.png | width=200)
