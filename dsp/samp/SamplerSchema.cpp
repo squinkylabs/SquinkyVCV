@@ -95,8 +95,7 @@ static std::map<std::string, DiscreteValue> discreteValues = {
     {"release", DiscreteValue::RELEASE},
     {"first", DiscreteValue::RELEASE},
     {"legato", DiscreteValue::RELEASE},
-    {"release_key", DiscreteValue::RELEASE}
-};
+    {"release_key", DiscreteValue::RELEASE}};
 
 DiscreteValue SamplerSchema::translated(const std::string& s) {
     auto it = discreteValues.find(s);
@@ -185,7 +184,24 @@ std::pair<bool, int> SamplerSchema::convertToInt(SamplerErrorContext& err, const
         s = s.substr(1);
     }
 
-    try {
+    int x = 0;
+    bool b = stringToInt(s.c_str(), &x);
+    if (!b) {
+        err.sawMalformedInput = true;
+        return std::make_pair(false, 0);
+    }
+
+    if (noteName >= 0) {
+        x *= 12;               // number part is octave in this form
+        x += (12 + noteName);  // 12 is c0 in midi
+
+        if (sharp) {
+            x += 1;
+        }
+    }
+
+    return std::make_pair(true, x);
+#if 0
         int x = std::stoi(s);
         if (noteName >= 0) {
             x *= 12;               // number part is octave in this form
@@ -201,7 +217,65 @@ std::pair<bool, int> SamplerSchema::convertToInt(SamplerErrorContext& err, const
         err.sawMalformedInput = true;
         return std::make_pair(false, 0);
     }
+#endif
 }
+
+#if 0 // old versions with exceptions
+bool SamplerSchema::stringToFloat(const char* s, float* outValue) {
+    if (!outValue) {
+        return false;
+    }
+    try {
+        float x = std::stof(s);
+        *outValue = x;
+        return true;
+    }
+    catch (std::exception&) {
+        *outValue = 0;
+        return false;
+    }
+}
+
+bool SamplerSchema::stringToInt(const char* s, int* outValue) {
+    if (!outValue) {
+        return false;
+    }
+    try {
+        int x = std::stoi(s);
+        *outValue = x;
+        return true;
+    } catch (std::exception&) {
+        *outValue = 0;
+        return false;
+    }
+}
+#else
+bool SamplerSchema::stringToInt(const char* s, int* outValue) {
+    if (!outValue) {
+        return false;
+    }
+    char* end = nullptr;
+    long ll =   std::strtol(s, &end, 10);
+    *outValue = ll;
+   
+    // to be like the old std::stoi,
+    // we want it to be an error if we don't match any
+    return end > s;    
+}
+
+bool SamplerSchema::stringToFloat(const char* s, float* outValue) {
+    if (!outValue) {
+        return false;
+    }
+    char* end = nullptr;
+    float f = std::strtof(s, &end);
+    *outValue = f;
+
+    // to be like the old std::stoi,
+    // we want it to be an error if we don't match any
+    return end > s;
+}
+#endif
 
 void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
     Opcode opcode = translate(input->key, true);
@@ -247,12 +321,12 @@ void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValu
             break;
         case OpcodeType::Discrete: {
             const DiscreteValue dv = translated(input->value);
-            if (dv ==  DiscreteValue::NONE) {
+            if (dv == DiscreteValue::NONE) {
                 SQINFO("malformed discrete kb = %s, %s", input->key.c_str(), input->value.c_str());
                 err.sawMalformedInput = true;
                 return;
             }
- 
+
             vp->discrete = dv;
         } break;
         default:

@@ -640,21 +640,13 @@ static void testMalformedKey() {
 void SampWidget::debug() {
     SQINFO("start debug");
     const char* input = "12345";
-    try {
-        float x = std::stof(input);
-        printf("converted to %f\n", x);
-    } catch (std::exception&) {
-        WARN("excpetion converting float");
-    }
+    int intValue;
+    SamplerSchema::stringToInt(input, &intValue);
+
 
     input = "abc";
-    try {
-        float x = std::stof(input);
-        printf("converted abc to %f\n", x);
-    } catch (std::exception&) {
-        WARN("excpetion converting bad float float");
-    }
-
+    float floatValue;
+    SamplerSchema::stringToFloat(input, &floatValue);
     testMalformedRelease();
     testMalformedKey();
     SQINFO("test finished");

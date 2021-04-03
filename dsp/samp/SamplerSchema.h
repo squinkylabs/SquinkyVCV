@@ -126,6 +126,9 @@ public:
     static std::vector<std::string> _getKnownTextOpcodes();
     static std::vector<std::string> _getKnownNonTextOpcodes();
 
+    static bool stringToFloat(const char* s, float * outValue);
+    static bool stringToInt(const char* s, int * outValue);
+
 private:
     static std::pair<bool, int> convertToInt(SamplerErrorContext& err, const std::string& s);
     static void compile(SamplerErrorContext&, KeysAndValuesPtr results, SKeyValuePairPtr input);

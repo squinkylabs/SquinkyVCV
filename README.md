@@ -20,6 +20,7 @@ Beta testing by:
 * [Norbert Denninger](https://www.youtube.com/c/Wavesunlimited)
 * [Artem Leonov](https://www.youtube.com/vcvrackideas)
 * [Dave Phillips](https://www.youtube.com/channel/UC4Kw67XwyKACygelcd-D2-g)
+* [soxa](https://soxsa.bandcamp.com)
 * [Espen Storø](https://www.youtube.com/user/espenstoro)
 * Joop van der Linden
 

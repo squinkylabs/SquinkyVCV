@@ -99,7 +99,7 @@ If two kitchen-sinks are next to each other, the one on the right will have a ne
 
 **ADSR->shape switch**  will apply the ADSR to the Shape knob.
 
-**Snap switch** controls the amount of "snap" in the ADSR. Snap mimics the shape of the Mood envelope generators. settings are 0 for no snap (normal adsr) 1 for a bit of snap, and 2 for more snap. See text above for more on snap.
+**Snap switch** controls the amount of "snap" in the ADSR. Snap mimics the shape of the Moog envelope generators. settings are 0 for no snap (normal adsr) 1 for a bit of snap, and 2 for more snap. See text above for more on snap.
 
 **A, D, S, R knobs** control the Attack, Decay, Sustain, and Release of the internal ADSR.
 
