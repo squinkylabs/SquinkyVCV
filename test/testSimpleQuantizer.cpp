@@ -81,164 +81,96 @@ static  void testSimpleQuantizerOff()
     assertEQ(q->quantize(9.999f), 9.999f);
 }
 
+static float getFreq(float cv) {
+    return float(261.63 * std::pow(2.0, cv));
+}
 
-static void testSimpleQuantizer12J(float evenPitch)
+static void testSimpleQuantizer12J()
 {
     std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Just };
     SimpleQuantizer* p = new SimpleQuantizer(scales,
         SimpleQuantizer::Scales::_12Just);
     auto q = std::shared_ptr<SimpleQuantizer>(p);
-    assertClose(q->quantize(evenPitch), evenPitch, .0001);
+
+    float x = q->quantize(0 * PitchUtils::semitone);
+    assertClose(getFreq(x), 261.63f, .001);
+
+    x = q->quantize(1 * PitchUtils::semitone);
+    assertClose(getFreq(x), 279.07f, .01);
+
+    x = q->quantize(2 * PitchUtils::semitone);
+    assertClose(getFreq(x), 294.33f, .01);
+
+    x = q->quantize(3 * PitchUtils::semitone);
+    assertClose(getFreq(x), 313.96f, .01);
+
+    x = q->quantize(4 * PitchUtils::semitone);
+    assertClose(getFreq(x), 327.03f, .01);
+
+    x = q->quantize(5 * PitchUtils::semitone);
+    assertClose(getFreq(x), 348.83f, .02);
+
+    x = q->quantize(6 * PitchUtils::semitone);
+    assertClose(getFreq(x), 367.92f, .01);
+
+    x = q->quantize(7 * PitchUtils::semitone);
+    assertClose(getFreq(x), 392.44f, .01);
+
+    x = q->quantize(8 * PitchUtils::semitone);
+    assertClose(getFreq(x), 418.60f, .01);
+
+    x = q->quantize(9 * PitchUtils::semitone);
+    assertClose(getFreq(x), 436.05f, .01);
+
+    x = q->quantize(10 * PitchUtils::semitone);
+    assertClose(getFreq(x), 470.93f, .01);
+
+    x = q->quantize(11 * PitchUtils::semitone);
+    assertClose(getFreq(x), 490.55f, .01);
+
+    x = q->quantize(12 * PitchUtils::semitone);
+    assertClose(getFreq(x), 523.25f, .02);
 }
 
-static void testSimpleQuantizer12J()
-{
-    testSimpleQuantizer12J(0);
-    testSimpleQuantizer12J(-1 + 16.f/15);
-    testSimpleQuantizer12J(-1 + 9.f/8);
-    testSimpleQuantizer12J(-1 + 6.f/5);
-    testSimpleQuantizer12J(-1 + 5.f/4);
-    testSimpleQuantizer12J(-1 + 4.f/3);
-    testSimpleQuantizer12J(-1 + 45.f/32);
-    testSimpleQuantizer12J(-1 + 3.f/2);
-    testSimpleQuantizer12J(-1 + 8.f / 5);
-    testSimpleQuantizer12J(-1 + 5.f/3);
-    testSimpleQuantizer12J(-1 + 9.f/5);
-    testSimpleQuantizer12J(-1 + 15.f/8);
-    testSimpleQuantizer12J(1);
-}
-
-static void testSimpleQuantizer8J(float evenPitch)
+static void testSimpleQuantizer8J()
 {
     std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_8Just };
     SimpleQuantizer* p = new SimpleQuantizer(scales,
         SimpleQuantizer::Scales::_8Just);
     auto q = std::shared_ptr<SimpleQuantizer>(p);
-    assertClose(q->quantize(evenPitch), evenPitch, .0001);
+
+    // C
+    float x = q->quantize(0 * PitchUtils::semitone);
+    assertClose(getFreq(x), 261.63f, .001);
+
+    // D
+    x = q->quantize(2 * PitchUtils::semitone);
+    assertClose(getFreq(x), 294.33f, .01);
+
+    // E
+    x = q->quantize(4 * PitchUtils::semitone);
+    assertClose(getFreq(x), 327.03f, .01);
+
+    // F
+    x = q->quantize(5 * PitchUtils::semitone);
+    assertClose(getFreq(x), 348.83f, .02);
+
+    // G
+    x = q->quantize(7 * PitchUtils::semitone);
+    assertClose(getFreq(x), 392.44f, .01);
+
+    // A
+    x = q->quantize(9 * PitchUtils::semitone);
+    assertClose(getFreq(x), 436.05f, .01);
+
+    // B
+    x = q->quantize(11 * PitchUtils::semitone);
+    assertClose(getFreq(x), 490.55f, .01);
+
+    // C
+    x = q->quantize(12 * PitchUtils::semitone);
+    assertClose(getFreq(x), 523.25f, .02);
 }
-
-static void testSimpleQuantizer8J()
-{
-    testSimpleQuantizer8J(0);
-    testSimpleQuantizer8J(-1 + 9.f/8);
-    testSimpleQuantizer8J(-1 + 5.f/4);
-    testSimpleQuantizer8J(-1 + 4.f/ 3);
-    testSimpleQuantizer8J(-1 + 3.f/2);
-    testSimpleQuantizer8J(-1 + 5.f/3);
-    testSimpleQuantizer8J(-1 + 15.f/8);
-    testSimpleQuantizer8J(1);
-}
-
-static void testSimpleQuantizer12J_steps() {
-    std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Just };
-    SimpleQuantizer* p = new SimpleQuantizer(scales,
-        SimpleQuantizer::Scales::_12Just);
-    auto q = std::shared_ptr<SimpleQuantizer>(p);
-
-    float margin = .0001f;
-    float eq = 0;
-    float just = 0;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 1;
-    just = -1 + 16.f/15;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 2;
-    just = -1 + 9.f/8;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 3;
-    just = -1 + 6.f/5;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 4;
-    just = -1 + 5.f / 4;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 5;
-    just = -1 + 4.f / 3;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 6;
-    just = -1 + 45.f / 32;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 7;
-    just = -1 + 3.f / 2;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 8;
-    just = -1 + 8.f / 5;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 9;
-    just = -1 + 5.f / 3;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 10;
-    just = -1 + 9.f / 5;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 11;
-    just = -1 + 15.f / 8;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    eq = PitchUtils::semitone * 12;
-    just = 1;
-    SQINFO("compare eq=%d just=%f", eq, just);
-    assertClose(q->quantize(eq), just, margin);
-
-    assert(false);
-}
-/*
- testSimpleQuantizer12J(0);
-    testSimpleQuantizer12J(-1 + 16.f/15);
-    testSimpleQuantizer12J(-1 + 9.f/8);
-    testSimpleQuantizer12J(-1 + 6.f/5); 3
-    testSimpleQuantizer12J(-1 + 5.f/4); 4
-    testSimpleQuantizer12J(-1 + 4.f/3)   5
-    testSimpleQuantizer12J(-1 + 45.f/32); 6 
-    testSimpleQuantizer12J(-1 + 3.f/2);   7
-    testSimpleQuantizer12J(-1 + 8.f / 5);  8
-    testSimpleQuantizer12J(-1 + 5.f/3);  9
-    testSimpleQuantizer12J(-1 + 9.f/5);  10
-    testSimpleQuantizer12J(-1 + 15.f/8);  11
-    testSimpleQuantizer12J(1);      12
-
-    */
-
-
-#if 1
-static void testSimpleQuantizer12J_stepsb() {
-    std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Just };
-    SimpleQuantizer* p = new SimpleQuantizer(scales,
-        SimpleQuantizer::Scales::_12Just);
-    auto q = std::shared_ptr<SimpleQuantizer>(p);
-
-    for (int i = 0; i < 4 * 12; ++i) {
-        float vIn = i * PitchUtils::semitone * .25f;
-        float vOut = q->quantize(vIn);
-
-        int semi = i / 4;
-        int frac =  i % 4;
-        SQINFO("semi[%d:%d] gives %f", semi, frac, vOut);
-    }
-
-}
-#endif
 
 void testSimpleQuantizer()
 {
@@ -248,8 +180,4 @@ void testSimpleQuantizer()
     testSimpleQuantizerOff();
     testSimpleQuantizer8J();
     testSimpleQuantizer12J();
-
-    //testSimpleQuantizer12J_stepsb();
-    //testSimpleQuantizer12J_steps();
-
 }

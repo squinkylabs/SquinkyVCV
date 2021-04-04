@@ -134,6 +134,7 @@ struct SampWidget : ModuleWidget {
             sfile->text = "Load Sample file";
             theMenu->addChild(sfile);
         }
+#if 0 // debug menu for build toolchain issue
         {
             SqMenuItem* test = new SqMenuItem(
                 []() { return false; },
@@ -141,6 +142,7 @@ struct SampWidget : ModuleWidget {
             test->text = "Debug Test";
             theMenu->addChild(test);
         }
+#endif
 #if 0  // add the root folder
         {
             SqMenuItem* spath = new SqMenuItem(
