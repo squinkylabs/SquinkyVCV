@@ -26,28 +26,28 @@ SimpleQuantizer::SimpleQuantizer(std::vector<SimpleQuantizer::Scales>& scales, S
     pitches_8even.insert(12 * s);        // C2
 
     //
-    pitches_8just.insert(0);                                            // c
-    pitches_8just.insert(float(std::log(9.f/8 ) / std::log(2.0)));      // d
-    pitches_8just.insert(float(std::log(5.f /4 ) / std::log(2.0)));     // e
-    pitches_8just.insert(float(std::log(4.f /3 ) / std::log(2.0)));     // f
-    pitches_8just.insert(float(std::log(3.f /2 ) / std::log(2.0)));     // g
-    pitches_8just.insert(float(std::log(5.f /3 ) / std::log(2.0)));     // a
-    pitches_8just.insert(float(std::log(15.f /8 ) / std::log(2.0)));    // b
-    pitches_8just.insert(float(std::log(2.f/1 ) / std::log(2.0)));      // c
+    pitches_8just.insert(0);                           // c
+    pitches_8just.insert(float(std::log2(9.0/8)));     // d
+    pitches_8just.insert(float(std::log2(5.0/4)));     // e
+    pitches_8just.insert(float(std::log2(4.0/3)));     // f
+    pitches_8just.insert(float(std::log2(3.0/2)));     // g
+    pitches_8just.insert(float(std::log2(5.0/3)));     // a
+    pitches_8just.insert(float(std::log2(15.0/8)));    // b
+    pitches_8just.insert(float(std::log2(2.0/1)));     // c
 
-    pitches_12just.insert(0);                                               // c
-    pitches_12just.insert(float(std::log(16.0 / 15.0) / std::log(2.0)));           
-    pitches_12just.insert(float(std::log(9.f / 8) / std::log(2.0)));        // d
-    pitches_12just.insert(float(std::log(6.f / 5) / std::log(2.0)));             
-    pitches_12just.insert(float(std::log(5.f / 4) / std::log(2.0)));        // e
-    pitches_12just.insert(float(std::log(4.f / 3) / std::log(2.0)));        // f
-    pitches_12just.insert(float(std::log(45.f / 32) / std::log(2.0)));     
-    pitches_12just.insert(float(std::log(3.f / 2) / std::log(2.0)));        // g
-    pitches_12just.insert(float(std::log(8.f / 5) / std::log(2.0)));    
-    pitches_12just.insert(float(std::log(5.f / 3) / std::log(2.0)));        // a
-    pitches_12just.insert(float(std::log(9.f / 5) / std::log(2.0)));  
-    pitches_12just.insert(float(std::log(15.f / 8) / std::log(2.0)));       // b
-    pitches_12just.insert(float(std::log(2.f / 1) / std::log(2.0)));        // c
+    pitches_12just.insert(0);                              // c
+    pitches_12just.insert(float(std::log2(16.0/15.0)));           
+    pitches_12just.insert(float(std::log2(9.0/8)));        // d
+    pitches_12just.insert(float(std::log2(6.0/5)));             
+    pitches_12just.insert(float(std::log2(5.0/4)));        // e
+    pitches_12just.insert(float(std::log2(4.0/3)));        // f
+    pitches_12just.insert(float(std::log2(45.0/32)));     
+    pitches_12just.insert(float(std::log2(3.0/2)));        // g
+    pitches_12just.insert(float(std::log2(8.0/5)));    
+    pitches_12just.insert(float(std::log2(5.0/3)));        // a
+    pitches_12just.insert(float(std::log2(9.0/5)));  
+    pitches_12just.insert(float(std::log2(15.0/8)));       // b
+    pitches_12just.insert(float(std::log2(2.0/1)));        // c
 
     setScale(scale);
 
