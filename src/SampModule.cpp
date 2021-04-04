@@ -157,6 +157,7 @@ struct SampWidget : ModuleWidget {
     void step() override;
     void debug();
 
+#ifdef _LAB
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK) {
         Label* label = new Label();
         label->box.pos = v;
@@ -165,6 +166,7 @@ struct SampWidget : ModuleWidget {
         addChild(label);
         return label;
     }
+#endif
     void loadSamplerFile();
     void getRootFolder();
     void addJacks(SampModule* module, std::shared_ptr<IComposite> icomp);
@@ -361,7 +363,7 @@ void SampWidget::buildKeyswitchUI() {
             Vec(leftSide, keyswitchy),
             _module,
             Comp::DUMMYKS_PARAM);
-        keyswitchPopup->box.size.x = 160;  // width
+        keyswitchPopup->box.size.x = 220;  // width
         keyswitchPopup->box.size.y = 22;   // should set auto like button does
                                            // keyswitchPopup->text = "noise";    // TODO: do we still need this?
 
@@ -456,67 +458,77 @@ void SampWidget::getRootFolder() {
 const float dx = 38;
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
-    float jacksY = 323;
+    float jacksY = 319;
     float jacksY0 = jacksY - 50;
-    float jacksX = 15;
+    float jacksX = 16;
   //  float jacksDx = 40;
     float labelY = jacksY - 25;
     float labelY0 = jacksY0 - 25;
+#ifdef _LAB
     addLabel(
         Vec(jacksX + 5 * dx - 5, labelY),
         "Out");
+#endif
     addOutput(createOutput<PJ301MPort>(
-        Vec(jacksX + 5 * dx, jacksY),
+        Vec(200, jacksY),
         module,
         Comp::AUDIO_OUTPUT));
 
+#ifdef _LAB
     addLabel(
         Vec(jacksX + 0 * dx - 10, labelY),
         "V/Oct");
+#endif
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 0 * dx, jacksY),
+        Vec(jacksX, 320),
         module,
         Comp::PITCH_INPUT));
-
+#ifdef _LAB
     addLabel(
         Vec(jacksX + 1 * dx - 10, labelY),
         "Gate");
+#endif
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 1 * dx, jacksY),
+        Vec(jacksX , 270),
         module,
         Comp::GATE_INPUT));
-
+#ifdef _LAB
     addLabel(
         Vec(jacksX + 2 * dx - 6, labelY),
         "Vel");
+#endif
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 2 * dx, jacksY),
+        Vec(jacksX , 220),
         module,
         Comp::VELOCITY_INPUT));
 
     //    FM_INPUT,
-
+#ifdef _LAB
     addLabel(
         Vec(jacksX + 3 * dx - 6, labelY),
         "FM");
+#endif
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 3 * dx, jacksY),
+        Vec(83, jacksY),
         module,
         Comp::FM_INPUT));
     //  LFM_INPUT
+#ifdef _LAB
     addLabel(
         Vec(jacksX + 4 * dx - 6, labelY),
         "LFM");
+#endif
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 4 * dx, jacksY),
+        Vec(133, jacksY),
         module,
         Comp::LFM_INPUT));
-
+#ifdef _LAB
     addLabel(
         Vec(jacksX + 4 * dx - 6, labelY0),
         "Dpth");
+#endif
     addInput(createInput<PJ301MPort>(
-        Vec(jacksX + 4 * dx, jacksY0),
+        Vec(133, 270),
         module,
         Comp::LFMDEPTH_INPUT));
 }
@@ -530,36 +542,40 @@ void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp)
 
     float knobsY2 = knobsY + 40;
 
+#ifdef _LAB
     addLabel(
         Vec(knobsX - 6 - dx, labelY),
         "Vol");
+#endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(knobsX - dx, knobsY),
+        Vec(196, 219),
         module,
         Comp::VOLUME_PARAM));
-
+#ifdef _LAB
     addLabel(
         Vec(knobsX - 6, labelY),
         "Pitch");
+#endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(knobsX, knobsY),
+        Vec(80, 219),
         module,
         Comp::PITCH_PARAM));
-
+#ifdef _LAB
     addLabel(
         Vec(knobsX - 6 + 1 * dx, labelY),
         "Depth");
+#endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(knobsX + 1 * dx, knobsY),
+        Vec(130, 219),
         module,
         Comp::LFM_DEPTH_PARAM));
 
-    addParam(SqHelper::createParam<Trimpot>(
+    addParam(SqHelper::createParam<SqTrimpot24>(
         icomp,
-        Vec(knobsX + 6 + +0 * dx, knobsY2),
+        Vec(83, 270),
         module,
         Comp::PITCH_TRIM_PARAM));
 }
@@ -575,8 +591,9 @@ SampWidget::SampWidget(SampModule* module) {
     _module = module;
     SqHelper::setPanel(this, "res/samp_panel.svg");
 
+#ifdef _LAB
     addLabel(Vec(80, 10), "SFZ Player");
-
+#endif
     textField = createWidget<TextDisplaySamp>(mm2px(Vec(3.39962, 14.8373)));
     textField->box.size = Vec(220, 100);
     addChild(textField);
