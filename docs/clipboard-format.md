@@ -116,3 +116,5 @@ json_t* Note::toInteropJson()
 **Impromptu Modular:** ChordKey, Foundry, FourView, PhraseSeq16/32, SMS16, and BigButtonSeq2.
 
 **SquinkyLabs:** Seq++.
+
+**Slime Child Audio:** Substation PolySequencer
