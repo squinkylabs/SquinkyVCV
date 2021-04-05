@@ -2,25 +2,25 @@
 
 ## What the player does
 
-It is a VCV module that can load an SFZ instrument, and convert CV and Gate into sounds. You can think of is as a sampler like Kontakt (from NI), only more stripped down. And free.
+It is a VCV module that can load an SFZ instrument and convert CV and Gate into sounds. You can think of is as a sampler like Kontakt (from NI), only more stripped down. And free.
 
 It is fully polyphonic, uses very little CPU, and sounds very good.
 
-In addition to the basic CV and Gate, the player has velocity and pitch modulation inputs. And a fairly unique LFM input that lets you do linear, through zero FM using the samples as the carrier.
+In addition to the basic CV and Gate, the player has velocity and pitch modulation inputs. It also has a fairly unique LFM input that lets you do linear, through zero FM using the samples as the carrier.
 
 ## What are SFZ instruments
 
-SFZ Instruments, for the uninitiated, are sample libraries. They are usually free or inexpensive. There are many, many excellent libraries out there for download. Plenty of great sounding pianos, drum kits, orchestral instruments, and on to crazy things.
+SFZ Instruments, for the uninitiated, are sample libraries. They are usually free or inexpensive. There are many excellent libraries out there to download that have plenty of great sounding pianos, drum kits, orchestral instruments, and on to crazy things.
 
 Because SFZ files are simple text files, and the SFZ format is well documented, it is also easy to make your own SFZ instruments. All you need are some sample files and a text editor.
 
 ## Using the player
 
-You must patch something to the V/Oct input and the Gate input, otherwise you won't get any sound. A typical minimal starting patch would use VCV MIDI-CV, SFZ player and an audio output module. Patch the V/OCT, GATE, and VEL outputs from the MIDI-CV to SFZ Player. Patch the output of SFZ player to the audio output. Select a convenient keyboard from MIDI-CV, and set the polyphony to 4 (or whatever you like).
+You must patch something to the V/Oct input and the Gate input, otherwise you won't get any sound. A typical minimal starting patch would use VCV MIDI-CV, SFZ player and an audio output module. Patch the V/OCT, GATE, and VEL outputs from the MIDI-CV to SFZ Player. Patch the output of SFZ player to the audio output. Select a convenient keyboard from the MIDI-CV module, and set the polyphony to 4 (or whatever you like).
 
-You must also load an SFZ instrument. See the section below on where to get one, if you do not already have any. Bring up the context menu by right clicking on the SFZ Player, and select "Load sample file". You should see the main display at the top begin to load files. This can be instantaneous to tens of seconds, depending on how large the sample library is. When everything loads correctly the display will show you the name of the SFZ Instrument, and the range of pitches over which it responds.
+You must also load an SFZ instrument. See the section below on where to get one, if you do not already have any. Bring up the context menu by right clicking on the SFZ Player and select "Load sample file". You should see the main display at the top begin to load files. This can be instantaneous to tens of seconds, depending on how large the sample library is. When everything loads correctly the display will show you the name of the SFZ Instrument, and the range of pitches over which it responds.
 
-At this you point would be able to play on the keyboard and have it respond like a typical sampler. If something goes wrong, there will be an error message in the main display.
+At this point you would be able to play on the keyboard and have it respond like a typical sampler. If something goes wrong, there will be an error message in the main display.
 
 CV Inputs:
 
@@ -34,7 +34,7 @@ CV Inputs:
 
 * LFM. A true "through zero" linear FM. This allows unusual effects where the sample is the "carrier" and the signal on the LFM input is the "modulator". This signal is usually an audio rate signal. It can be considered bipolar, but since (like everyone else) we use phase modulation rather than frequency modulation it doesn't really matter - any DC on the input will not be audible.
 
-* Depth. An optional CV that controls the depth of the LFM. Think of it as an optional VCA on the LFM input. A typical use would be to route in an ADRS to control the amount of FM. This signal is unipolar. 0V is off, and +10 V is fully on. When nothing is plugged in it is as if 10 volts were applied - no change.
+* Depth. An optional CV that controls the depth of the LFM. Think of it as an optional VCA on the LFM input. A typical use would be to route in an ADSR to control the amount of FM. This signal is unipolar. 0V is off, and +10 V is fully on. When nothing is plugged in it is as if 10 volts were applied - no change.
 
 Controls:
 
@@ -48,7 +48,7 @@ Controls:
 
 ## Where to find SFZ
 
-You will need to download some SFZ instrument to get any sound. There are many our there - here are just a few of them. The following are popular and work well with SFZ player. All are free.
+You will need to download some SFZ instrument to get any sound. There are many out there - here are just a few of them. The following are popular and work well with SFZ player. All are free.
 
 **Versilian Studios**: https://vis.versilstudios.com/index.html
 Many free SFZ and many reasonably prices ones. They have two must have collections:
@@ -70,11 +70,11 @@ With just the two Versilian collections you will have huge number of sampled ins
 
 The SFZ specification is huge, and really designed for implementing a super high end sampled instrument. For a variety of reasons, this player does not implement the full SFZ specification, but only a subset of it.
 
-The result for the user is that any given SFZ instrument may play perfectly, or may play poorly or not at all. So it’s going to be a matter of trial and error. Often the instrument will play just fine. Sometimes not. Unless you are in incurable tinkerer, there isn’t much you can do if an instrument doesn’t play correctly in our player. Time to move on and try an alternative.
+The result for the user is that any given SFZ instrument may play perfectly, poorly or not at all. So, it’s going to be a matter of trial and error. Often the instrument will play just fine. Sometimes not. Unless you are in incurable tinkerer, there isn’t much you can do if an instrument doesn’t play correctly in our player. Time to move on and try an alternative.
 
 ## RAM usage
 
-Like most VCV samplers, this module loads all of the sample data into RAM. But It is not uncommon for an SFZ file to have a gigabyte or more of sample data. When we load up the sample data, we convert it to mono, and convert it to 32-bit floating point format. Since many SFZ use 24 bit data and are stereo, this means that the amount or memory used is roughly in the ballpark of the total size of all the samples. So use your operating system to find out how big all that data is. If you try to load a patch whose data is larger than the total amount or RAM in your computer, something bad will happen. VCV might become very slow and laggy, audio might drop out. It may even make VCV unresponsive. If that happens, force quit.
+Like most VCV samplers, this module loads all of the sample data into RAM. But It is not uncommon for an SFZ file to have a gigabyte or more of sample data. When we load up the sample data, we convert it to mono, and convert it to 32-bit floating point format. Since many SFZ use 24 bit data and are stereo, this means that the amount or memory used is roughly in the ballpark of the total size of all the samples. So, use your operating system to find out how big all that data is. If you try to load a patch whose data is larger than the total amount or RAM in your computer, something bad will happen. VCV might become very slow and laggy, and audio might drop out. It may even make VCV unresponsive. If that happens, force quit.
 
 ## Links
 
