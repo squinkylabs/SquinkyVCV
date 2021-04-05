@@ -267,10 +267,10 @@
 		{
 			"slug": "squinkylabs-samp",
 			"name": "Samp",
-			"description": "x",
+			"description": "Sampler that loads standard SFZ files.",
 			"disabled": false,
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/samp.md",
-			"tags": ["Polyphonic"]
+			"tags": ["Polyphonic", "Sampler", "Synth Voice"]
 		},
 		{
 			"slug": "squinkylabs-comp2",
