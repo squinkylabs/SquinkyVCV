@@ -157,7 +157,7 @@ struct F2Widget : ModuleWidget {
 void F2Widget::appendContextMenu(Menu* theMenu) {
     MenuLabel* spacerLabel = new MenuLabel();
     theMenu->addChild(spacerLabel);
-    ManualMenuItem* manual = new ManualMenuItem("Basic VCF Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
+    ManualMenuItem* manual = new ManualMenuItem("F2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/apr/docs/f2.md");
     theMenu->addChild(manual);
 
     SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::CV_UPDATE_FREQ);
@@ -167,10 +167,8 @@ void F2Widget::appendContextMenu(Menu* theMenu) {
 
 void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
     const float knobX = 6;
-    // const float knobX2 = 45;
     const float knobDx = 39;
     const float knobY = 58;
-    const float knobY2 = 108;
     const float labelY = knobY - 20;
     const float dy = 50;
 
@@ -183,7 +181,7 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
         module, Comp::FC_PARAM));
 
     addLabel(
-        Vec(knobX + 1 * knobDx, labelY),
+        Vec(knobX + 1 * knobDx + 3, labelY),
         "Q");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -191,7 +189,7 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
         module, Comp::Q_PARAM));
 
     addLabel(
-        Vec(knobX + 2 * knobDx, labelY),
+        Vec(knobX + 2 * knobDx + 3, labelY),
         "R");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -199,7 +197,7 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
         module, Comp::R_PARAM));
 
     addLabel(
-        Vec(knobX + 2 * knobDx, labelY + 1 * dy),
+        Vec(knobX + 2 * knobDx - 3, labelY + 1 * dy),
         "Vol");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -213,19 +211,19 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
         Comp::FC_TRIM_PARAM));
 
     addLabel(
-        Vec(78, 244),
+        Vec(72, 244),
         "Limit");
     addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(88, 261),
+        Vec(90, 261),
         module, Comp::LIMITER_PARAM));
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(11, knobY + 2 * dy),
+        Vec(13, knobY + 2 * dy),
         module,
         Comp::MODE_PARAM);
-    p->box.size.x = 100;  // width
+    p->box.size.x = 97;  // width
     p->box.size.y = 22;
     p->text = "LP";
     p->setLabels({"LP", "BP", "HP", "N"});
@@ -233,10 +231,10 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
 
     p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(11, knobY + 3 * dy),
+        Vec(13, knobY + 3 * dy),
         module,
         Comp::TOPOLOGY_PARAM);
-    p->box.size.x = 100;  // width was 54
+    p->box.size.x = 97;  // width was 54
     p->box.size.y = 22;
     p->text = "12dB";
     p->setLabels({"12dB", "24dB", "Par", "Par -"});
@@ -261,7 +259,7 @@ void F2Widget::addJacks(F2Module* module, std::shared_ptr<IComposite> icomp) {
     const float dy = 45;
 
     addLabel(
-        Vec(jackX + jackDx - 3, labelY + 1 * dy),
+        Vec(jackX + jackDx - 2, labelY + 1 * dy),
         "Fc");
     addInput(createInput<PJ301MPort>(
         Vec(jackX + jackDx, jackY + 1 * dy),
@@ -269,7 +267,7 @@ void F2Widget::addJacks(F2Module* module, std::shared_ptr<IComposite> icomp) {
         Comp::FC_INPUT));
 
     addLabel(
-        Vec(jackX, labelY),
+        Vec(jackX + 1, labelY),
         "Q");
     addInput(createInput<PJ301MPort>(
         Vec(jackX, jackY),
@@ -277,7 +275,7 @@ void F2Widget::addJacks(F2Module* module, std::shared_ptr<IComposite> icomp) {
         Comp::Q_INPUT));
 
     addLabel(
-        Vec(jackX + jackDx, labelY),
+        Vec(jackX + jackDx + 1, labelY),
         "R");
     addInput(createInput<PJ301MPort>(
         Vec(jackX + jackDx, jackY),
@@ -310,6 +308,8 @@ void F2Widget::addJacks(F2Module* module, std::shared_ptr<IComposite> icomp) {
 F2Widget::F2Widget(F2Module* module) {
     setModule(module);
     SqHelper::setPanel(this, "res/f2-panel.svg");
+
+    addLabel(Vec(50, 10), "F2");
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);

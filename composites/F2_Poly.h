@@ -10,6 +10,7 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "Limiter.h"
+#include "ObjectCache.h"
 #include "SqLog.h"
 #include "SqMath.h"
 #include "SqPort.h"
@@ -187,6 +188,7 @@ private:
     StateVariableFilterState2<T> state2[4];
     Limiter limiter;
     StateVariableFilter2<T>::processFunction filterFunc = nullptr;
+    std::shared_ptr<LookupTableParams<float>> audioTaperLookupParams = ObjectCache<float>::getAudioTaper18();
     const int oversample = 4;
 
     float_4 outputGain_n = 0;
@@ -561,10 +563,10 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i) {
             ret = {0, 10, 5, "Fc"};
             break;
         case F2_Poly<TBase>::R_PARAM:
-            ret = {0, 10, 0, "R"};
+            ret = {0, 10, 0, "Spread (R)"};
             break;
         case F2_Poly<TBase>::Q_PARAM:
-            ret = {0, 10, 2, "Q"};
+            ret = {0, 10, 2, "Resonance (Q)"};
             break;
         case F2_Poly<TBase>::LIMITER_PARAM:
             ret = {0, 1, 1, "Limiter"};
