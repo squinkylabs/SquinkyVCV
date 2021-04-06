@@ -27,10 +27,13 @@ public:
     static const char* semi2name(int);
     static float quantizeToSemi(float cv);
 
+    // These aren't quantized right - sampler has correct version
     static float midiToCV(int midiNoteNumber);
     static int pitchCVToMidi(float pitch);
 
-
+    // where one semitone is twelfth root of two 
+    static float semitoneToFreqRatio(float);
+    static float freqRatioToSemitone(float);
 
     /*****************************************************************
      * Constants for the 12 pitches in a chromatic scale
@@ -205,4 +208,13 @@ inline bool PitchUtils::isC(float cv)
 {
     int semi = cvToPitch(cv).second;
     return semi == 0;
+}
+
+inline float PitchUtils::semitoneToFreqRatio(float seimitoneOffset) {
+    return std::pow(2.f, seimitoneOffset / 12.f);
+    
+}
+
+inline float PitchUtils::freqRatioToSemitone(float freqRatio) {
+    return 12.f * std::log2(freqRatio);
 }

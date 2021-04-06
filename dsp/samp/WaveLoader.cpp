@@ -8,8 +8,8 @@
 #include "SqLog.h"
 
 // Instantiate the dr_wav functions in this file
-#define DR_WAV_IMPLEMENTATION
-#include "dr_wav.h"
+//#define DR_WAV_IMPLEMENTATION
+//#include "dr_wav.h"
 
 void WaveLoader::clear() {
     finalInfo.clear();
@@ -26,40 +26,83 @@ WaveLoader::WaveInfoPtr WaveLoader::getInfo(int index) const {
 void WaveLoader::addNextSample(const FilePath& fileName) {
     assert(!didLoad);
     filesToLoad.push_back(fileName);
+    curLoadIndex = 0;
 }
 
-bool WaveLoader::load() {
-    assert(!didLoad);
-    didLoad = true;
-    SQINFO("loader started loading waves");
-    for (FilePath& file : filesToLoad) {
-        // SQINFO("wave loader loading %s", file.c_str());
-        WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
-        std::string err;
-        const bool b = waveInfo->load(err);
-        if (!b) {
-            // bail on first error
-            assert(!err.empty());
-            lastError = err;
-            SQINFO("wave loader leaving with error %s", lastError.c_str());
-            return false;
-        }
+float WaveLoader::getProgressPercent() const {
+    float done = float(curLoadIndex);
+    float total = float(filesToLoad.size());
+    return 100 * done / total;
+}
 
-        finalInfo.push_back(waveInfo);
+WaveLoader::LoaderState WaveLoader::loadNextFile() {
+    if (curLoadIndex >= filesToLoad.size()) {
+        return LoaderState::Done;
     }
-    SQINFO("loader loaded all wave files");
-#ifndef NDEBUG
-    validate();
-#endif
-    return true;
+
+
+    FilePath& file = filesToLoad[curLoadIndex];
+   // const std::string extension = file.getExtensionLC();
+
+    WaveInfoPtr fileLoader = loaderFactory(file);
+
+
+ //   WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
+    std::string err;
+    const bool b = fileLoader->load(err);
+    if (!b) {
+        // bail on first error
+        assert(!err.empty());
+        lastError = err;
+        SQINFO("wave loader leaving with error %s", lastError.c_str());
+        return LoaderState::Error;
+    }
+
+    finalInfo.push_back(fileLoader);
+    curLoadIndex++;
+    auto ret = curLoadIndex >= filesToLoad.size() ? LoaderState::Done : LoaderState::Progress;
+    if (ret == LoaderState::Done) {
+        didLoad = true;
+    }
+    return ret;
 }
 
-void WaveLoader::validate()
-{
+
+#if 0
+WaveLoader::LoaderState WaveLoader::load2() {
+    if (curLoadIndex >= filesToLoad.size()) {
+        return LoaderState::Done;
+    }
+
+    FilePath& file = filesToLoad[curLoadIndex];
+    WaveInfoPtr waveInfo = std::make_shared<WaveInfo>(file);
+    std::string err;
+    const bool b = waveInfo->load(err);
+    if (!b) {
+        // bail on first error
+        assert(!err.empty());
+        lastError = err;
+        SQINFO("wave loader leaving with error %s", lastError.c_str());
+        return LoaderState::Error;
+    }
+
+    finalInfo.push_back(waveInfo);
+    curLoadIndex++;
+    auto ret = curLoadIndex >= filesToLoad.size() ? LoaderState::Done : LoaderState::Progress;
+    if (ret == LoaderState::Done) {
+        didLoad = true;
+    }
+    return ret;
+}
+
+
+void WaveLoader::validate() {
     for (auto info : finalInfo) {
         info->validate();
     }
 }
+
+
 
 void WaveLoader::_setTestMode(Tests test) {
     _testMode = test;
@@ -76,12 +119,14 @@ void WaveLoader::_setTestMode(Tests test) {
             assert(false);
     }
 }
+#endif
+
 
 //***********************************************************************************************************************
 
+#if 0 // now movied doe WaveLoaders.h
 WaveLoader::WaveInfo::WaveInfo(const FilePath& path) : fileName(path) {
 }
-
 
 WaveLoader::WaveInfo::WaveInfo(Tests test) : fileName(FilePath("test only")) {
     //  assert(test == Tests::DCOneSec);        // only one imp right now
@@ -111,17 +156,8 @@ WaveLoader::WaveInfo::WaveInfo(Tests test) : fileName(FilePath("test only")) {
     // fileName = FilePath("test only name");
 }
 
-/*
-   bool valid = false;
-        float* data = nullptr;
-        unsigned int numChannels = 0;
-        unsigned int sampleRate = 0;
-        uint64_t totalFrameCount = 0;
-        const FilePath fileName;
-        */
-
 bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
-   // SQINFO("loading %s", fileName.toString().c_str());
+    // SQINFO("loading %s", fileName.toString().c_str());
     float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(fileName.toString().c_str(), &numChannels, &sampleRate, &totalFrameCount, nullptr);
     if (pSampleData == NULL) {
         // Error opening and reading WAV file.
@@ -139,9 +175,8 @@ bool WaveLoader::WaveInfo::load(std::string& errorMessage) {
     return true;
 }
 
-
 void WaveLoader::WaveInfo::convertToMono() {
-    SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
+    //  SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
     const int origChannels = numChannels;
     uint64_t newBufferSize = 1 + totalFrameCount;
     void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
@@ -149,7 +184,7 @@ void WaveLoader::WaveInfo::convertToMono() {
 
     for (uint64_t outputIndex = 0; outputIndex < totalFrameCount; ++outputIndex) {
         float monoSampleValue = 0;
-        for (int channelIndex=0; channelIndex < origChannels; ++channelIndex) {
+        for (int channelIndex = 0; channelIndex < origChannels; ++channelIndex) {
             uint64_t inputIndex = outputIndex * origChannels + channelIndex;
             monoSampleValue += data[inputIndex];
         }
@@ -159,37 +194,10 @@ void WaveLoader::WaveInfo::convertToMono() {
         dest[outputIndex] = monoSampleValue;
     }
     numChannels = 1;
-    SQINFO("leaving, not total frames = %d", totalFrameCount);
+    //  SQINFO("leaving, not total frames = %d", totalFrameCount);
     DRWAV_FREE(data);
     data = dest;
 }
-
-#if 0
-void WaveLoader::WaveInfo::convertToMono() {
-    SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
-    const int origChannels = numChannels;
-    uint64_t newBufferSize = 1 + totalFrameCount / origChannels;
-    void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
-    float* dest = reinterpret_cast<float*>(x);
-    for (uint64_t i = 0; i < totalFrameCount / origChannels; ++i) {
-        float temp = 0;
-        for (int ch = 0; ch < origChannels; ++ch) {
-            temp += data[i + ch];
-        }
-        temp /= origChannels;
-        assert(temp <= 1);
-        assert(temp >= -1);
-        dest[i] = temp;
-    }
-
-    totalFrameCount /= origChannels;
-    numChannels = 1;
-    SQINFO("leaving, not total frames = %d", totalFrameCount);
-
-    DRWAV_FREE(data);
-    data = dest;
-}
-#endif
 
 WaveLoader::WaveInfo::~WaveInfo() {
     if (data) {
@@ -197,3 +205,5 @@ WaveLoader::WaveInfo::~WaveInfo() {
         data = nullptr;
     }
 }
+
+#endif

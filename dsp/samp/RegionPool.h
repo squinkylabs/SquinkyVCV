@@ -26,7 +26,7 @@ public:
      * After the pool is built, this function is called 
      * every time a note needs to be played.
      */
-    const CompiledRegion* play(const VoicePlayParameter& params, float random);
+    const CompiledRegion* play(const VoicePlayParameter& params, float random, bool& didKeyswitch);
 
     void _dump(int depth) const;
     void _getAllRegions(std::vector<CompiledRegionPtr>&) const;
@@ -59,5 +59,15 @@ private:
     void fillRegionLookup();
     void removeOverlaps();
     void maybeAddToKeyswitchList(CompiledRegionPtr);
-    static bool checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random);
+ //   static bool checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random);
+    static bool shouldRegionPlayNow(const VoicePlayParameter& params, const CompiledRegion* region, float random);
+
+    /**
+     * returns true if overlap cannot be corrected.
+     * If overlap can be corrected, regions will be tweaked and false will be returned;
+     */
+    static bool evaluateOverlapsAndAttemptRepair( CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
+    //static bool evaluateOverlapsAndAttemptRepairOnce( CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
+    static bool attemptOverlapRepairWithVel(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
+    static bool attemptOverlapRepairWithPitch(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
 };

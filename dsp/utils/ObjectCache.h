@@ -17,9 +17,16 @@ template <typename T>
 class ObjectCache
 {
 public:
-    static std::shared_ptr<LookupTableParams<T>> getBipolarAudioTaper();
+  
+
+    // default is 24db
     static std::shared_ptr<LookupTableParams<T>> getAudioTaper();
+    static std::shared_ptr<LookupTableParams<T>> getBipolarAudioTaper();
+    static std::shared_ptr<LookupTableParams<T>> getBipolarAudioTaper30();
+    static std::shared_ptr<LookupTableParams<T>> getBipolarAudioTaper42();
     static std::shared_ptr<LookupTableParams<T>> getAudioTaper18();
+
+
     static std::shared_ptr<LookupTableParams<T>> getSinLookup();
 
     static std::shared_ptr<LookupTableParams<T>> getMixerPanL();
@@ -58,6 +65,8 @@ private:
      * freed when the last client reference goes away.
      */
     static std::weak_ptr<LookupTableParams<T>> bipolarAudioTaper;
+    static std::weak_ptr<LookupTableParams<T>> bipolarAudioTaper30;
+    static std::weak_ptr<LookupTableParams<T>> bipolarAudioTaper42;
     static std::weak_ptr<LookupTableParams<T>> audioTaper;
     static std::weak_ptr<LookupTableParams<T>> audioTaper18;
     static std::weak_ptr<LookupTableParams<T>> sinLookupTable;

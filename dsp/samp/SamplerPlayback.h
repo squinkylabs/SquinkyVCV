@@ -9,6 +9,8 @@
 
 class WaveLoader;
 
+#define _SAMPFM
+
 /**
  * When a patch is asked to "play", it serves up one of these.
  * So this is the "output" of play.
@@ -20,7 +22,11 @@ public:
     bool valid = false;
     int sampleIndex = 0;
     bool needsTranspose = false;
+#ifdef _SAMPFM
+    float transposeV = 0;       // 1V/Oct, synth standard
+#else
     float transposeAmt = 1;
+#endif
     float gain = 1;  // assume full volume
     float ampeg_release = .001f;
 
@@ -49,8 +55,9 @@ public:
      * @param params are not play parameters.
      * @param loader is all the wave files. may be null for some tests.
      * @param sampleRate is the current sample rate. Ignored if loader is nullptr
+     * @returns true is note caused a key-switch
      */
-    virtual void play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) = 0;
+    virtual bool play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) = 0;
     virtual void _dump(int depth) const = 0;
 
 protected:
@@ -66,7 +73,6 @@ using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
 /**
  * Data extracted from patch required to play one note 
  */
-
 class CachedSamplerPlaybackInfo {
 public:
     CachedSamplerPlaybackInfo() = delete;
@@ -74,11 +80,19 @@ public:
         const int semiOffset = midiPitch - reg->keycenter;
         if (semiOffset == 0) {
             needsTranspose = false;
+#ifdef _SAMPFM
+            transposeV = 0;
+#else
             transposeAmt = 1;
+#endif
         } else {
-            const float pitchMul = float(std::pow(2, semiOffset / 12.0));
             needsTranspose = true;
+#ifdef _SAMPFM
+            assert(false);
+#else
+            const float pitchMul = float(std::pow(2, semiOffset / 12.0));
             transposeAmt = pitchMul;
+#endif
         }
         amp_veltrack = reg->amp_veltrack;
         ampeg_release = reg->ampeg_release;
@@ -86,7 +100,12 @@ public:
 
     // properties that get served up unchanged
     bool needsTranspose = false;
+#ifdef _SAMPFM
+    float transposeV = 0;
+#else
+    a b c
     float transposeAmt = 1;
+#endif
     const int sampleIndex;
     float ampeg_release = .001f;
 
@@ -101,7 +120,11 @@ inline void cachedInfoToPlayInfo(VoicePlayInfo& playInfo, const VoicePlayParamet
     assert(params.midiVelocity > 0 && params.midiVelocity <= 127);
     playInfo.sampleIndex = cachedInfo.sampleIndex;
     playInfo.needsTranspose = cachedInfo.needsTranspose;
+#ifdef _SAMPFM
+    playInfo.transposeV = cachedInfo.transposeV;
+#else
     playInfo.transposeAmt = cachedInfo.transposeAmt;
+#endif
     playInfo.ampeg_release = cachedInfo.ampeg_release;
     playInfo.valid = true;
 
@@ -128,7 +151,7 @@ public:
                                                                                lineNumber(reg->lineNumber) {
         assert(sampleIndex > 0);
     }
-    void play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
+    bool play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override {
         indent(depth);
         printf("simple voice player si=%d\n", data.sampleIndex);
@@ -144,6 +167,7 @@ private:
  * in the real world, but need it now to cover corner cases without
  * crashing.
  */
+#if 0   // do wo use this?
 class NullVoicePlayer : public ISamplerPlayback {
 public:
     void play(VoicePlayInfo& info, const VoicePlayParameter&, WaveLoader* loader, float sampleRate) override {
@@ -154,50 +178,4 @@ public:
         printf("NullVoicePlayer %p\n", this);
     }
 };
-
-#if 0 // don't use these any more
-class RandomVoicePlayer : public ISamplerPlayback {
-public:
-    RandomVoicePlayer() : rand(0) {}
-    void play(VoicePlayInfo& info, const VoicePlayParameter&, WaveLoader* loader, float sampleRate) override;
-    void _dump(int depth) const override;
-    void addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch);
-    void finalize();
-
-private:
-    std::vector<CachedSamplerPlaybackInfoPtr> entries;
-    RandomRange<float> rand;
-
-    class TempHolder {
-    public:
-        CachedSamplerPlaybackInfoPtr info;
-        float hirand = 0;
-    };
-    std::vector<TempHolder> tempEntries;
-    bool finalized = false;
-};
-
-using RandomVoicePlayerPtr = std::shared_ptr<RandomVoicePlayer>;
-
-class RoundRobinVoicePlayer : public ISamplerPlayback {
-public:
-    // let's add seq_position so we can play in the right order
-    class RRPlayInfo : public CachedSamplerPlaybackInfo {
-    public:
-        RRPlayInfo(const CachedSamplerPlaybackInfo&);
-        int seq_position = 0;
-    };
-    using RRPlayInfoPtr = std::shared_ptr<RRPlayInfo>;
-    void play(VoicePlayInfo& info, const VoicePlayParameter&, WaveLoader* loader, float sampleRate) override;
-    void _dump(int depth) const override;
-    void addEntry(CompiledRegionPtr region, int sampleIndex, int midiPitch);
-    void finalize();
-
-private:
-    std::vector<RRPlayInfoPtr> entries;
-    int currentEntry = 0;
-    int numEntries = 0;
-};
-
-using RoundRobinVoicePlayerPtr = std::shared_ptr<RoundRobinVoicePlayer>;
 #endif

@@ -36,7 +36,7 @@ class CompiledRegion {
 public:
   //  CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
     void addRegionInfo(SamplerSchema::KeysAndValuesPtr);
-    CompiledRegion() {
+    CompiledRegion(int ln) : lineNumber (ln) {
         // SQINFO("Compiled REgion def ctor %p", this);
         ++compileCount;
     }
@@ -44,6 +44,7 @@ public:
     void _dump(int depth) const;
 
     // still used??
+#if 1
     enum class Type {
         Base,
         RoundRobin,  // group and regions where we RR between the regions in the one group.
@@ -51,7 +52,11 @@ public:
         GRandom,     // probability is on each group, so multiple groups involved.
         GRoundRobbin
     };
-    virtual Type type() const { return Type::Base; }
+    
+#endif
+
+    int velRange() const;
+    int pitchRange() const;
 
     bool overlapsPitch(const CompiledRegion&) const;
     bool overlapsVelocity(const CompiledRegion&) const;
@@ -60,6 +65,18 @@ public:
     bool pitchRangeEqual(const CompiledRegion&) const;
     bool overlapsRand(const CompiledRegion&) const;
     bool sameSequence(const CompiledRegion&) const;
+
+    /** 
+     * Find out by how much two regsions overlap.
+     * result = <intergerAmount:floatRatio>
+     * 
+     * float ratio 1.0 means complete overlap
+     * float ratio  0 means no overlap at all
+    */
+    using OverlapPair = std::pair<int, float>;
+
+    OverlapPair overlapVelocityAmount(const CompiledRegion&) const;
+    OverlapPair overlapPitchAmount(const CompiledRegion&) const;
 
     int lokey = 0;
     int hikey = 127;
@@ -110,6 +127,9 @@ public:
     int hicc64 = 127;
     int locc64 = 0;
 
+    float volume = 0;           // volume change in db
+    int tune = 0;               // tuning offset in cents
+
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
     
     bool isKeyswitched() const {
@@ -128,12 +148,16 @@ private:
     static void findValue(int& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
     static void findValue(std::string& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
     static void findValue(SamplerSchema::DiscreteValue& returnVAlue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
+
+    // not used ??
+    virtual Type type() const { return Type::Base; }
 };
 
 /**
  * We need multi-regions when we run into a group that defines multiple regions
  * that get picked at runtime.
  */
+#if 0 // unused?
 class CompiledMultiRegion : public CompiledRegion {
 public:
     /** This constructor makes a multi-region from a group.
@@ -167,6 +191,7 @@ public:
     CompiledRandomRegion() = default;
     Type type() const override { return Type::Random; }
 };
+#endif
 
 /**
  * Every Compiled Region had a compiled group as a parent

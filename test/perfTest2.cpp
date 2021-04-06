@@ -581,6 +581,7 @@ void perfTest2()
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
 #ifndef _MSC_VER
+  
     testF2_Poly1();
     testF2_Poly16();
     testF2_Poly16_hires();

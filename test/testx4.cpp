@@ -1,8 +1,9 @@
 
+#include "FilePath.h"
+#include "SamplerSchema.h"
 #include "SqLog.h"
 #include "asserts.h"
 #include "samplerTests.h"
-#include "FilePath.h"
 
 static void testFilePath0() {
     FilePath f("abc");
@@ -22,7 +23,7 @@ static void testFilePathFixup() {
 }
 
 static void testFilePathFixup2() {
-    const char* input ="\\\\////\\\\\\";
+    const char* input = "\\\\////\\\\\\";
     FilePath f(input);
     const std::string s = f.toString();
     assertNE(s, input);
@@ -97,19 +98,19 @@ static void testFilePathConcat6() {
     assertEQ(s, "abc");
 }
 
- static void testFilePathGetPathPart() {
+static void testFilePathGetPathPart() {
     FilePath a("abc/def\\ghi//a.txt");
     FilePath path = a.getPathPart();
-    FilePath expected("abc\\def\\ghi\\");           // trailing separators don't really make a difference
+    FilePath expected("abc\\def\\ghi\\");  // trailing separators don't really make a difference
     assertEQ(path.toString(), expected.toString());
- }
+}
 
- static void testFilePathGetPathPart2() {
+static void testFilePathGetPathPart2() {
     FilePath a("a.txt");
     FilePath path = a.getPathPart();
     FilePath expected("");
     assertEQ(expected.toString(), path.toString());
- }
+}
 
 static void testFilePathGetFilenamePart() {
     FilePath a("abc/def\\ghi//a.txt");
@@ -129,6 +130,24 @@ static void testFilePathGetFilenamePart3() {
     assertEQ(fileName, "");
 }
 
+static void testFilePathGetFilenamePartNoExtension() {
+    FilePath a("abc/def.hij");
+    std::string fileName = a.getFilenamePartNoExtension();
+    assertEQ(fileName, "def");
+}
+
+static void testFilePathGetFilenamePartNoExtension2() {
+    FilePath a("abc/def.hij.klm");
+    std::string fileName = a.getFilenamePartNoExtension();
+    assertEQ(fileName, "def.hij");
+}
+
+static void testFilePathGetFilenamePartNoExtension3() {
+    FilePath a("abc/def");
+    std::string fileName = a.getFilenamePartNoExtension();
+    assertEQ(fileName, "def");
+}
+
 static void testFilePathDoubleDot() {
     FilePath fp1("a");
     FilePath fp2("../b");
@@ -136,6 +155,154 @@ static void testFilePathDoubleDot() {
     FilePath expected("a/../b");
     assertEQ(fp1.toString(), expected.toString());
 }
+
+static void testFilePathExt() {
+    FilePath fp1("a.b");
+    assertEQ(fp1.getExtensionLC(), "b");
+
+    FilePath fp2("a.b.c");
+    assertEQ(fp2.getExtensionLC(), "c");
+
+    FilePath fp3("a");
+    assertEQ(fp3.getExtensionLC(), "");
+
+    FilePath fp4("");
+    assertEQ(fp4.getExtensionLC(), "");
+
+    FilePath fp5("a.WAVeFILE");
+    assertEQ(fp5.getExtensionLC(), "wavefile");
+}
+
+static void testSchemaFreeText1() {
+    bool b;
+    b = SamplerSchema::isFreeTextType("foo");
+    assert(!b);
+    b = SamplerSchema::isFreeTextType("sample");
+    assert(b);
+    b = SamplerSchema::isFreeTextType("label_cc7");
+    assert(b);
+}
+
+static void testSchemaTextBuiltIn() {
+    // validate that we have all the known ones
+    std::vector<std::string> known = SamplerSchema::_getKnownTextOpcodes();
+    for (auto opcode : known) {
+        assert(SamplerSchema::isFreeTextType(opcode));
+    }
+
+    std::vector<std::string> knownNot = SamplerSchema::_getKnownNonTextOpcodes();
+    for (auto opcode : knownNot) {
+        assert(!SamplerSchema::isFreeTextType(opcode));
+    }
+}
+
+static void testSchemaIntPass() {
+    int intVal = 0;
+    bool b = SamplerSchema::stringToInt("10", &intVal);
+    assert(b);
+    assertEQ(intVal, 10);
+
+    b = SamplerSchema::stringToInt("0", &intVal);
+    assert(b);
+    assertEQ(intVal, 0);
+
+    b = SamplerSchema::stringToInt("123456789", &intVal);
+    assert(b);
+    assertEQ(intVal, 123456789);
+
+    b = SamplerSchema::stringToInt("-123", &intVal);
+    assert(b);
+    assertEQ(intVal, -123);
+}
+
+static void testSchemaFloatPass() {
+    float floatVal = 0;
+    bool b = SamplerSchema::stringToFloat("10", &floatVal);
+    assert(b);
+    assertEQ(floatVal, 10);
+
+    b = SamplerSchema::stringToFloat("0", &floatVal);
+    assert(b);
+    assertEQ(floatVal, 0);
+
+    b = SamplerSchema::stringToFloat("123456789", &floatVal);
+    assert(b);
+    assertEQ(floatVal, 123456789);
+
+    b = SamplerSchema::stringToFloat("-123", &floatVal);
+    assert(b);
+    assertEQ(floatVal, -123);
+
+    b = SamplerSchema::stringToFloat("145.6", &floatVal);
+    assert(b);
+    assertClose(floatVal, 145.6, .00001);
+
+    b = SamplerSchema::stringToFloat(".6", &floatVal);
+    assert(b);
+    assertClose(floatVal, .6, .00001);
+
+    b = SamplerSchema::stringToFloat(".0", &floatVal);
+    assert(b);
+    assertEQ(floatVal, 0);
+}
+
+static void testSchemaIntFail() {
+    int intVal = 1;
+    bool b = SamplerSchema::stringToInt("bcd", &intVal);
+    assert(!b);
+    assertEQ(intVal, 0);
+
+    b = SamplerSchema::stringToInt("123", nullptr);
+    assert(!b);
+    assertEQ(intVal, 0);
+
+    b = SamplerSchema::stringToInt("-abc", &intVal);
+    assert(!b);
+    assertEQ(intVal, 0);
+
+    b = SamplerSchema::stringToInt("a123", &intVal);
+    assert(!b);
+    assertEQ(intVal, 0);
+
+    b = SamplerSchema::stringToInt("a", &intVal);
+    assert(!b);
+    assertEQ(intVal, 0);
+
+    // Old version accepted this...
+    b = SamplerSchema::stringToInt("123a", &intVal);
+    assert(b);
+    assertEQ(intVal, 123);
+}
+
+static void testSchemaFloatFail() {
+
+    float floatVal = 1;
+    bool b = SamplerSchema::stringToFloat("bcd", &floatVal);
+    assert(!b);
+    assertEQ(floatVal, 0);
+
+    b = SamplerSchema::stringToFloat("123", nullptr);
+    assert(!b);
+    assertEQ(floatVal, 0);
+
+    b = SamplerSchema::stringToFloat("-abc", &floatVal);
+    assert(!b);
+    assertEQ(floatVal, 0);
+
+    b = SamplerSchema::stringToFloat("a123", &floatVal);
+    assert(!b);
+    assertEQ(floatVal, 0);
+
+    b = SamplerSchema::stringToFloat("", &floatVal);
+    assert(!b);
+    assertEQ(floatVal, 0);
+
+    // Old version accepted this...
+    b = SamplerSchema::stringToFloat("123a", &floatVal);
+    assert(b);
+    assertEQ(floatVal, 123);
+}
+
 
 void testx4() {
     testFilePath0();
@@ -152,7 +319,15 @@ void testx4() {
     testFilePathGetFilenamePart();
     testFilePathGetFilenamePart2();
     testFilePathGetFilenamePart3();
+    testFilePathGetFilenamePartNoExtension();
+    testFilePathGetFilenamePartNoExtension2();
     testFilePathDoubleDot();
+    testFilePathExt();
 
-
+    testSchemaFreeText1();
+    testSchemaTextBuiltIn();
+    testSchemaIntPass();
+    testSchemaIntFail();
+    testSchemaFloatPass();
+    testSchemaFloatFail();
 }

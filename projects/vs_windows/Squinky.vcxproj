@@ -30,6 +30,7 @@
     <ClCompile Include="..\..\dsp\samp\CompiledInstrument.cpp" />
     <ClCompile Include="..\..\dsp\samp\CompiledRegion.cpp" />
     <ClCompile Include="..\..\dsp\samp\FilePath.cpp" />
+    <ClCompile Include="..\..\dsp\samp\FlacReader.cpp" />
     <ClCompile Include="..\..\dsp\samp\RegionPool.cpp" />
     <ClCompile Include="..\..\dsp\samp\Sampler4vx.cpp" />
     <ClCompile Include="..\..\dsp\samp\SamplerPlayback.cpp" />
@@ -39,7 +40,18 @@
     <ClCompile Include="..\..\dsp\samp\SParse.cpp" />
     <ClCompile Include="..\..\dsp\samp\Streamer.cpp" />
     <ClCompile Include="..\..\dsp\samp\WaveLoader.cpp" />
+    <ClCompile Include="..\..\dsp\samp\WaveLoaders.cpp" />
     <ClCompile Include="..\..\dsp\third-party\falco\DspFilter.cpp" />
+    <ClCompile Include="..\..\dsp\third-party\flac\src\bitreader.c" />
+    <ClCompile Include="..\..\dsp\third-party\flac\src\cpu.c" />
+    <ClCompile Include="..\..\dsp\third-party\flac\src\crc.c" />
+    <ClCompile Include="..\..\dsp\third-party\flac\src\fixed.c" />
+    <ClCompile Include="..\..\dsp\third-party\flac\src\format.c" />
+    <ClCompile Include="..\..\dsp\third-party\flac\src\lpc.c" />
+    <ClCompile Include="..\..\dsp\third-party\flac\src\md5.c" />
+    <ClCompile Include="..\..\dsp\third-party\flac\src\memory.c" />
+    <ClCompile Include="..\..\dsp\third-party\flac\src\stream_decoder.c" />
+    <ClCompile Include="..\..\dsp\third-party\flac\src\windows_unicode_filenames.c" />
     <ClCompile Include="..\..\dsp\third-party\kiss_fft130\kiss_fft.c" />
     <ClCompile Include="..\..\dsp\third-party\kiss_fft130\tools\kiss_fftr.c" />
     <ClCompile Include="..\..\dsp\third-party\midifile\Binasc.cpp" />
@@ -47,7 +59,6 @@
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiEventList.cpp" />
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiFile.cpp" />
     <ClCompile Include="..\..\dsp\third-party\midifile\MidiMessage.cpp" />
-    <ClCompile Include="..\..\dsp\third-party\pugixml\pugixml.cpp" />
     <ClCompile Include="..\..\dsp\third-party\src\minblep.cpp" />
     <ClCompile Include="..\..\dsp\utils\AsymWaveShaper.cpp" />
     <ClCompile Include="..\..\dsp\utils\AudioMath.cpp" />
@@ -95,6 +106,7 @@
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\perfTest.cpp" />
     <ClCompile Include="..\..\test\perfTest2.cpp" />
+    <ClCompile Include="..\..\test\perfTest3.cpp" />
     <ClCompile Include="..\..\test\simd_testBiquad.cpp" />
     <ClCompile Include="..\..\test\SqWaveFile.cpp" />
     <ClCompile Include="..\..\test\testACDetector.cpp" />
@@ -103,6 +115,8 @@
     <ClCompile Include="..\..\test\testCmprsr.cpp" />
     <ClCompile Include="..\..\test\testCompressor.cpp" />
     <ClCompile Include="..\..\test\testCompressorParamHolder.cpp" />
+    <ClCompile Include="..\..\test\testFlac.cpp" />
+    <ClCompile Include="..\..\test\testSampComposite.cpp" />
     <ClCompile Include="..\..\test\testStreamer.cpp" />
     <ClCompile Include="..\..\test\testWavThread.cpp" />
     <ClCompile Include="..\..\test\testx3.cpp" />
@@ -367,9 +381,6 @@
     <ClInclude Include="..\..\test\TimeStatsCollector.h" />
     <ClInclude Include="..\..\util\FilteredIterator.h" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\test\testx.cpp()" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{5DAF445F-56A2-5B5C-EB47-1D24590CF72A}</ProjectGuid>
@@ -442,12 +453,12 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;ARCH_WIN;__V1x;_ENABLE_EXTENDED_ALIGNED_STORAGE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;ARCH_WIN;__V1x;FLAC__NO_DLL;_ENABLE_EXTENDED_ALIGNED_STORAGE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\dsp\samp;..\..\dsp\third-party\pugixml;..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\dsp;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dsp\samp;..\..\dsp\third-party\pugixml;..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\flac\include;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\dsp;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -476,11 +487,11 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;ARCH_WIN;__V1x;_ENABLE_EXTENDED_ALIGNED_STORAGE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;ARCH_WIN;__V1x;FLAC__NO_DLL;_ENABLE_EXTENDED_ALIGNED_STORAGE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\..\dsp\samp;..\..\dsp\third-party\pugixml;..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\dsp;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\dsp\samp;..\..\dsp\third-party\pugixml;..\..\test\util;..\..\sqsrc\grammar;..\..\dsp\fft;..\..\dsp\generators;..\..\dsp\filters;..\..\dsp\third-party\flac\include;..\..\dsp\third-party\midifile;..\..\dsp\third-party\src;..\..\util;..\..\dsp\third-party\falco;..\..\composites;..\..\sqsrc\clock;..\..\sqsrc\delay;..\..\sqsrc\util;..\..\sqsrc\thread;..\..\dsp\utils;..\..\dsp\third-party\kiss_fft130;..\..\dsp\third-party\kiss_fft130\tools;..\..\..\..\include;..\..\..\..\dep\speexdsp-SpeexDSP-1.2rc3\include;..\..\midi\controller;..\..\midi\view;..\..\midi\model;..\..\dsp;..\..\..\..\dep\jpommier-pffft-29e4f76ac53b;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>

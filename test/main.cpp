@@ -20,6 +20,7 @@ extern void testAudioMath();
 extern void initPerf();
 extern void perfTest();
 extern void perfTest2();
+extern void perfTest3();
 extern void testFrequencyShifter();
 extern void testStateVariable();
 extern void testVocalAnimator();
@@ -119,6 +120,8 @@ extern void testCmprsr();
 extern void testCompressor();
 extern void testCompressorParamHolder();
 extern void testStreamer();
+extern void testSampComposite();
+extern void testFlac();
 
 #if 0
 #include <iostream>
@@ -160,7 +163,7 @@ static void setupMem()
 #endif
 
 int main(int argc, char** argv) {
-   // setupMem();
+    // setupMem();
 
     bool runPerf = false;
     bool extended = false;
@@ -202,27 +205,27 @@ int main(int argc, char** argv) {
 
     if (runPerf) {
         initPerf();
+        perfTest3();
         perfTest2();
         perfTest();
-
         return 0;
     }
 
-#if 1
+    testSimpleQuantizer();
 
+    testFlac();
     testADSRSampler();
     testStreamer();
+
+    testx4();  
     testx();
-    testx6();
     testx2();
     testx3();
-    testx4();
-    testx5();
-   
-#else
-    printf("------ sampl tests diabled\n");
-#endif
 
+    testx5();
+    testx6();
+
+    testSampComposite();
 
     testADSR();
     testCompressorParamHolder();

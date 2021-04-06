@@ -7,7 +7,7 @@
 class SamplerErrorContext {
 public:
     bool empty() const {
-        return unrecognizedOpcodes.empty();
+        return unrecognizedOpcodes.empty() && !sawMalformedInput;
     }
     void dump() const {
         //SQWARN("err dump nimp");
@@ -19,4 +19,5 @@ public:
         }
     }
     std::set<std::string> unrecognizedOpcodes;
+    bool sawMalformedInput = false;         // not fatal
 };

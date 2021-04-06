@@ -12,24 +12,40 @@ VoicePlayInfo::VoicePlayInfo(CompiledRegionPtr region, int midiPitch, int sample
     const int semiOffset = midiPitch - region->keycenter;
     if (semiOffset == 0) {
         this->needsTranspose = false;
+#ifdef _SAMPFM
+        this->transposeV = 0;
+#else
         this->transposeAmt = 1;
+#endif
     } else {
-        const float pitchMul = float(std::pow(2, semiOffset / 12.0));
         this->needsTranspose = true;
+#ifdef _SAMPFM
+        assert(false);
+#else
+        const float pitchMul = float(std::pow(2, semiOffset / 12.0));
         this->transposeAmt = pitchMul;
+#endif
     }
 }
 
-void SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
+bool SimpleVoicePlayer::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     cachedInfoToPlayInfo(info, params, data);
     if (loader) {
         // do we need to adapt to changed sample rate?
-        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->sampleRate;
+        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->getSampleRate();
         if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
             info.needsTranspose = true;
+#ifdef _SAMPFM
+            // this ratio was alwyas backward. fixed now
+            const float transposeRatio = float(waveSampleRate) / sampleRate;
+            const float srShiftV = std::log2(transposeRatio);
+            info.transposeV = data.transposeV + srShiftV;
+#else
             info.transposeAmt = data.transposeAmt * sampleRate / float(waveSampleRate);
+#endif
         }
     }
+    return false;       // I think key switch processed higher...
 }
 
 #if 0

@@ -46,8 +46,7 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::SW_HIKEY, OpcodeType::Int},
     {Opcode::SW_DEFAULT, OpcodeType::Int},
     {Opcode::HICC64_HACK, OpcodeType::Int},
-    {Opcode::LOCC64_HACK, OpcodeType::Int}
-    };
+    {Opcode::LOCC64_HACK, OpcodeType::Int}};
 
 static std::map<std::string, Opcode> opcodes = {
     {"hivel", Opcode::HI_VEL},
@@ -82,7 +81,7 @@ static std::map<std::string, Opcode> opcodes = {
     {"sw_hikey", Opcode::SW_HIKEY},
     {"sw_default", Opcode::SW_DEFAULT},
     {"hicc64", Opcode::HICC64_HACK},
-    {"locc64", Opcode::LOCC64_HACK} };
+    {"locc64", Opcode::LOCC64_HACK}};
 
 static std::set<std::string>
     unrecognized;
@@ -94,7 +93,9 @@ static std::map<std::string, DiscreteValue> discreteValues = {
     {"one_shot", DiscreteValue::ONE_SHOT},
     {"attack", DiscreteValue::ATTACK},
     {"release", DiscreteValue::RELEASE},
-};
+    {"first", DiscreteValue::RELEASE},
+    {"legato", DiscreteValue::RELEASE},
+    {"release_key", DiscreteValue::RELEASE}};
 
 DiscreteValue SamplerSchema::translated(const std::string& s) {
     auto it = discreteValues.find(s);
@@ -125,13 +126,18 @@ OpcodeType SamplerSchema::keyTextToType(const std::string& key, bool suppressErr
 // TODO: octaves
 // TODO: IPN octaves
 // TODO: upper case
-std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
+std::pair<bool, int> SamplerSchema::convertToInt(SamplerErrorContext& err, const std::string& _s) {
     std::string s(_s);
     int noteName = -1;
     bool sharp = false;
 
     if (s.length() >= 2) {
-        const int firstChar = s[0];
+        int firstChar = s[0];
+
+        // They may not be legal? but we see pitches upper case sometimes
+        if ((firstChar >= 'A' && firstChar <= 'G')) {
+            firstChar -= ('A' - 'a');
+        }
         if (firstChar >= 'a' && firstChar <= 'g') {
             switch (firstChar) {
                 case 'a':
@@ -178,7 +184,24 @@ std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
         s = s.substr(1);
     }
 
-    try {
+    int x = 0;
+    bool b = stringToInt(s.c_str(), &x);
+    if (!b) {
+        err.sawMalformedInput = true;
+        return std::make_pair(false, 0);
+    }
+
+    if (noteName >= 0) {
+        x *= 12;               // number part is octave in this form
+        x += (12 + noteName);  // 12 is c0 in midi
+
+        if (sharp) {
+            x += 1;
+        }
+    }
+
+    return std::make_pair(true, x);
+#if 0
         int x = std::stoi(s);
         if (noteName >= 0) {
             x *= 12;               // number part is octave in this form
@@ -190,13 +213,72 @@ std::pair<bool, int> SamplerSchema::convertToInt(const std::string& _s) {
         }
         return std::make_pair(true, x);
     } catch (std::exception&) {
-        printf("could not convert %s to Int. \n", s.c_str());
+        SQWARN("could not convert %s to Int", s.c_str());
+        err.sawMalformedInput = true;
         return std::make_pair(false, 0);
+    }
+#endif
+}
+
+#if 0  // old versions with exceptions
+bool SamplerSchema::stringToFloat(const char* s, float* outValue) {
+    if (!outValue) {
+        return false;
+    }
+    try {
+        float x = std::stof(s);
+        *outValue = x;
+        return true;
+    }
+    catch (std::exception&) {
+        *outValue = 0;
+        return false;
     }
 }
 
+bool SamplerSchema::stringToInt(const char* s, int* outValue) {
+    if (!outValue) {
+        return false;
+    }
+    try {
+        int x = std::stoi(s);
+        *outValue = x;
+        return true;
+    } catch (std::exception&) {
+        *outValue = 0;
+        return false;
+    }
+}
+#else
+bool SamplerSchema::stringToInt(const char* s, int* outValue) {
+    if (!outValue) {
+        return false;
+    }
+    char* end = nullptr;
+    long ll = std::strtol(s, &end, 10);
+    *outValue = ll;
+
+    // to be like the old std::stoi,
+    // we want it to be an error if we don't match any
+    return end > s;
+}
+
+bool SamplerSchema::stringToFloat(const char* s, float* outValue) {
+    if (!outValue) {
+        return false;
+    }
+    char* end = nullptr;
+    float f = std::strtof(s, &end);
+    *outValue = f;
+
+    // to be like the old std::stoi,
+    // we want it to be an error if we don't match any
+    return end > s;
+}
+#endif
+
 void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValuesPtr results, SKeyValuePairPtr input) {
-    Opcode opcode = translate(input->key, false);
+    Opcode opcode = translate(input->key, true);
     if (opcode == Opcode::NONE) {
         //  std::string e = std::string("could not translate opcode ") + input->key.c_str();
         err.unrecognizedOpcodes.insert(input->key);
@@ -216,40 +298,36 @@ void SamplerSchema::compile(SamplerErrorContext& err, SamplerSchema::KeysAndValu
     vp->type = type;
     bool isValid = true;
     switch (type) {
-        case OpcodeType::Int:
-#if 0
-            try {
-                int x = std::stoi(input->value);
-                vp->numericInt = x;
-            } catch (std::exception&) {
-                isValid = false;
-                printf("could not convert %s to Int. key=%s\n", input->value.c_str(), input->key.c_str());
-                return;
-            }
-#endif
-        {
-            auto foo = convertToInt(input->value);
+        case OpcodeType::Int: {
+            auto foo = convertToInt(err, input->value);
             if (!foo.first) {
                 return;
             }
             vp->numericInt = foo.second;
         } break;
-        case OpcodeType::Float:
-            try {
-                float x = std::stof(input->value);
-                vp->numericFloat = x;
-            } catch (std::exception&) {
-                isValid = false;
-                printf("could not convert %s to float. key=%s\n", input->value.c_str(), input->key.c_str());
+        case OpcodeType::Float: {
+            float floatValue = 0;
+            bool floatOK = stringToFloat(input->value.c_str(), &floatValue);
+            if (!floatOK) {
+                SQWARN("could not convert %s to float. key=%s", input->value.c_str(), input->key.c_str());
+                err.sawMalformedInput = true;
                 return;
             }
-            break;
+            vp->numericFloat = floatValue;
+        }
+
+        break;
         case OpcodeType::String:
             vp->string = input->value;
             break;
         case OpcodeType::Discrete: {
-            DiscreteValue dv = translated(input->value);
-            assert(dv != DiscreteValue::NONE);
+            const DiscreteValue dv = translated(input->value);
+            if (dv == DiscreteValue::NONE) {
+                SQINFO("malformed discrete kb = %s, %s", input->key.c_str(), input->value.c_str());
+                err.sawMalformedInput = true;
+                return;
+            }
+
             vp->discrete = dv;
         } break;
         default:
@@ -283,4 +361,62 @@ SamplerSchema::Opcode SamplerSchema::translate(const std::string& s, bool suppre
     } else {
         return entry->second;
     }
+}
+
+std::set<std::string> SamplerSchema::freeTextFields = {
+    "sample",
+    "label_cc*",
+    "label_key*",
+    "default_path",
+    "sw_label",
+    "delay_filter",
+    "filter_type",
+    "global_label",
+    "group_label",
+    "image",
+    "vendor_specific",
+    "static_filter",
+    "region_label",
+    "master_label",
+    "md5"
+
+};
+
+bool SamplerSchema::isFreeTextType(const std::string& key) {
+    // string input("aasdf43");
+    std::string stringToMatch = key;
+
+    // dollar sign goes in because we don't tranlate #define
+    static std::string matches("0123456789$");
+    auto offset = key.find_first_of(matches);
+    if (offset != std::string::npos) {
+        stringToMatch = key.substr(0, offset) + '*';
+    }
+
+    auto it = freeTextFields.find(stringToMatch);
+    return it != freeTextFields.end();
+}
+
+std::vector<std::string> SamplerSchema::_getKnownTextOpcodes() {
+    std::vector<std::string> ret;
+    for (auto x : opcodes) {
+        const Opcode oc = x.second;
+        auto type = keyType[oc];
+        if (type == OpcodeType::String) {
+            ret.push_back(x.first);
+        }
+    }
+    return ret;
+}
+
+std::vector<std::string> SamplerSchema::_getKnownNonTextOpcodes() {
+    std::vector<std::string> ret;
+    for (auto x : opcodes) {
+        const Opcode oc = x.second;
+        auto type = keyType[oc];
+        if (type != OpcodeType::String) {
+            ret.push_back(x.first);
+        }
+    }
+    return ret;
 }

@@ -9,7 +9,8 @@
 
 // #define _LOGOV
 
-bool RegionPool::checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random) {
+// checks to see if the region is playable
+bool RegionPool::shouldRegionPlayNow(const VoicePlayParameter& params, const CompiledRegion* region, float random) {
     bool passesCheck = false;
 #ifdef _SFZ_RANDOM
     if ((params.midiVelocity >= region->lovel) &&
@@ -27,13 +28,13 @@ bool RegionPool::checkPitchAndVel(const VoicePlayParameter& params, const Compil
     return passesCheck;
 }
 
-const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random) {
+const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float random, bool& didKS) {
     // printf("\n... play(%d)\n", params.midiPitch);
     if (!(params.midiPitch >= 0 && params.midiPitch <= 127 && params.midiVelocity > 0 && params.midiVelocity <= 127)) {
         SQWARN("value out of range: pitch = %d, vel = %d\n", params.midiPitch, params.midiVelocity);
+        didKS = false;
         return nullptr;
     }
-  
 
     // First the keyswitch logic from sfizz
     if (!lastKeyswitchLists_[params.midiPitch].empty()) {
@@ -47,6 +48,9 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
         }
         currentSwitch_ = params.midiPitch;
         // SQINFO("setting currentSwitch to %d", params.midiPitch);
+        didKS = true;
+    } else {
+        didKS = false;
     }
 
     for (auto& region : lastKeyswitchLists_[params.midiPitch]) {
@@ -65,14 +69,13 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
 
         bool sequenceMatch = true;
         if (region->sequenceLength > 1) {
-
             sequenceMatch =
                 ((region->sequenceCounter++ % region->sequenceLength) == region->sequencePosition - 1);
             // fprintf(stderr, "result: sw=%d ctr=%d\n", sequenceMatch, region->sequenceCounter);
         }
 
         const bool keyswitched = region->isKeyswitched();
-        if (sequenceMatch && !foundRegion && keyswitched && checkPitchAndVel(params, region, random)) {
+        if (sequenceMatch && !foundRegion && keyswitched && shouldRegionPlayNow(params, region, random)) {
             foundRegion = region;
         }
     }
@@ -121,17 +124,14 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
         auto cGroup = std::make_shared<CompiledGroup>(group);
         if (!cGroup->shouldIgnore()) {
             for (auto reg : group->regions) {
-               
-                
                 // SQWARN("need to add global info");
-                CompiledRegionPtr cReg = std::make_shared<CompiledRegion>();
+                CompiledRegionPtr cReg = std::make_shared<CompiledRegion>(reg->lineNumber);
                 cReg->addRegionInfo(in->global.compiledValues);
                 cReg->addRegionInfo(group->compiledValues);
                 cReg->addRegionInfo(reg->compiledValues);
 
                 // actually we should do our ignoreing on the region
                 if (!cReg->shouldIgnore()) {
-
                     //  auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
                     maybeAddToKeyswitchList(cReg);
                     if (cReg->sw_default >= 0) {
@@ -175,6 +175,156 @@ void RegionPool::fillRegionLookup() {
 
 // #define _LOGOV
 
+static bool regionsOverlap(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion) {
+    return (firstRegion->overlapsPitch(*secondRegion) &&
+            firstRegion->overlapsVelocity(*secondRegion) &&
+            firstRegion->overlapsRand(*secondRegion) &&
+            firstRegion->sameSequence(*secondRegion));
+}
+
+bool RegionPool::attemptOverlapRepairWithVel(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion) {
+    auto velOverlap = firstRegion->overlapVelocityAmount(*secondRegion);
+    if (velOverlap.first > 0) {
+        if (velOverlap.second > .8f) {
+            SQINFO("velocity overlap %f too large to repair at %d and %d", velOverlap.second, firstRegion->lineNumber, secondRegion->lineNumber);
+            return true;
+        }
+        //assert(firstRegion->lovel <= secondRegion->lovel);  // sorted
+        if (firstRegion->lovel > secondRegion->lovel) {
+             SQWARN("in overlap vel, first=%d second=%d  ilnes %d,%d", firstRegion->lovel, secondRegion->lovel, firstRegion->lineNumber, secondRegion->lineNumber);
+            return true;
+        }
+        while (velOverlap.first) {
+            const int firstRange = firstRegion->velRange();
+            const int secondRange = secondRegion->velRange();
+            if (firstRange >= secondRange) {
+                // There should be enough range to take on
+                if (firstRange < 2) {
+                    assert(false);
+                    return true;
+                }
+                // since we know first region starts before or at second,
+                // and that overlap isn't 100%, then
+                // we know shrinking 1 from the bottom will help
+                firstRegion->hivel -= 1;
+                --velOverlap.first;
+            } else {
+                if (secondRange < 2) {
+                    assert(false);
+                    return true;
+                }
+                secondRegion->lovel += 1;
+                --velOverlap.first;
+            }
+        };
+    }
+    return false;
+}
+
+bool RegionPool::attemptOverlapRepairWithPitch(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion) {
+    auto pitchOverlap = firstRegion->overlapPitchAmount(*secondRegion);
+    if (pitchOverlap.first > 0) {
+        if (pitchOverlap.second > .8f) {
+            SQINFO("pitch overlap %f too large to repair at %d and %d", pitchOverlap.second, firstRegion->lineNumber, secondRegion->lineNumber);
+            return true;
+        }
+        // If we have patched so much that we are our of order, give up
+        if (firstRegion->lokey > secondRegion->lokey) {
+            SQWARN("in overlap pitch, first=%d second=%d  ilnes %d,%d", firstRegion->lokey, secondRegion->lokey, firstRegion->lineNumber, secondRegion->lineNumber);
+            return true;
+            //assert(firstRegion->lokey <= secondRegion->lokey);  // sorted
+        }
+        while (pitchOverlap.first) {
+            const int firstRange = firstRegion->pitchRange();
+            const int secondRange = secondRegion->pitchRange();
+            if (firstRange >= secondRange) {
+                // There should be enough range to take on
+                if (firstRange < 2) {
+                    assert(false);
+                    return true;
+                }
+                // since we know first region starts before or at second,
+                // and that overlap isn't 100%, then
+                // we know shrinking 1 from the bottom will help
+                firstRegion->hikey -= 1;
+                --pitchOverlap.first;
+            } else {
+                if (secondRange < 2) {
+                    assert(false);
+                    return true;
+                }
+                secondRegion->lokey += 1;
+                --pitchOverlap.first;
+            }
+        };
+    }
+    return false;
+}
+
+bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion) {
+    const int hk1 = firstRegion->hikey;
+    const int hk2 = secondRegion->hikey;
+    const int lk1 = firstRegion->lokey;
+    const int lk2 = secondRegion->lokey;
+
+    const int hv1 = firstRegion->hivel;
+    const int hv2 = secondRegion->hivel;
+    const int lv1 = firstRegion->lovel;
+    const int lv2 = secondRegion->lovel;
+
+#ifdef _LOGOV
+    printf("overlap comparing line %d with %d\n", firstRegion->lineNumber, secondRegion->lineNumber);
+    printf("  first pitch=%d,%d, vel=%d,%d\n", firstRegion->lokey, firstRegion->hikey, firstRegion->lovel, firstRegion->hivel);
+    printf("  second pitch=%d,%d, vel=%d,%d\n", firstRegion->lokey, secondRegion->hikey, secondRegion->lovel, secondRegion->hivel);
+
+    printf("  first sw_ range=%d, %d. second=%d, %d", firstRegion->sw_lolast, firstRegion->sw_hilast, secondRegion->sw_lolast, secondRegion->sw_hilast);
+    printf("  overlap pitch = %d, overlap vel = %d\n", firstRegion->overlapsPitch(*secondRegion), firstRegion->overlapsVelocity(*secondRegionn));
+#endif
+
+    // If there is no overlap, then everything is fine.
+    // Can keep and use regions as they are
+    if (!regionsOverlap(firstRegion, secondRegion)) {
+        return false;
+    }
+
+    // ok, there is overlap. maybe we can tweak regions
+    // to make them not overlap any longer
+    auto pitchOverlap = firstRegion->overlapPitchAmount(*secondRegion);
+    auto velOverlap = firstRegion->overlapVelocityAmount(*secondRegion);
+    const bool velLessOverlap = velOverlap.second < pitchOverlap.second;
+
+    // first try to repair the property with the least overlap (pitch or velocity)
+    velLessOverlap ? attemptOverlapRepairWithVel(firstRegion, secondRegion) : attemptOverlapRepairWithPitch(firstRegion, secondRegion);
+
+    // if regions are good now, then stop
+    if (!regionsOverlap(firstRegion, secondRegion)) {
+        return false;
+    }
+
+    // If we still aren't good, might as well try patching the other one.
+    // After all one of these regsions will get discared if we can't fix it.
+    velLessOverlap ? attemptOverlapRepairWithPitch(firstRegion, secondRegion) : attemptOverlapRepairWithVel(firstRegion, secondRegion);
+    attemptOverlapRepairWithPitch(firstRegion, secondRegion);
+
+    bool stillBad = regionsOverlap(firstRegion, secondRegion);
+    if (stillBad) {
+        SQINFO("unable to repair overlaps at  %d and %d", firstRegion->lineNumber, secondRegion->lineNumber);
+
+        // If we can't repair, then restore everything,
+        // This ensures that post-delete the remaining region will be intact.
+        firstRegion->hikey = hk1;
+        secondRegion->hikey = hk2;
+        firstRegion->lokey = lk1;
+        secondRegion->lokey = lk2;
+
+        firstRegion->hivel = hv1;
+        secondRegion->hivel = hv2;
+        firstRegion->lovel = lv1;
+        secondRegion->lovel = lv2;
+    }
+    return stillBad;
+}
+
 void RegionPool::removeOverlaps() {
 #ifdef _LOGOV
     printf("enter remove overlaps there are %d regions\n",
@@ -189,6 +339,9 @@ void RegionPool::removeOverlaps() {
         //return removed;
     }
     sortByPitchAndVelocity(regions);
+
+
+
     using iterator = std::vector<CompiledRegionPtr>::iterator;
     for (iterator it = regions.begin(); it != regions.end();) {
         iterator itNext = it + 1;
@@ -199,25 +352,14 @@ void RegionPool::removeOverlaps() {
         }
         CompiledRegionPtr first = *it;
         CompiledRegionPtr second = *itNext;
-#ifdef _LOGOV
-        printf("overlap comparing line %d with %d\n", first->lineNumber, second->lineNumber);
-        printf("  first pitch=%d,%d, vel=%d,%d\n", first->lokey, first->hikey, first->lovel, first->hivel);
-        printf("  second pitch=%d,%d, vel=%d,%d\n", second->lokey, second->hikey, second->lovel, second->hivel);
 
-        printf("  first sw_ range=%d, %d. second=%d, %d", first->sw_lolast, first->sw_hilast, second->sw_lolast, second->sw_hilast);
-        printf("  overlap pitch = %d, overlap vel = %d\n", first->overlapsPitch(*second), first->overlapsVelocity(*second));
-#endif
-        if (first->overlapsPitch(*second) &&
-            first->overlapsVelocity(*second) &&
-            first->overlapsRand(*second) &&
-            first->sameSequence(*second)) {
+        if (evaluateOverlapsAndAttemptRepair(first, second)) {
             // keep the region with the smallest pitch range
             const int firstPitchRange = first->hikey - first->lokey;
             const int secondPitchRange = second->hikey - second->lokey;
             if (firstPitchRange <= secondPitchRange) {
-#ifdef _LOGOV
-                printf("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
-#endif
+                SQINFO("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
+
                 // if we want to erase the second one, do that.
                 // it still points at first, but next iteration there will be a different next;
                 regions.erase(itNext);

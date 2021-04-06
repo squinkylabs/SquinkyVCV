@@ -68,12 +68,18 @@ public:
     /**
      * high level entry point to compile an instrument.
      * will return null if error, and log the error cause as best it can.
+     * 
+     * TODO: resolve InstrumentInfo vs. SamplerErrorContext. what goes is which one?
+     * I'm thinking get rid of error context and put all in info?
      */
     static CompiledInstrumentPtr make(SamplerErrorContext&, const SInstrumentPtr);
-    void play(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
+    static CompiledInstrumentPtr make(const std::string& parseError);
+
+    // returns true if caused keyswitch
+    bool play(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) override;
     void _dump(int depth) const override;
     void _setTestMode(Tests t) {
-        testMode = t;
+        ciTestMode = t;
     }
 
     /**
@@ -96,14 +102,16 @@ public:
     static float velToGain2(int midiVelocity, float veltrack);
     static float velToGain(int midiVelocity, float veltrack);
 
+    bool isInError() const { return _isInError; }
 private:
     RegionPool regionPool;
-    Tests testMode = Tests::None;
+    Tests ciTestMode = Tests::None;
     InstrumentInfoPtr info;
 
     AudioMath::RandomUniformFunc rand = AudioMath::random();
 
     FilePath defaultPath;
+    bool _isInError = false;
 
     /**
      * Track all the unique relative paths here
@@ -130,8 +138,8 @@ private:
     /**
      * these helpers help fill in VoicePlayInfo
      */
-    static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, WaveLoader* loader, float sampleRate);
-    static void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack);
+    static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate);
+    static void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack, float regionVolumeDb);
 
-    void playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate);
+    bool playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate);
 };

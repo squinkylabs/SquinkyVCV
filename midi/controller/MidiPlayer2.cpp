@@ -3,6 +3,7 @@
 #include "MidiLock.h"
 #include "MidiPlayer2.h"
 #include "MidiSong.h"
+#include "SqLog.h"
 #include "TimeUtils.h"
 
 MidiPlayer2::MidiPlayer2(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr<MidiSong> song) :
@@ -16,7 +17,6 @@ MidiPlayer2::MidiPlayer2(std::shared_ptr<IMidiPlayerHost4> host, std::shared_ptr
         vx.setHost(host.get());
         vx.setIndex(i);
     }
-//    loopParams = nullptr;
 }
 
 void MidiPlayer2::setSong(std::shared_ptr<MidiSong> newSong)
@@ -73,8 +73,9 @@ float MidiPlayer2::getCurrentSubrangeLoopStart() const
 void MidiPlayer2::updateToMetricTime(double metricTime, float quantizationInterval, bool running)
 {
 #if defined(_MLOG) && 0
-    printf("MidiPlayer::updateToMetricTime metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizationInterval);
+    SQINFO("MidiPlayer::updateToMetricTime metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizationInterval);
 #endif
+
     assert(quantizationInterval != 0);
 
     if (!running) {
@@ -110,7 +111,6 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizati
         currentLoopIterationStart = 0;
     }
 
-
     // To implement loop start, we just push metric time up to where we want to start.
     // TODO: skip over initial stuff?
     
@@ -118,17 +118,25 @@ void MidiPlayer2::updateToMetricTimeInternal(double metricTime, float quantizati
    // if (loopParams && loopParams.load()->enabled) {
         metricTime += song->getSubrangeLoop().startTime;
     }
+
      // keep processing events until we are caught up
     while (playOnce(metricTime, quantizationInterval)) {
-
+#if 0
+        if (++debugCount > 20) {
+            SQWARN("broke out of hung loop");
+            assert(false);
+            break;
+        }
+#endif
     }
 }
 
 bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
 {
-#if defined(_MLOG) && 0
-    printf("MidiPlayer::playOnce metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizeInterval);
+#if defined(_MLOG) && 1
+    SQINFO("MidiPlayer::playOnce metrict=%.2f, quantizInt=%.2f\n", metricTime, quantizeInterval);
 #endif
+
     bool didSomething = false;
 
     didSomething = pollForNoteOff(metricTime);
@@ -143,6 +151,13 @@ bool MidiPlayer2::playOnce(double metricTime, float quantizeInterval)
     // when we pass then end.
     if (song->getSubrangeLoop().enabled) {
         auto loopEnd = song->getSubrangeLoop().endTime + currentLoopIterationStart;
+
+        // If the loop has zero time in it we will loop forever. It's probably some other bug
+        // causing this, but let's recover.
+        if (song->getSubrangeLoop().endTime <= song->getSubrangeLoop().startTime) {
+            return false;
+        }
+
         if (loopEnd <= metricTime) {
             currentLoopIterationStart += (song->getSubrangeLoop().endTime - song->getSubrangeLoop().startTime);
             curEvent = track->begin();

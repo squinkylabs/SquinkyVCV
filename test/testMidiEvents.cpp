@@ -674,6 +674,51 @@ static void testPitchUtilMidi()
     assertEQ(PitchUtils::pitchCVToMidi(vcvMiddleC + 1), midiMiddleC + 12);
 }
 
+static void testPitchUtilSemi()
+{
+    // octave up
+    assertClose(PitchUtils::semitoneToFreqRatio(12), 2, .001);
+    assertClose(PitchUtils::freqRatioToSemitone(2), 12, .001);
+
+    assertClose(PitchUtils::semitoneToFreqRatio(-12), .5, .001);
+    assertClose(PitchUtils::semitoneToFreqRatio(1), std::pow(2.f, 1 / 12.f), .001);
+
+    for (float f = -30; f < 30; f += .23f) {
+        const float x = PitchUtils::semitoneToFreqRatio(f);
+        const float y = PitchUtils::freqRatioToSemitone(x);
+        assertClose(y, f, .001);
+    }
+
+#if 0  // just a test of float vs double
+    // x1	1.05946314	const float
+    // x2	1.00000083	const float
+    // x3	1.0594630943592953	const double
+    // x4	1.0000000000000009	const double
+
+    // fourCent	1.0023131618421728	const double
+    // oneCent	1.0005777895065548	const double
+    // emiPlusFourCent	1.0619138039623575	const double
+
+    // what I see at end of semitone = 1.059463
+    // and it's measuring 4 cents sharp
+    // conclusion: the math is ok, but either the out of tune in "imaginary".
+    // or it's happening at playback.
+
+    const float x1 = PitchUtils::semitoneToFreqRatio(1);
+    const float x2 = PitchUtils::freqRatioToSemitone(x1);
+
+    const double x3 =  std::pow(2.0, 1.0 / 12.0);
+    const double x4 = 12.0 * std::log2(x3);
+
+    const double oneCent = std::pow(2.0, .01 / 12.0);
+    const double fourCent = std::pow(2.0, .04 / 12.0);
+    const double semiPlusFourCent = std::pow(2.0, 1.04 / 12.0);
+
+    assert(false);
+#endif
+    
+}
+
 void  testMidiEvents()
 {
     assertNoMidi();     // check for leaks
@@ -710,5 +755,6 @@ void  testMidiEvents()
     testPitchUtil2();
 
     testPitchUtilMidi();
+    testPitchUtilSemi();
     assertNoMidi();     // check for leaks
 }

@@ -2,14 +2,16 @@
 
 #include <set>
 
+#include "FilePath.h"
 #include "RandomRange.h"
 #include "SInstrument.h"
 #include "SLex.h"
 #include "SParse.h"
 #include "SqLog.h"
 #include "asserts.h"
-#include "pugixml.hpp"
+//#include "pugixml.hpp"
 
+#if 0
 static void testx0() {
     pugi::xml_document doc;
     pugi::xml_parse_result result = doc.load_file("fale_path.xml");
@@ -17,6 +19,7 @@ static void testx0() {
     int x = 5;
     assertEQ(status, pugi::xml_parse_status::status_file_not_found);
 }
+#endif
 
 static void testx1() {
     SLexPtr lex = SLex::go("<global>");
@@ -259,7 +262,6 @@ static void testLexSpaces2() {
     testLexSpaces2d();
 }
 
-
 static void testLexLabel() {
     std::string str("\nsw_label=abc def ghi");
     auto lex = SLex::go(str);
@@ -269,10 +271,9 @@ static void testLexLabel() {
     assertEQ(fname->idName, "abc def ghi");
 }
 
-
 #include <fstream>
 static void testLexMarimba2() {
-     std::string path("d:\\samples\\test\\PatchArena_marimba.sfz");
+    std::string path("d:\\samples\\test\\PatchArena_marimba.sfz");
 
     std::ifstream t(path);
     if (!t.good()) {
@@ -287,17 +288,15 @@ static void testLexMarimba2() {
         assert(false);
         return;
     }
-   
 
     auto lex = SLex::go(str);
-  
+
     assert(lex);
     lex->validate();
     lex->_dump();
     assertEQ(lex->items.size(), 1001);
-   // assert(false);
+    // assert(false);
 }
-
 
 static void testLexMarimba() {
     std::string str("<region> trigger=attack  pitch_keycenter=36 lokey=36 hikey=36 sample=PatchArena_marimba-036-c1.wav\r\n\r\n");
@@ -305,11 +304,108 @@ static void testLexMarimba() {
     assert(lex);
     lex->validate();
     const size_t items = lex->items.size();
-    lex->_dump();
     assert(items == 16);
-   // assert(false);
-   // SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
-  //  assertEQ(fname->idName, "abc def ghi");
+}
+
+static void testLexIncludeMalformed() {
+    std::string str("#includ \"abc\"");
+    std::string err;
+    auto lex = SLex::go(str, &err);
+    assert(!lex);
+    assert(!err.empty());
+    assertEQ(err, "Malformed #include at line 1");
+}
+
+static void testLexIncludeBadFile() {
+    std::string str("#include \"abc\"");
+    std::string err;
+    FilePath fp("fake");
+    auto lex = SLex::go(str, &err, 0, &fp);
+
+    assert(!err.empty());
+    assertEQ(err, "Can't open abc included at line 1");
+
+    // this should error out, as "abc" can't be opened.
+    assert(!lex);
+}
+
+// This uses a "real" sfz on disk
+static void testLexIncludeSuccess() {
+    FilePath filePath(R"foo(D:\samples\test\test-include.sfz)foo");
+    std::ifstream t(filePath.toString());
+    assert(t.good());
+
+    std::string sContent((std::istreambuf_iterator<char>(t)),
+                         std::istreambuf_iterator<char>());
+
+    std::string err;
+    auto lex = SLex::go(sContent, &err, 0, &filePath);
+
+    assert(lex && err.empty());
+
+    assertEQ(lex->items.size(), 3);
+    assertEQ(int(lex->items[0]->itemType), int(SLexItem::Type::Tag));
+    assertEQ(int(lex->items[1]->itemType), int(SLexItem::Type::Tag));
+    assertEQ(int(lex->items[2]->itemType), int(SLexItem::Type::Tag));
+}
+
+// can we parse a simple define?
+static void testLexDefineSuccess() {
+    std::string content(R"foo(#define A 22)foo");
+    std::string err;
+    auto lex = SLex::go(content, &err, 0);
+
+    assert(lex && err.empty());
+    assertEQ(lex->items.size(), 0);
+}
+
+static void testLexDefineSuccess2() {
+    std::string content(R"foo(a=b #define A 22 c=d)foo");
+    std::string err;
+    auto lex = SLex::go(content, &err, 0);
+
+    assert(lex && err.empty());
+    assertEQ(lex->items.size(), 6);
+}
+
+static void testLexDefineSuccess3() {
+    std::string content(R"foo(
+<control>
+default_path=Soft String Spurs Samples/
+
+label_cc$MW=MW ($MW)
+)foo");
+    std::string err;
+    auto lex = SLex::go(content, &err, 0);
+    lex->_dump();
+
+    assert(lex && err.empty());
+    assertEQ(lex->items.size(), 7);
+}
+
+#if 0
+static void testLexDefineFail() {
+    std::string content(R"foo(#define A x=y)foo");
+    std::string err;
+    
+    auto lex = SLex::go(content, &err, 0);
+
+    assert(!lex && !err.empty());
+
+}
+#endif
+
+static void testLexLabel2() {
+    auto lex = SLex::go("label_cc7=Master Vol\nsample=\"abc def\"");
+    assert(lex);
+    assertEQ(lex->items.size(), 6);
+}
+
+static void testLexNewLine() {
+    auto lex = SLex::go("sample=BS DX7 Bright Bow-000-084-c5.wav\r\n");
+    assert(lex);
+    lex->_dump();
+    assertEQ(lex->items.size(), 3);
 }
 
 static void testparse1() {
@@ -341,6 +437,15 @@ static void testparse2() {
     SKeyValuePairPtr kv = region->values[0];
     assertEQ(kv->key, "pitch_keycenter");
     assertEQ(kv->value, "24");
+}
+
+// this sfz doesn't start with a heading,
+// we currently give a terrible error message
+static void testParseLabel2() {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go("label_cc7=Master Vol\nsample=abc", inst);
+    assert(!err.empty());
+    assertEQ(err.find("extra tok"), 0);
 }
 
 static void testParseMutliControls() {
@@ -466,14 +571,14 @@ static void testParseGlobalWithData() {
 static void testparse_piano1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     const char* p = R"foo(D:\samples\UprightPianoKW-small-SFZ-20190703\UprightPianoKW-small-20190703.sfz)foo";
-    auto err = SParse::goFile(p, inst);
+    auto err = SParse::goFile(FilePath(p), inst);
     assert(err.empty());
 }
 
 static void testparse_piano2() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     const char* p = R"foo(D:\samples\k18-Upright-Piano\k18-Upright-Piano.sfz)foo";
-    auto err = SParse::goFile(p, inst);
+    auto err = SParse::goFile(FilePath(p), inst);
     assert(err.empty());
 }
 
@@ -496,6 +601,24 @@ static void testParseSimpleDrum() {
     auto err = SParse::go(p, inst);
     assert(err.empty());
     assertEQ(inst->groups.size(), 2);
+}
+
+// make sure we dont' crash from parsing unused regions.
+static void testParseCurve() {
+    const char* p = R"foo(
+//--------------------------
+<curve>
+curve_index=7
+v000=0
+v001=1
+v127=1
+
+ )foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(p, inst);
+    assert(err.empty());
+    assertEQ(inst->groups.size(), 1);       // we should just have the one group
+    assertEQ(inst->groups[0]->regions.size(), 0);   // no regions
 }
 
 static void testRandomRange0() {
@@ -529,7 +652,7 @@ static void testParseDX() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     // maybe need to compile this...
-    auto err = SParse::goFile("D:\\samples\\__test\\BS-DX7-Bright-Bow.sfz", inst);
+    auto err = SParse::goFile(FilePath("D:\\samples\\__test\\BS-DX7-Bright-Bow.sfz"), inst);
     assert(err.empty());
     assertEQ(inst->groups.size(), 1);
 }
@@ -540,7 +663,7 @@ void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
 
-    testx0();
+    //testx0();
     testx1();
     testx2();
     testx3();
@@ -562,6 +685,15 @@ void testx() {
     testLexSpaces2();
     testLexLabel();
     testLexMarimba();
+    testLexIncludeMalformed();
+    testLexIncludeBadFile();
+    testLexIncludeSuccess();
+    testLexDefineSuccess();
+    testLexDefineSuccess2();
+    testLexDefineSuccess3();
+    //  testLexDefineFail();
+    testLexLabel2();
+    testLexNewLine();
 
     testparse1();
     testParseRegion();
@@ -573,6 +705,7 @@ void testx() {
     testParseGroups();
     testParseMutliControls();
     testParseGroupAndValues();
+    testParseLabel2();
 
     testParseGlobalWithData();
     testParseTwoGroupsA();
@@ -584,6 +717,7 @@ void testx() {
     testRandomRange0();
     testRandomRange1();
     testParseDX();
+    testParseCurve();
 
     assert(parseCount == 0);
 }

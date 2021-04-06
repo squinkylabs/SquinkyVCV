@@ -40,9 +40,9 @@ private:
 
     // 1 ms orig, but I measure as 2. I guess depends
     // how you define it.
-    const float MIN_TIME = .5e-3f;
-    const float MAX_TIME = 10.f;
-    const float LAMBDA_BASE = MAX_TIME / MIN_TIME;
+   // const float MIN_TIME = .5e-3f;
+   // const float MAX_TIME = 10.f;
+   // const float LAMBDA_BASE = MAX_TIME / MIN_TIME;
 
     int channels = 0;
     void setLambda(float_4& output, float input);
@@ -72,14 +72,20 @@ inline float_4 ADSRSampler::step(const float_4& gates, float sampleTime) {
     return env;
 }
 
-inline void ADSRSampler::setLambda(float_4& output, float input) {
-    float x = 10.f / input;
+inline void ADSRSampler::setLambda(float_4& output, float inputSec) {
+    // was 10, but was too slow
+    float x = 10.f / inputSec;
     float_4 x4(x);
     output = x4;
 }
 
 inline void ADSRSampler::setASec(float t) {
   //  SQINFO("set attack %f sec", t);
+
+    // A bit of a hack, but this makes our "truncated exp"
+    // attack come out somewhere near where the sfz
+    // linear attack would be.
+    t *= 6.25f;
     setLambda(attackLambda, t);
   //  SQINFO("lambda now %f", attackLambda[0]);
 }

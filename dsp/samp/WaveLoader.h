@@ -7,6 +7,18 @@
 
 #include "FilePath.h"
 
+// Abstract interface for audio files
+class WaveInfoInterface {
+public:
+    virtual ~WaveInfoInterface() = default;
+    virtual unsigned int getSampleRate() = 0;
+    virtual uint64_t getTotalFrameCount() = 0;
+    virtual bool isValid() const = 0;
+    virtual const float* getData() = 0;
+    virtual bool load(std::string& errorMsg) = 0;
+    virtual std::string getFileName() = 0;
+};
+
 class WaveLoader {
 public:
     enum class Tests {
@@ -14,7 +26,53 @@ public:
         DCOneSec,  // let's make one fake wave file that has one second of DC
         DCTenSec
     };
+    using WaveInfoPtr = std::shared_ptr<WaveInfoInterface>;
 
+    /** Sample files are added one at a time until "all"
+     * are loaded.
+     */
+    void addNextSample(const FilePath& fileName);
+
+    /**
+     * load() is called one - after all the samples have been added.
+     * load will load all of them.
+     * will return true is they all load.
+     */
+
+    enum class LoaderState {
+        Done,
+        Error,
+        Progress
+    };
+
+    // load up all the registered files
+    
+    LoaderState loadNextFile();
+    float getProgressPercent() const;
+
+    /**
+     * Index is one based. 
+     */
+    WaveInfoPtr getInfo(int index) const;
+    std::string lastError;
+
+
+    void _setTestMode(Tests);
+private:
+   // Tests _testMode = Tests::None;
+
+    std::vector<FilePath> filesToLoad;
+    std::vector<WaveInfoPtr> finalInfo;
+    static WaveInfoPtr loaderFactory(const FilePath& file);
+    void clear();
+    bool didLoad = false;
+    void validate();
+    int curLoadIndex = -1;
+};
+
+using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
+
+#if 0
     class WaveInfo {
     public:
         WaveInfo(const FilePath& fileName);
@@ -42,36 +100,4 @@ public:
         // static float* convertToMono(float* data, uint64_t frames, int channels);
         void convertToMono();
     };
-    using WaveInfoPtr = std::shared_ptr<WaveInfo>;
-
-    /** Sample files are added one at a time until "all"
-     * are loaded.
-     */
-    void addNextSample(const FilePath& fileName);
-
-    /**
-     * load() is called one - after all the samples have been added.
-     * load will load all of them.
-     * will return true is they all load.
-     */
-    bool load();
-
-    /**
-     * Index is one based. 
-     */
-    WaveInfoPtr getInfo(int index) const;
-    std::string lastError;
-
-
-    void _setTestMode(Tests);
-private:
-    Tests _testMode = Tests::None;
-
-    std::vector<FilePath> filesToLoad;
-    std::vector<WaveInfoPtr> finalInfo;
-    void clear();
-    bool didLoad = false;
-    void validate();
-};
-
-using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
+   #endif

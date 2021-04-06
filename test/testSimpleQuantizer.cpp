@@ -3,6 +3,8 @@
 #include "PitchUtils.h"
 #include "SimpleQuantizer.h"
 
+#include "SqLog.h"
+
 
 std::shared_ptr<SimpleQuantizer> makeTest(SimpleQuantizer::Scales scale = SimpleQuantizer::Scales::_12Even)
 {
@@ -11,7 +13,7 @@ std::shared_ptr<SimpleQuantizer> makeTest(SimpleQuantizer::Scales scale = Simple
     return std::shared_ptr<SimpleQuantizer>(ptr);
 }
 
-static void testSimpleQuanizerOctave(SimpleQuantizer::Scales scale)
+static void testSimpleQuantizerOctave(SimpleQuantizer::Scales scale)
 {
     auto q = makeTest();
     q->setScale(scale);
@@ -20,17 +22,21 @@ static void testSimpleQuanizerOctave(SimpleQuantizer::Scales scale)
     assertEQ(q->quantize(1), 1);
     assertEQ(q->quantize(-1), -1);
     assertEQ(q->quantize(10), 10);
+
+    // check that we round towards even semis
+    assertEQ(q->quantize(0 + PitchUtils::semitone * .4f), 0);
+    assertEQ(q->quantize(0 - PitchUtils::semitone * .4f), 0);
 }
 
-static void testSimpleQuanizerOctave() 
+static void testSimpleQuantizerOctave() 
 {
-    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_12Even);
-    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_8Even);
-    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_12Just);
-    testSimpleQuanizerOctave(SimpleQuantizer::Scales::_8Just);
+    testSimpleQuantizerOctave(SimpleQuantizer::Scales::_12Even);
+    testSimpleQuantizerOctave(SimpleQuantizer::Scales::_8Even);
+    testSimpleQuantizerOctave(SimpleQuantizer::Scales::_12Just);
+    testSimpleQuantizerOctave(SimpleQuantizer::Scales::_8Just);
 }
 
-static void testSimpleQuanizer12Even()
+static void testSimpleQuantizer12Even()
 {
     auto q = makeTest();
     for (int i = -12; i <= 12; ++i) {
@@ -39,7 +45,7 @@ static void testSimpleQuanizer12Even()
     }
 }
 
-static void testSimpleQuanizer8Even()
+static void testSimpleQuantizer8Even()
 {
     std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Even,  SimpleQuantizer::Scales::_8Even };
     SimpleQuantizer* p = new SimpleQuantizer(scales,
@@ -62,10 +68,10 @@ static void testSimpleQuanizer8Even()
     assertClose(q->quantize(6 * s), 5 * s, .0001);      // F#
     assertClose(q->quantize(8 * s), 7 * s, .0001);      // C#
     assertClose(q->quantize(10 * s), 9 * s, .0001);      // C#
-    
+
 }
 
-static  void testSimpleQuanizerOff()
+static  void testSimpleQuantizerOff()
 {
     auto q = makeTest(SimpleQuantizer::Scales::_off);
 
@@ -75,12 +81,103 @@ static  void testSimpleQuanizerOff()
     assertEQ(q->quantize(9.999f), 9.999f);
 }
 
+static float getFreq(float cv) {
+    return float(261.63 * std::pow(2.0, cv));
+}
+
+static void testSimpleQuantizer12J()
+{
+    std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_12Just };
+    SimpleQuantizer* p = new SimpleQuantizer(scales,
+        SimpleQuantizer::Scales::_12Just);
+    auto q = std::shared_ptr<SimpleQuantizer>(p);
+
+    float x = q->quantize(0 * PitchUtils::semitone);
+    assertClose(getFreq(x), 261.63f, .001);
+
+    x = q->quantize(1 * PitchUtils::semitone);
+    assertClose(getFreq(x), 279.07f, .01);
+
+    x = q->quantize(2 * PitchUtils::semitone);
+    assertClose(getFreq(x), 294.33f, .01);
+
+    x = q->quantize(3 * PitchUtils::semitone);
+    assertClose(getFreq(x), 313.96f, .01);
+
+    x = q->quantize(4 * PitchUtils::semitone);
+    assertClose(getFreq(x), 327.03f, .01);
+
+    x = q->quantize(5 * PitchUtils::semitone);
+    assertClose(getFreq(x), 348.83f, .02);
+
+    x = q->quantize(6 * PitchUtils::semitone);
+    assertClose(getFreq(x), 367.92f, .01);
+
+    x = q->quantize(7 * PitchUtils::semitone);
+    assertClose(getFreq(x), 392.44f, .01);
+
+    x = q->quantize(8 * PitchUtils::semitone);
+    assertClose(getFreq(x), 418.60f, .01);
+
+    x = q->quantize(9 * PitchUtils::semitone);
+    assertClose(getFreq(x), 436.05f, .01);
+
+    x = q->quantize(10 * PitchUtils::semitone);
+    assertClose(getFreq(x), 470.93f, .01);
+
+    x = q->quantize(11 * PitchUtils::semitone);
+    assertClose(getFreq(x), 490.55f, .01);
+
+    x = q->quantize(12 * PitchUtils::semitone);
+    assertClose(getFreq(x), 523.25f, .02);
+}
+
+static void testSimpleQuantizer8J()
+{
+    std::vector< SimpleQuantizer::Scales> scales = { SimpleQuantizer::Scales::_8Just };
+    SimpleQuantizer* p = new SimpleQuantizer(scales,
+        SimpleQuantizer::Scales::_8Just);
+    auto q = std::shared_ptr<SimpleQuantizer>(p);
+
+    // C
+    float x = q->quantize(0 * PitchUtils::semitone);
+    assertClose(getFreq(x), 261.63f, .001);
+
+    // D
+    x = q->quantize(2 * PitchUtils::semitone);
+    assertClose(getFreq(x), 294.33f, .01);
+
+    // E
+    x = q->quantize(4 * PitchUtils::semitone);
+    assertClose(getFreq(x), 327.03f, .01);
+
+    // F
+    x = q->quantize(5 * PitchUtils::semitone);
+    assertClose(getFreq(x), 348.83f, .02);
+
+    // G
+    x = q->quantize(7 * PitchUtils::semitone);
+    assertClose(getFreq(x), 392.44f, .01);
+
+    // A
+    x = q->quantize(9 * PitchUtils::semitone);
+    assertClose(getFreq(x), 436.05f, .01);
+
+    // B
+    x = q->quantize(11 * PitchUtils::semitone);
+    assertClose(getFreq(x), 490.55f, .01);
+
+    // C
+    x = q->quantize(12 * PitchUtils::semitone);
+    assertClose(getFreq(x), 523.25f, .02);
+}
 
 void testSimpleQuantizer()
 {
-    testSimpleQuanizerOctave();
-    testSimpleQuanizer12Even();
-    testSimpleQuanizer8Even();
-    testSimpleQuanizerOff();
-
+    testSimpleQuantizerOctave();
+    testSimpleQuantizer12Even();
+    testSimpleQuantizer8Even();
+    testSimpleQuantizerOff();
+    testSimpleQuantizer8J();
+    testSimpleQuantizer12J();
 }

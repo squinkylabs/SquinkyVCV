@@ -2,61 +2,36 @@
 #include "Sampler4vx.h"
 
 #include "CompiledInstrument.h"
+#include "PitchUtils.h"
 #include "SInstrument.h"
 #include "WaveLoader.h"
-
-#if 0
-Sampler4vx::Sampler4vx() {
-    divn.setup(32, [this] {
-        this->step_n();
-    });
-}
-#endif
 
 void Sampler4vx::setPatch(CompiledInstrumentPtr inst) {
     patch = inst;
 }
 
+const float Sampler4vx::defaultAttackSec = {.001f};
+const float Sampler4vx::defaultDecaySec = {.1f};
+const float Sampler4vx::defaultReleaseSec = {.3f};
+
 void Sampler4vx::setLoader(WaveLoaderPtr loader) {
     waves = loader;
-    adsr.setASec(.001f);
-    adsr.setDSec(.1f);
+
+    // While we are at it, let's initialize the ADSR.
+    adsr.setASec(defaultAttackSec);
+    adsr.setDSec(defaultDecaySec);
     adsr.setS(1);
-    adsr.setRSec(.3f);
+    adsr.setRSec(defaultReleaseSec);
 }
 
-#if 0
-void Sampler4vx::step_n() {
-    // only check time remaining if we have a patch
-    if (waves) {
-        float_4 remainingSamples = player.audioSamplesRemaining();
-        assertNE(sampleTime_, 0);
-        float_4 timeRemaining = remainingSamples * sampleTime_;
-        shutOffNow_ = timeRemaining < releaseTime_;
-    }
-}
-#endif
-
-float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
+#ifdef _SAMPFM
+float_4 Sampler4vx::step(const float_4& gates, float sampleTime, const float_4& lfm, bool lfmEnabled) {
     sampleTime_ = sampleTime;
     if (patch && waves) {
-      //  divn.step();
-
-     //   float_4 gates = SimdBlocks::ifelse(shutOffNow_, SimdBlocks::maskFalse(), _gates);
         simd_assertMask(gates);
 
         float_4 envelopes = adsr.step(gates, sampleTime);
-        float_4 samples = player.step();
-
-        //
-#if 0
-        const bool b = acc.go(samples[0]);
-        if (b) {
-            auto x = acc.get();
-            SQINFO("g=%f, env=%f d=%f,%f", gates[0], envelopes[0], x.first, x.second);
-            SQINFO(" _gates=%f, shutOffNow=%f", _gates[0], shutOffNow_[0]);
-        }
-#endif
+        float_4 samples = player.step(lfm, lfmEnabled);
         // apply envelope and boost level
         return envelopes * samples * _outputGain();
     } else {
@@ -65,31 +40,102 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
     return 0.f;
 }
 
-void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
+void Sampler4vx::setExpFM(const float_4& value) {
+    fmCV = value;
+    updatePitch();
+}
+#endif
+
+#ifndef _SAMPFM
+
+float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
+    sampleTime_ = sampleTime;
+    if (patch && waves) {
+        simd_assertMask(gates);
+
+        float_4 envelopes = adsr.step(gates, sampleTime);
+        float_4 samples = player.step();
+        // apply envelope and boost level
+        return envelopes * samples * _outputGain();
+    } else {
+        return 0;
+    }
+    return 0.f;
+}
+#endif
+
+void Sampler4vx::updatePitch() {
+    // TODO: get rid of all this crazy semitone/ocatve stuff!!
+
+    float_4 combinedCV = fmCV * 12 + pitchCVFromKeyboard;
+    float_4 transposeAmt;
+    for (int i = 0; i < 4; ++i) {
+        transposeAmt[i] = PitchUtils::semitoneToFreqRatio(combinedCV[i]);
+    }
+    player.setTranspose(transposeAmt);
+#if 0
+    if (myIndex == 0) {
+        SQINFO("Sampler4vx::updatePitch %s", toStr(transposeAmt).c_str());
+    }
+#endif
+}
+
+bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
     if (!patch || !waves) {
         SQDEBUG("4vx not intit");
-        return;
+        return false;
+    }
+    if (patch->isInError()) {
+        assert(false);
     }
     VoicePlayInfo patchInfo;
     VoicePlayParameter params;
     params.midiPitch = midiPitch;
     params.midiVelocity = midiVelocity;
-    patch->play(patchInfo, params, waves.get(), sampleRate);
+    const bool didKS = patch->play(patchInfo, params, waves.get(), sampleRate);
     if (!patchInfo.valid) {
-        printf("could not get play info pitch %d vel%d\n", midiPitch, midiVelocity);
-        fflush(stdout);
-        return;
+        SQINFO("could not get play info pitch %d vel%d", midiPitch, midiVelocity);
+        player.clearSamples(channel);
+        return didKS;
     }
 
-  //  this->shutOffNow_[channel] = 0;
     WaveLoader::WaveInfoPtr waveInfo = waves->getInfo(patchInfo.sampleIndex);
-    assert(waveInfo->valid);
-    assert(waveInfo->numChannels == 1);
-    player.setSample(channel, waveInfo->data, int(waveInfo->totalFrameCount));
-    player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
+    assert(waveInfo->isValid());
+#if 0
+    SQINFO("played file=%s", waveInfo->getFileName().c_str());
+#endif
+
+    player.setSample(channel, waveInfo->getData(), int(waveInfo->getTotalFrameCount()));
     player.setGain(channel, patchInfo.gain);
 
-    std::string sample = waveInfo->fileName.getFilenamePart();
+    // I don't think this test cares what we set the player too
+
+#ifdef _SAMPFM
+
+    const float transposeCV = patchInfo.transposeV * 12;
+    pitchCVFromKeyboard[channel] = transposeCV;
+    updatePitch();
+#if 0  // old way
+    const float transposeCV = patchInfo.transposeV * 12 + 12 * fmCV[channel];
+    const float transposeAmt = PitchUtils::semitoneToFreqRatio(transposeCV);
+
+#if 0
+    SQINFO("");
+    SQINFO("trans from patch = %f trans from fm = %f", patchInfo.transposeV * 12, fmCV[channel]);
+    SQINFO("total transCV %f", transposeCV);
+    SQINFO("final amt, after exp = %f", transposeAmt);
+    SQINFO("will turn on needs transpose for now...");
+#endif
+    //  player.setTranspose(channel, patchInfo.needsTranspose, transposeAmt);
+
+    player.setTranspose(channel, true, transposeAmt);
+#endif
+
+#else
+    player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
+#endif
+
+   // std::string sample = waveInfo->fileName.getFilenamePart();
     // SQINFO("play vel=%d pitch=%d gain=%f samp=%s", midiVelocity, midiPitch, patchInfo.gain, sample.c_str());
 
     // this is a little messed up - the adsr should really have independent
@@ -97,7 +143,16 @@ void Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     R[channel] = patchInfo.ampeg_release;
     adsr.setRSec(R[channel]);
     releaseTime_ = patchInfo.ampeg_release;
+    return didKS;
 }
 
 void Sampler4vx::setNumVoices(int voices) {
+}
+
+bool Sampler4vx::_isTransposed(int channel) const {
+    return player._isTransposed(channel);
+}
+
+float Sampler4vx::_transAmt(int channel) const {
+    return player._transAmt(channel);
 }

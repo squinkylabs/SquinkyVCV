@@ -9,20 +9,30 @@
 #include "CubicInterpolator.h"
 #include "SqLog.h"
 
-float_4 Streamer::step() {
-    float_4 ret;
+#define _INTERP
 
+
+float_4 Streamer::step(float_4 fm, bool fmEnabled) {
+    float_4 ret;
+    // SQINFO("St:Step %d, %s", fmEnabled, toStr(fm).c_str());
     for (int channel = 0; channel < 4; ++channel) {
         ChannelData& cd = channels[channel];
 
         if (cd.data) {
-        // I guess we can get called when this it true. do we even care? is the variable useful?
-        // assert(cd.arePlaying);
-        float f = cd.transposeEnabled ? stepTranspose(cd) : stepNoTranspose(cd);
-        assert(f <= 1);
-        assert(f >= -1);
-        f *= cd.gain;
-        ret[channel] = f;
+            const bool doInterp = true;         // until we can figure out a way to enable it without pops, we will leave "no transpose" disabled.
+            //const bool doInterp = cd.transposeEnabled || fmEnabled;
+
+            float scalarData = doInterp ? stepTranspose(cd, fm[channel]) : stepNoTranspose(cd);
+
+            const float acceptable = 1.1f;
+            if (scalarData > acceptable || scalarData < -acceptable) {
+                SQWARN("bad sample value from step %f", scalarData);
+                SQWARN("pos = %, %df", cd.curFloatSampleOffset, cd.curIntegerSampleOffset);
+            }
+            assert(scalarData <= acceptable);
+            assert(scalarData >= -acceptable);
+            scalarData *= cd.gain;
+            ret[channel] = scalarData;
         } else {
             // now we called in this state sometimes. Not sure why,
             // but it certainly seems reasonable to handle it.
@@ -32,24 +42,30 @@ float_4 Streamer::step() {
     return ret;
 }
 
-float Streamer::stepTranspose(ChannelData& cd) {
-   // SQINFO("step tran off=%f, frames=%f data=%p", cd.curFloatSampleOffset, cd.frames, cd.data);
+float Streamer::stepTranspose(ChannelData& cd, float lfm) {
     float ret = 0;
-    assert(cd.transposeEnabled);
 
-    if (CubicInterpolator<float>::canInterpolate(cd.curFloatSampleOffset, cd.frames)) {
-        // if (cd.curFloatSampleOffset < (cd.frames)) {
-        //  assert(cd.arePlaying);
+    if (CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         if (!cd.arePlaying) {
             SQWARN("why are we playing a streamer not started? pl=%d, fo=%f, io=%d", cd.arePlaying, cd.curFloatSampleOffset, cd.curIntegerSampleOffset);
             assert(false);
         }
 
-        ret = CubicInterpolator<float>::interpolate(cd.data, cd.curFloatSampleOffset);
+#ifdef _INTERP
+        ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
+#else
+a b
+        size_t index = cd.curFloatSampleOffset;
+        ret = cd.data[index];
+#endif
+        // advance the sample offset
         cd.curFloatSampleOffset += cd.transposeMultiplier;
+        cd.curFloatSampleOffset += lfm;
+        cd.curFloatSampleOffset = std::max(2.0, cd.curFloatSampleOffset);
     }
 
-    if (!CubicInterpolator<float>::canInterpolate(cd.curFloatSampleOffset, cd.frames)) {
+
+    if (!CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         cd.arePlaying = false;
     }
 
@@ -57,7 +73,7 @@ float Streamer::stepTranspose(ChannelData& cd) {
 }
 
 float Streamer::stepNoTranspose(ChannelData& cd) {
-   // SQINFO("step no tran");
+    assert(false);
     float ret = 0;
     assert(!cd.transposeEnabled);
 
@@ -68,7 +84,6 @@ float Streamer::stepNoTranspose(ChannelData& cd) {
         ++cd.curIntegerSampleOffset;
     }
     if (cd.curIntegerSampleOffset >= cd.frames) {
-        //  SQINFO("play to end");
         cd.arePlaying = false;
     }
 
@@ -86,7 +101,7 @@ void Streamer::setGain(int channel, float gain) {
     cd.gain = gain;
 }
 
-void Streamer::setSample(int channel, float* d, int f) {
+void Streamer::setSample(int channel, const float* d, int f) {
     assert(channel < 4);
     ChannelData& cd = channels[channel];
 
@@ -101,58 +116,57 @@ void Streamer::setSample(int channel, float* d, int f) {
 #endif
     cd.data = d;
     cd.frames = f;
-    cd.arePlaying = true;           // this variable doesn't mean much, but???
+    cd.arePlaying = true;  // this variable doesn't mean much, but???
     cd.curIntegerSampleOffset = 0;
     cd.curFloatSampleOffset = 1;  // start one past, to allow for interpolator padding
     cd.vol = 1;
 }
 
 void Streamer::clearSamples() {
-    SQINFO("Streamer::clearSamples()");
-    for (int channel=0; channel<4; ++channel) {
-        setSample(channel, nullptr, 0);
+    // SQINFO("Streamer::clearSamples()");
+    for (int channel = 0; channel < 4; ++channel) {
+        clearSamples(channel);
     }
 }
 
+void Streamer::clearSamples(int channel) {
+    setSample(channel, nullptr, 0);
+}
+
+void Streamer::setTranspose(float_4 amount) {
+    // TODO: make more efficient!!
+    for (int channel = 0; channel < 4; ++channel) {
+        ChannelData& cd = channels[channel];
+        float xpose = amount[channel];
+        float delta = std::abs(xpose - 1);
+        bool doTranspose = delta > .0001;  // TODO: is this in tune enough?
+
+#if 0
+        if ((doTranspose != cd.transposeEnabled) || (xpose != cd.transposeMultiplier)) {
+            SQINFO("");
+            SQINFO("pose was %d / %f", cd.transposeEnabled, cd.transposeMultiplier);
+            SQINFO("will be %d / %f", doTranspose, xpose);
+        }
+#endif
+        cd.transposeEnabled = doTranspose;
+        cd.transposeMultiplier = xpose;
+
+
+#if 0
+        if (myIndex == 0 && channel == 0) {
+            SQINFO("Streamer::setTranspose %f, %d", xpose, doTranspose)
+        }
+#endif
+    }
+}
+
+#if 0
 void Streamer::setTranspose(int channel, bool doTranspose, float amount) {
-    // printf("streamer trans ch=%d amd=%f\n", channel, amount); fflush(stdout);
+    SQINFO("streamer trans ch=%d amt=%f\n", channel, amount);
     assert(channel < 4);
     ChannelData& cd = channels[channel];
     cd.transposeEnabled = doTranspose;
     cd.transposeMultiplier = amount;
-}
-
-#if 0
-float_4 Streamer::audioSamplesRemaining() const {
-    //SQINFO("");
-    float_4 ret(0);
-    for (int channel = 0; channel < 4; ++channel) {
-        const ChannelData& cd = channels[channel];
-
-        const unsigned curPosition = std::max<unsigned>(cd.curIntegerSampleOffset, (unsigned)cd.curFloatSampleOffset);
-        int framesRemaining = cd.frames - curPosition;
-        // assert(framesRemaining >= 0);
-       // SQINFO("rf[%d]= %d, pos=%d, fm=%d ", channel, framesRemaining, curPosition, cd.frames);
-        if (framesRemaining < 0) {
-            //SQWARN("frames rem =%d", framesRemaining);
-
-            if (framesRemaining <= -10) {
-                SQINFO("we have %d frames, pos = %d", cd.frames, curPosition);
-                cd._dump();
-
-                // I think assert valid will catch this now.
-             //   assert(framesRemaining > -10);
-            }
-        }
-        framesRemaining = std::max(framesRemaining, 0);
-
-        // kind of sleazy forcing this into a float, but it will be fine.
-        ret[channel] = float(framesRemaining);
-    }
-    //SQINFO("samp remain ret %s", toStr(ret).c_str());
-
-
-    return ret;
 }
 #endif
 
@@ -162,27 +176,31 @@ void Streamer::ChannelData::_dump() const {
 }
 
 void Streamer::_assertValid() {
-#if 1
     for (int channel = 0; channel < 4; ++channel) {
         ChannelData& cd = channels[channel];
 
         if (cd.transposeEnabled) {
-            SQINFO("finihs overrun checking!");
             if (cd.arePlaying)
-                assert(CubicInterpolator<float>::canInterpolate(cd.curFloatSampleOffset, cd.frames));
-
-        }
-        else {
+                assert(CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames));
+        } else {
             // these can be equal, if we play past end
             if (cd.arePlaying) {
                 assert(cd.curIntegerSampleOffset < cd.frames);
-            }
-            else {
+            } else {
                 assert(cd.curIntegerSampleOffset <= cd.frames);
             }
         }
     }
-#endif
-   
+}
 
+bool Streamer::_isTransposed(int channel) const {
+    assert(channel < 4);
+    const ChannelData& cd = channels[channel];
+    return cd.transposeEnabled;
+}
+
+float Streamer::_transAmt(int channel) const {
+    assert(channel < 4);
+    const ChannelData& cd = channels[channel];
+    return cd.transposeMultiplier;
 }

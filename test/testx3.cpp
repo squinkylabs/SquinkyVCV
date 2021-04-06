@@ -1,11 +1,12 @@
 
 #include <asserts.h>
+
 #include "CompiledInstrument.h"
 #include "SInstrument.h"
 #include "SLex.h"
 #include "SParse.h"
-#include "SqLog.h"
 #include "SamplerErrorContext.h"
+#include "SqLog.h"
 
 extern void testPlayInfoTinnyPiano();
 extern void testPlayInfoSmallPiano();
@@ -34,11 +35,10 @@ static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::
     sr->compiledValues = SamplerSchema::compile(errc, sr->values);
     assert(errc.empty());
 
-    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>();
+    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(45);
     r0->addRegionInfo(sr->compiledValues);
 
-
-  //  //CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
+    //  //CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
     return r0;
 }
 
@@ -80,6 +80,33 @@ static void testOverlap() {
     testOverlap(false);
 }
 
+static void testParitalOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, float expectedOverlap, int expectedIntOverlap) {
+    assert(mina <= maxa);
+    assert(minb <= maxb);
+    SGroupPtr gp = std::make_shared<SGroup>(1234);
+    SamplerErrorContext errc;
+    gp->compiledValues = SamplerSchema::compile(errc, gp->values);
+    auto regionA = makeTestRegion(gp, testPitch, std::to_string(mina), std::to_string(maxa));
+    auto regionB = makeTestRegion(gp, testPitch, std::to_string(minb), std::to_string(maxb));
+    auto overlap = testPitch ? regionA->overlapPitchAmount(*regionB) : regionA->overlapVelocityAmount(*regionB);
+   // assertEQ(overlap, shouldOverlap)
+    assertClose(overlap.second, expectedOverlap, .01);
+    assertEQ(overlap.first, expectedIntOverlap);
+}
+
+static void testPartialOverlap(bool testPitch) {
+    testParitalOverlapSub(testPitch, 10, 20, 30, 40, 0, 0);         // no overlap
+    testParitalOverlapSub(testPitch, 1, 2, 2, 3, .5f, 1);           // one overlap, simple case
+    testParitalOverlapSub(testPitch, 10, 20, 20, 30, .1f, 1);       // one overlap
+    testParitalOverlapSub(testPitch, 10, 20, 10, 20, 1, 11);
+    testParitalOverlapSub(testPitch, 10, 20, 15, 25, 6.f / 11.f, 6);
+    testParitalOverlapSub(testPitch, 15, 25, 10, 20, 6.f / 11.f, 6);
+}
+static void testPartialOverlap() {
+    testPartialOverlap(false);
+    testPartialOverlap(true); 
+}
+
 static char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo";
 static char* snare = R"foo(D:\samples\SalamanderDrumkit\snare.sfz)foo";
 static char* allSal = R"foo(D:\samples\SalamanderDrumkit\all.sfz)foo";
@@ -87,7 +114,7 @@ static char* allSal = R"foo(D:\samples\SalamanderDrumkit\all.sfz)foo";
 static void testSmallPianoVelswitch() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-    auto err = SParse::goFile(smallPiano, inst);
+    auto err = SParse::goFile(FilePath(smallPiano), inst);
     assert(err.empty());
 
     SamplerErrorContext errc;
@@ -98,7 +125,6 @@ static void testSmallPianoVelswitch() {
     params.midiVelocity = 60;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
-
 
     params.midiPitch = 64;
     params.midiVelocity = 1;
@@ -150,21 +176,18 @@ static void testSnareBasic() {
     printf("\n------- testSnareBasic\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-    auto err = SParse::goFile(snare, inst);
+    auto err = SParse::goFile(FilePath(snare), inst);
     assert(err.empty());
 
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     VoicePlayInfo info;
-    // cinst->_dump(0);
 }
 
 static void testAllSal() {
-    SQINFO("\n------- testAllSal");
-
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-    auto err = SParse::goFile(allSal, inst);
+    auto err = SParse::goFile(FilePath(allSal), inst);
     if (!err.empty()) SQFATAL(err.c_str());
     assert(err.empty());
 
@@ -174,10 +197,8 @@ static void testAllSal() {
     // cinst->_dump(0);
 }
 
-
 static void testKeswitchCompiled() {
-     SQINFO("\n------ testKeyswitchCompiled");
-     static char* patch = R"foo(
+    static char* patch = R"foo(
        <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 sw_hikey=15
         lokey=9
@@ -201,7 +222,6 @@ static void testKeswitchCompiled() {
     pool._getAllRegions(regions);
     assertEQ(regions.size(), 2);
 
-
     // region with switch is not enabled yet
     assertEQ(regions[0]->isKeyswitched(), false);
     assertEQ(regions[0]->sw_lolast, 10);
@@ -220,8 +240,7 @@ static void testKeswitchCompiled() {
 
 // two regions at same pitch, but never on at the same time
 static void testKeswitchCompiledOverlap() {
-      SQINFO("\n------ testKeyswitchCompiled");
-     static char* patch = R"foo(
+    static char* patch = R"foo(
        <group>
         lokey=9
         hikey=11
@@ -250,15 +269,6 @@ static void testKeswitchCompiledOverlap() {
 }
 
 static void testKeyswitch() {
-    SQINFO("\n------ testKeyswitch");
-#if 0 // this one made the lexer freak out. Let's investigage (later)
-    static char* patch = R"foo(
-        <group> sw_last=10 sw_label=key switch label
-        sw_lokey=5 swhikey=15
-        sw_default=10
-        <region>
-        z)foo";
-#endif
     static char* patch = R"foo(
        <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 sw_hikey=15
@@ -283,7 +293,6 @@ static void testKeyswitch() {
 
 // this one has not default
 static void testKeyswitch15() {
-      SQINFO("\n------ testKeyswitch15");
     static char* patch = R"foo(
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15
@@ -307,8 +316,7 @@ static void testKeyswitch15() {
     }
     assert(errc.empty());
 
-
-// no selection, won't play
+    // no selection, won't play
     VoicePlayInfo info;
     VoicePlayParameter params;
     info.sampleIndex = 0;
@@ -320,33 +328,30 @@ static void testKeyswitch15() {
     cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
-// keyswitch with pitch 11
+    // keyswitch with pitch 11
     params.midiPitch = 11;
     cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
-// now play 50 again, should play first region
+    // now play 50 again, should play first region
     params.midiPitch = 50;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 
-// keyswitch with pitch 10
+    // keyswitch with pitch 10
     params.midiPitch = 10;
     cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
-// now play 50 again, should play second region
+    // now play 50 again, should play second region
     params.midiPitch = 50;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
-
-
 }
 
 static void testKeyswitch2() {
-      SQINFO("\n------ testKeyswitch 2");
     static char* patch = R"foo(
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15
@@ -377,8 +382,7 @@ static void testKeyswitch2() {
     assertEQ(regions[0]->sw_default, 10);
     assertEQ(regions[1]->sw_default, 10);
 
-
-// default keyswitch
+    // default keyswitch
     VoicePlayInfo info;
     VoicePlayParameter params;
     info.sampleIndex = 0;
@@ -395,28 +399,320 @@ static void testKeyswitch2() {
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
 
-// keyswitch
+    // keyswitch
     params.midiPitch = 11;
     cinst->play(info, params, nullptr, 0);
     assert(!info.valid);
 
-// other one
+    // other one
     params.midiPitch = 50;
     cinst->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 }
 
-void testx3() {
+static void testOverlapVel() {
+    SQINFO("---- testOverlapVel");
+    static char* patch = R"foo(
+    <group> // kick - snares on
+    key=48
+    volume=10
+    <region> 
+    sample=a
+    lovel=0
+    hivel=30
+    <region>
+    sample=b
+    lovel=30
+    hivel=60
+    <region>
+    sample=c
+    lovel=60
+    hivel=90
+    <region>
+    sample=d
+    lovel=90
+        )foo";
 
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(patch, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    assert(errc.empty());
+
+    std::vector<CompiledRegionPtr> regions;
+    cinst->_pool()._getAllRegions(regions);
+    const size_t c = regions.size();
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    
+    params.midiPitch= 48;
+    params.midiVelocity = 1;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 1);
+
+    // first region gets shrunk, so second region plays here
+    params.midiVelocity = 30;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);  
+
+    params.midiVelocity = 31;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+
+    params.midiVelocity = 59;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+
+    // second gets shrunk
+    params.midiVelocity = 60;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiVelocity = 61;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiVelocity = 90;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiVelocity = 91;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 4);
+
+    params.midiVelocity = 127;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 4);
+}
+
+static void testOverlapPitch() {
+    SQINFO("---- testOverlapVel");
+    static char* patch = R"foo(
+    <region> 
+    sample=a
+    lokey=0
+    hikey=30
+    <region>
+    sample=b
+    lokey=30
+    hikey=60
+    <region>
+    sample=c
+    lokey=60
+    hikey=90
+    <region>
+    sample=d
+    lokey=90
+        )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(patch, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    assert(errc.empty());
+
+    std::vector<CompiledRegionPtr> regions;
+    cinst->_pool()._getAllRegions(regions);
+    const size_t c = regions.size();
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+
+    params.midiPitch = 1;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 1);
+
+    // first region gets shrunk, so second region plays here
+    params.midiPitch = 30;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+
+    params.midiPitch = 31;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+
+    params.midiPitch = 59;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 2);
+
+    // second gets shrunk
+    params.midiPitch = 60;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiPitch = 61;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiPitch = 90;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 3);
+
+    params.midiPitch = 91;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 4);
+
+    params.midiPitch = 127;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 4);
+}
+
+static void testOverlapRestore() {
+     static char* patch = R"foo(
+    <region> 
+    sample=a
+    lokey=0
+    hikey=127
+    <region>
+    sample=b
+    lokey=30
+    hikey=60
+        )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(patch, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    assert(errc.empty());
+
+    std::vector<CompiledRegionPtr> regions;
+    cinst->_pool()._getAllRegions(regions);
+    const size_t c = regions.size();
+    CompiledRegion* r = regions[0].get();
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+
+    // big region deleted, small one intact
+    params.midiPitch = 1;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
+
+    params.midiPitch = 29;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
+
+    params.midiPitch = 30;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 1);
+
+    params.midiPitch = 60;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.sampleIndex, 1);
   
+    params.midiPitch = 61;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
 
+    params.midiPitch = 127;
+    params.midiVelocity = 64;
+    cinst->play(info, params, nullptr, 0);
+    assert(!info.valid);
+}
+
+static void shouldFindMalformed(const char* input) {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    auto err = SParse::go(input, inst);
+    if (!err.empty()) SQFATAL(err.c_str());
+    assert(err.empty());
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    assert(cinst);
+    if (!errc.empty()) {
+        errc.dump();
+    }
+    assert(!errc.empty());
+}
+
+static void testMalformedRelease() {
+    shouldFindMalformed(R"foo(
+        <region>ampeg_release=abcd
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>ampeg_release=qb.3
+        )foo");
+}
+
+static void testMalformedKey() {
+    shouldFindMalformed(R"foo(
+        <region>key=abcd
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=c#
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=cn
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=c.
+        )foo");
+    shouldFindMalformed(R"foo(
+        <region>key=h3
+        )foo");
+}
+
+void testx3() {
     testAllSal();
     // work up to these
     assert(parseCount == 0);
 
-  //  testVelSwitch1();
+    //  testVelSwitch1();
     testOverlap();
+    testPartialOverlap();
 
     testSmallPianoVelswitch();
 
@@ -427,13 +723,18 @@ void testx3() {
     testSnareBasic();
     testAllSal();
 
-
     testKeswitchCompiled();
     testKeswitchCompiledOverlap();
     testKeyswitch();
     testKeyswitch15();
     testKeyswitch2();
 
+    testMalformedRelease();
+    testMalformedKey();
+
+    testOverlapVel();
+    testOverlapPitch();
+    testOverlapRestore();
 
     assert(parseCount == 0);
     assert(compileCount == 0);

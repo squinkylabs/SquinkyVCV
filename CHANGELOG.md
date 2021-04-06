@@ -2,9 +2,15 @@
 
 ## 10.0.16
 
+New module: SFZ Player.
+
+Fixed bugs in Substitute quantizer where just intonation was completely out of tune.
+
 Fixed bug in Comp where newly patched channels didn't have the correct settings until curve changed.
 
 Fixed bug in Comp where gain reduction meters would flicker.
+
+Fixed Seq++ bugs: saving, displaying, and re-loading looped ranges did not work correctly, and could even crash.
 
 ## 10.0.15
 

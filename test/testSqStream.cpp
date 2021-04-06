@@ -62,6 +62,14 @@ static void test6()
     assertEQ(a, "12.3");
 }
 
+static void test7()
+{
+    SqStream s;
+    s.add('x');
+    std::string a = s.str();
+    assertEQ(a, "x");
+}
+
 void testSqStream()
 {
     test0();
@@ -71,5 +79,5 @@ void testSqStream()
     test4();
     test5();
     test6();
-
+    test7();
 }

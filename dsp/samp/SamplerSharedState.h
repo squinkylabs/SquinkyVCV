@@ -21,7 +21,7 @@
 class SamplerSharedState {
 public:
     ~SamplerSharedState() {
-        SQINFO("dtor of SamplerSharedState");
+        // SQINFO("dtor of SamplerSharedState");
     }
     /** called from UI thread or worker thread
     */
@@ -42,6 +42,14 @@ public:
         }  // busy wait on atomic variable
     }
 
+    float uiw_getProgressPercent() {
+        return progressPercent;
+    }
+
+    void uiw_setLoadProgress(float pct) {
+        progressPercent = pct;
+    }
+
     // called from audio thread
     bool au_isSampleReloadRequested() const {
         return sampleReloadRequested;
@@ -54,6 +62,8 @@ public:
 private:
     std::atomic<bool> sampleReloadRequested = {false};
     std::atomic<bool> sampleReloadRequestGranted = {false};
+    std::atomic<float> progressPercent = {0};
 };
+
 
 using SamplerSharedStatePtr = std::shared_ptr<SamplerSharedState>;

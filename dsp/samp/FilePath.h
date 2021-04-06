@@ -23,6 +23,8 @@ public:
     // will return abc/def
     FilePath getPathPart() const;
     std::string getFilenamePart() const;
+    std::string getFilenamePartNoExtension() const;
+    std::string getExtensionLC() const;
 private:
     std::string data;
 
