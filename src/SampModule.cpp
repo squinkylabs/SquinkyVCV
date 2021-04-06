@@ -116,8 +116,7 @@ void SampModule::process(const ProcessArgs& args) {
 
 #define _TW
 
-static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/mar/docs/sfz-player.md";
-//static const char* helpUrl = "https://docs.google.com/document/d/1u0aNMgU48jRmy7Hd8WDtvvvUDQd9pOlNtknvWKs5qf0";
+static const char* helpUrl = "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/sfz-player.md";
 
 struct SampWidget : ModuleWidget {
     SampWidget(SampModule* m);
