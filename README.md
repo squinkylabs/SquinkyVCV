@@ -23,6 +23,7 @@ Beta testing by:
 * [soxa](https://soxsa.bandcamp.com)
 * [Espen Storø](https://www.youtube.com/user/espenstoro)
 * Joop van der Linden
+* Worker 13
 
 All third party software copyright information is in [LICENSE-dist.txt](./LICENSE-dist.txt)
 

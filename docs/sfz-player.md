@@ -1,5 +1,7 @@
 # SFZ Player
 
+![SFZ Player](./sfz-player.png)
+
 ## What the player does
 
 It is a VCV module that can load an SFZ instrument and convert CV and Gate into sounds. You can think of is as a sampler like Kontakt (from NI), only more stripped down. And free.

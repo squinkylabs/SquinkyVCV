@@ -10,6 +10,8 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 
 ![Intro 1 image](./intro-1-110.png)
 
+[SFZ Player](sfz-player.md) is a polyphonic sample player.
+
 [Basic VCO](./basic.md) is a tinny polyphonic VCO that is super clean and uses very little CPU.
 
 [Organ Three](./og.md) is a polyphonic "Organ" module based on the Hammond tone-wheel organs.
