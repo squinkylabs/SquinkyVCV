@@ -132,6 +132,8 @@ public:
         LIMITER_PARAM,
         FC_TRIM_PARAM,
         CV_UPDATE_FREQ,
+        VOL_PARAM,
+        SCHEMA_PARAM,
         NUM_PARAMS
     };
 
@@ -572,6 +574,12 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i) {
             break;
         case F2_Poly<TBase>::CV_UPDATE_FREQ:
             ret = {0, 1, 0, "CV update fidelity"};
+            break;
+        case F2_Poly<TBase>::VOL_PARAM:
+            ret = { 0, 100, 50, "Output volume" };
+            break;
+        case F2_Poly<TBase>::SCHEMA_PARAM:
+            ret = { 0, 10, 0, "schema" };
             break;
         default:
             assert(false);
