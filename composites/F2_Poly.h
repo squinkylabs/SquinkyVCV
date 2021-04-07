@@ -198,10 +198,12 @@ private:
     Topology topology_m = Topology::SINGLE;
     float_4 lastQv[4] = {-1};
     float_4 lastRv[4] = {-1};
+    float_4 volume = {-1};
 
     float_4 lastFcVC[4] = {-1};
     float lastFcKnob = -1;
     float lastFcTrim = -1;
+    float lastVolume = -1;
 
     float_4 processedRValue = -1;
 
@@ -214,6 +216,7 @@ private:
     void stepn();
     void stepm();
     void setupFreq();
+    void setupVolume();
     void setupModes();
     void setupProcFunc();
     void setupLimiter();
@@ -264,7 +267,7 @@ inline void F2_Poly<TBase>::stepm() {
 #if !defined(_ACDETECT)
     const bool hres = bool(.5f < std::round(F2_Poly<TBase>::params[CV_UPDATE_FREQ].value));
     stepNmax = hres ? 0 : 3;
-    #endif
+#endif
 }
 
 template <class TBase>
@@ -309,6 +312,18 @@ inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc2(float_4 freqVolts
     float_4 f1 = freq / r;
     float_4 f2 = freq * r;
     return std::make_pair(f1, f2);
+}
+
+template <class TBase>
+inline void F2_Poly<TBase>::setupVolume() {
+    const float v = F2_Poly<TBase>::params[VOL_PARAM].value;
+    if (lastVolume == v) {
+        return;
+    }
+
+    lastVolume = v;
+    const float procVolume = 8 * LookupTable<float>::lookup(*audioTaperLookupParams, v / 100);
+    volume = float_4(procVolume);
 }
 
 template <class TBase>
@@ -419,12 +434,12 @@ inline void F2_Poly<TBase>::checkForACCV() {
 
     float_4 total4 = float_4(0);
     for (int bank = 0; bank < numBanks_m; bank++) {
-        const int baseChannel = 4 * bank;  
+        const int baseChannel = 4 * bank;
         total4 += qPort.getPolyVoltageSimd<float_4>(baseChannel);
         total4 += rPort.getPolyVoltageSimd<float_4>(baseChannel);
         total4 += fcPort.getPolyVoltageSimd<float_4>(baseChannel);
     }
-    float total = total4[0] + total4[1] + total4[2] + total4[3]; 
+    float total = total4[0] + total4[1] + total4[2] + total4[3];
     bool b = ac.step(total);
     stepNmax = b ? 3 : 0;
     TBase::lights[LIGHT_TEST].value = b ? 10.f : 0.f;
@@ -438,10 +453,11 @@ inline void F2_Poly<TBase>::stepn() {
         return;
     }
     stepNcounter = 0;
-#ifdef _ACDETECT   
+#ifdef _ACDETECT
     checkForACCV();
 #endif
     setupFreq();
+    setupVolume();
 }
 
 template <class TBase>
@@ -578,10 +594,10 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i) {
             ret = {0, 1, 0, "CV update fidelity"};
             break;
         case F2_Poly<TBase>::VOL_PARAM:
-            ret = { 0, 100, 50, "Output volume" };
+            ret = {0, 100, 50, "Output volume"};
             break;
         case F2_Poly<TBase>::SCHEMA_PARAM:
-            ret = { 0, 10, 0, "schema" };
+            ret = {0, 10, 0, "schema"};
             break;
         default:
             assert(false);
