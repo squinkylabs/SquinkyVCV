@@ -408,13 +408,15 @@ static void testLexNewLine() {
     assertEQ(lex->items.size(), 3);
 }
 
-#if 0 //-----------------------------------------------------------------
+
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     auto err = SParse::go("random-text", inst);
     assert(!err.empty());
 }
+
+#if 0 //-----------------------------------------------------------------
 
 static void testParseRegion() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -714,9 +716,11 @@ void testx() {
     testLexLabel2();
     testLexNewLine();
 
+
+    testparse1();
     assert(false);
 #if 0
-    testparse1();
+   ;
     testParseRegion();
     testparse2();
     testParseGlobal();
