@@ -120,6 +120,8 @@ void RegionPool::sortByPitchAndVelocity(std::vector<CompiledRegionPtr>& array) {
 }
 
 bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
+    assert(false);
+#if 0   // port me
     for (auto group : in->groups) {
         auto cGroup = std::make_shared<CompiledGroup>(group);
         if (!cGroup->shouldIgnore()) {
@@ -145,6 +147,9 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
     bool bRet = fixupCompiledTree();
     fillRegionLookup();
     return bRet;
+#else
+    return false;
+#endif
 }
 
 void RegionPool::maybeAddToKeyswitchList(CompiledRegionPtr region) {

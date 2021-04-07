@@ -119,7 +119,6 @@
     <ClCompile Include="..\..\test\testSampComposite.cpp" />
     <ClCompile Include="..\..\test\testStreamer.cpp" />
     <ClCompile Include="..\..\test\testWavThread.cpp" />
-    <ClCompile Include="..\..\test\testx3.cpp" />
     <ClCompile Include="..\..\test\testAudioMath.cpp" />
     <ClCompile Include="..\..\test\testAudition.cpp" />
     <ClCompile Include="..\..\test\testBasic.cpp" />
@@ -214,10 +213,6 @@
     <ClCompile Include="..\..\test\testVocalAnimator.cpp" />
     <ClCompile Include="..\..\test\testWVCO.cpp" />
     <ClCompile Include="..\..\test\testx.cpp" />
-    <ClCompile Include="..\..\test\testx2.cpp" />
-    <ClCompile Include="..\..\test\testx4.cpp" />
-    <ClCompile Include="..\..\test\testx5.cpp" />
-    <ClCompile Include="..\..\test\testx6.cpp" />
     <ClCompile Include="..\..\util\SqLog.cpp" />
   </ItemGroup>
   <ItemGroup>

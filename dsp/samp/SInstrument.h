@@ -11,6 +11,13 @@
  */
 class SInstrument {
 public:
+    bool wasExpanded = false;
+};
+
+
+#if 0 // old one
+class SInstrument {
+public:
 
     SHeading global;
     SHeading master;
@@ -26,4 +33,5 @@ public:
 private:
     // bool testMode = false;
 };
+#endif
 using SInstrumentPtr = std::shared_ptr<SInstrument>;

@@ -10,15 +10,17 @@
 class SRegion;
 class SGroup;
 class CompiledRegion;
-class CompiledGroup;
+
+// we don't need this class anymore
+//class CompiledGroup;
 class VoicePlayInfo;
 class ISamplerPlayback;
 using SRegionPtr = std::shared_ptr<SRegion>;
 using SGroupPtr = std::shared_ptr<SGroup>;
 
 using CompiledRegionPtr = std::shared_ptr<CompiledRegion>;
-using CompiledGroupPtr = std::shared_ptr<CompiledGroup>;
-using CompiledGroupPtrWeak = std::weak_ptr<CompiledGroup>;
+//using CompiledGroupPtr = std::shared_ptr<CompiledGroup>;
+//using CompiledGroupPtrWeak = std::weak_ptr<CompiledGroup>;
 using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
 using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
 
@@ -93,7 +95,7 @@ public:
     float amp_veltrack = 100;
     float ampeg_release = .001f;
 
-    CompiledGroupPtrWeak weakParent;
+    //CompiledGroupPtrWeak weakParent;
     int lineNumber = -1;
 
     /** valid sample index starts at 1

@@ -21,7 +21,7 @@ static void testx0() {
 }
 #endif
 
-static void testx1() {
+static void testx_1() {
     SLexPtr lex = SLex::go("<global>");
     assert(lex);
     lex->validate();
@@ -31,7 +31,7 @@ static void testx1() {
     assertEQ(ptag->tagName, "global");
 }
 
-static void testx2() {
+static void testx_2() {
     SLexPtr lex = SLex::go("=");
     assert(lex);
     lex->validate();
@@ -39,7 +39,7 @@ static void testx2() {
     assert(lex->items[0]->itemType == SLexItem::Type::Equal);
 }
 
-static void testx3() {
+static void testx_3() {
     SLexPtr lex = SLex::go("qrst");
     assert(lex);
     lex->validate();
@@ -408,6 +408,7 @@ static void testLexNewLine() {
     assertEQ(lex->items.size(), 3);
 }
 
+#if 0 //-----------------------------------------------------------------
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -657,16 +658,34 @@ static void testParseDX() {
     assertEQ(inst->groups.size(), 1);
 }
 
+#endif //-------------------------------------------------
 extern int compileCount;
+
+void testx2() {
+    assert(false);
+}
+
+void testx3() {
+    assert(false);
+}
+void testx4() {
+    assert(false);
+}
+void testx5() {
+    assert(false);
+}
+void testx6() {
+    assert(false);
+}
 
 void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
 
     //testx0();
-    testx1();
-    testx2();
-    testx3();
+    testx_1();
+    testx_2();
+    testx_3();
     testxKVP();
     testxKVP2();
     testLexComment();
@@ -695,6 +714,8 @@ void testx() {
     testLexLabel2();
     testLexNewLine();
 
+    assert(false);
+#if 0
     testparse1();
     testParseRegion();
     testparse2();
@@ -718,6 +739,7 @@ void testx() {
     testRandomRange1();
     testParseDX();
     testParseCurve();
+#endif
 
     assert(parseCount == 0);
 }
