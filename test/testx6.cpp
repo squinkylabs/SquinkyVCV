@@ -6,10 +6,6 @@
 #include "asserts.h"
 
 static CompiledInstrumentPtr makeTest(const std::string& data) {
-#if 1
-    assert(false);
-    return nullpptr;
-#else
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
     assert(err.empty());
@@ -23,7 +19,6 @@ static CompiledInstrumentPtr makeTest(const std::string& data) {
     }
 
     return cinst;
-#endif
 }
 
 // verify that region overrides others

@@ -5,10 +5,8 @@
 #include "SamplerPlayback.h"
 #include "SamplerErrorContext.h"
 
-
 class st {
 public:
-#if 0
     static CompiledRegionPtr makeRegion(const std::string& s) {
         SInstrumentPtr inst = std::make_shared<SInstrument>();
         auto err = SParse::go(s.c_str(), inst);
@@ -30,5 +28,4 @@ public:
         cr->addRegionInfo(region->compiledValues);
         return cr;
     }
-#endif
 };

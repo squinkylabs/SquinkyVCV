@@ -270,7 +270,6 @@ CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMu
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-#if 0       // compiled group obsolete?
 CompiledGroup::CompiledGroup(SGroupPtr group) : lineNumber(group->lineNumber) {
     compileCount++;
 
@@ -308,7 +307,6 @@ bool CompiledGroup::shouldIgnore() const {
     bool dontIgnore = trigger == SamplerSchema::DiscreteValue::NONE || trigger == SamplerSchema::DiscreteValue::ATTACK;
     return !dontIgnore;
 }
-#endif
 
 CompiledRegion::Type CompiledGroup::type() const {
     CompiledRegion::Type theType = CompiledRegion::Type::Base;
