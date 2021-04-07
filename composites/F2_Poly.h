@@ -472,6 +472,11 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args) {
     (this->*procFun)(args);
 }
 
+#define ENDPROC(chan) \
+    output = rack::simd::clamp(output, -10.f, 10.f); \
+    output *= volume; \
+    outPort.setVoltageSimd(output, chan); \
+
 template <class TBase>
 inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessArgs& args) {
     SqInput& inPort = TBase::inputs[AUDIO_INPUT];
@@ -487,8 +492,10 @@ inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessAr
     }
 
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-    output = rack::simd::clamp(output, -10.f, 10.f);
-    outPort.setVoltageSimd(output, 0);
+  //  output = rack::simd::clamp(output, -10.f, 10.f);
+  //  output *= volume;
+  //  outPort.setVoltageSimd(output, 0);
+    ENDPROC(0);
 }
 
 template <class TBase>
@@ -500,8 +507,10 @@ inline void F2_Poly<TBase>::processOneBank12_lim(const typename TBase::ProcessAr
     output = limiter.step(output);
 
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-    output = rack::simd::clamp(output, -10.f, 10.f);
-    outPort.setVoltageSimd(output, 0);
+ //   output = rack::simd::clamp(output, -10.f, 10.f);
+ //   output *= volume;
+ //   outPort.setVoltageSimd(output, 0);
+    ENDPROC(0);
 }
 
 template <class TBase>
@@ -513,8 +522,9 @@ inline void F2_Poly<TBase>::processOneBank12_nolim(const typename TBase::Process
     output *= outputGain_n;
 
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-    output = rack::simd::clamp(output, -10.f, 10.f);
-    outPort.setVoltageSimd(output, 0);
+  //  output = rack::simd::clamp(output, -10.f, 10.f);
+  //  outPort.setVoltageSimd(output, 0);
+    ENDPROC(0);
 }
 
 template <class TBase>
@@ -554,9 +564,9 @@ inline void F2_Poly<TBase>::processGeneric(const typename TBase::ProcessArgs& ar
         }
 
         SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-        output = rack::simd::clamp(output, -10.f, 10.f);
-
-        outPort.setVoltageSimd(output, baseChannel);
+       //output = rack::simd::clamp(output, -10.f, 10.f);
+       // outPort.setVoltageSimd(output, baseChannel);
+        ENDPROC(baseChannel);
     }
 }
 
