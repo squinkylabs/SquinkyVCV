@@ -1,18 +1,17 @@
 
 #include "SParse.h"
 
+#include <assert.h>
+
 #include "FilePath.h"
 #include "SInstrument.h"
 #include "SLex.h"
 #include "SqLog.h"
 #include "SqStream.h"
 #include "share/windows_unicode_filenames.h"
-#include <assert.h>
 
 // global for mem leak detection
 int parseCount = 0;
-
-
 
 #if defined(ARCH_WIN)
 
@@ -72,7 +71,6 @@ std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
     return goCommon(s, inst, nullptr);
 }
 
-
 static std::string filter(const std::string& sInput) {
     std::string ret;
     for (char c : sInput) {
@@ -91,11 +89,10 @@ std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outPa
         assert(!lexError.empty());
         return lexError;
     }
-    //lex->_dump();
+    SQINFO("here is lex output we will parse");
+    lex->_dump();
 
-    assert(false);  // finish me
-    std::string sError = "finish me 97";
-  //  std::string sError = matchHeadingGroups(outParsedInstrument, lex);
+    std::string sError = matchHeadingGroups(outParsedInstrument, lex);
     if (!sError.empty()) {
         return sError;
     }
@@ -125,14 +122,258 @@ std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outPa
         return errorStream.str();
     }
 
-    assert(false);
-    sError = "finish me 129";
-#if 0
-    if (outParsedInstrument->groups.empty()) {
+    
+
+    if (outParsedInstrument->headings.empty()) {
         return "no groups or regions";
     }
-#endif
+
+    SQINFO("and here is parser ourput");
+    outParsedInstrument->_dump();
+
     return sError;
 }
 
+std::string SParse::matchHeadingGroups(SInstrumentPtr inst, SLexPtr lex) {
+    for (bool done = false; !done;) {
+        auto result = matchHeadingGroup(inst, lex);
+        if (result.res == Result::error) {
+            return result.errorMessage;
+        }
+        done = result.res == Result::no_match;
+    }
+    return "";
+}
 
+/* dummy version
+SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
+    assert(false);
+    Result result;
+    return result;
+}
+*/
+
+// I think now this just needs to match a single heading
+#if 1
+SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
+    bool matchedOneHeading = false;
+
+    SHeadingPtr theHeading;
+    Result result = matchSingleHeading(lex, theHeading);
+    if (result.res == Result::ok && theHeading) {
+        inst->headings.push_back(theHeading);
+    }
+    return result;
+
+#if 0
+    switch (result.res) {
+        case Result::ok:
+            assert(theHeading);
+            inst->headings.push_back(theHeading);
+            return result;
+            break;
+        case Result::error:
+            return result;
+            break;
+        case Result::no_match:
+            // if we match no headings, then we don't look for more,
+            // but it's not an error. region with no headings is ok
+            assert(result.errorMessage.empty());
+            result.res = Result::ok;
+            return result;
+    }
+    #endif
+
+#if 0
+    // There must be a better way
+    int lineNumber = 0;
+    if (lex->next()) {
+        lineNumber = lex->next()->lineNumber;
+    } else
+        assert(false);
+
+   // Result result;
+    SHeadingPtr newHeading = std::make_shared<SHeading>(lineNumber);
+    assert(false);
+#endif
+#if 0
+    // Getting here means we have successfully parsed at least one
+    // heading, and we are done with them. Now we just need to round up the regions
+
+    // and continue an get all the region children
+    // TODO: copy all the data into the new group!!
+
+    Result result;
+    SGroupPtr newGroup = std::make_shared<SGroup>(inst->currentGroup.lineNumber);
+    newGroup->values = inst->currentGroup.values;
+    inst->currentGroup.values.clear();
+
+    assert(newGroup);
+    // TODO: clean out control when appropriate
+    std::string regionsError = matchRegions(newGroup->regions, lex, inst->currentControl);
+    if (!regionsError.empty()) {
+        result.res = Result::Res::error;
+        result.errorMessage = regionsError;
+    }
+
+    if (!matchedOneHeading && newGroup->regions.empty()) {
+        result.res = Result::no_match;
+        // SQINFO("matchHeadingGroup found no match");
+    }
+
+    // if we found regions, then this group is "real"
+    if (result.res == Result::ok) {
+        inst->groups.push_back(newGroup);
+    }
+#endif
+    assert(false);
+    return result;
+}
+#endif
+
+#if 0
+static std::set<std::string> headingTags = {
+    {"region"},
+    {"group"},
+    {"global"},
+    {"control"},
+    {"master"},
+    {"curve"},
+    {"effect"},
+    {"midi"},
+    {"sample"}};
+#endif
+static std::map<std::string, SHeading::Type> headingTags = {
+    {"region", SHeading::Type::Region},
+    {"group", SHeading::Type::Group},
+    {"global", SHeading::Type::Global},
+    {"control", SHeading::Type::Control},
+    {"master", SHeading::Type::Master},
+    {"curve", SHeading::Type::Curve},
+    {"effect", SHeading::Type::Effect},
+    {"midi", SHeading::Type::Midi},
+    {"sample", SHeading::Type::Sample}
+};
+
+#if 0
+static bool isHeadingName(const std::string& s) {
+    // SQINFO("checking heading name %s", s.c_str());
+    return headingTags.find(s) != headingTags.end();
+}
+#endif
+SHeading::Type getHeadingType(const std::string& s) {
+    auto it = headingTags.find(s);
+    if (it == headingTags.end()) {
+        return SHeading::Type::Unknown; 
+    }
+    return it->second;
+}
+
+SParse::Result SParse::matchSingleHeading(SLexPtr lex, SHeadingPtr& outputHeading) {
+    Result result;
+
+    auto tok = lex->next();
+    if (!tok) {
+        result.res = Result::no_match;
+        return result; 
+    }
+
+    SHeading::Type headingType = getHeadingType(getTagName(tok));
+    if (headingType == SHeading::Type::Unknown) {
+        result.res = Result::no_match;
+        return result; 
+    }
+
+
+    // ok, here we matched a heading. Remember the name
+    // and consume the [heading] token.
+    const std::string tagName = getTagName(tok);
+    lex->consume();
+
+    // now extract out all the keys and values for this heading
+    SKeyValueList keysAndValues;
+    std::string s = matchKeyValuePairs(keysAndValues, lex);
+
+    if (!s.empty()) {
+        result.res = Result::Res::error;
+        result.errorMessage = s;
+        return result;
+    }
+
+    int lineNumber = 0;
+    if (lex->next()) {
+        lineNumber = lex->next()->lineNumber;
+    }
+    outputHeading = std::make_shared<SHeading>(headingType, lineNumber);
+
+    // it it's not a heading we know or care about, just drop the values
+
+    outputHeading->values = std::move(keysAndValues);
+    return result;
+}
+
+std::string SParse::matchKeyValuePairs(SKeyValueList& values, SLexPtr lex) {
+    for (bool done = false; !done;) {
+        auto result = matchKeyValuePair(values, lex);
+        if (result.res == Result::error) {
+            return result.errorMessage;
+        }
+        done = result.res == Result::no_match;
+    }
+
+    return "";
+}
+
+SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
+    auto keyToken = lex->next();
+    Result result;
+
+    // if all done, or no more pairs, then leave
+    if (!keyToken || (keyToken->itemType != SLexItem::Type::Identifier)) {
+        result.res = Result::no_match;
+        return result;
+    }
+
+    SLexIdentifier* pid = static_cast<SLexIdentifier*>(keyToken.get());
+    SKeyValuePairPtr thePair = std::make_shared<SKeyValuePair>();
+    thePair->key = pid->idName;
+    lex->consume();
+
+    keyToken = lex->next();
+    if (!keyToken) {
+        result.errorMessage = "= unexpected end of tokens";
+        result.res = Result::error;
+        return result;
+    }
+    if (keyToken->itemType != SLexItem::Type::Equal) {
+        result.errorMessage = "= in kvp missing equal sign at file line# " + keyToken->lineNumberAsString();
+        result.res = Result::error;
+        return result;
+    }
+    lex->consume();
+
+    keyToken = lex->next();
+    if (keyToken->itemType != SLexItem::Type::Identifier) {
+        result.errorMessage = "value in kvp is not id. key=" + thePair->key + " line# " + keyToken->lineNumberAsString();
+        result.res = Result::error;
+        return result;
+    }
+    lex->consume();
+    pid = static_cast<SLexIdentifier*>(keyToken.get());
+    thePair->value = pid->idName;
+
+    values.push_back(thePair);
+    return result;
+}
+
+std::string SParse::getTagName(SLexItemPtr item) {
+    // maybe shouldn't call this with null ptr??
+    if (!item) {
+        return "";
+    }
+    if (item->itemType != SLexItem::Type::Tag) {
+        return "";
+    }
+    SLexTag* tag = static_cast<SLexTag*>(item.get());
+    return tag->tagName;
+}

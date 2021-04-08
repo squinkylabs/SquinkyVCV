@@ -11,7 +11,9 @@
  */
 class SInstrument {
 public:
+    SHeadingList headings;
     bool wasExpanded = false;
+    void _dump();
 };
 
 

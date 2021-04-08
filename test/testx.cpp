@@ -416,27 +416,35 @@ static void testparse1() {
     assert(!err.empty());
 }
 
-#if 0 //-----------------------------------------------------------------
-
 static void testParseRegion() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>", inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 1);
-    assertEQ(inst->groups[0]->regions.size(), 1);
+
+    assertEQ(inst->headings.size(), 1)
+    assertEQ(int(inst->headings[0]->type), int(SHeading::Type::Region));
+   // assertEQ(inst->groups.size(), 1);
+   // assertEQ(inst->groups[0]->regions.size(), 1);
 }
+
+
 
 static void testparse2() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>pitch_keycenter=24", inst);
     assert(err.empty());
 
-    assertEQ(inst->groups.size(), 1);
-    SGroupPtr group = inst->groups[0];
-    assert(group->values.empty());
-    assertEQ(group->regions.size(), 1);
-    SRegionPtr region = group->regions[0];
-    assertEQ(region->values.size(), 1);
+    assertEQ(inst->headings.size(), 1);
+
+    SHeadingPtr region = inst->headings[0];
+    assertEQ(int(region->type), int(SHeading::Type::Region));
+
+  //  assertEQ(inst->groups.size(), 1);
+ //   SGroupPtr group = inst->groups[0];
+ //   assert(group->values.empty());
+ //  assertEQ(group->regions.size(), 1);
+ //   SRegionPtr region = group->regions[0];
+  //  assertEQ(region->values.size(), 1);
     SKeyValuePairPtr kv = region->values[0];
     assertEQ(kv->key, "pitch_keycenter");
     assertEQ(kv->value, "24");
@@ -451,6 +459,7 @@ static void testParseLabel2() {
     assertEQ(err.find("extra tok"), 0);
 }
 
+#if 0
 static void testParseMutliControls() {
     // SQINFO("--- start testParseMutliControls");
 
@@ -494,6 +503,7 @@ static void testParseMutliControls() {
     assertEQ(kv[1]->value, "r2");
 }
 
+
 static void testParseGroupAndValues() {
     //SQINFO("---- start testParseGroupAndValues");
     //   const char* test = R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo";
@@ -511,6 +521,7 @@ static void testParseGroupAndValues() {
     assertEQ(inst->groups[0]->values.size(), 1);
     assertEQ(inst->groups[0]->regions[0]->values.size(), 0);
 }
+#endif
 
 static void testParseGlobal() {
     // SQINFO("---- start test parse global\n");
@@ -519,9 +530,12 @@ static void testParseGlobal() {
     // no regions - that's not legal, but we make up groups if there aren't any,
     // so we don't consider it an error.
     assert(err.empty());
-    assert(inst->groups.size() == 1);
-    assert(inst->groups[0]->regions.empty());
+    assertEQ(inst->headings.size(), 1);
+    assertEQ(int(inst->headings[0]->type), int(SHeading::Type::Global));
+    //assert(inst->groups[0]->regions.empty());
 }
+
+
 
 static void testParseGlobalGroupAndRegion() {
     // SQINFO("\n-- start testParseGlobalAndRegion\n");
@@ -545,24 +559,35 @@ static void testParseComment() {
     assert(err.empty());
 }
 
+
+
+
 static void testParseGroups() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><region><region>", inst);
     assert(err.empty());
 }
 
+
 static void testParseTwoGroupsA() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><group>", inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 2);
+    assertEQ(inst->headings.size(), 2);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Group);
 }
 
 static void testParseTwoGroupsB() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><region><region><group><region>", inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 2);
+    assertEQ(inst->headings.size(), 5);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[2]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[3]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[4]->type, (int)SHeading::Type::Region);
 }
 
 static void testParseGlobalWithData() {
@@ -570,6 +595,8 @@ static void testParseGlobalWithData() {
     auto err = SParse::go("<global>ampeg_release=0.6<region>", inst);
     assert(err.empty());
 }
+
+#if 0 //-----------------------------------------------------------------
 
 static void testparse_piano1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -718,16 +745,21 @@ void testx() {
 
 
     testparse1();
-    assert(false);
-#if 0
-   ;
     testParseRegion();
     testparse2();
     testParseGlobal();
+
+   
+
     testParseGlobalAndRegion();
     testParseGlobalGroupAndRegion();
+
+   
+
     testParseComment();
     testParseGroups();
+    assert(false);
+#if 0
     testParseMutliControls();
     testParseGroupAndValues();
     testParseLabel2();

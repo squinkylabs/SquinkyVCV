@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include "SamplerSchema.h"
-
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "SamplerSchema.h"
 
 class SLex;
 class SLexItem;
@@ -33,12 +33,24 @@ using SKeyValueList = std::vector<SKeyValuePairPtr>;
 // A heading represents any heading, including regions and groups
 class SHeading {
 public:
+
     enum class Type {
         Region,
         Group,
+        Global,
+        Control,
+        Master,
+        Curve,
+        Effect,
+        Midi,
+        Sample,
         Unknown,
         NUM_TYPES
     };
+
+    SHeading(Type t, int lnNumber) : lineNumber(lnNumber), type(t) {
+        
+    }
     /**
      * Parsing populates values with the opcodes found while parsing
      */
@@ -50,9 +62,12 @@ public:
      */
     SamplerSchema::KeysAndValuesPtr compiledValues;
     static void dumpKeysAndValues(const SKeyValueList& v);
-    int lineNumber = 0;
-    Type type = {Type::Unknown};
+    const int lineNumber = 0;
+    const Type type = {Type::Unknown};
 };
+
+using SHeadingPtr = std::shared_ptr<SHeading>;
+using SHeadingList = std::vector<SHeadingPtr>;
 
 //-------------------------------------------
 class SParse {
@@ -64,4 +79,28 @@ private:
     static FILE* openFile(const FilePath& fp);
     static std::string readFileIntoString(FILE* fp);
     static std::string goCommon(const std::string& sContent, SInstrumentPtr outParsedInstrument, const FilePath* fullPathToSFZ);
+
+    class Result {
+    public:
+        std::string errorMessage;
+        enum Res {
+            ok,        // matched
+            no_match,  // finished matching
+            error
+        };
+        Res res = Res::ok;
+    };
+
+
+    // a"heading group" is a series of headings, where a region is also a heading
+    static std::string matchHeadingGroups(SInstrumentPtr, SLexPtr);
+    static Result matchHeadingGroup(SInstrumentPtr, SLexPtr);
+    // return.second is true it heading it a group
+    static Result matchSingleHeading(SLexPtr lex, SHeadingPtr& outputHeading);
+ //   static std::pair<Result, bool> matchSingleHeading(SInstrumentPtr, SLexPtr);
+    static std::string matchKeyValuePairs(SKeyValueList&, SLexPtr);
+    static Result matchKeyValuePair(SKeyValueList&, SLexPtr);
+
+        // return empty if it's not a tag
+    static std::string getTagName(SLexItemPtr);
 };
