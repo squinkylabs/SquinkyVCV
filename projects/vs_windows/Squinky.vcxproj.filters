@@ -744,6 +744,12 @@
     <ClCompile Include="..\..\test\testx2.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testHeadingTracker.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\dsp\samp\HeadingTracker.cpp">
+      <Filter>Source Files\dsp\samp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

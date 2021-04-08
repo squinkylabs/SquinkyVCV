@@ -122,6 +122,7 @@ extern void testCompressorParamHolder();
 extern void testStreamer();
 extern void testSampComposite();
 extern void testFlac();
+extern void testHeadingTracker();
 
 #if 0
 #include <iostream>
@@ -211,13 +212,9 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    testSimpleQuantizer();
+ 
 
-    testFlac();
-    testADSRSampler();
-    testStreamer();
-
-    
+    testHeadingTracker();
     testx();
     testx2();
     testx3();
@@ -226,6 +223,11 @@ int main(int argc, char** argv) {
     testx6();
 
     testSampComposite();
+ 
+
+    testFlac();
+    testADSRSampler();
+    testStreamer();
 
     testADSR();
     testCompressorParamHolder();
@@ -245,6 +247,7 @@ int main(int argc, char** argv) {
     testAudioMath();
     testRingBuffer();
     testGateTrigger();
+    testSimpleQuantizer();
     testOnset();
     testOnset2();
 
