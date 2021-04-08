@@ -213,6 +213,7 @@
     <ClCompile Include="..\..\test\testVocalAnimator.cpp" />
     <ClCompile Include="..\..\test\testWVCO.cpp" />
     <ClCompile Include="..\..\test\testx.cpp" />
+    <ClCompile Include="..\..\test\testx2.cpp" />
     <ClCompile Include="..\..\util\SqLog.cpp" />
   </ItemGroup>
   <ItemGroup>

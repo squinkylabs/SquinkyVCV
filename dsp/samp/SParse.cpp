@@ -89,8 +89,8 @@ std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outPa
         assert(!lexError.empty());
         return lexError;
     }
-    SQINFO("here is lex output we will parse");
-    lex->_dump();
+   // SQINFO("here is lex output we will parse");
+   // lex->_dump();
 
     std::string sError = matchHeadingGroups(outParsedInstrument, lex);
     if (!sError.empty()) {
@@ -128,8 +128,8 @@ std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outPa
         return "no groups or regions";
     }
 
-    SQINFO("and here is parser ourput");
-    outParsedInstrument->_dump();
+  //  SQINFO("and here is parser ourput");
+  //  outParsedInstrument->_dump();
 
     return sError;
 }

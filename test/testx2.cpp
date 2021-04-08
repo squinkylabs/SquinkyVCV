@@ -211,6 +211,7 @@ static void testCIKeysAndValuesNotesSharp() {
     testCIKeysAndValues("d#4", expectedPitch);
 }
 
+
 static void testParseGlobalAndRegionCompiled() {
     printf("start test parse global\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -221,13 +222,16 @@ static void testParseGlobalAndRegionCompiled() {
     CompiledInstrument::expandAllKV(errc, inst);
     assert(errc.empty());
 
-    assert(inst->global.compiledValues);
-    assertEQ(inst->global.compiledValues->_size(), 0);
+    assertEQ(inst->headings.size(), 2);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Global);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
 
-    SGroupPtr group = inst->groups[0];
-    assert(group);
-    assert(group->compiledValues);
-    assertEQ(group->compiledValues->_size(), 0);
+    assert(inst->headings[0]->compiledValues);
+    assertEQ(inst->headings[0]->compiledValues->_size(), 0);
+
+    assert(inst->headings[1]->compiledValues);
+    assertEQ(inst->headings[1]->compiledValues->_size(), 0);
+
 }
 
 static void testParseGlobalWithKVAndRegionCompiled() {
@@ -239,17 +243,22 @@ static void testParseGlobalWithKVAndRegionCompiled() {
     CompiledInstrument::expandAllKV(errc, inst);
     assert(errc.empty());
 
-    assert(inst->global.compiledValues);
-    assertEQ(inst->global.compiledValues->_size(), 1);
-    auto val = inst->global.compiledValues->get(SamplerSchema::Opcode::HI_KEY);
+    assertEQ(inst->headings.size(), 2);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Global);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Region);
+
+    assert(inst->headings[0]->compiledValues);
+    assertEQ(inst->headings[0]->compiledValues->_size(), 1);
+    auto val = inst->headings[0]->compiledValues->get(SamplerSchema::Opcode::HI_KEY);
     assertEQ(val->numericInt, 57);
 
-    SGroupPtr group = inst->groups[0];
-    assert(group);
-    assert(group->compiledValues);
-    assertEQ(group->compiledValues->_size(), 0);
+  //  SGroupPtr group = inst->groups[0];
+  //  assert(group);
+    assert(inst->headings[1]->compiledValues);
+    assertEQ(inst->headings[0]->compiledValues->_size(), 0);
 }
 
+#if 0 //------------------------------------------------
 static void testParseGlobalWitRegionKVCompiled() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><region><region>lokey=57<region>", inst);
@@ -278,6 +287,7 @@ static void testParseGlobalWitRegionKVCompiled() {
     auto val = r->compiledValues->get(SamplerSchema::Opcode::LO_KEY);
     assertEQ(val->numericInt, 57);
 }
+
 
 static void testParseControl() {
     SQINFO("------------- testParseControl");
@@ -1426,6 +1436,9 @@ static void testPlayVolumeAndTune() {
 #endif
 }
 
+
+#endif
+
 void testx2() {
     assert(parseCount == 0);
     assert(compileCount == 0);
@@ -1437,24 +1450,30 @@ void testx2() {
     testWaveLoaderNot44();
     testPlayInfo();
 
+    testCIKeysAndValues();
+    testCIKeysAndValuesNotesLC();
+    testCIKeysAndValuesNotesUC();
+    testCIKeysAndValuesNotesSharp();
+
+    testParseGlobalAndRegionCompiled();
+    assert(false);
+#if 0
+    testParseGlobalWithKVAndRegionCompiled();
+    testParseGlobalWitRegionKVCompiled();
+    testParseControl();
+    testParseLabel();
+    testParseInclude();
+
+
+
     // put here just for now
     testCompileMutliControls();
 
     // printf("fix testStreamXpose2\n");
     //testStreamXpose2();
 
-    testCIKeysAndValues();
-    testCIKeysAndValuesNotesLC();
-    testCIKeysAndValuesNotesUC();
-    testCIKeysAndValuesNotesSharp();
-    testParseGlobalAndRegionCompiled();
-    testParseGlobalWithKVAndRegionCompiled();
-    testParseGlobalWitRegionKVCompiled();
-    testParseControl();
-    testParseLabel();
-
-    // can't parse these yet
-    testParseInclude();
+  
+  
 
     testCompileCrash();
     testCompileCrash2();
@@ -1509,6 +1528,9 @@ void testx2() {
 #ifdef _SFZ_RANDOM
     testCompileSimpleDrum();
 #endif
+
+#endif
+
     assertEQ(parseCount, 0);
     assertEQ(compileCount, 0);
 }

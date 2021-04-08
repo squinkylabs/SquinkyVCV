@@ -644,7 +644,6 @@ static void testParseSimpleDrum() {
     assertEQ((int)inst->headings[7]->type, (int)SHeading::Type::Region);
 }
 
-#if 0 //-----------------------------------------------------------------
 
 
 // make sure we dont' crash from parsing unused regions.
@@ -661,8 +660,9 @@ v127=1
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(p, inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 1);       // we should just have the one group
-    assertEQ(inst->groups[0]->regions.size(), 0);   // no regions
+
+    assertEQ(inst->headings.size(), 1);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Curve);
 }
 
 static void testRandomRange0() {
@@ -692,21 +692,23 @@ static void testRandomRange1() {
     assertEQ(test.size(), 3);
 }
 
+
 static void testParseDX() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     // maybe need to compile this...
     auto err = SParse::goFile(FilePath("D:\\samples\\__test\\BS-DX7-Bright-Bow.sfz"), inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 1);
+
+    assertEQ(inst->headings.size(), 14);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
+    assertEQ(inst->headings[0]->values.size(), 2);
+    assertEQ(inst->headings[1]->values.size(), 5);
 }
 
-#endif //-------------------------------------------------
+
 extern int compileCount;
-
-void testx2() {
-    assert(false);
-}
 
 void testx3() {
     assert(false);
@@ -782,16 +784,16 @@ void testx() {
     testParseTwoGroupsA();
     testParseTwoGroupsB();
     testparse_piano1();
-    assert(false);
-#if 0
+
     // testparse_piano2b();
     testparse_piano2();
     testParseSimpleDrum();
     testRandomRange0();
     testRandomRange1();
+
     testParseDX();
     testParseCurve();
-#endif
+
 
     assert(parseCount == 0);
 }

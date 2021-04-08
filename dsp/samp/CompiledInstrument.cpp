@@ -281,9 +281,11 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath
 
 void CompiledInstrument::expandAllKV(SamplerErrorContext& err, SInstrumentPtr inst) {
     assert(!inst->wasExpanded);
-#if 1
-    assert(false);      // port me
-#else
+
+    for (auto iter : inst->headings) {
+        iter->compiledValues = SamplerSchema::compile(err, iter->values);
+    }
+#if 0
     inst->global.compiledValues = SamplerSchema::compile(err, inst->global.values);
     inst->master.compiledValues = SamplerSchema::compile(err, inst->master.values);
     //   inst->control.compiledValues = SamplerSchema::compile(inst->control.values);
