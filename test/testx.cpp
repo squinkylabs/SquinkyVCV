@@ -459,6 +459,7 @@ static void testParseLabel2() {
     assertEQ(err.find("extra tok"), 0);
 }
 
+
 #if 0
 static void testParseMutliControls() {
     // SQINFO("--- start testParseMutliControls");
@@ -502,6 +503,7 @@ static void testParseMutliControls() {
     assertEQ(kv[1]->key, "sample");
     assertEQ(kv[1]->value, "r2");
 }
+#endif
 
 
 static void testParseGroupAndValues() {
@@ -512,16 +514,18 @@ static void testParseGroupAndValues() {
     auto err = SParse::go(test, inst);
     assert(err.empty());
 
-    assertEQ(inst->groups.size(), 1);
-    assertEQ(inst->groups[0]->regions.size(), 1);
+    assertEQ(inst->headings.size(), 2);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
+    //assertEQ(inst->groups[0]->regions.size(), 1);
 
     // inst->groups[0]->_dump();
     // inst->groups[0]->regions[0]->_dump();
 
-    assertEQ(inst->groups[0]->values.size(), 1);
-    assertEQ(inst->groups[0]->regions[0]->values.size(), 0);
+    assertEQ(inst->headings[0]->values.size(), 1);
+    assertEQ(inst->headings[1]->values.size(), 0);
 }
-#endif
+
 
 static void testParseGlobal() {
     // SQINFO("---- start test parse global\n");
@@ -596,7 +600,6 @@ static void testParseGlobalWithData() {
     assert(err.empty());
 }
 
-#if 0 //-----------------------------------------------------------------
 
 static void testparse_piano1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -630,8 +633,19 @@ static void testParseSimpleDrum() {
 
     auto err = SParse::go(p, inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 2);
+    assertEQ(inst->headings.size(), 8);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[2]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[3]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[4]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[5]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[6]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[7]->type, (int)SHeading::Type::Region);
 }
+
+#if 0 //-----------------------------------------------------------------
+
 
 // make sure we dont' crash from parsing unused regions.
 static void testParseCurve() {
@@ -758,9 +772,9 @@ void testx() {
 
     testParseComment();
     testParseGroups();
-    assert(false);
-#if 0
-    testParseMutliControls();
+
+    // better as a cimpiler test
+  //  testParseMutliControls();
     testParseGroupAndValues();
     testParseLabel2();
 
@@ -768,6 +782,8 @@ void testx() {
     testParseTwoGroupsA();
     testParseTwoGroupsB();
     testparse_piano1();
+    assert(false);
+#if 0
     // testparse_piano2b();
     testparse_piano2();
     testParseSimpleDrum();
