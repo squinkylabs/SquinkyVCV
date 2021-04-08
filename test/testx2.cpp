@@ -245,7 +245,7 @@ static void testParseGlobalWithKVAndRegionCompiled() {
 
     assertEQ(inst->headings.size(), 2);
     assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Global);
-    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
 
     assert(inst->headings[0]->compiledValues);
     assertEQ(inst->headings[0]->compiledValues->_size(), 1);
@@ -255,10 +255,10 @@ static void testParseGlobalWithKVAndRegionCompiled() {
   //  SGroupPtr group = inst->groups[0];
   //  assert(group);
     assert(inst->headings[1]->compiledValues);
-    assertEQ(inst->headings[0]->compiledValues->_size(), 0);
+    assertEQ(inst->headings[1]->compiledValues->_size(), 0);
 }
 
-#if 0 //------------------------------------------------
+
 static void testParseGlobalWitRegionKVCompiled() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><region><region>lokey=57<region>", inst);
@@ -268,23 +268,26 @@ static void testParseGlobalWitRegionKVCompiled() {
     CompiledInstrument::expandAllKV(errc, inst);
     assert(errc.empty());
 
-    assert(inst->global.compiledValues);
-    assertEQ(inst->global.compiledValues->_size(), 0);
+    assertEQ(inst->headings.size(), 4);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Global);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[2]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[3]->type, (int)SHeading::Type::Region);
 
-    SGroupPtr group = inst->groups[0];
-    assert(group);
-    assert(group->compiledValues);
-    assertEQ(group->compiledValues->_size(), 0);
+    assert(inst->headings[0]->compiledValues);
+    assert(inst->headings[1]->compiledValues);
+    assert(inst->headings[2]->compiledValues);
+    assert(inst->headings[3]->compiledValues);
 
-    assertEQ(group->regions.size(), 3);
-    SRegionPtr r = group->regions[0];
-    assertEQ(r->compiledValues->_size(), 0);
-    r = group->regions[2];
-    assertEQ(r->compiledValues->_size(), 0);
-    r = group->regions[1];
-    assertEQ(r->compiledValues->_size(), 1);
+    assertEQ(inst->headings[0]->compiledValues->_size(), 0);
+    assertEQ(inst->headings[1]->compiledValues->_size(), 0);
+    assertEQ(inst->headings[2]->compiledValues->_size(), 1);
+    assertEQ(inst->headings[3]->compiledValues->_size(), 0);
 
-    auto val = r->compiledValues->get(SamplerSchema::Opcode::LO_KEY);
+
+  //  assertEQ(inst->headings[2]->compiledValues->get(SamplerSchema::Opcode::LO_KEY), 57);
+
+    auto val = inst->headings[2]->compiledValues->get(SamplerSchema::Opcode::LO_KEY);
     assertEQ(val->numericInt, 57);
 }
 
@@ -305,21 +308,12 @@ static void testParseControl() {
     auto err = SParse::go(data, inst);
     assert(err.empty());
 
-    assertEQ(inst->groups.size(), 1);
-    assertEQ(inst->groups[0]->regions.size(), 1);
+    assertEQ(inst->headings.size(), 4);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Control);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Global);
+    assertEQ((int)inst->headings[2]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[3]->type, (int)SHeading::Type::Region);
 
-    auto gp = inst->groups[0];
-    auto rg = inst->groups[0]->regions[0];
-#if 0
-    SRegionPtr region = inst->groups[0]->regions[0];
-
-    bool foundSample = false;
-    std::string sample;
-    for (int i = 0; i < region.values.size(); ++i) {
-        SKeyValuePairPtr kv = region->values[i];
-        if (kb->key == "sample")
-    }
-#endif
 
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
@@ -350,6 +344,8 @@ static void testParseLabel() {
     auto err = SParse::go(data, inst);
     assert(err.empty());
 }
+
+#if 0 //------------------------------------------------
 
 static void testCompileInst0() {
     printf("\n-- test comp inst 1\n");
@@ -1456,14 +1452,16 @@ void testx2() {
     testCIKeysAndValuesNotesSharp();
 
     testParseGlobalAndRegionCompiled();
-    assert(false);
-#if 0
+
     testParseGlobalWithKVAndRegionCompiled();
+
     testParseGlobalWitRegionKVCompiled();
+
     testParseControl();
     testParseLabel();
     testParseInclude();
-
+    assert(false);
+#if 0
 
 
     // put here just for now
