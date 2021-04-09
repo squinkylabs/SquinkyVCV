@@ -8,6 +8,8 @@ public:
     static void testOneRegion();
     static void testTwoRegions();
     static void testThreeRegions();
+    static void testRegionAndGlobal();
+
 private:
     static void testInit();
 };
@@ -17,7 +19,8 @@ void HeadingTrackerTester::test() {
     testOneRegion();
     testTwoRegions();
     testThreeRegions();
-    assert(false);      // write more
+    testRegionAndGlobal();
+    assert(false);  // write more
 }
 
 void HeadingTrackerTester::testInit() {
@@ -90,13 +93,40 @@ void HeadingTrackerTester::testThreeRegions() {
         if (i != (int)SHeading::Type::Region) {
             assert(t.curHeadings[i] == nullptr);
             assert(t.nextHeadings[i] == nullptr);
-        }
-        else {
+        } else {
             assert(t.curHeadings[i] == reg1.get());
             assert(t.nextHeadings[i] == reg2.get());
         }
     }
 }
+
+void HeadingTrackerTester::testRegionAndGlobal() {
+    const size_t elements = int(SHeading::Type::NUM_TYPES);
+
+    SHeadingList hl;
+    SHeadingPtr reg1 = std::make_shared<SHeading>(SHeading::Type::Region, 0);
+    hl.push_back(reg1);
+    SHeadingPtr reg2 = std::make_shared<SHeading>(SHeading::Type::Global, 2);
+    hl.push_back(reg2);
+
+    HeadingTracker t(hl);
+    for (int i = 0; i < elements; ++i) {
+        switch (i) {
+            case SHeading::Type::Region:
+                assert(t.curHeadings[i] == reg1.get());
+                assert(t.nextHeadings[i] == nullptr);
+                break;
+            case SHeading::Type::Global:
+                assert(t.curHeadings[i] == reg2.get());
+                assert(t.nextHeadings[i] == nullptr);
+                break;
+            default:
+                assert(t.curHeadings[i] == nullptr);
+                assert(t.nextHeadings[i] == nullptr);
+        }
+    }
+}
+
 void testHeadingTracker() {
     HeadingTrackerTester::test();
 }
