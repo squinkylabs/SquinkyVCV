@@ -9,7 +9,16 @@ public:
     friend class HeadingTrackerTester;
     HeadingTracker(const SHeadingList&);
 
+    // advance the region field, and updates the others
+    void nextRegion();
+
 private:
-    std::vector<const SHeading*> curHeadings;
-    std::vector<const SHeading*> nextHeadings;
+    const SHeadingList& headings;
+
+    /**
+     * the entries are indexs into headings.
+     * < 0 means "none"
+     */
+    std::vector<int> curHeadingsIndex;
+    std::vector<int> nextHeadingsIndex;  
 };
