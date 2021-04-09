@@ -198,6 +198,7 @@ public:
 /**
  * Every Compiled Region had a compiled group as a parent
  */
+#if 0
 class CompiledGroup {
 public:
     /** This is the normal constructor.
@@ -228,3 +229,4 @@ private:
     // TODO: get rid of all magic logic in group
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
 };
+#endif

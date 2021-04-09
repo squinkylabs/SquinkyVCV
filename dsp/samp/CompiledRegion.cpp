@@ -310,6 +310,7 @@ bool CompiledGroup::shouldIgnore() const {
 }
 #endif
 
+#if 0
 CompiledRegion::Type CompiledGroup::type() const {
     CompiledRegion::Type theType = CompiledRegion::Type::Base;
     if (this->sequence_length > 0) {
@@ -333,6 +334,7 @@ CompiledRegion::Type CompiledGroup::type() const {
     }
     return theType;
 }
+#endif
 
 void CompiledRegion::_dump(int depth) const {
     // for (int i=0; i<depth; ++i) {

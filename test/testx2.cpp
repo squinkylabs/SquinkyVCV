@@ -361,7 +361,69 @@ static void testCompiledRegion() {
     assertEQ(cr->tune, 0);
 }
 
-#if 0 //------------------------------------------------
+
+
+static void testCompiledRegionAddedOpcodes() {
+    SQINFO("---- starting testCompiledRegionAddedOpcodes");
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=a key=64 tune=11 volume=-13)foo");
+
+    assertEQ(cr->tune, 11);
+    assertEQ(cr->volume, -13);
+}
+
+static void testCompiledRegionInherit() {
+    SQINFO("---- starting testCompiledRegionInherit");
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo");
+    assertEQ(cr->keycenter, 96);
+    assertEQ(cr->lovel, 1);
+    assertEQ(cr->hivel, 22);
+    assertEQ(cr->lokey, 95);
+    assertEQ(cr->hikey, 97);
+    assertEQ(cr->sampleFile, "K18\\C7.pp.wav");
+}
+
+static void testCompiledRegionKey() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>key=32)foo");
+    assertEQ(cr->lokey, 32);
+    assertEQ(cr->hikey, 32);
+    assertEQ(cr->keycenter, 32);
+}
+
+static void testCompiledRegionVel() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hivel=12)foo");
+    assertEQ(cr->lovel, 1);
+    assertEQ(cr->hivel, 12);
+}
+
+static void testCompiledRegionVel2() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>lovel=71)foo");
+    assertEQ(cr->lovel, 71);
+    assertEQ(cr->hivel, 127);
+}
+
+static void testCompiledRegionVel3() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hivel=59 lovel=29)foo");
+    assertEQ(cr->lovel, 29);
+    assertEQ(cr->hivel, 59);
+}
+
+static void testCompiledRegionsRand() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hirand=.7 lorand=.29)foo");
+    assertEQ(cr->hirand, .7f);
+    assertEQ(cr->lorand, .29f);
+}
+
+static void testCompiledRegionSeqIndex1() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>seq_position=11)foo");
+    assertEQ(cr->sequencePosition, 11);
+}
+
+static void testCompiledRegionSeqIndex2() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<group>seq_position=11<region>)foo");
+    assertEQ(cr->sequencePosition, 11);
+}
+
+
 
 static void testCompileInst0() {
     printf("\n-- test comp inst 1\n");
@@ -436,7 +498,6 @@ static void testCompileOverlap() {
     ci->play(info, params, nullptr, 0);
     assert(!info.valid);
 }
-
 static void testTranspose1() {
     printf("\nstarting on transpose 1\n");
     auto inst = std::make_shared<SInstrument>();
@@ -510,79 +571,24 @@ static void testCompileCrash2() {
     assert(!info.valid);
 }
 
-
-
-static void testCompiledRegionAddedOpcodes() {
-    SQINFO("---- starting testCompiledRegionAddedOpcodes");
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=a key=64 tune=11 volume=-13)foo");
-
-    assertEQ(cr->tune, 11);
-    assertEQ(cr->volume, -13);
-}
-
-static void testCompiledRegionInherit() {
-    SQINFO("---- starting testCompiledRegionInherit");
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo");
-    assertEQ(cr->keycenter, 96);
-    assertEQ(cr->lovel, 1);
-    assertEQ(cr->hivel, 22);
-    assertEQ(cr->lokey, 95);
-    assertEQ(cr->hikey, 97);
-    assertEQ(cr->sampleFile, "K18\\C7.pp.wav");
-}
-
-static void testCompiledRegionKey() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>key=32)foo");
-    assertEQ(cr->lokey, 32);
-    assertEQ(cr->hikey, 32);
-    assertEQ(cr->keycenter, 32);
-}
-
-static void testCompiledRegionVel() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hivel=12)foo");
-    assertEQ(cr->lovel, 1);
-    assertEQ(cr->hivel, 12);
-}
-
-static void testCompiledRegionVel2() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>lovel=71)foo");
-    assertEQ(cr->lovel, 71);
-    assertEQ(cr->hivel, 127);
-}
-
-static void testCompiledRegionVel3() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hivel=59 lovel=29)foo");
-    assertEQ(cr->lovel, 29);
-    assertEQ(cr->hivel, 59);
-}
-
-static void testCompiledRegionsRand() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hirand=.7 lorand=.29)foo");
-    assertEQ(cr->hirand, .7f);
-    assertEQ(cr->lorand, .29f);
-}
-
-static void testCompiledRegionSeqIndex1() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>seq_position=11)foo");
-    assertEQ(cr->sequencePosition, 11);
-}
-
-static void testCompiledRegionSeqIndex2() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<group>seq_position=11<region>)foo");
-    assertEQ(cr->sequencePosition, 11);
-}
+#if 1
 static void testCompiledGroupSub(const char* data, bool shouldIgnore) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    SGroupPtr group = inst->groups[0];
+    assertEQ(inst->headings.size(), 1);
+    assert(inst->headings[0]->type == SHeading::Type::Group);
+    
+    SHeadingPtr group = inst->headings[0];
     SamplerErrorContext errc;
     CompiledInstrument::expandAllKV(errc, inst);
     assert(errc.empty());
 
     assert(inst->wasExpanded);
 
-    CompiledGroupPtr cr = std::make_shared<CompiledGroup>(group);
+  //  CompiledGroupPtr cr = std::make_shared<CompiledGroup>(group);
+    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(100);
+    cr->addRegionInfo(group->compiledValues);
     assertEQ(cr->shouldIgnore(), shouldIgnore);
 }
 
@@ -597,6 +603,7 @@ static void testCompiledGroup1() {
 static void testCompiledGroup2() {
     testCompiledGroupSub(R"foo(<group>trigger=release)foo", true);
 }
+#endif
 
 static void testCompileMutliControls() {
     SQWARN("need to re-implement testCompileMutliControls");
@@ -1435,7 +1442,7 @@ static void testPlayVolumeAndTune() {
 }
 
 
-#endif
+
 
 void testx2() {
     assert(parseCount == 0);
@@ -1461,8 +1468,6 @@ void testx2() {
 
   
     testCompiledRegion();
-    assert(false);
-#if 0
     testCompiledRegionAddedOpcodes();
     testCompiledRegionInherit();
     testCompiledRegionKey();
@@ -1472,12 +1477,18 @@ void testx2() {
     testCompiledRegionsRand();
     testCompiledRegionSeqIndex1();
     testCompiledRegionSeqIndex2();
-    testCompileAmpVel();
-    testCompileAmpegRelease();
 
+   
     testCompiledGroup0();
     testCompiledGroup1();
     testCompiledGroup2();
+
+    assert(false);
+#if 0
+   
+
+
+   
 
 
     // put here just for now
@@ -1534,6 +1545,9 @@ void testx2() {
     testParseControl();
     testParseLabel();
     testParseInclude();
+
+    testCompileAmpVel();
+    testCompileAmpegRelease();
 
     assertEQ(parseCount, 0);
     assertEQ(compileCount, 0);
