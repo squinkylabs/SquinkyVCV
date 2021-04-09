@@ -1,5 +1,7 @@
 
 #include "HeadingTracker.h"
+
+#include "SqLog.h"
 #include "asserts.h"
 
 class HeadingTrackerTester {
@@ -28,7 +30,8 @@ void HeadingTrackerTester::test() {
     testNext1();
     testNext3();
     testRegionsAndGroups1();
-    assert(false);  // write more
+    //assert(false);  // write more
+    SQINFO("----- write more HeadingTrackerTester --------");
 }
 
 void HeadingTrackerTester::testInit() {

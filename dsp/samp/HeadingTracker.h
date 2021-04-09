@@ -12,6 +12,7 @@ public:
     // advance the region field, and updates the others
     void nextRegion();
 
+    SHeadingPtr getCurrent(SHeading::Type);
 private:
     const SHeadingList& headings;
 

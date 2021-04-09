@@ -3,6 +3,7 @@
 #include "RegionPool.h"
 
 #include "CompiledRegion.h"
+#include "HeadingTracker.h"
 #include "SInstrument.h"
 #include "SParse.h"
 #include "SamplerPlayback.h"
@@ -119,9 +120,47 @@ void RegionPool::sortByPitchAndVelocity(std::vector<CompiledRegionPtr>& array) {
     });
 }
 
+// new one, for new parser
+bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
+    HeadingTracker ht(in->headings);
+    // const int regionIndex = int(SHeading::Type::Region);
+
+    // Enumerate all the parsed regions
+    while (ht.getCurrent(SHeading::Type::Region)) {
+        // here we know current desribes a region
+        auto curRegion = ht.getCurrent(SHeading::Type::Region);
+        CompiledRegionPtr cReg = std::make_shared<CompiledRegion>(curRegion->lineNumber);
+
+        // now add in all the parents
+        for (int typeIndex = int(SHeading::Type::NUM_TYPES) - 1; typeIndex > int(SHeading::Type::Region); typeIndex--) {
+            SHeading::Type type = SHeading::Type(typeIndex);
+            auto nextParent = ht.getCurrent(type);
+            if (nextParent) {
+                cReg->addRegionInfo(nextParent->compiledValues);
+            }
+        }
+        // actually we should do our ignoreing on the region
+        if (!cReg->shouldIgnore()) {
+            //  auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
+            maybeAddToKeyswitchList(cReg);
+            if (cReg->sw_default >= 0) {
+                currentSwitch_ = cReg->sw_default;
+            }
+            regions.push_back(cReg);
+        }
+
+        ht.nextRegion();
+    }
+
+    bool bRet = fixupCompiledTree();
+    fillRegionLookup();
+    return bRet;
+}
+
+#if 0  // port me
 bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
     assert(false);
-#if 0   // port me
+
     for (auto group : in->groups) {
         auto cGroup = std::make_shared<CompiledGroup>(group);
         if (!cGroup->shouldIgnore()) {
@@ -147,10 +186,9 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
     bool bRet = fixupCompiledTree();
     fillRegionLookup();
     return bRet;
-#else
-    return false;
-#endif
+
 }
+#endif
 
 void RegionPool::maybeAddToKeyswitchList(CompiledRegionPtr region) {
     if (region->sw_lolast >= 0 && region->sw_hilast >= region->sw_lolast) {
@@ -196,7 +234,7 @@ bool RegionPool::attemptOverlapRepairWithVel(CompiledRegionPtr firstRegion, Comp
         }
         //assert(firstRegion->lovel <= secondRegion->lovel);  // sorted
         if (firstRegion->lovel > secondRegion->lovel) {
-             SQWARN("in overlap vel, first=%d second=%d  ilnes %d,%d", firstRegion->lovel, secondRegion->lovel, firstRegion->lineNumber, secondRegion->lineNumber);
+            SQWARN("in overlap vel, first=%d second=%d  ilnes %d,%d", firstRegion->lovel, secondRegion->lovel, firstRegion->lineNumber, secondRegion->lineNumber);
             return true;
         }
         while (velOverlap.first) {
@@ -344,8 +382,6 @@ void RegionPool::removeOverlaps() {
         //return removed;
     }
     sortByPitchAndVelocity(regions);
-
-
 
     using iterator = std::vector<CompiledRegionPtr>::iterator;
     for (iterator it = regions.begin(); it != regions.end();) {

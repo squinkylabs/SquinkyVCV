@@ -345,6 +345,22 @@ static void testParseLabel() {
     assert(err.empty());
 }
 
+static void testCompiledRegion() {
+    SQINFO("---- starting testCompiledRegion");
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 offset=200)foo");
+    assertEQ(cr->keycenter, 96);
+    assertEQ(cr->lovel, 1);
+    assertEQ(cr->hivel, 22);
+    assertEQ(cr->lokey, 95);
+    assertEQ(cr->hikey, 97);
+    std::string expected = std::string("K18") + FilePath::nativeSeparator() + std::string("C7.pp.wav");
+    assertEQ(cr->sampleFile, expected);
+
+    // test a few defaults
+    assertEQ(cr->volume, 0);
+    assertEQ(cr->tune, 0);
+}
+
 #if 0 //------------------------------------------------
 
 static void testCompileInst0() {
@@ -494,21 +510,7 @@ static void testCompileCrash2() {
     assert(!info.valid);
 }
 
-static void testCompiledRegion() {
-    SQINFO("---- starting testCompiledRegion");
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 offset=200)foo");
-    assertEQ(cr->keycenter, 96);
-    assertEQ(cr->lovel, 1);
-    assertEQ(cr->hivel, 22);
-    assertEQ(cr->lokey, 95);
-    assertEQ(cr->hikey, 97);
-    std::string expected = std::string("K18") + FilePath::nativeSeparator() + std::string("C7.pp.wav");
-    assertEQ(cr->sampleFile, expected);
 
-    // test a few defaults
-    assertEQ(cr->volume, 0);
-    assertEQ(cr->tune, 0);
-}
 
 static void testCompiledRegionAddedOpcodes() {
     SQINFO("---- starting testCompiledRegionAddedOpcodes");
@@ -1457,26 +1459,10 @@ void testx2() {
 
     testParseGlobalWitRegionKVCompiled();
 
-    testParseControl();
-    testParseLabel();
-    testParseInclude();
+  
+    testCompiledRegion();
     assert(false);
 #if 0
-
-
-    // put here just for now
-    testCompileMutliControls();
-
-    // printf("fix testStreamXpose2\n");
-    //testStreamXpose2();
-
-  
-  
-
-    testCompileCrash();
-    testCompileCrash2();
-
-    testCompiledRegion();
     testCompiledRegionAddedOpcodes();
     testCompiledRegionInherit();
     testCompiledRegionKey();
@@ -1492,6 +1478,22 @@ void testx2() {
     testCompiledGroup0();
     testCompiledGroup1();
     testCompiledGroup2();
+
+
+    // put here just for now
+    testCompileMutliControls();
+
+    // printf("fix testStreamXpose2\n");
+    //testStreamXpose2();
+
+  
+  
+
+    testCompileCrash();
+    testCompileCrash2();
+
+  
+
 
     testCompileMutliControls();
 
@@ -1528,6 +1530,10 @@ void testx2() {
 #endif
 
 #endif
+
+    testParseControl();
+    testParseLabel();
+    testParseInclude();
 
     assertEQ(parseCount, 0);
     assertEQ(compileCount, 0);

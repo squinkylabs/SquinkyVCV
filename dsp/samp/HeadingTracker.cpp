@@ -1,6 +1,18 @@
 
 #include "HeadingTracker.h"
 
+
+SHeadingPtr HeadingTracker::getCurrent(SHeading::Type t) {
+    const int typeIndex = int(t);
+    const int curIndex = curHeadingsIndex[typeIndex];
+    if (curIndex < 0) {
+        return nullptr;
+    }
+
+    assert(curIndex < headings.size());
+    return headings[curIndex];
+}
+
 HeadingTracker::HeadingTracker(const SHeadingList& hl) : headings(hl) {
     const size_t elements = int(SHeading::Type::NUM_TYPES);
     curHeadingsIndex.resize(elements, -1);
