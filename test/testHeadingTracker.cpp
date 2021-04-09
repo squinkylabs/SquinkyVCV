@@ -9,8 +9,10 @@ public:
     static void testTwoRegions();
     static void testThreeRegions();
     static void testRegionAndGlobal();
+    static void testRegionAndGlobal2();
     static void testNext1();
     static void testNext3();
+    static void testRegionsAndGroups1();
 
 private:
     static void testInit();
@@ -22,8 +24,10 @@ void HeadingTrackerTester::test() {
     testTwoRegions();
     testThreeRegions();
     testRegionAndGlobal();
+    testRegionAndGlobal2();
     testNext1();
     testNext3();
+    testRegionsAndGroups1();
     assert(false);  // write more
 }
 
@@ -102,10 +106,9 @@ void HeadingTrackerTester::testThreeRegions() {
 void HeadingTrackerTester::testRegionAndGlobal() {
     const size_t elements = int(SHeading::Type::NUM_TYPES);
 
+    // region before global - global has no effect
     SHeadingList hl;
-    //  SHeadingPtr reg1 = std::make_shared<SHeading>(SHeading::Type::Region, 0);
     hl.push_back(std::make_shared<SHeading>(SHeading::Type::Region, 0));
-    //  SHeadingPtr reg2 = std::make_shared<SHeading>(SHeading::Type::Global, 2);
     hl.push_back(std::make_shared<SHeading>(SHeading::Type::Global, 2));
 
     HeadingTracker t(hl);
@@ -116,12 +119,39 @@ void HeadingTrackerTester::testRegionAndGlobal() {
                 assert(t.nextHeadingsIndex[i] < 0);
                 break;
             case SHeading::Type::Global:
-                assert(t.curHeadingsIndex[i] == 1);
+                assert(t.curHeadingsIndex[i] < 0);
                 assert(t.nextHeadingsIndex[i] < 0);
                 break;
             default:
                 assert(t.curHeadingsIndex[i] < 0);
                 assert(t.nextHeadingsIndex[i] < 0);
+        }
+    }
+}
+
+void HeadingTrackerTester::testRegionAndGlobal2() {
+    const size_t elements = int(SHeading::Type::NUM_TYPES);
+
+    // region after global, global has effect
+    SHeadingList hl;
+    hl.push_back(std::make_shared<SHeading>(SHeading::Type::Global, 2));
+    hl.push_back(std::make_shared<SHeading>(SHeading::Type::Region, 0));
+   
+
+    HeadingTracker t(hl);
+    for (int i = 0; i < elements; ++i) {
+        switch (i) {
+        case SHeading::Type::Region:
+            assertEQ(t.curHeadingsIndex[i], 1);
+            assertLT(t.nextHeadingsIndex[i], 0);
+            break;
+        case SHeading::Type::Global:
+            assertEQ(t.curHeadingsIndex[i], 0);
+            assertLT(t.nextHeadingsIndex[i], 0);
+            break;
+        default:
+            assertLT(t.curHeadingsIndex[i], 0);
+            assertLT(t.nextHeadingsIndex[i], 0);
         }
     }
 }
@@ -160,6 +190,18 @@ void HeadingTrackerTester::testNext3() {
             assert(t.nextHeadingsIndex[i] < 0);
         }
     }
+}
+
+void HeadingTrackerTester::testRegionsAndGroups1() {
+    SHeadingList hl;
+    hl.push_back(std::make_shared<SHeading>(SHeading::Type::Region, 0));
+    hl.push_back(std::make_shared<SHeading>(SHeading::Type::Group, 10));
+    hl.push_back(std::make_shared<SHeading>(SHeading::Type::Region, 100));
+
+    HeadingTracker t(hl);
+    // first region should have no group
+    assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Region], 0);
+    assertLT(t.curHeadingsIndex[(int)SHeading::Type::Group], 0);
 }
 
 void testHeadingTracker() {
