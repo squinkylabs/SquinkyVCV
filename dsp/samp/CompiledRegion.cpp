@@ -51,9 +51,9 @@ void CompiledRegion::findValue(SamplerSchema::DiscreteValue& discreteValue, Samp
 using Opcode = SamplerSchema::Opcode;
 
 void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
-    SQINFO("enter addRegionInfo seqPos=%d", sequencePosition);
-    SQINFO("accepting values: ");
-    values->_dump();
+    //SQINFO("enter addRegionInfo seqPos=%d  len=", sequencePosition, sequenceLength);
+   // SQINFO("accepting values: ");
+    //values->_dump();
   
 
     // TODO: what did old findValue to that we don't?
@@ -135,17 +135,17 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     findValue(tune, values, SamplerSchema::Opcode::TUNE);
     findValue(volume, values, SamplerSchema::Opcode::VOLUME);
 
-    SQINFO("leave addRegionInfo seqPos=%d seqLen=%d samp=%s", sequencePosition, sequenceLength, sampleFile.c_str());
+    //SQINFO("leave addRegionInfo seqPos=%d seqLen=%d samp=%s", sequencePosition, sequenceLength, sampleFile.c_str());
 }
 
 void CompiledRegion::finalize() {
-    SQINFO("finalize pos = %d len=%d", sequencePosition, sequenceLength);
+    //SQINFO("finalize pos = %d len=%d", sequencePosition, sequenceLength);
     if (sequencePosition < 0) {
         sequenceLength = 1;
         sequencePosition = 1;
-        SQINFO("sp < 0, so making def");
+       // SQINFO("sp < 0, so making def");
     }
-    SQINFO("leave finalize pos = %d len=%d", sequencePosition, sequenceLength);
+    //SQINFO("leave finalize pos = %d len=%d", sequencePosition, sequenceLength);
 }
 
 bool CompiledRegion::shouldIgnore() const {
@@ -350,13 +350,10 @@ CompiledRegion::Type CompiledGroup::type() const {
 #endif
 
 void CompiledRegion::_dump(int depth) const {
-    // for (int i=0; i<depth; ++i) {
-    //    printf(" ");
-    //}
-    printf("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d\n", isKeyswitched(), sw_lolast, sw_hilast);
-    printf("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d\n", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
-    printf("lorand=%.2f hirand=%.2f\n", lorand, hirand);
-    printf("lokey=%d hikey=%d center=%d lovel=%d hivel=%d\n", lokey, hikey, keycenter, lovel, hivel);
-    printf("sample=%s\n", sampleFile.c_str());
-    printf("\n");
+    SQINFO("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d", isKeyswitched(), sw_lolast, sw_hilast);
+    SQINFO("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
+    SQINFO("lorand=%.2f hirand=%.2f\n", lorand, hirand);
+    SQINFO("lokey=%d hikey=%d center=%d lovel=%d hivel=%d", lokey, hikey, keycenter, lovel, hivel);
+    SQINFO("sample=%s", sampleFile.c_str());
+    SQINFO("");
 }

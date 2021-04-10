@@ -249,56 +249,34 @@ void HeadingTrackerTester::testDrum() {
 
     t.nextRegion();
     // second region, r2, g1 in effect
-    for (int i = 0; i < elements; ++i) {
-        if (i == (int)SHeading::Type::Region) {
-            assertEQ(t.curHeadingsIndex[i], 2);
-            assertEQ(t.nextHeadingsIndex[i], 3);
-        }
-        else if (i == (int)SHeading::Type::Group) {
-            assertEQ(t.curHeadingsIndex[i], 0);
-            assertEQ(t.nextHeadingsIndex[i], 4);
-        }
-        else {
-            assert(t.curHeadingsIndex[i] < 0);
-            assert(t.nextHeadingsIndex[i] < 0);
-        }
-    }
+    assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Region], 2);
+    assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Group], 0);
 
     t.nextRegion();
-    // shird region, r3, g1 in effect
-    for (int i = 0; i < elements; ++i) {
-        if (i == (int)SHeading::Type::Region) {
-            assertEQ(t.curHeadingsIndex[i], 3);
-            assertEQ(t.nextHeadingsIndex[i], 5);
-        }
-        else if (i == (int)SHeading::Type::Group) {
-            assertEQ(t.curHeadingsIndex[i], 0);
-            assertEQ(t.nextHeadingsIndex[i], 4);
-        }
-        else {
-            assert(t.curHeadingsIndex[i] < 0);
-            assert(t.nextHeadingsIndex[i] < 0);
-        }
-    }
+    // third region, r3, g1 in effect
+    assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Region], 3);
+    assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Group], 0);
 
     t.nextRegion();
-    // tourth region, r4, g2 in effect
-    for (int i = 0; i < elements; ++i) {
-        if (i == (int)SHeading::Type::Region) {
-            assertEQ(t.curHeadingsIndex[i], 5);
-            assertEQ(t.nextHeadingsIndex[i], 6);
-        }
-        else if (i == (int)SHeading::Type::Group) {
-            assertEQ(t.curHeadingsIndex[i], 4);
-            assert(t.nextHeadingsIndex[i] < 0);
-        }
-        else {
-            assert(t.curHeadingsIndex[i] < 0);
-            assert(t.nextHeadingsIndex[i] < 0);
-        }
-    }
+    // fourth region, r4, g2 in effect
+    assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Region], 5);
+    assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Group], 4);
 
-    assert(false);
+
+    t.nextRegion(); //5
+    // fifth region, r5, g2 in effect
+    assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Region], 6);
+    assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Group], 4);
+
+
+    t.nextRegion(); //6
+      // sixth region, r6, g2 in effect
+    assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Region], 7);
+    assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Group], 4);
+
+    t.nextRegion(); // done
+    assertLT(t.curHeadingsIndex[(int)SHeading::Type::Region], 0);
+    assert(!t.getCurrent(SHeading::Type::Region));
 }
 
 void testHeadingTracker() {

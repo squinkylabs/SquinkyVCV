@@ -26,12 +26,11 @@ public:
         HI_VEL,
         LO_VEL,
         AMPEG_RELEASE,
-     //   LOOP_CONTINUOUS,
         LOOP_MODE,
         LOOP_START,
         LOOP_END,
         PITCH_KEYCENTER,
-        SAMPLE,
+        SAMPLE,                     // 10
         PAN,
         GROUP,  // group is opcode as well at tag
         TRIGGER,
@@ -41,10 +40,10 @@ public:
         POLYPHONY,
         PITCH_KEYTRACK,
         AMP_VELTRACK,
-        KEY,
+        KEY,                        // 20
         LO_RAND,
         HI_RAND,
-        SEQ_LENGTH,
+        SEQ_LENGTH,                 // 23
         SEQ_POSITION,
         DEFAULT_PATH,
         SW_LABEL,

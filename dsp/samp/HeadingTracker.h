@@ -13,6 +13,8 @@ public:
     void nextRegion();
 
     SHeadingPtr getCurrent(SHeading::Type);
+
+    bool valid() const;
 private:
     const SHeadingList& headings;
 

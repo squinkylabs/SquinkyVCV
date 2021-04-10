@@ -124,20 +124,11 @@ void RegionPool::sortByPitchAndVelocity(std::vector<CompiledRegionPtr>& array) {
 bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
     HeadingTracker ht(in->headings);
 
-    SQINFO("---- buildCompiledTree with %d regions", in->headings.size());
+    // SQINFO("---- buildCompiledTree with %d regions", in->headings.size());
     // Enumerate all the parsed regions
     while (ht.getCurrent(SHeading::Type::Region)) {
-        // here we know current desribes a region
+        // here we know current describes a region
         auto curRegion = ht.getCurrent(SHeading::Type::Region);
-        {
-            auto v = curRegion->values;
-            auto x = v.size();
-            if (x == 1) {
-                auto xx = v[0];
-                SQINFO("xx");
-            }
-           // assert(false);
-        }
         CompiledRegionPtr cReg = std::make_shared<CompiledRegion>(curRegion->lineNumber);
 
         // now add in all the parents
@@ -149,17 +140,18 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
             }
         }
         cReg->finalize();
-        SQINFO("one more region from headings");
-        cReg->_dump(0);
+        // SQINFO("one more region from headings");
+        //cReg->_dump(0);
+        // 
         // actually we should do our ignoreing on the region
         if (!cReg->shouldIgnore()) {
-            SQINFO("not ignoring");
+            //SQINFO("not ignoring");
             //  auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
             maybeAddToKeyswitchList(cReg);
             if (cReg->sw_default >= 0) {
                 currentSwitch_ = cReg->sw_default;
             }
-             SQINFO("adding");
+            // SQINFO("adding");
             regions.push_back(cReg);
         }
 

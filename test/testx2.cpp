@@ -1177,9 +1177,10 @@ static void testCompileSimpleDrum() {
 
     SamplerErrorContext errc;
     auto ci = CompiledInstrument::make(errc, inst);
-    SQINFO("dumping drum patch");
-    ci->_dump(0);
-    SQINFO("done with dump");
+
+    //SQINFO("dumping drum patch");
+    //ci->_dump(0);
+    //SQINFO("done with dump");
 
     assertEQ(ci->_pool().size(), 6);
     VoicePlayInfo info;
