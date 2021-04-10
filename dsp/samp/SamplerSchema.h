@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "SqLog.h"
+
 class SKeyValuePair;
 class SamplerErrorContext;
 using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>;
@@ -86,6 +88,26 @@ public:
         DiscreteValue discrete;
         std::string string;
         OpcodeType type;
+
+        void _dump() {
+
+            switch(type) {
+                case OpcodeType::Int:
+                    SQINFO("int: %d", numericInt);
+                    break;
+                 case OpcodeType::Float:
+                    SQINFO("flt: %f", numericFloat);
+                    break;
+                 case OpcodeType::Discrete:
+                    SQINFO("disc: %d", discrete);
+                    break;
+                 case OpcodeType::String:
+                    SQINFO("str: %d", string.c_str());
+                    break;
+                default:
+                    assert(false);
+            }
+        }
     };
 
     using ValuePtr = std::shared_ptr<Value>;
@@ -109,6 +131,13 @@ public:
                 return nullptr;
             }
             return it->second;
+        }
+
+        void _dump() {
+            for (auto x : data) {
+                SQINFO("key=%d val=", x.first);
+                x.second->_dump();
+            }
         }
 
     private:

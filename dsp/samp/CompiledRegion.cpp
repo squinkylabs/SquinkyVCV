@@ -51,6 +51,11 @@ void CompiledRegion::findValue(SamplerSchema::DiscreteValue& discreteValue, Samp
 using Opcode = SamplerSchema::Opcode;
 
 void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
+    SQINFO("enter addRegionInfo seqPos=%d", sequencePosition);
+    SQINFO("accepting values: ");
+    values->_dump();
+  
+
     // TODO: what did old findValue to that we don't?
     // TODO: why did old version need so many args?
     // TODO: do we need weakParent? get rid of it?
@@ -97,10 +102,6 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     findValue(hirand, values, SamplerSchema::Opcode::HI_RAND);
     findValue(sequencePosition, values, SamplerSchema::Opcode::SEQ_POSITION);
     findValue(sequenceLength, values, SamplerSchema::Opcode::SEQ_LENGTH);
-    if (sequencePosition < 0) {
-        sequenceLength = 1;
-        sequencePosition = 1;
-    }
 
     // -------------------- key switch variables
     findValue(sw_lolast, values, SamplerSchema::Opcode::SW_LOLAST);
@@ -133,6 +134,18 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
 
     findValue(tune, values, SamplerSchema::Opcode::TUNE);
     findValue(volume, values, SamplerSchema::Opcode::VOLUME);
+
+    SQINFO("leave addRegionInfo seqPos=%d seqLen=%d samp=%s", sequencePosition, sequenceLength, sampleFile.c_str());
+}
+
+void CompiledRegion::finalize() {
+    SQINFO("finalize pos = %d len=%d", sequencePosition, sequenceLength);
+    if (sequencePosition < 0) {
+        sequenceLength = 1;
+        sequencePosition = 1;
+        SQINFO("sp < 0, so making def");
+    }
+    SQINFO("leave finalize pos = %d len=%d", sequencePosition, sequenceLength);
 }
 
 bool CompiledRegion::shouldIgnore() const {
@@ -270,7 +283,7 @@ CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMu
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-#if 0       // compiled group obsolete?
+#if 0  // compiled group obsolete?
 CompiledGroup::CompiledGroup(SGroupPtr group) : lineNumber(group->lineNumber) {
     compileCount++;
 
@@ -344,5 +357,6 @@ void CompiledRegion::_dump(int depth) const {
     printf("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d\n", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
     printf("lorand=%.2f hirand=%.2f\n", lorand, hirand);
     printf("lokey=%d hikey=%d center=%d lovel=%d hivel=%d\n", lokey, hikey, keycenter, lovel, hivel);
+    printf("sample=%s\n", sampleFile.c_str());
     printf("\n");
 }

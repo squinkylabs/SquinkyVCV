@@ -95,7 +95,7 @@ public:
     static void expandAllKV(SamplerErrorContext&, SInstrumentPtr);
 
     int removeOverlaps(std::vector<CompiledRegionPtr>&);
-    const RegionPool& _pool() { return regionPool; }
+    RegionPool& _pool() { return regionPool; }
     InstrumentInfoPtr getInfo() { return info; }
 
     static float velToGain1(int midiVelocity, float veltrack);

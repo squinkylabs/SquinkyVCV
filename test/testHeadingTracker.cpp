@@ -1,6 +1,5 @@
 
 #include "HeadingTracker.h"
-
 #include "SqLog.h"
 #include "asserts.h"
 
@@ -15,6 +14,7 @@ public:
     static void testNext1();
     static void testNext3();
     static void testRegionsAndGroups1();
+    static void testDrum();
 
 private:
     static void testInit();
@@ -30,6 +30,7 @@ void HeadingTrackerTester::test() {
     testNext1();
     testNext3();
     testRegionsAndGroups1();
+    testDrum();
     //assert(false);  // write more
     SQINFO("----- write more HeadingTrackerTester --------");
 }
@@ -139,22 +140,21 @@ void HeadingTrackerTester::testRegionAndGlobal2() {
     SHeadingList hl;
     hl.push_back(std::make_shared<SHeading>(SHeading::Type::Global, 2));
     hl.push_back(std::make_shared<SHeading>(SHeading::Type::Region, 0));
-   
 
     HeadingTracker t(hl);
     for (int i = 0; i < elements; ++i) {
         switch (i) {
-        case SHeading::Type::Region:
-            assertEQ(t.curHeadingsIndex[i], 1);
-            assertLT(t.nextHeadingsIndex[i], 0);
-            break;
-        case SHeading::Type::Global:
-            assertEQ(t.curHeadingsIndex[i], 0);
-            assertLT(t.nextHeadingsIndex[i], 0);
-            break;
-        default:
-            assertLT(t.curHeadingsIndex[i], 0);
-            assertLT(t.nextHeadingsIndex[i], 0);
+            case SHeading::Type::Region:
+                assertEQ(t.curHeadingsIndex[i], 1);
+                assertLT(t.nextHeadingsIndex[i], 0);
+                break;
+            case SHeading::Type::Global:
+                assertEQ(t.curHeadingsIndex[i], 0);
+                assertLT(t.nextHeadingsIndex[i], 0);
+                break;
+            default:
+                assertLT(t.curHeadingsIndex[i], 0);
+                assertLT(t.nextHeadingsIndex[i], 0);
         }
     }
 }
@@ -185,7 +185,7 @@ void HeadingTrackerTester::testNext3() {
     t.nextRegion();
 
     for (int i = 0; i < elements; ++i) {
-        if (i == (int) SHeading::Type::Region) {
+        if (i == (int)SHeading::Type::Region) {
             assertEQ(t.curHeadingsIndex[i], 1);
             assertEQ(t.nextHeadingsIndex[i], 2);
         } else {
@@ -205,6 +205,100 @@ void HeadingTrackerTester::testRegionsAndGroups1() {
     // first region should have no group
     assertEQ(t.curHeadingsIndex[(int)SHeading::Type::Region], 0);
     assertLT(t.curHeadingsIndex[(int)SHeading::Type::Group], 0);
+}
+
+void HeadingTrackerTester::testDrum() {
+    auto g1 = std::make_shared<SHeading>(SHeading::Type::Group, 10);
+    auto g2 = std::make_shared<SHeading>(SHeading::Type::Group, 10);
+
+    auto r1 = std::make_shared<SHeading>(SHeading::Type::Region, 10);
+    auto r2 = std::make_shared<SHeading>(SHeading::Type::Region, 10);
+    auto r3 = std::make_shared<SHeading>(SHeading::Type::Region, 10);
+    auto r4 = std::make_shared<SHeading>(SHeading::Type::Region, 10);
+    auto r5 = std::make_shared<SHeading>(SHeading::Type::Region, 10);
+    auto r6 = std::make_shared<SHeading>(SHeading::Type::Region, 10);
+    
+    SHeadingList hl;
+    hl.push_back(g1);
+    hl.push_back(r1);
+    hl.push_back(r2);
+    hl.push_back(r3);
+
+    hl.push_back(g2);
+    hl.push_back(r4);
+    hl.push_back(r5);
+    hl.push_back(r6);
+    
+
+    HeadingTracker t(hl);
+
+    // first region, r1, g1 in effect
+    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    for (int i = 0; i < elements; ++i) {
+        if (i == (int)SHeading::Type::Region) {
+            assertEQ(t.curHeadingsIndex[i], 1);
+            assertEQ(t.nextHeadingsIndex[i], 2);
+        } else if (i == (int)SHeading::Type::Group) {
+            assertEQ(t.curHeadingsIndex[i], 0);
+            assertEQ(t.nextHeadingsIndex[i], 4);
+        } else {
+            assert(t.curHeadingsIndex[i] < 0);
+            assert(t.nextHeadingsIndex[i] < 0);
+        }
+    }
+
+    t.nextRegion();
+    // second region, r2, g1 in effect
+    for (int i = 0; i < elements; ++i) {
+        if (i == (int)SHeading::Type::Region) {
+            assertEQ(t.curHeadingsIndex[i], 2);
+            assertEQ(t.nextHeadingsIndex[i], 3);
+        }
+        else if (i == (int)SHeading::Type::Group) {
+            assertEQ(t.curHeadingsIndex[i], 0);
+            assertEQ(t.nextHeadingsIndex[i], 4);
+        }
+        else {
+            assert(t.curHeadingsIndex[i] < 0);
+            assert(t.nextHeadingsIndex[i] < 0);
+        }
+    }
+
+    t.nextRegion();
+    // shird region, r3, g1 in effect
+    for (int i = 0; i < elements; ++i) {
+        if (i == (int)SHeading::Type::Region) {
+            assertEQ(t.curHeadingsIndex[i], 3);
+            assertEQ(t.nextHeadingsIndex[i], 5);
+        }
+        else if (i == (int)SHeading::Type::Group) {
+            assertEQ(t.curHeadingsIndex[i], 0);
+            assertEQ(t.nextHeadingsIndex[i], 4);
+        }
+        else {
+            assert(t.curHeadingsIndex[i] < 0);
+            assert(t.nextHeadingsIndex[i] < 0);
+        }
+    }
+
+    t.nextRegion();
+    // tourth region, r4, g2 in effect
+    for (int i = 0; i < elements; ++i) {
+        if (i == (int)SHeading::Type::Region) {
+            assertEQ(t.curHeadingsIndex[i], 5);
+            assertEQ(t.nextHeadingsIndex[i], 6);
+        }
+        else if (i == (int)SHeading::Type::Group) {
+            assertEQ(t.curHeadingsIndex[i], 4);
+            assert(t.nextHeadingsIndex[i] < 0);
+        }
+        else {
+            assert(t.curHeadingsIndex[i] < 0);
+            assert(t.nextHeadingsIndex[i] < 0);
+        }
+    }
+
+    assert(false);
 }
 
 void testHeadingTracker() {

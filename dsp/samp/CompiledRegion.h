@@ -36,7 +36,6 @@ extern int compileCount;
  */
 class CompiledRegion {
 public:
-  //  CompiledRegion(SRegionPtr, CompiledGroupPtr compiledParent, SGroupPtr parsedParent);
     void addRegionInfo(SamplerSchema::KeysAndValuesPtr);
     CompiledRegion(int ln) : lineNumber (ln) {
         // SQINFO("Compiled REgion def ctor %p", this);
@@ -140,6 +139,11 @@ public:
 
     bool shouldIgnore() const;
 
+    /** 
+     * should be called after everyone has called 
+     * addRegionInfo
+     */
+    void finalize();        
 protected:
     CompiledRegion(CompiledRegionPtr);
     CompiledRegion& operator=(const CompiledRegion&) = default;

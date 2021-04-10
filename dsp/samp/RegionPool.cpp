@@ -123,29 +123,43 @@ void RegionPool::sortByPitchAndVelocity(std::vector<CompiledRegionPtr>& array) {
 // new one, for new parser
 bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
     HeadingTracker ht(in->headings);
-    // const int regionIndex = int(SHeading::Type::Region);
 
+    SQINFO("---- buildCompiledTree with %d regions", in->headings.size());
     // Enumerate all the parsed regions
     while (ht.getCurrent(SHeading::Type::Region)) {
         // here we know current desribes a region
         auto curRegion = ht.getCurrent(SHeading::Type::Region);
+        {
+            auto v = curRegion->values;
+            auto x = v.size();
+            if (x == 1) {
+                auto xx = v[0];
+                SQINFO("xx");
+            }
+           // assert(false);
+        }
         CompiledRegionPtr cReg = std::make_shared<CompiledRegion>(curRegion->lineNumber);
 
         // now add in all the parents
-        for (int typeIndex = int(SHeading::Type::NUM_TYPES) - 1; typeIndex > int(SHeading::Type::Region); typeIndex--) {
+        for (int typeIndex = int(SHeading::Type::NUM_TYPES) - 1; typeIndex >= int(SHeading::Type::Region); typeIndex--) {
             SHeading::Type type = SHeading::Type(typeIndex);
             auto nextParent = ht.getCurrent(type);
             if (nextParent) {
                 cReg->addRegionInfo(nextParent->compiledValues);
             }
         }
+        cReg->finalize();
+        SQINFO("one more region from headings");
+        cReg->_dump(0);
         // actually we should do our ignoreing on the region
         if (!cReg->shouldIgnore()) {
+            SQINFO("not ignoring");
             //  auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
             maybeAddToKeyswitchList(cReg);
             if (cReg->sw_default >= 0) {
                 currentSwitch_ = cReg->sw_default;
             }
+             SQINFO("adding");
             regions.push_back(cReg);
         }
 

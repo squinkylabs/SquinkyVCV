@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "SamplerSchema.h"
+#include "SqLog.h"
 
 class SLex;
 class SLexItem;
@@ -34,6 +35,7 @@ using SKeyValueList = std::vector<SKeyValuePairPtr>;
 class SHeading {
 public:
 
+    void _dump() const {dumpKeysAndValues(values); }
     enum class Type {
         Region,
         Group,
@@ -61,7 +63,12 @@ public:
      * This is fairly mechanical, and driven from SamperSchema
      */
     SamplerSchema::KeysAndValuesPtr compiledValues;
-    static void dumpKeysAndValues(const SKeyValueList& v);
+    static void dumpKeysAndValues(const SKeyValueList& v) {
+        SQINFO("-- keys and vals:");
+        for (auto k : v) {
+            SQINFO("key=%s val=%s", k->key.c_str(), k->value.c_str());
+        }
+    }
     const int lineNumber = 0;
     const Type type = {Type::Unknown};
 };

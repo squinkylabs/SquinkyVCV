@@ -30,6 +30,7 @@ public:
 
     void _dump(int depth) const;
     void _getAllRegions(std::vector<CompiledRegionPtr>&) const;
+    size_t size() const { return regions.size(); }
     static void sortByVelocity(std::vector<CompiledRegionPtr>&);
     static void sortByPitch(std::vector<CompiledRegionPtr>&);
     static void sortByPitchAndVelocity(std::vector<CompiledRegionPtr>&);

@@ -202,7 +202,6 @@ static void testCIKeysAndValuesNotesUC() {
     testCIKeysAndValues("C0", 12 * (0 + 1));
     testCIKeysAndValues("C-1", 12 * (-1 + 1));
     testCIKeysAndValues("C-2", 12 * (-2 + 1));
-
 }
 
 static void testCIKeysAndValuesNotesSharp() {
@@ -210,7 +209,6 @@ static void testCIKeysAndValuesNotesSharp() {
     int expectedPitch = 12 * (4 + 1) + 3;
     testCIKeysAndValues("d#4", expectedPitch);
 }
-
 
 static void testParseGlobalAndRegionCompiled() {
     printf("start test parse global\n");
@@ -231,7 +229,6 @@ static void testParseGlobalAndRegionCompiled() {
 
     assert(inst->headings[1]->compiledValues);
     assertEQ(inst->headings[1]->compiledValues->_size(), 0);
-
 }
 
 static void testParseGlobalWithKVAndRegionCompiled() {
@@ -252,12 +249,11 @@ static void testParseGlobalWithKVAndRegionCompiled() {
     auto val = inst->headings[0]->compiledValues->get(SamplerSchema::Opcode::HI_KEY);
     assertEQ(val->numericInt, 57);
 
-  //  SGroupPtr group = inst->groups[0];
-  //  assert(group);
+    //  SGroupPtr group = inst->groups[0];
+    //  assert(group);
     assert(inst->headings[1]->compiledValues);
     assertEQ(inst->headings[1]->compiledValues->_size(), 0);
 }
-
 
 static void testParseGlobalWitRegionKVCompiled() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -284,13 +280,11 @@ static void testParseGlobalWitRegionKVCompiled() {
     assertEQ(inst->headings[2]->compiledValues->_size(), 1);
     assertEQ(inst->headings[3]->compiledValues->_size(), 0);
 
-
-  //  assertEQ(inst->headings[2]->compiledValues->get(SamplerSchema::Opcode::LO_KEY), 57);
+    //  assertEQ(inst->headings[2]->compiledValues->get(SamplerSchema::Opcode::LO_KEY), 57);
 
     auto val = inst->headings[2]->compiledValues->get(SamplerSchema::Opcode::LO_KEY);
     assertEQ(val->numericInt, 57);
 }
-
 
 static void testParseControl() {
     SQINFO("------------- testParseControl");
@@ -313,7 +307,6 @@ static void testParseControl() {
     assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Global);
     assertEQ((int)inst->headings[2]->type, (int)SHeading::Type::Group);
     assertEQ((int)inst->headings[3]->type, (int)SHeading::Type::Region);
-
 
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
@@ -360,8 +353,6 @@ static void testCompiledRegion() {
     assertEQ(cr->volume, 0);
     assertEQ(cr->tune, 0);
 }
-
-
 
 static void testCompiledRegionAddedOpcodes() {
     SQINFO("---- starting testCompiledRegionAddedOpcodes");
@@ -422,8 +413,6 @@ static void testCompiledRegionSeqIndex2() {
     CompiledRegionPtr cr = st::makeRegion(R"foo(<group>seq_position=11<region>)foo");
     assertEQ(cr->sequencePosition, 11);
 }
-
-
 
 static void testCompileInst0() {
     printf("\n-- test comp inst 1\n");
@@ -578,7 +567,7 @@ static void testCompiledGroupSub(const char* data, bool shouldIgnore) {
 
     assertEQ(inst->headings.size(), 1);
     assert(inst->headings[0]->type == SHeading::Type::Group);
-    
+
     SHeadingPtr group = inst->headings[0];
     SamplerErrorContext errc;
     CompiledInstrument::expandAllKV(errc, inst);
@@ -586,7 +575,7 @@ static void testCompiledGroupSub(const char* data, bool shouldIgnore) {
 
     assert(inst->wasExpanded);
 
-  //  CompiledGroupPtr cr = std::make_shared<CompiledGroup>(group);
+    //  CompiledGroupPtr cr = std::make_shared<CompiledGroup>(group);
     CompiledRegionPtr cr = std::make_shared<CompiledRegion>(100);
     cr->addRegionInfo(group->compiledValues);
     assertEQ(cr->shouldIgnore(), shouldIgnore);
@@ -715,10 +704,20 @@ static void testCompileKey() {
 
     SamplerErrorContext errc;
     auto ci = CompiledInstrument::make(errc, inst);
+    //assertEQ(inst->headings.size(), 1);
+    // SHeadingPtr region = inst->headings[0];
+
     VoicePlayInfo info;
     VoicePlayParameter params;
     params.midiPitch = 12;
     params.midiVelocity = 60;
+
+    bool didKS = false;
+    const CompiledRegion* region = ci->_pool().play(params, .5, didKS);
+    assertEQ(region->lokey, 12);
+    assertEQ(region->hikey, 12);
+    assertEQ(region->keycenter, 12);
+
     ci->play(info, params, nullptr, 0);
     assert(info.valid);
     assertEQ(info.needsTranspose, false);
@@ -1158,16 +1157,16 @@ static void testGroupInherit() {
 }
 
 static void testCompileSimpleDrum() {
-    printf("\n\n----- testCompileSimpleDrum\n");
+    printf("\n\n\n\n\\n\n------------- testCompileSimpleDrum -----------------------------\n");
     const char* data = R"foo(
         //snare =====================================
-        <group> amp_veltrack=98 key=40 loop_mode=one_shot lovel=101 hivel=127  // snare1 /////
+        <group> amp_veltrack=98 key=40 loop_mode=one_shot lovel=101 hivel=127 sample=g1
         <region> sample=a lorand=0 hirand=0.3
         <region> sample=b lorand=0.3 hirand=0.6
         <region> sample=c lorand=0.6 hirand=1.0
 
         //snareStick =====================================
-        <group> amp_veltrack=98 volume=-11 key=41 loop_mode=one_shot lovel=1 hivel=127 seq_length=3 
+        <group> amp_veltrack=98 volume=-11 key=41 loop_mode=one_shot lovel=1 hivel=127 seq_length=3 sample=g2
         <region> sample=d seq_position=1
         <region> sample=e seq_position=2
         <region> sample=f seq_position=3
@@ -1178,9 +1177,11 @@ static void testCompileSimpleDrum() {
 
     SamplerErrorContext errc;
     auto ci = CompiledInstrument::make(errc, inst);
-    // SQINFO("dumping drum patch");
-    // ci->_dump(0);
-    //  SQINFO("done with dump");
+    SQINFO("dumping drum patch");
+    ci->_dump(0);
+    SQINFO("done with dump");
+
+    assertEQ(ci->_pool().size(), 6);
     VoicePlayInfo info;
 
     std::set<int> waves;
@@ -1441,9 +1442,6 @@ static void testPlayVolumeAndTune() {
 #endif
 }
 
-
-
-
 void testx2() {
     assert(parseCount == 0);
     assert(compileCount == 0);
@@ -1466,7 +1464,6 @@ void testx2() {
 
     testParseGlobalWitRegionKVCompiled();
 
-  
     testCompiledRegion();
     testCompiledRegionAddedOpcodes();
     testCompiledRegionInherit();
@@ -1478,35 +1475,9 @@ void testx2() {
     testCompiledRegionSeqIndex1();
     testCompiledRegionSeqIndex2();
 
-   
     testCompiledGroup0();
     testCompiledGroup1();
     testCompiledGroup2();
-
-    assert(false);
-#if 0
-   
-
-
-   
-
-
-    // put here just for now
-    testCompileMutliControls();
-
-    // printf("fix testStreamXpose2\n");
-    //testStreamXpose2();
-
-  
-  
-
-    testCompileCrash();
-    testCompileCrash2();
-
-  
-
-
-    testCompileMutliControls();
 
     // Let' put lots of very basic compilation tests here
     testCompileTreeOne();
@@ -1520,6 +1491,20 @@ void testx2() {
     testCompileGroupProbability();
     testCompileBassoon();
     testGroupInherit();
+
+#if 0
+    assert(false);
+#else
+
+    // put here just for now
+    testCompileMutliControls();
+
+    // printf("fix testStreamXpose2\n");
+    //testStreamXpose2();
+
+    testCompileCrash();
+    testCompileCrash2();
+
     assertEQ(compileCount, 0);
 
     assertEQ(compileCount, 0);
