@@ -75,10 +75,10 @@ HeadingTracker::HeadingTracker(const SHeadingList& hl) : headings(hl) {
                     curHeadingsIndex[typeIndex] = headingIndex;
                     addedToCurrentSlot = true;
                 }
-            } 
-#if 0   // tried to fix bug
-            // If heading under consideration not used for current
-            // and next is empty
+            }
+#if 1  // tried to fix bug                                 \
+    // If heading under consideration not used for current \
+    // and next is empty
             if (!addedToCurrentSlot && nextHeadingsIndex[typeIndex] < 0) {
                 // if we need a next, anything after prev is ok
                 nextHeadingsIndex[typeIndex] = headingIndex;
@@ -107,7 +107,6 @@ void HeadingTracker::nextRegion() {
     curHeadingsIndex[regionIndex] = nextHeadingsIndex[regionIndex];
     //  nextHeadingsIndex[regionIndex] = -1;
 
-
     const int curRegionHeadingIndex = curHeadingsIndex[regionIndex];
 
     // now that we have advanced region, let's think about moving up others
@@ -115,14 +114,24 @@ void HeadingTracker::nextRegion() {
     for (int i = 0; i < elements; ++i) {
         // if we are a region parent
         if (i != regionIndex) {
+#if 1  // try to fix bug with cur = -1, next -3;                                                             \
+    // Now, see if the NEXT heading is valid. If so that means the current one isn't, and we need to move up \
+    // and grab the next heading.
+            if ((nextHeadingsIndex[i] >= 0) && (nextHeadingsIndex[i] < curRegionHeadingIndex)) {
+                curHeadingsIndex[i] = nextHeadingsIndex[i];
+                nextHeadingsIndex[i] = -1;  // and mark next as invalid. Maybe we will fill it
+            }
+#else
             // and we aren't exhausted yet
+            // problem here is that cur could be -1, but next is still good
             if (curHeadingsIndex[i] >= 0) {
                 // Now, see if the NEXT heading is valid. If so that means the current one isn't, and we need to move up
                 // and grab the next heading.
-                if ((nextHeadingsIndex[i] >= 0) &&  (nextHeadingsIndex[i] < curRegionHeadingIndex)) {
+                if ((nextHeadingsIndex[i] >= 0) && (nextHeadingsIndex[i] < curRegionHeadingIndex)) {
                     curHeadingsIndex[i] = nextHeadingsIndex[i];
                 }
             }
+#endif
         }
     }
 

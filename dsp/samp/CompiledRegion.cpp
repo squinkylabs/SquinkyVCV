@@ -135,7 +135,7 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     findValue(tune, values, SamplerSchema::Opcode::TUNE);
     findValue(volume, values, SamplerSchema::Opcode::VOLUME);
 
-    SQINFO("leave addRegionInfo seqPos=%d seqLen=%d samp=%s trigger=%d", sequencePosition, sequenceLength, sampleFile.c_str(), trigger);
+    //SQINFO("leave addRegionInfo seqPos=%d seqLen=%d samp=%s trigger=%d", sequencePosition, sequenceLength, sampleFile.c_str(), trigger);
 }
 
 void CompiledRegion::finalize() {
