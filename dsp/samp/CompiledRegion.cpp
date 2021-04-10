@@ -135,7 +135,7 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     findValue(tune, values, SamplerSchema::Opcode::TUNE);
     findValue(volume, values, SamplerSchema::Opcode::VOLUME);
 
-    //SQINFO("leave addRegionInfo seqPos=%d seqLen=%d samp=%s", sequencePosition, sequenceLength, sampleFile.c_str());
+    SQINFO("leave addRegionInfo seqPos=%d seqLen=%d samp=%s trigger=%d", sequencePosition, sequenceLength, sampleFile.c_str(), trigger);
 }
 
 void CompiledRegion::finalize() {
@@ -262,92 +262,9 @@ int CompiledRegion::pitchRange() const {
     return 1 + hikey - lokey;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////
-
-#if 0
-CompiledMultiRegion::CompiledMultiRegion(CompiledGroupPtr parent) : CompiledRegion(parent->regions[0]) {
-    for (auto region : parent->regions) {
-        originalRegions.push_back(region);
-    }
-}
-
-void CompiledMultiRegion::addChild(CompiledRegionPtr child) {
-    originalRegions.push_back(child);
-}
-
-CompiledRoundRobinRegion::CompiledRoundRobinRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent){};
-
-CompiledRandomRegion::CompiledRandomRegion(CompiledGroupPtr parent) : CompiledMultiRegion(parent) {
-}
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-#if 0  // compiled group obsolete?
-CompiledGroup::CompiledGroup(SGroupPtr group) : lineNumber(group->lineNumber) {
-    compileCount++;
 
-    // do we still need all these members in groups?
-    // do they really do something anymore?
-    auto value = group->compiledValues->get(Opcode::TRIGGER);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Discrete);
-        //ignore = (trigger != DiscreteValue::ATTACK);
-        trigger = value->discrete;
-    }
-
-    value = group->compiledValues->get(Opcode::SEQ_LENGTH);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Int);
-        sequence_length = value->numericInt;
-    }
-    value = group->compiledValues->get(Opcode::LO_RAND);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Float);
-        lorand = value->numericFloat;
-    }
-    value = group->compiledValues->get(Opcode::HI_RAND);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Float);
-        hirand = value->numericFloat;
-    }
-}
-
-CompiledGroup::CompiledGroup(int line) : lineNumber(line) {
-    compileCount++;
-}
-
-bool CompiledGroup::shouldIgnore() const {
-    bool dontIgnore = trigger == SamplerSchema::DiscreteValue::NONE || trigger == SamplerSchema::DiscreteValue::ATTACK;
-    return !dontIgnore;
-}
-#endif
-
-#if 0
-CompiledRegion::Type CompiledGroup::type() const {
-    CompiledRegion::Type theType = CompiledRegion::Type::Base;
-    if (this->sequence_length > 0) {
-        theType = CompiledRegion::Type::RoundRobin;
-    } else if (this->lorand >= 0) {
-        // the group has prob on it.
-        theType = CompiledRegion::Type::GRandom;
-    } else {
-        bool isProbabilty = !regions.empty();  // assume if any regions we are a probability group
-        for (auto child : regions) {
-            // lorand=0 hirand=0.3
-            if (child->lorand < 0) {
-                isProbabilty = false;
-            }
-        }
-        if (isProbabilty) {
-            theType = CompiledRegion::Type::Random;
-            if (regions.size() < 2) SQWARN("rand region no options");
-            //assert(regions.size() > 1);
-        }
-    }
-    return theType;
-}
-#endif
 
 void CompiledRegion::_dump(int depth) const {
     SQINFO("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d", isKeyswitched(), sw_lolast, sw_hilast);

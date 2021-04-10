@@ -710,18 +710,22 @@ static void testParseDX() {
 
 extern int compileCount;
 
+#if 0
 void testx3() {
     assert(false);
 }
 void testx4() {
     assert(false);
 }
+
 void testx5() {
     assert(false);
 }
+
 void testx6() {
     assert(false);
 }
+#endif
 
 void testx() {
     assertEQ(compileCount, 0);

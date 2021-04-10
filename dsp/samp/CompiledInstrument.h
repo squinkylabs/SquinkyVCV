@@ -12,16 +12,16 @@
 
 class FilePath;
 class SInstrument;
-class SRegion;
+// class SRegion;
 class WaveLoader;
-class SGroup;
+//class SGroup;
 class SamplerErrorContext;
 class InstrumentInfo;
 
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
-using SRegionPtr = std::shared_ptr<SRegion>;
+//using SRegionPtr = std::shared_ptr<SRegion>;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
-using SGroupPtr = std::shared_ptr<SGroup>;
+//using SGroupPtr = std::shared_ptr<SGroup>;
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 using InstrumentInfoPtr = std::shared_ptr<InstrumentInfo>;
 /**

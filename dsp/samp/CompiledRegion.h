@@ -7,16 +7,16 @@
 #include "SamplerSchema.h"
 #include "SqLog.h"
 
-class SRegion;
-class SGroup;
+//class SRegion;
+//class SGroup;
 class CompiledRegion;
 
 // we don't need this class anymore
 //class CompiledGroup;
 class VoicePlayInfo;
 class ISamplerPlayback;
-using SRegionPtr = std::shared_ptr<SRegion>;
-using SGroupPtr = std::shared_ptr<SGroup>;
+//using SRegionPtr = std::shared_ptr<SRegion>;
+//using SGroupPtr = std::shared_ptr<SGroup>;
 
 using CompiledRegionPtr = std::shared_ptr<CompiledRegion>;
 //using CompiledGroupPtr = std::shared_ptr<CompiledGroup>;

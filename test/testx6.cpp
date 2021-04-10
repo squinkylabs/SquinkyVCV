@@ -6,10 +6,7 @@
 #include "asserts.h"
 
 static CompiledInstrumentPtr makeTest(const std::string& data) {
-#if 1
-    assert(false);
-    return nullpptr;
-#else
+
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
     assert(err.empty());
@@ -23,7 +20,7 @@ static CompiledInstrumentPtr makeTest(const std::string& data) {
     }
 
     return cinst;
-#endif
+
 }
 
 // verify that region overrides others
@@ -92,12 +89,14 @@ static void testDefaultAmpeg() {
 
 // test we prune release group
 static void testRemoveRelease() {
+    SQINFO("----- testRemoveRelease");
     const char* data = R"foo(<global>
         <region>sample=b key=1
         <group>trigger=release
         <region>sample=a key=2
          )foo";
     auto inst = makeTest(data);
+    inst->_dump(0);
     std::vector<CompiledRegionPtr> regions;
     inst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);

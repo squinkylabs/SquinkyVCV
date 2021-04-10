@@ -215,12 +215,13 @@ int main(int argc, char** argv) {
  
 
     testHeadingTracker();
+    testx6();
     testx();
     testx2();
     testx3();
     testx4();  
     testx5();
-    testx6();
+   // testx6();
 
     testSampComposite();
  

@@ -59,22 +59,38 @@ HeadingTracker::HeadingTracker(const SHeadingList& hl) : headings(hl) {
     }
 
     // new fill the non-region slots
+    // iterate through every heading we have in order
     for (int headingIndex = 0; headingIndex < headings.size(); ++headingIndex) {
         const SHeadingPtr heading = headings[headingIndex];
-        if (heading->type != SHeading::Type::Region) {
-            const int index = int(heading->type);
 
-            // if we haven't found a heading of this type for our first slot
-            if (curHeadingsIndex[index] < 0) {
+        // we have already done regions, so filter them out of the loop
+        if (heading->type != SHeading::Type::Region) {
+            const int typeIndex = int(heading->type);
+
+            // if we haven't found a heading of this type for our current slow
+            bool addedToCurrentSlot = false;
+            if (curHeadingsIndex[typeIndex] < 0) {
                 // if this index is before our region, and can parent it
                 if (headingIndex < curHeadingsIndex[regionIndex]) {
-                    curHeadingsIndex[index] = headingIndex;
+                    curHeadingsIndex[typeIndex] = headingIndex;
+                    addedToCurrentSlot = true;
                 }
-            } else if ((nextHeadingsIndex[index] < 0) && (headingIndex > curHeadingsIndex[index])) {
+            } 
+#if 0   // tried to fix bug
+            // If heading under consideration not used for current
+            // and next is empty
+            if (!addedToCurrentSlot && nextHeadingsIndex[typeIndex] < 0) {
                 // if we need a next, anything after prev is ok
-                nextHeadingsIndex[index] = headingIndex;
-                assert(nextHeadingsIndex[index] > curHeadingsIndex[index]);
+                nextHeadingsIndex[typeIndex] = headingIndex;
+                assert(nextHeadingsIndex[typeIndex] > curHeadingsIndex[typeIndex]);
             }
+#else
+            else if ((nextHeadingsIndex[typeIndex] < 0) && (headingIndex > curHeadingsIndex[typeIndex])) {
+                // if we need a next, anything after prev is ok
+                nextHeadingsIndex[typeIndex] = headingIndex;
+                assert(nextHeadingsIndex[typeIndex] > curHeadingsIndex[typeIndex]);
+            }
+#endif
         }
     }
 

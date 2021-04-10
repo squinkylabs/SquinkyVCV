@@ -143,10 +143,8 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
         // SQINFO("one more region from headings");
         //cReg->_dump(0);
         // 
-        // actually we should do our ignoreing on the region
         if (!cReg->shouldIgnore()) {
             //SQINFO("not ignoring");
-            //  auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
             maybeAddToKeyswitchList(cReg);
             if (cReg->sw_default >= 0) {
                 currentSwitch_ = cReg->sw_default;
