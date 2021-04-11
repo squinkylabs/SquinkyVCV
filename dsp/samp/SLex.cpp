@@ -341,6 +341,27 @@ bool SLex::procNextIdentifierChar(char c) {
     if (c == '=') {
         return procEqualsSignInIdentifier();
     }
+
+    // check for a comment terminating a string
+    if (c == '/') {
+        if (lastCharWasForwardSlash) {
+            if (!curItem.empty()) {
+                assert(curItem.back() == '/');
+                curItem.pop_back();
+            }
+            // remove trailing space
+            while (!curItem.empty() && isspace(curItem.back())) {
+                 curItem.pop_back();
+            }
+           
+            addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
+            state = State::InComment;
+            return true;
+        }
+        lastCharWasForwardSlash = true;
+    } else {
+        lastCharWasForwardSlash = false;
+    }
     // terminate identifier on these, but proc them
     // TODO, should the middle one be '>'? is that just an error?
     if (c == '<' || c == '<' || c == '=' || c == '\n') {

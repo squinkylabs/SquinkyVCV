@@ -408,6 +408,38 @@ static void testLexNewLine() {
     assertEQ(lex->items.size(), 3);
 }
 
+static void testLexCommentInFile() {
+    auto lex = SLex::go("sample=a/b//c");
+    assert(lex);
+    lex->_dump();
+    assertEQ(lex->items.size(), 3);
+    assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
+    SLexItemPtr id = lex->items[2];
+    SLexIdentifier* p = static_cast<SLexIdentifier*>(id.get());
+    assertEQ(p->idName, "a/b");
+}
+
+static void testLexCommentInFile2() {
+    auto lex = SLex::go("sample=a/b //c");
+    assert(lex);
+    lex->_dump();
+    assertEQ(lex->items.size(), 3);
+    assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
+    SLexItemPtr id = lex->items[2];
+    SLexIdentifier* p = static_cast<SLexIdentifier*>(id.get());
+    assertEQ(p->idName, "a/b");
+}
+
+static void testLexCommentInFile3() {
+    auto lex = SLex::go("sample=a/b\t//c");
+    assert(lex);
+    lex->_dump();
+    assertEQ(lex->items.size(), 3);
+    assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
+    SLexItemPtr id = lex->items[2];
+    SLexIdentifier* p = static_cast<SLexIdentifier*>(id.get());
+    assertEQ(p->idName, "a/b");
+}
 
 static void testparse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -762,6 +794,9 @@ void testx() {
     //  testLexDefineFail();
     testLexLabel2();
     testLexNewLine();
+    testLexCommentInFile();
+    testLexCommentInFile2();
+    testLexCommentInFile3();
 
 
     testparse1();

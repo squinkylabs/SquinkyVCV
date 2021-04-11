@@ -127,6 +127,7 @@ private:
     
     std::string curItem;
     bool lastIdentifierIsString = false;
+    bool lastCharWasForwardSlash = false;
     std::string* const outErrorStringPtr;
     const FilePath* const myFilePath;
     const int includeRecursionDepth;
