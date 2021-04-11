@@ -119,7 +119,7 @@ void HeadingTracker::nextRegion() {
     // and grab the next heading.
             if ((nextHeadingsIndex[i] >= 0) && (nextHeadingsIndex[i] < curRegionHeadingIndex)) {
                 curHeadingsIndex[i] = nextHeadingsIndex[i];
-                nextHeadingsIndex[i] = -1;  // and mark next as invalid. Maybe we will fill it
+              //  nextHeadingsIndex[i] = -1;  // and mark next as invalid. Maybe we will fill it
             }
 #else
             // and we aren't exhausted yet
@@ -138,9 +138,13 @@ void HeadingTracker::nextRegion() {
     // now let's update all the "next"
     for (int iType = 0; iType < elements; ++iType) {
         // if cur is still active, but next is now out of date
-        if (curHeadingsIndex[iType] >= 0 && (nextHeadingsIndex[iType] == curHeadingsIndex[iType])) {
+        // or not there (i think this "out of date" criteria might be old?
+        if (curHeadingsIndex[iType] >= 0 && ((nextHeadingsIndex[iType] == curHeadingsIndex[iType]) || (nextHeadingsIndex[iType] < 0))) {
             const SHeading::Type headingType = SHeading::Type(iType);
-            int nextIndexCandidate = nextHeadingsIndex[iType] + 1;
+            //int nextIndexCandidate = nextHeadingsIndex[iType] + 1;
+
+            // let's avoid searching in invalide ranges, and previous ranges
+            int nextIndexCandidate = 1 + std::max(curRegionHeadingIndex, nextHeadingsIndex[iType]);
             nextHeadingsIndex[iType] = -1;  // clear it out before search
             for (bool done = false; !done; ++nextIndexCandidate) {
                 if (nextIndexCandidate >= headings.size()) {
@@ -158,6 +162,7 @@ void HeadingTracker::nextRegion() {
                             if (nextIndexCandidate < curRegionHeadingIndex) {
                                 acceptThisOne = true;
                             }
+                            acceptThisOne = true;       // new idea - as long as it's past the other one, let's accept this
                             done = true;
                         }
                         assert(done);

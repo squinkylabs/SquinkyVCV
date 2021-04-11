@@ -60,6 +60,13 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     // TODO: why did old version need so many args?
     // TODO: do we need weakParent? get rid of it?
     // TODO: line numbers
+    {
+        std::string temp;
+        findValue(temp, values, SamplerSchema::Opcode::SAMPLE);
+        if (temp.find("A0.rel") != std::string::npos) {
+            SQINFO("adding it");
+        }
+    }
 
     //---------------- key related values
     findValue(lokey, values, SamplerSchema::Opcode::LO_KEY);
@@ -135,6 +142,9 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     findValue(tune, values, SamplerSchema::Opcode::TUNE);
     findValue(volume, values, SamplerSchema::Opcode::VOLUME);
 
+    if (sampleFile.find("A0.rel") != std::string::npos) {
+        SQINFO("here it is");
+    }
     //SQINFO("leave addRegionInfo seqPos=%d seqLen=%d samp=%s trigger=%d", sequencePosition, sequenceLength, sampleFile.c_str(), trigger);
 }
 

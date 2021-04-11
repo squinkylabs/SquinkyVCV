@@ -141,6 +141,7 @@ static char* snare = R"foo(D:\samples\SalamanderDrumkit\snare.sfz)foo";
 static char* allSal = R"foo(D:\samples\SalamanderDrumkit\all.sfz)foo";
 
 static void testSmallPianoVelswitch() {
+     SQWARN("\n----  testSmallPianoVelswitch\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     auto err = SParse::goFile(FilePath(smallPiano), inst);
@@ -148,9 +149,9 @@ static void testSmallPianoVelswitch() {
 
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
-    SQWARN("fix this bug and put the test back\n");
+    SQWARN("----  fix this bug and put the test back\n");
 
-#if 0
+#if 1
     VoicePlayInfo info;
     VoicePlayParameter params;
     params.midiPitch = 60;

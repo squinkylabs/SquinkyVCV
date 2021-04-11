@@ -27,8 +27,8 @@ using Value = SamplerSchema::Value;
 //#define _LOGOV
 
 bool CompiledInstrument::compile(const SInstrumentPtr in) {
-    SQINFO("dump parse from CompiledInstrument::compile");
-    in->_dump();
+   // SQINFO("dump parse from CompiledInstrument::compile");
+   // in->_dump();
 
     assert(in->wasExpanded);
     bool ret = regionPool.buildCompiledTree(in);
