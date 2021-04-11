@@ -104,7 +104,8 @@ void CompiledInstrument::_dump(int depth) const {
     regionPool._dump(depth);
 }
 
-int CompiledInstrument::addSampleFile(const std::string& s) {
+int CompiledInstrument::addSampleFile(const FilePath& fp) {
+    std::string s = fp.toString();
     int ret = 0;
     auto it = relativeFilePaths.find(s);
     if (it != relativeFilePaths.end()) {

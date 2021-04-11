@@ -51,6 +51,7 @@ public:
             cr->addRegionInfo(group->compiledValues);
         }
         cr->addRegionInfo(region->compiledValues);
+        cr->finalize();
         return cr;
     }
 };

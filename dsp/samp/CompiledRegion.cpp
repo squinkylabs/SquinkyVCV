@@ -52,21 +52,8 @@ using Opcode = SamplerSchema::Opcode;
 
 void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     //SQINFO("enter addRegionInfo seqPos=%d  len=", sequencePosition, sequenceLength);
-   // SQINFO("accepting values: ");
+    // SQINFO("accepting values: ");
     //values->_dump();
-  
-
-    // TODO: what did old findValue to that we don't?
-    // TODO: why did old version need so many args?
-    // TODO: do we need weakParent? get rid of it?
-    // TODO: line numbers
-    {
-        std::string temp;
-        findValue(temp, values, SamplerSchema::Opcode::SAMPLE);
-        if (temp.find("A0.rel") != std::string::npos) {
-            SQINFO("adding it");
-        }
-    }
 
     //---------------- key related values
     findValue(lokey, values, SamplerSchema::Opcode::LO_KEY);
@@ -93,16 +80,19 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     findValue(trigger, values, SamplerSchema::Opcode::TRIGGER);
 
     //----------- sample file
-    std::string baseFileName;
-    std::string defaultPathName;
+  //  std::string baseFileName;
+  //  std::string defaultPathName;
     findValue(baseFileName, values, SamplerSchema::Opcode::SAMPLE);
     findValue(defaultPathName, values, SamplerSchema::Opcode::DEFAULT_PATH);
+#if 0
+    // let's move this to finalize
     FilePath def(defaultPathName);
     FilePath base(baseFileName);
     def.concat(base);
     if (!def.empty()) {
         this->sampleFile = def.toString();
     }
+#endif
 
     // ---- random and RR -------------------
     findValue(lorand, values, SamplerSchema::Opcode::LO_RAND);
@@ -142,9 +132,6 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     findValue(tune, values, SamplerSchema::Opcode::TUNE);
     findValue(volume, values, SamplerSchema::Opcode::VOLUME);
 
-    if (sampleFile.find("A0.rel") != std::string::npos) {
-        SQINFO("here it is");
-    }
     //SQINFO("leave addRegionInfo seqPos=%d seqLen=%d samp=%s trigger=%d", sequencePosition, sequenceLength, sampleFile.c_str(), trigger);
 }
 
@@ -153,9 +140,17 @@ void CompiledRegion::finalize() {
     if (sequencePosition < 0) {
         sequenceLength = 1;
         sequencePosition = 1;
-       // SQINFO("sp < 0, so making def");
+        // SQINFO("sp < 0, so making def");
     }
     //SQINFO("leave finalize pos = %d len=%d", sequencePosition, sequenceLength);
+
+     // let's move this to finalize
+    FilePath def(defaultPathName);
+    FilePath base(baseFileName);
+    def.concat(base);
+    if (!def.empty()) {
+        this->sampleFile = def;
+    }
 }
 
 bool CompiledRegion::shouldIgnore() const {
@@ -274,13 +269,11 @@ int CompiledRegion::pitchRange() const {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
 void CompiledRegion::_dump(int depth) const {
     SQINFO("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d", isKeyswitched(), sw_lolast, sw_hilast);
     SQINFO("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
     SQINFO("lorand=%.2f hirand=%.2f\n", lorand, hirand);
     SQINFO("lokey=%d hikey=%d center=%d lovel=%d hivel=%d", lokey, hikey, keycenter, lovel, hivel);
-    SQINFO("sample=%s", sampleFile.c_str());
+    SQINFO("sample=%s", sampleFile.toString().c_str());
     SQINFO("");
 }

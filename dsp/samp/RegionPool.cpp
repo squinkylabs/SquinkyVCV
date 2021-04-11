@@ -161,39 +161,6 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
     return bRet;
 }
 
-#if 0  // port me
-bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
-    assert(false);
-
-    for (auto group : in->groups) {
-        auto cGroup = std::make_shared<CompiledGroup>(group);
-        if (!cGroup->shouldIgnore()) {
-            for (auto reg : group->regions) {
-                // SQWARN("need to add global info");
-                CompiledRegionPtr cReg = std::make_shared<CompiledRegion>(reg->lineNumber);
-                cReg->addRegionInfo(in->global.compiledValues);
-                cReg->addRegionInfo(group->compiledValues);
-                cReg->addRegionInfo(reg->compiledValues);
-
-                // actually we should do our ignoreing on the region
-                if (!cReg->shouldIgnore()) {
-                    //  auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
-                    maybeAddToKeyswitchList(cReg);
-                    if (cReg->sw_default >= 0) {
-                        currentSwitch_ = cReg->sw_default;
-                    }
-                    regions.push_back(cReg);
-                }
-            }
-        }
-    }
-    bool bRet = fixupCompiledTree();
-    fillRegionLookup();
-    return bRet;
-
-}
-#endif
-
 void RegionPool::maybeAddToKeyswitchList(CompiledRegionPtr region) {
     if (region->sw_lolast >= 0 && region->sw_hilast >= region->sw_lolast) {
         for (int pitch = region->sw_lolast; pitch <= region->sw_hilast; ++pitch) {

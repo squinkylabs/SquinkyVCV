@@ -101,7 +101,7 @@ static void testRemoveRelease() {
     inst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);
     CompiledRegionPtr creg = regions[0];
-    assertEQ(creg->sampleFile, "b");
+    assertEQ(creg->sampleFile.toString(), "b");
 }
 
 // test we prune release regions
@@ -115,7 +115,7 @@ static void testRemoveRelease2() {
     inst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);
     CompiledRegionPtr creg = regions[0];
-    assertEQ(creg->sampleFile, "a");
+    assertEQ(creg->sampleFile.toString(), "a");
 }
 
 static void testHicc() {

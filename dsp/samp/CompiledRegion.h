@@ -1,33 +1,25 @@
 #pragma once
 
+#include "FilePath.h"
+#include "SamplerSchema.h"
+#include "SqLog.h"
+
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "SamplerSchema.h"
-#include "SqLog.h"
-
-//class SRegion;
-//class SGroup;
 class CompiledRegion;
 
-// we don't need this class anymore
-//class CompiledGroup;
 class VoicePlayInfo;
 class ISamplerPlayback;
-//using SRegionPtr = std::shared_ptr<SRegion>;
-//using SGroupPtr = std::shared_ptr<SGroup>;
 
 using CompiledRegionPtr = std::shared_ptr<CompiledRegion>;
-//using CompiledGroupPtr = std::shared_ptr<CompiledGroup>;
-//using CompiledGroupPtrWeak = std::weak_ptr<CompiledGroup>;
 using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
 using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
 
 extern int compileCount;
 
 #define _SFZ_RANDOM
-// #define _SFZ_RR
 
 /**
  * All the data that we care about, pulled out of the SRegion we parsed.
@@ -83,7 +75,7 @@ public:
     int hikey = 127;
 
     int keycenter = 60;
-    std::string sampleFile;
+   
     int lovel = 1;
     int hivel = 127;
 
@@ -94,12 +86,15 @@ public:
     float amp_veltrack = 100;
     float ampeg_release = .001f;
 
-    //CompiledGroupPtrWeak weakParent;
     int lineNumber = -1;
 
     /** valid sample index starts at 1
      */
     int sampleIndex = 0;
+
+    FilePath sampleFile;
+    std::string baseFileName;
+    std::string defaultPathName;
 
     /**
      * Member variable to control round robin selection
@@ -158,79 +153,3 @@ private:
     // not used ??
     virtual Type type() const { return Type::Base; }
 };
-
-/**
- * We need multi-regions when we run into a group that defines multiple regions
- * that get picked at runtime.
- */
-#if 0 // unused?
-class CompiledMultiRegion : public CompiledRegion {
-public:
-    /** This constructor makes a multi-region from a group.
-     * copies over all the children so that multi region has the same children as the group.
-     */
-    CompiledMultiRegion(CompiledGroupPtr parent);
-    CompiledMultiRegion() {
-    }
-    const std::vector<CompiledRegionPtr>& getRegions() { return originalRegions; }
-
-    /** can add more regions this way.
-     * Usually used with the default constructor.
-     */
-    void addChild(CompiledRegionPtr);
-
-protected:
-    std::vector<CompiledRegionPtr> originalRegions;
-};
-
-using CompiledMultiRegionPtr = std::shared_ptr<CompiledMultiRegion>;
-
-class CompiledRoundRobinRegion : public CompiledMultiRegion {
-public:
-    CompiledRoundRobinRegion(CompiledGroupPtr parent);
-    Type type() const override { return Type::RoundRobin; }
-};
-
-class CompiledRandomRegion : public CompiledMultiRegion {
-public:
-    CompiledRandomRegion(CompiledGroupPtr parent);
-    CompiledRandomRegion() = default;
-    Type type() const override { return Type::Random; }
-};
-#endif
-
-/**
- * Every Compiled Region had a compiled group as a parent
- */
-#if 0
-class CompiledGroup {
-public:
-    /** This is the normal constructor.
-     * create a new compiled group from a parsed group.
-     */
-    CompiledGroup(SGroupPtr);
-
-    /**
-     * This constructor only for makins "synthetic" groups.
-     * line number may not be exactly right
-     */
-    CompiledGroup(int line);
-    ~CompiledGroup() { compileCount--; }
-
-    bool shouldIgnore() const;
-    void addChild(CompiledRegionPtr child) { regions.push_back(child); }
-    std::vector<CompiledRegionPtr> regions;
-    CompiledRegion::Type type() const;
-
-    int sequence_length = 0;
-    // assume no valid random data
-    float lorand = -1;
-    float hirand = -1;
-
-    const int lineNumber;
-
-private:
-    // TODO: get rid of all magic logic in group
-    SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
-};
-#endif

@@ -131,7 +131,7 @@ private:
 
     /** Returns wave index
      */
-    int addSampleFile(const std::string& s);
+    int addSampleFile(const FilePath& s);
     void addSampleIndexes();
     void deriveInfo();
 

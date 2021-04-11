@@ -347,7 +347,7 @@ static void testCompiledRegion() {
     assertEQ(cr->lokey, 95);
     assertEQ(cr->hikey, 97);
     std::string expected = std::string("K18") + FilePath::nativeSeparator() + std::string("C7.pp.wav");
-    assertEQ(cr->sampleFile, expected);
+    assertEQ(cr->sampleFile.toString(), expected);
 
     // test a few defaults
     assertEQ(cr->volume, 0);
@@ -370,7 +370,7 @@ static void testCompiledRegionInherit() {
     assertEQ(cr->hivel, 22);
     assertEQ(cr->lokey, 95);
     assertEQ(cr->hikey, 97);
-    assertEQ(cr->sampleFile, "K18\\C7.pp.wav");
+    assertEQ(cr->sampleFile.toString(), "K18\\C7.pp.wav");
 }
 
 static void testCompiledRegionKey() {
