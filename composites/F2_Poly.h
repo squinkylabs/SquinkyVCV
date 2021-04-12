@@ -473,9 +473,9 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args) {
 }
 
 #define ENDPROC(chan) \
-    output = rack::simd::clamp(output, -10.f, 10.f); \
     output *= volume; \
-    outPort.setVoltageSimd(output, chan); \
+    output = rack::simd::clamp(output, -10.f, 10.f); \
+    outPort.setVoltageSimd(output, chan); 
 
 template <class TBase>
 inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessArgs& args) {
@@ -492,9 +492,6 @@ inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessAr
     }
 
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-  //  output = rack::simd::clamp(output, -10.f, 10.f);
-  //  output *= volume;
-  //  outPort.setVoltageSimd(output, 0);
     ENDPROC(0);
 }
 
@@ -504,12 +501,11 @@ inline void F2_Poly<TBase>::processOneBank12_lim(const typename TBase::ProcessAr
     const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
 
     T output = (*filterFunc)(input, state1[0], params1[0]);
+    auto xx = output[0];
     output = limiter.step(output);
-
+    // SQINFO("lim in=%f out=%f", xx, output[0]);
+    
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
- //   output = rack::simd::clamp(output, -10.f, 10.f);
- //   output *= volume;
- //   outPort.setVoltageSimd(output, 0);
     ENDPROC(0);
 }
 
@@ -522,8 +518,6 @@ inline void F2_Poly<TBase>::processOneBank12_nolim(const typename TBase::Process
     output *= outputGain_n;
 
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-  //  output = rack::simd::clamp(output, -10.f, 10.f);
-  //  outPort.setVoltageSimd(output, 0);
     ENDPROC(0);
 }
 
@@ -564,8 +558,6 @@ inline void F2_Poly<TBase>::processGeneric(const typename TBase::ProcessArgs& ar
         }
 
         SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-       //output = rack::simd::clamp(output, -10.f, 10.f);
-       // outPort.setVoltageSimd(output, baseChannel);
         ENDPROC(baseChannel);
     }
 }

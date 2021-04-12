@@ -211,11 +211,11 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
         Comp::FC_TRIM_PARAM));
 
     addLabel(
-        Vec(72, 244),
+        Vec(74, 244),
         "Limit");
     addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(90, 261),
+        Vec(92, 264),
         module, Comp::LIMITER_PARAM));
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(

@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include "simd/functions.hpp"
 #include "MultiLag2.h"
+#include "SqLog.h"
 #include "SqMath.h"
 
 class Limiter {
@@ -24,11 +25,11 @@ inline float_4 Limiter::step(float_4 input)
     float_4 reductionGain = threshold / lag.get();
     float_4 gain = SimdBlocks::ifelse( lag.get() > threshold, reductionGain, 1);
 #if 0
-    printf("input = %s, lag=%s\nred = %s gain=%s\n", 
-        toStr(input).c_str(),
-        toStr(lag.get()).c_str(),
-        toStr(reductionGain).c_str(),
-        toStr(gain).c_str());
+    SQINFO("input = %f, lag=%f reduct = %f gain=%f", 
+        input[0],
+        lag.get()[0],
+        reductionGain[0],
+        gain[0]);
 #endif
     return gain * input;
 }
