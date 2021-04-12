@@ -273,6 +273,7 @@ inline void F2_Poly<TBase>::stepm() {
 template <class TBase>
 inline void F2_Poly<TBase>::setupLimiter() {
     limiter.setTimes(1, 100, TBase::engineGetSampleTime());
+    limiter.setInputGain(4);
 }
 
 template <class TBase>
@@ -322,7 +323,7 @@ inline void F2_Poly<TBase>::setupVolume() {
     }
 
     lastVolume = v;
-    const float procVolume = 8 * LookupTable<float>::lookup(*audioTaperLookupParams, v / 100);
+    const float procVolume = 4 * LookupTable<float>::lookup(*audioTaperLookupParams, v / 100);
     volume = float_4(procVolume);
 }
 
@@ -474,7 +475,7 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args) {
 
 #define ENDPROC(chan) \
     output *= volume; \
-    output = rack::simd::clamp(output, -10.f, 10.f); \
+    output = rack::simd::clamp(output, -20.f, 20.f); \
     outPort.setVoltageSimd(output, chan); 
 
 template <class TBase>
@@ -501,7 +502,7 @@ inline void F2_Poly<TBase>::processOneBank12_lim(const typename TBase::ProcessAr
     const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
 
     T output = (*filterFunc)(input, state1[0], params1[0]);
-    auto xx = output[0];
+    // auto xx = output[0];
     output = limiter.step(output);
     // SQINFO("lim in=%f out=%f", xx, output[0]);
     

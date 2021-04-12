@@ -10,16 +10,19 @@ class Limiter {
 public:
     float_4 step(float_4);
    void setTimes(float attackMs, float releaseMs, float sampleTime);
+   void setInputGain(float g);
 
    const MultiLag2& _lag() const;
 
 private:
     MultiLag2 lag;
     float_4 threshold = 5;
+    float_4 inputGain = {1};
 };
 
 inline float_4 Limiter::step(float_4 input)
 {
+    input *= inputGain;
     lag.step( rack::simd::abs(input));
 
     float_4 reductionGain = threshold / lag.get();
@@ -58,6 +61,10 @@ inline void Limiter::setTimes(float attackMs, float releaseMs, float sampleTime)
 
     lag.setAttack(normAttack);
     lag.setRelease(normRelease);
+}
+
+inline void Limiter::setInputGain(float g) {
+    inputGain = float_4(g);
 }
 
 
