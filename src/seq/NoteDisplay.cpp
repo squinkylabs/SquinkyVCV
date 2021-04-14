@@ -274,7 +274,7 @@ void NoteDisplay::onDragDrop(const event::DragDrop &e) {
 }
 
 void NoteDisplay::onButton(const event::Button &e) {
-    INFO("NoteDisplay::onButton");
+   // INFO("NoteDisplay::onButton");
     // printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);   fflush(stdout);
     OpaqueWidget::onButton(e);
     if (!enabled) {
@@ -300,14 +300,11 @@ void NoteDisplay::onButton(const event::Button &e) {
                 e.pos.y,
                 isPressed, ctrl, shift);
 
-            INFO("NoteDisplay::onButton 325");
             // now invoke the settings menu
             auto menu = sequencer->context->settings()->invokeUI(this);
 
 #ifdef _XFORM
-            INFO("NoteDisplay::addXformMenuItems 328");
             addXformMenuItems(menu);
-            INFO("NoteDisplay::addXformMenuItems 330");
 #else
             (void)menu;
 #endif
@@ -435,19 +432,19 @@ void NoteDisplay::onDragMove(const event::DragMove &e) {
 }
 
 void NoteDisplay::addXformMenuItems(::rack::ui::Menu *menu) {
-    INFO("NoteDisplay::addXformMenuItems 477");
+    // INFO("NoteDisplay::addXformMenuItems 477");
     addXformMenuItem(menu, InputScreenManager::Screens::Transpose);
     addXformMenuItem(menu, InputScreenManager::Screens::Invert);
     addXformMenuItem(menu, InputScreenManager::Screens::ReversePitch);
     addXformMenuItem(menu, InputScreenManager::Screens::ChopNotes);
     addXformMenuItem(menu, InputScreenManager::Screens::QuantizePitch);
     addXformMenuItem(menu, InputScreenManager::Screens::MakeTriads);
-    INFO("NoteDisplay::addXformMenuItems 484");
+    // INFO("NoteDisplay::addXformMenuItems 484");
 }
 
 static char buffer[256];
 
-#if 1
+#if 0
 int xx;
 
 template <int k>
@@ -464,20 +461,19 @@ int use() {
 
 INFO("use2");
 }
+#endif
 
-void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::Screens code) {
-    INFO("NoteDisplay::addXformMenuItems 452");
-  
+void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::Screens code) {  
     strcpy(buffer, "xform: ");
     strcpy(buffer + 7, InputScreenManager::xformName(code));
-    INFO("bufer=%s", buffer);
     SqMenuItem *mi = new SqMenuItem(
         buffer,
         []() { return false; },
         [this, code]() { doXform(code); });
 
-    INFO("NoteDisplay::addXformMenuItems 459");
+
     menu->addChild(mi);
+#if 0
     INFO("NoteDisplay::addXformMenuItems xx %d", use<10>());
     INFO("NoteDisplay::addXformMenuItems xx2 %d", use<100>());
     INFO("NoteDisplay::addXformMenuItems xx3 %d", use<1000>());
@@ -485,8 +481,9 @@ void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::S
     INFO("NoteDisplay::addXformMenuItems xx5 %d", use<100000>());
     INFO("NoteDisplay::addXformMenuItems xx6 %d", use<100000>());
     INFO("NoteDisplay::addXformMenuItems xxx");
+#endif
 }
-#else
+#if 0
 void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::Screens code) {
     INFO("NoteDisplay::addXformMenuItems 489");
     {
