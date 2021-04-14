@@ -7,7 +7,7 @@ You can get a free download [here](https://www.plogue.com/products/sforzando.htm
 
 ## General compatibility
 
-In general you will find that a majority of the free SFZ files will play just fine. There are some very elaborate, high-end SFZ that won't play so well. The ones from Piano Book, for example.
+In general you will find that a majority of the free SFZ files will play just fine in SFZ Player. There are some very elaborate, high-end SFZ that won't play so well. The ones from Pianobook, for example.
 
 As we mentioned earlier, SFZ Player implements a subset of the SFZ specification. So when you load an SFZ, you can expect one of several outcomes:
 
@@ -18,7 +18,7 @@ As we mentioned earlier, SFZ Player implements a subset of the SFZ specification
 
 ## In case of problems
 
-If you load an SFZ file and have an problem, you can ignore it and move on, or you can log an issue with us on our [GitHub Page](https://github.com/squinkylabs/SquinkyVCV/issues). It's your choice.
+If you load an SFZ file and have a problem, you can ignore it and move on, or you can log an issue with us on our [GitHub Page](https://github.com/squinkylabs/SquinkyVCV/issues). It's your choice.
 
 If you have an SFZ that crashes SFZ player, or gives an unexpected error message, please report it. If possible zip the SFZ and include it (the SFZ is a pretty small file - it's the samples that are big).
 
@@ -36,7 +36,7 @@ Many piano samples use “release samples” to accurately record the sound of l
 
 SFZ Player does not implement any form of looping. Because of this many older SFZ that were converted from Sound Fonts will not play correctly.
 
-SFZ may have many different types of sample files, although the huge majority use wav or flac. We do not read ogg or aif files, so if you find the rare SFZ instrument that uses them you are out of luck. Unless you are motivated enough to convert them yourself.
+SFZ may have many different types of sample files, although the huge majority use wav or flac. We do not read ogg or aiff files, so if you find the rare SFZ instrument that uses them you are out of luck. Unless you are motivated enough to convert them yourself.
 
 "Aria Format" is a superset of SFZ. Aria libraries use a different method of locating their samples which we do not support.
 

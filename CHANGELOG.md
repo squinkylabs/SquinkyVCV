@@ -1,5 +1,11 @@
 # Change log for Squinky Labs modules
 
+## 10.0.17
+
+Fixed links to SFZ Player in the VCV Library, and links to Organ 3
+
+Fixed a crash when right clicking in the Seq++ note area.
+
 ## 10.0.16
 
 New module: SFZ Player.
