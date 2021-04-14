@@ -101,8 +101,8 @@ bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
 
     WaveLoader::WaveInfoPtr waveInfo = waves->getInfo(patchInfo.sampleIndex);
     assert(waveInfo->isValid());
-#if 0
-    SQINFO("played file=%s", waveInfo->getFileName().c_str());
+#if 1
+    SQINFO("played pitch=%d vel=%d file=%s", midiPitch, midiVelocity, waveInfo->getFileName().c_str());
 #endif
 
     player.setSample(channel, waveInfo->getData(), int(waveInfo->getTotalFrameCount()));

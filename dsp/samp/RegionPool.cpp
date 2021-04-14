@@ -8,7 +8,7 @@
 #include "SParse.h"
 #include "SamplerPlayback.h"
 
-// #define _LOGOV
+#define _LOGOV
 
 // checks to see if the region is playable
 bool RegionPool::shouldRegionPlayNow(const VoicePlayParameter& params, const CompiledRegion* region, float random) {
@@ -287,17 +287,20 @@ bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion,
     const int lv2 = secondRegion->lovel;
 
 #ifdef _LOGOV
-    printf("overlap comparing line %d with %d\n", firstRegion->lineNumber, secondRegion->lineNumber);
-    printf("  first pitch=%d,%d, vel=%d,%d\n", firstRegion->lokey, firstRegion->hikey, firstRegion->lovel, firstRegion->hivel);
-    printf("  second pitch=%d,%d, vel=%d,%d\n", firstRegion->lokey, secondRegion->hikey, secondRegion->lovel, secondRegion->hivel);
+    SQINFO("overlap comparing line %d with %d", firstRegion->lineNumber, secondRegion->lineNumber);
+    SQINFO("  first pitch=%d,%d, vel=%d,%d", firstRegion->lokey, firstRegion->hikey, firstRegion->lovel, firstRegion->hivel);
+    SQINFO("  second pitch=%d,%d, vel=%d,%d", firstRegion->lokey, secondRegion->hikey, secondRegion->lovel, secondRegion->hivel);
 
-    printf("  first sw_ range=%d, %d. second=%d, %d", firstRegion->sw_lolast, firstRegion->sw_hilast, secondRegion->sw_lolast, secondRegion->sw_hilast);
-    printf("  overlap pitch = %d, overlap vel = %d\n", firstRegion->overlapsPitch(*secondRegion), firstRegion->overlapsVelocity(*secondRegionn));
+    SQINFO("  first sw_ range=%d, %d. second=%d, %d", firstRegion->sw_lolast, firstRegion->sw_hilast, secondRegion->sw_lolast, secondRegion->sw_hilast);
+    SQINFO("  overlap pitch = %d, overlap vel = %d", firstRegion->overlapsPitch(*secondRegion), firstRegion->overlapsVelocity(*secondRegion));
 #endif
 
     // If there is no overlap, then everything is fine.
     // Can keep and use regions as they are
     if (!regionsOverlap(firstRegion, secondRegion)) {
+#ifdef _LOGOV
+        SQINFO("no overlap, do nothing");
+#endif
         return false;
     }
 
@@ -312,6 +315,9 @@ bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion,
 
     // if regions are good now, then stop
     if (!regionsOverlap(firstRegion, secondRegion)) {
+#ifdef _LOGOV
+        SQINFO("overlap, repaired using %s", velLessOverlap ? "vel" : "pitch"  );
+#endif
         return false;
     }
 
