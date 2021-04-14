@@ -448,20 +448,42 @@ void NoteDisplay::addXformMenuItems(::rack::ui::Menu *menu) {
 static char buffer[256];
 
 #if 1
-    void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::Screens code) {
-        INFO("NoteDisplay::addXformMenuItems 452");
-        strcpy(buffer, "xform: ");
-        strcpy(buffer+7, InputScreenManager::xformName(code));
-        INFO("bufer=%s", buffer);
-        SqMenuItem *mi = new SqMenuItem(
-            buffer,
-            []() { return false; },
-            [this, code]() { doXform(code); });
-        INFO("NoteDisplay::addXformMenuItems 459");
-        menu->addChild(mi);
-        INFO("NoteDisplay::addXformMenuItems 504");
-   
+int xx;
+
+template <int k>
+int use() {
+    INFO("use ");
+
+    char foo[k * 1024];
+    for (int i=0; i<k + 1024; ++i) {
+        foo[i] = 0xa5; 
     }
+    xx = k;
+    return foo[ k / 2];
+
+
+INFO("use2");
+}
+
+void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::Screens code) {
+    INFO("NoteDisplay::addXformMenuItems 452");
+  
+    strcpy(buffer, "xform: ");
+    strcpy(buffer + 7, InputScreenManager::xformName(code));
+    INFO("bufer=%s", buffer);
+    SqMenuItem *mi = new SqMenuItem(
+        buffer,
+        []() { return false; },
+        [this, code]() { doXform(code); });
+
+    INFO("NoteDisplay::addXformMenuItems 459");
+    menu->addChild(mi);
+    INFO("NoteDisplay::addXformMenuItems xx %d", use<10>());
+    INFO("NoteDisplay::addXformMenuItems xx2 %d", use<100>());
+    INFO("NoteDisplay::addXformMenuItems xx3 %d", use<1000>());
+    INFO("NoteDisplay::addXformMenuItems xx4 %d", use<10000>());
+    INFO("NoteDisplay::addXformMenuItems xx5");
+}
 #else
 void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::Screens code) {
     INFO("NoteDisplay::addXformMenuItems 489");
