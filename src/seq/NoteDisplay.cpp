@@ -1,35 +1,31 @@
 #include "../Squinky.hpp"
 
 //#ifdef _SEQ
-#include "WidgetComposite.h"
-#include "Seq.h"
-
-
-#include "MidiSequencer.h"
-#include "UIPrefs.h"
 #include "InputScreen.h"
 #include "InputScreenManager.h"
 #include "KbdManager.h"
+#include "MidiSequencer.h"
+#include "Seq.h"
+#include "UIPrefs.h"
+#include "WidgetComposite.h"
 #ifndef _USERKB
 #include "MidiKeyboardHandler.h"
 #endif
-#include "MouseManager.h"
-#include "NoteScreenScale.h"
-#include "PitchUtils.h"
 #include "../ctrl/SqHelper.h"
 #include "../ctrl/SqMenuItem.h"
-#include "TimeUtils.h"
+#include "MouseManager.h"
 #include "NoteDisplay.h"
+#include "NoteScreenScale.h"
+#include "PitchUtils.h"
 #include "SeqSettings.h"
-#include "../ctrl/SqMenuItem.h"
 #include "SqGfx.h"
+#include "TimeUtils.h"
 
 NoteDisplay::NoteDisplay(
-    const Vec& pos,
-    const Vec& size,
+    const Vec &pos,
+    const Vec &size,
     MidiSequencerPtr seq,
-    ::rack::engine::Module* mod)
-{
+    ::rack::engine::Module *mod) {
     this->box.pos = pos;
     box.size = size;
     sequencer = seq;
@@ -56,34 +52,30 @@ NoteDisplay::NoteDisplay(
 #endif
 }
 
-
-void NoteDisplay::songUpdated()
-{
+void NoteDisplay::songUpdated() {
     initEditContext();
     // re-associate seq and mouse manager
-    mouseManager = std::make_shared<MouseManager>(sequencer); 
+    mouseManager = std::make_shared<MouseManager>(sequencer);
 }
 
-void NoteDisplay::setSequencer(MidiSequencerPtr seq)
-{
+void NoteDisplay::setSequencer(MidiSequencerPtr seq) {
     assert(seq);
     sequencer = seq;
     sequencer->assertValid();
     songUpdated();
 }
 
-void NoteDisplay::initEditContext()
-{
+void NoteDisplay::initEditContext() {
     assert(sequencer);
     assert(sequencer->context);
     // hard code view range (for now?)
     sequencer->context->setStartTime(0);
     sequencer->context->setEndTime(8);
     sequencer->context->setPitchLow(PitchUtils::pitchToCV(3, 0));
-    sequencer->context->setPitchHi(PitchUtils::pitchToCV(6, 0));        // was originally 5, for 2 octaves
+    sequencer->context->setPitchHi(PitchUtils::pitchToCV(6, 0));  // was originally 5, for 2 octaves
     sequencer->editor->updateSelectionForCursor(false);
 
-// set scaler once context has a valid range
+    // set scaler once context has a valid range
     auto scaler = std::make_shared<NoteScreenScale>(
         box.size.x,
         box.size.y,
@@ -94,16 +86,14 @@ void NoteDisplay::initEditContext()
 }
 
 // TODO: get rid of this (dont remember why this is here)
-void NoteDisplay::step()
-{
+void NoteDisplay::step() {
     if (!sequencer) {
         return;
     }
     OpaqueWidget::step();
 }
 
-void NoteDisplay::drawNotes(NVGcontext *vg)
-{
+void NoteDisplay::drawNotes(NVGcontext *vg) {
     // Get all the events on the screen, and go back two bar so we get tied notes.
     MidiEditorContext::iterator_pair it = sequencer->context->getEvents(8.f);
     auto scaler = sequencer->context->getScaler();
@@ -127,12 +117,11 @@ void NoteDisplay::drawNotes(NVGcontext *vg)
     }
 }
 
-void NoteDisplay::drawGrid(NVGcontext *vg)
-{
+void NoteDisplay::drawGrid(NVGcontext *vg) {
     auto scaler = sequencer->context->getScaler();
     assert(scaler);
 
-    const float endTime =  sequencer->context->getTrack()->getLength();
+    const float endTime = sequencer->context->getTrack()->getLength();
     const float endX = scaler->midiTimeToX(endTime);
     bool drewEnd = false;
 
@@ -155,8 +144,8 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
         const float x = scaler->midiTimeToX(time);
 
         const bool isBar = (relTime == 0) ||
-            (relTime == TimeUtils::bar2time(1)) ||
-            (relTime == TimeUtils::bar2time(2));
+                           (relTime == TimeUtils::bar2time(1)) ||
+                           (relTime == TimeUtils::bar2time(2));
 
         NVGcolor color = isBar ? UIPrefs::GRID_BAR_COLOR : UIPrefs::GRID_COLOR;
         if (x == endX) {
@@ -172,7 +161,7 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
     if (!drewEnd &&
         endTime >= sequencer->context->startTime() &&
         endTime < sequencer->context->endTime()) {
-        const float  x = scaler->midiTimeToX(endTime);
+        const float x = scaler->midiTimeToX(endTime);
         SqGfx::filledRect(
             vg,
             UIPrefs::GRID_END_COLOR,
@@ -180,8 +169,7 @@ void NoteDisplay::drawGrid(NVGcontext *vg)
     }
 }
 
-void NoteDisplay::drawCursor(NVGcontext *vg)
-{
+void NoteDisplay::drawCursor(NVGcontext *vg) {
     cursorFrameCount--;
     if (cursorFrameCount < 0) {
         cursorFrameCount = 10;
@@ -189,24 +177,21 @@ void NoteDisplay::drawCursor(NVGcontext *vg)
     }
 
     if (true) {
-        auto color = cursorState ?
-            nvgRGB(0xff, 0xff, 0xff) :
-            nvgRGB(0, 0, 0);
+        auto color = cursorState ? nvgRGB(0xff, 0xff, 0xff) : nvgRGB(0, 0, 0);
 
         auto scaler = sequencer->context->getScaler();
         assert(scaler);
 
         const float x = scaler->midiTimeToX(sequencer->context->cursorTime());
         const float y = scaler->midiCvToY(sequencer->context->cursorPitch()) +
-            scaler->noteHeight() / 2.f;
+                        scaler->noteHeight() / 2.f;
         SqGfx::filledRect(vg, color, x, y, 10, 3);
     }
 }
 
-void NoteDisplay::draw(const Widget::DrawArgs &args)
-{
+void NoteDisplay::draw(const Widget::DrawArgs &args) {
     NVGcontext *vg = args.vg;
- 
+
     if (!this->sequencer) {
         return;
     }
@@ -223,17 +208,15 @@ void NoteDisplay::draw(const Widget::DrawArgs &args)
     OpaqueWidget::draw(args);
 }
 
-void NoteDisplay::drawBackground(NVGcontext *vg)
-{
+void NoteDisplay::drawBackground(NVGcontext *vg) {
     auto scaler = sequencer->context->getScaler();
     SqGfx::filledRect(vg, UIPrefs::NOTE_EDIT_BACKGROUND, 0, 0, box.size.x, box.size.y);
     assert(scaler);
     const int noteHeight = scaler->noteHeight();
     const float width = box.size.x;
     for (float cv = sequencer->context->pitchLow();
-        cv <= sequencer->context->pitchHigh();
-        cv += PitchUtils::semitone) {
-
+         cv <= sequencer->context->pitchHigh();
+         cv += PitchUtils::semitone) {
         const float y = scaler->midiCvToY(cv);
 
         bool accidental = PitchUtils::isAccidental(cv);
@@ -246,9 +229,8 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
     }
 
     for (float cv = sequencer->context->pitchLow();
-        cv <= sequencer->context->pitchHigh();
-        cv += PitchUtils::semitone) {
-
+         cv <= sequencer->context->pitchHigh();
+         cv += PitchUtils::semitone) {
         float y = scaler->midiCvToY(cv) + scaler->noteHeight();
         const bool isC = PitchUtils::isC(cv);
         if (y > (box.size.y - .5)) {
@@ -256,7 +238,7 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
                         // re-design the visuals here
         }
         if (isC) {
-         //   const float y = scaler->midiCvToY(cv);
+            //   const float y = scaler->midiCvToY(cv);
             SqGfx::filledRect(
                 vg,
                 UIPrefs::GRID_CLINE_COLOR,
@@ -265,8 +247,7 @@ void NoteDisplay::drawBackground(NVGcontext *vg)
     }
 }
 
-void NoteDisplay::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer)
-{
+void NoteDisplay::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, MidiSequencerPtr sequencer) {
 #ifdef _USERKB
     kbdManager->onUIThread(seqComp, sequencer);
 #endif
@@ -276,9 +257,8 @@ void NoteDisplay::onUIThread(std::shared_ptr<Seq<WidgetComposite>> seqComp, Midi
  *
  */
 
-void NoteDisplay::onDoubleClick(const event::DoubleClick &e)
-{
-   // printf("got double click"); fflush(stdout);
+void NoteDisplay::onDoubleClick(const event::DoubleClick &e) {
+    // printf("got double click"); fflush(stdout);
 
     bool handled = mouseManager->onDoubleClick();
     if (handled) {
@@ -288,15 +268,14 @@ void NoteDisplay::onDoubleClick(const event::DoubleClick &e)
     }
 }
 
-void NoteDisplay::onDragDrop(const event::DragDrop &e)
-{
+void NoteDisplay::onDragDrop(const event::DragDrop &e) {
     //printf("on drag drop\n"); fflush(stdout);
     OpaqueWidget::onDragDrop(e);
 }
 
-void NoteDisplay::onButton(const event::Button &e)
-{
-   // printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);   fflush(stdout);
+void NoteDisplay::onButton(const event::Button &e) {
+    INFO("NoteDisplay::onButton");
+    // printf("on button press=%d rel=%d\n", e.action == GLFW_PRESS, e.action==GLFW_RELEASE);   fflush(stdout);
     OpaqueWidget::onButton(e);
     if (!enabled) {
         //DEBUG("disp skipping button - disabled");
@@ -321,25 +300,19 @@ void NoteDisplay::onButton(const event::Button &e)
                 e.pos.y,
                 isPressed, ctrl, shift);
 
+            INFO("NoteDisplay::onButton 325");
             // now invoke the settings menu
             auto menu = sequencer->context->settings()->invokeUI(this);
 
 #ifdef _XFORM
+            INFO("NoteDisplay::addXformMenuItems 328");
             addXformMenuItems(menu);
-            #if 0
-            SqMenuItem* mi = new SqMenuItem(
-               [](){ return false; },
-               [this](){ doTest(); }
-            );
-            mi->text = "test screen";
-            menu->addChild(mi);
-            #endif
+            INFO("NoteDisplay::addXformMenuItems 330");
 #else
-            (void) menu;
+            (void)menu;
 #endif
             handled = true;
         }
-
     }
     if (handled) {
         e.consume(this);
@@ -348,8 +321,7 @@ void NoteDisplay::onButton(const event::Button &e)
     }
 }
 
-void NoteDisplay::onSelectKey(const event::SelectKey &e)
-{
+void NoteDisplay::onSelectKey(const event::SelectKey &e) {
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
         e.consume(this);
@@ -358,11 +330,9 @@ void NoteDisplay::onSelectKey(const event::SelectKey &e)
     }
 }
 
-bool NoteDisplay::isKeyWeNeedToStealFromRack(int key)
-{
+bool NoteDisplay::isKeyWeNeedToStealFromRack(int key) {
 #ifdef _USERKB
-    if (!kbdManager->shouldGrabKeys())
-    {
+    if (!kbdManager->shouldGrabKeys()) {
         return false;
     }
 #endif
@@ -380,8 +350,7 @@ bool NoteDisplay::isKeyWeNeedToStealFromRack(int key)
     return isCursor;
 }
 
-void NoteDisplay::onHoverKey(const event::HoverKey &e)
-{
+void NoteDisplay::onHoverKey(const event::HoverKey &e) {
     bool handled = handleKey(e.key, e.mods, e.action);
     if (handled) {
         e.consume(this);
@@ -394,9 +363,7 @@ void NoteDisplay::onHoverKey(const event::HoverKey &e)
     }
 }
 
-
-bool NoteDisplay::handleKey(int key, int mods, int action)
-{
+bool NoteDisplay::handleKey(int key, int mods, int action) {
     if (!enabled) {
         return false;
     }
@@ -416,7 +383,7 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
 
     if (repeat) {
         // TODO: how will we handle repeat in the _USERKB work
-       
+
 #ifdef _USERKB
         handle = true;
 #else
@@ -438,73 +405,74 @@ bool NoteDisplay::handleKey(int key, int mods, int action)
     return handled;
 }
 
-void NoteDisplay::onSelect(const event::Select &e)
-{
+void NoteDisplay::onSelect(const event::Select &e) {
     updateFocus(true);
     e.consume(this);
 }
 
-void NoteDisplay::onDeselect(const event::Deselect &e)
-{
+void NoteDisplay::onDeselect(const event::Deselect &e) {
     updateFocus(false);
     e.consume(this);
 }
 
-void NoteDisplay::onDragStart(const event::DragStart &e)
-{
+void NoteDisplay::onDragStart(const event::DragStart &e) {
     bool b = mouseManager->onDragStart();
     if (b) {
         e.consume(this);
     }
 }
-void NoteDisplay::onDragEnd(const event::DragEnd &e)
-{
+void NoteDisplay::onDragEnd(const event::DragEnd &e) {
     bool b = mouseManager->onDragEnd();
     if (b) {
         e.consume(this);
     }
 }
-void NoteDisplay::onDragMove(const event::DragMove &e)
-{
+void NoteDisplay::onDragMove(const event::DragMove &e) {
     bool b = mouseManager->onDragMove(e.mouseDelta.x, e.mouseDelta.y);
     if (b) {
         e.consume(this);
     }
 }
 
-void NoteDisplay::addXformMenuItems(::rack::ui::Menu* menu)
-{
+void NoteDisplay::addXformMenuItems(::rack::ui::Menu *menu) {
+    INFO("NoteDisplay::addXformMenuItems 477");
     addXformMenuItem(menu, InputScreenManager::Screens::Transpose);
     addXformMenuItem(menu, InputScreenManager::Screens::Invert);
     addXformMenuItem(menu, InputScreenManager::Screens::ReversePitch);
     addXformMenuItem(menu, InputScreenManager::Screens::ChopNotes);
     addXformMenuItem(menu, InputScreenManager::Screens::QuantizePitch);
     addXformMenuItem(menu, InputScreenManager::Screens::MakeTriads);
+    INFO("NoteDisplay::addXformMenuItems 484");
 }
 
-void NoteDisplay::addXformMenuItem(::rack::ui::Menu* menu, InputScreenManager::Screens code)
-{
-    SqMenuItem* mi = new SqMenuItem(
-            [](){ return false; },
-            [this, code](){ doXform(code); }
-        );
-    std::string itemName = InputScreenManager::xformName(code); 
-    itemName = "xform: " + itemName;
+void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::Screens code) {
+    INFO("NoteDisplay::addXformMenuItems 489");
+    {
+        SqMenuItem *mi = new SqMenuItem(
+            []() { return false; },
+            [this, code]() { doXform(code); });
+        INFO("NoteDisplay::addXformMenuItems 493");
+        std::string itemName = InputScreenManager::xformName(code);
+        INFO("NoteDisplay::addXformMenuItems 497");
+        itemName = "xform: " + itemName;
+        INFO("NoteDisplay::addXformMenuItems 499");
 
-    mi->text = itemName;
-    menu->addChild(mi);
+        mi->text = itemName;
+        INFO("NoteDisplay::addXformMenuItems 502");
+        menu->addChild(mi);
+        INFO("NoteDisplay::addXformMenuItems 504");
+    }
+    INFO("NoteDisplay::addXformMenuItems 506");
 }
 
-void NoteDisplay::doXform(InputScreenManager::Screens screenCode)
-{
+void NoteDisplay::doXform(InputScreenManager::Screens screenCode) {
     assert(ism);
     InputScreenManager::Callback cb = [this]() {
         // DEBUG("in callback from  InputScreenManager ");
-        this->enabled = true;           // re-enable UI processing of events
+        this->enabled = true;  // re-enable UI processing of events
     };
 
     // as we pop up the xform UI, disable our own processing of UI events.
     this->enabled = false;
     ism->show(this, screenCode, sequencer, cb);
 }
-
