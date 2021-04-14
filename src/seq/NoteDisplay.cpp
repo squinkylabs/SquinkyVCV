@@ -482,7 +482,9 @@ void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::S
     INFO("NoteDisplay::addXformMenuItems xx2 %d", use<100>());
     INFO("NoteDisplay::addXformMenuItems xx3 %d", use<1000>());
     INFO("NoteDisplay::addXformMenuItems xx4 %d", use<10000>());
-    INFO("NoteDisplay::addXformMenuItems xx5");
+    INFO("NoteDisplay::addXformMenuItems xx5 %d", use<100000>());
+    INFO("NoteDisplay::addXformMenuItems xx6 %d", use<100000>());
+    INFO("NoteDisplay::addXformMenuItems xxx");
 }
 #else
 void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::Screens code) {
