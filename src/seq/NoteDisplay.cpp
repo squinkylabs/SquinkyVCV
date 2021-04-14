@@ -445,6 +445,24 @@ void NoteDisplay::addXformMenuItems(::rack::ui::Menu *menu) {
     INFO("NoteDisplay::addXformMenuItems 484");
 }
 
+static char buffer[256];
+
+#if 1
+    void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::Screens code) {
+        INFO("NoteDisplay::addXformMenuItems 452");
+        strcpy(buffer, "xform: ");
+        strcpy(buffer+7, InputScreenManager::xformName(code));
+        INFO("bufer=%s", buffer);
+        SqMenuItem *mi = new SqMenuItem(
+            buffer,
+            []() { return false; },
+            [this, code]() { doXform(code); });
+        INFO("NoteDisplay::addXformMenuItems 459");
+        menu->addChild(mi);
+        INFO("NoteDisplay::addXformMenuItems 504");
+   
+    }
+#else
 void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::Screens code) {
     INFO("NoteDisplay::addXformMenuItems 489");
     {
@@ -464,6 +482,7 @@ void NoteDisplay::addXformMenuItem(::rack::ui::Menu *menu, InputScreenManager::S
     }
     INFO("NoteDisplay::addXformMenuItems 506");
 }
+#endif
 
 void NoteDisplay::doXform(InputScreenManager::Screens screenCode) {
     assert(ism);

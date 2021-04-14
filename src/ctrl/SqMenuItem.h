@@ -24,6 +24,13 @@ struct SqMenuItem : ::rack::MenuItem {
                                                 _onActionFn(clickFn) {
     }
 
+    SqMenuItem(const char* label,
+                std::function<bool()> isCheckedFn,
+               std::function<void()> clickFn) : _isCheckedFn(isCheckedFn),
+                                                _onActionFn(clickFn) {
+            text = label;                                           
+    }
+
 private:
     std::function<bool()> _isCheckedFn;
     std::function<void()> _onActionFn;
