@@ -84,9 +84,9 @@ void InputScreenManager::show(
     parentWidget = parent;
 }
 
-std::string InputScreenManager::xformName(Screens screen)
+const char* InputScreenManager::xformName(Screens screen)
 {
-    std::string ret;
+    const char* ret = nullptr;;
     switch (screen) {
         case Screens::Invert:
             ret = "Invert";
@@ -108,6 +108,7 @@ std::string InputScreenManager::xformName(Screens screen)
             break;
         default:
             WARN("no name for enum %d", int(screen));
+            ret = "name";
             assert(false);
     }
     return ret;

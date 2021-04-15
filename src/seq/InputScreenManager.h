@@ -32,7 +32,7 @@ public:
     ~InputScreenManager();
 
      
-    static std::string xformName(Screens);
+    static const char* xformName(Screens);
 private:
     ::rack::widget::Widget* parentWidget = nullptr;
     const ::rack::math::Vec size;
