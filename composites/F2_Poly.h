@@ -188,7 +188,7 @@ private:
     StateVariableFilterState2<T> state2[4];
     Limiter limiter;
     StateVariableFilter2<T>::processFunction filterFunc = nullptr;
-    std::shared_ptr<LookupTableParams<float>> audioTaperLookupParams = ObjectCache<float>::getAudioTaper18();
+    std::shared_ptr<LookupTableParams<float>> audioTaperLookupParams = ObjectCache<float>::getAudioTaper();
     const int oversample = 4;
 
     float_4 outputGain_n = 0;
@@ -204,6 +204,7 @@ private:
     float lastFcKnob = -1;
     float lastFcTrim = -1;
     float lastVolume = -1;
+    int lastTopology = -1;
 
     float_4 processedRValue = -1;
 
@@ -323,7 +324,7 @@ inline void F2_Poly<TBase>::setupVolume() {
     }
 
     lastVolume = v;
-    const float procVolume = 4 * LookupTable<float>::lookup(*audioTaperLookupParams, v / 100);
+    const float procVolume = 4 * std::sqrt(2.f) *  LookupTable<float>::lookup(*audioTaperLookupParams, v / 100);
     volume = float_4(procVolume);
 }
 
@@ -332,6 +333,11 @@ inline void F2_Poly<TBase>::setupFreq() {
     const float sampleTime = TBase::engineGetSampleTime();
     const int topologyInt = int(std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     const int numStages = (topologyInt == 0) ? 1 : 2;
+    bool topologyChanged = false;
+    if (topologyInt != lastTopology) {
+        lastTopology = topologyInt;
+        topologyChanged = true;
+    }
 
     const bool fcKnobChanged = lastFcKnob != F2_Poly<TBase>::params[FC_PARAM].value;
     const bool fcTrimChanged = lastFcTrim != F2_Poly<TBase>::params[FC_TRIM_PARAM].value;
@@ -348,7 +354,7 @@ inline void F2_Poly<TBase>::setupFreq() {
         qVolts = rack::simd::clamp(qVolts, 0, 10);
 
         int changeMask = rack::simd::movemask(qVolts != lastQv[bank]);
-        if (changeMask) {
+        if (changeMask || topologyChanged) {
             lastQv[bank] = qVolts;
             float_4 q = fastQFunc(qVolts, numStages);
             params1[bank].setQ(q);
