@@ -324,8 +324,101 @@ inline void F2_Poly<TBase>::setupVolume() {
     }
 
     lastVolume = v;
-    const float procVolume = 4 * std::sqrt(2.f) *  LookupTable<float>::lookup(*audioTaperLookupParams, v / 100);
+    const float procVolume = 4 * std::sqrt(2.f) * LookupTable<float>::lookup(*audioTaperLookupParams, v / 100);
     volume = float_4(procVolume);
+}
+
+#if 0 // this version worked
+inline float_4 computeGain(bool twoStages, float_4 q, float_4 r) {
+
+    // convert the bool to 4 masks
+    float_4 useTwoStages = twoStages ? SimdBlocks::maskTrue() : SimdBlocks::maskFalse();
+    float_4 twoOK =SimdBlocks::ifelse((r > 1), SimdBlocks::maskFalse(), SimdBlocks::maskTrue());
+
+    SQINFO("\n----- compute gain");
+    SQINFO("q=%s, r=%s", toStr(q).c_str(), toStr(r).c_str());
+    SQINFO("use2=%s twoOK=%s", toStr(useTwoStages).c_str(), toStr(twoOK).c_str());
+
+    useTwoStages = useTwoStages & twoOK;
+
+    float_4 outputGain_n = SimdBlocks::ifelse(useTwoStages, (1.f / (q * q)), (1.f / q));
+
+    SQINFO("use2, fianl=%s", toStr(useTwoStages).c_str());
+    SQINFO("g=%s", toStr(outputGain_n).c_str());
+
+#if 0
+    float_4 outputGain_n = 1 / q;
+    if (twoStages) {
+        outputGain_n *= 1 / q;
+    }
+    #endif
+
+    // let's try "half bass suck"
+    // TODO: make faster
+    {
+        for (int i = 0; i < 4; ++i) {
+            auto dbGain = AudioMath::db(outputGain_n[i]);
+            dbGain *= .5f;
+            auto gain = AudioMath::gainFromDb(dbGain);
+            outputGain_n[i] = gain;
+        }
+    }
+    return outputGain_n;
+}
+#endif
+
+inline float_4 computeGain(bool twoStages, float_4 q4, float_4 r4) {
+
+    // convert the bool to 4 masks
+ //   float_4 useTwoStages = twoStages ? SimdBlocks::maskTrue() : SimdBlocks::maskFalse();
+ //   float_4 twoOK =SimdBlocks::ifelse((r > 1), SimdBlocks::maskFalse(), SimdBlocks::maskTrue());
+
+ //   SQINFO("\n----- compute gain");
+ //   SQINFO("q=%s, r=%s", toStr(q).c_str(), toStr(r).c_str());
+ //   SQINFO("use2=%s twoOK=%s", toStr(useTwoStages).c_str(), toStr(twoOK).c_str());
+
+ //   useTwoStages = useTwoStages & twoOK;
+
+ //   float_4 outputGain_n = SimdBlocks::ifelse(useTwoStages, (1.f / (q * q)), (1.f / q));
+
+ //   SQINFO("use2, fianl=%s", toStr(useTwoStages).c_str());
+ //   SQINFO("g=%s", toStr(outputGain_n).c_str());
+
+#if 0
+    float_4 outputGain_n = 1 / q;
+    if (twoStages) {
+        outputGain_n *= 1 / q;
+    }
+    #endif
+
+    float_4 outputGain4 = 0;
+    // let's try "half bass suck"
+    // TODO: make faster
+    {
+        for (int i = 0; i < 4; ++i) {
+            float g_ = 0;
+            float q_ = q4[i];
+            float r_ = r4[i];
+
+            float oneOverQ = 1.f / q_;
+            float oneOverQSq = 1.f / (q_ * q_);
+            if (!twoStages) {
+                g_ = oneOverQ;
+            } else if (r_ >= 2.f) {
+                g_ = oneOverQ;
+            } else {
+                float interp = r_ / 2.f;        // 0..1
+                g_ = interp * oneOverQ + (1.f - interp) * oneOverQSq;
+            }
+
+
+            auto dbGain = AudioMath::db(g_);
+            dbGain *= .5f;
+            g_ = AudioMath::gainFromDb(dbGain);
+            outputGain4[i] = g_;
+        }
+    }
+    return outputGain4;
 }
 
 template <class TBase>
@@ -347,27 +440,14 @@ inline void F2_Poly<TBase>::setupFreq() {
 
     for (int bank = 0; bank < numBanks_m; bank++) {
         const int baseChannel = 4 * bank;
-        SqInput& qPort = TBase::inputs[Q_INPUT];
 
+        // qVolts =  4 Q vales for this bank, clamped
+        SqInput& qPort = TBase::inputs[Q_INPUT];
         float_4 qVolts = F2_Poly<TBase>::params[Q_PARAM].value;
         qVolts += qPort.getPolyVoltageSimd<float_4>(baseChannel);
         qVolts = rack::simd::clamp(qVolts, 0, 10);
 
-        int changeMask = rack::simd::movemask(qVolts != lastQv[bank]);
-        if (changeMask || topologyChanged) {
-            lastQv[bank] = qVolts;
-            float_4 q = fastQFunc(qVolts, numStages);
-            params1[bank].setQ(q);
-            params2[bank].setQ(q);
-
-            outputGain_n = 1 / q;
-            if (numStages == 2) {
-                outputGain_n *= 1 / q;
-            }
-            outputGain_n = SimdBlocks::min(outputGain_n, float_4(1.f));
-            //printf("q = %f, oututGain-n = %f\n", q[0], outputGain_n[0]);
-        }
-
+        // rVolts = 4 R values for this bank. rVolts is raw, processedRValue is exp
         SqInput& rPort = TBase::inputs[R_INPUT];
         float_4 rVolts = F2_Poly<TBase>::params[R_PARAM].value;
         rVolts += rPort.getPolyVoltageSimd<float_4>(baseChannel);
@@ -378,6 +458,49 @@ inline void F2_Poly<TBase>::setupFreq() {
             processedRValue = rack::dsp::approxExp2_taylor5(rVolts / 3.f);
             //printf("rv=%f procR = %f\n", rVolts[0], processedRValue[0]);
         }
+
+        int changeMask = rack::simd::movemask(qVolts != lastQv[bank]);
+        if (changeMask || topologyChanged || rChanged) {
+            lastQv[bank] = qVolts;
+            float_4 q = fastQFunc(qVolts, numStages);
+            params1[bank].setQ(q);
+            params2[bank].setQ(q);
+#if 0
+            outputGain_n = 1 / q;
+            if (numStages == 2) {
+                outputGain_n *= 1 / q;
+            }
+
+            // let's try "half bass suck"
+            // TODO: make faster
+            {
+                for (int i = 0; i < 4; ++i) {
+                    auto dbGain = AudioMath::db(outputGain_n[i]);
+                    dbGain *= .5f;
+                    auto gain = AudioMath::gainFromDb(dbGain);
+                    outputGain_n[i] = gain;
+                }
+            }
+
+            outputGain_n = SimdBlocks::min(outputGain_n, float_4(1.f));
+#endif
+
+            outputGain_n = computeGain(numStages == 2, q, rVolts);
+            //printf("q = %f, oututGain-n = %f\n", q[0], outputGain_n[0]);
+        }
+
+#if 0
+        SqInput& rPort = TBase::inputs[R_INPUT];
+        float_4 rVolts = F2_Poly<TBase>::params[R_PARAM].value;
+        rVolts += rPort.getPolyVoltageSimd<float_4>(baseChannel);
+        rVolts = rack::simd::clamp(rVolts, 0, 10);
+        const bool rChanged = rack::simd::movemask(rVolts != lastRv[bank]);
+        if (rChanged) {
+            lastRv[bank] = rVolts;
+            processedRValue = rack::dsp::approxExp2_taylor5(rVolts / 3.f);
+            //printf("rv=%f procR = %f\n", rVolts[0], processedRValue[0]);
+        }
+#endif
 
         SqInput& fcPort = TBase::inputs[FC_INPUT];
         float_4 fcCV = fcPort.getPolyVoltageSimd<float_4>(baseChannel);
@@ -479,10 +602,10 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args) {
     (this->*procFun)(args);
 }
 
-#define ENDPROC(chan) \
-    output *= volume; \
+#define ENDPROC(chan)                                \
+    output *= volume;                                \
     output = rack::simd::clamp(output, -20.f, 20.f); \
-    outPort.setVoltageSimd(output, chan); 
+    outPort.setVoltageSimd(output, chan);
 
 template <class TBase>
 inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessArgs& args) {
@@ -511,7 +634,7 @@ inline void F2_Poly<TBase>::processOneBank12_lim(const typename TBase::ProcessAr
     // auto xx = output[0];
     output = limiter.step(output);
     // SQINFO("lim in=%f out=%f", xx, output[0]);
-    
+
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
     ENDPROC(0);
 }
