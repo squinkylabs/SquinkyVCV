@@ -166,64 +166,68 @@ void F2Widget::appendContextMenu(Menu* theMenu) {
 }
 
 void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
-    const float knobX = 6;
-    const float knobDx = 39;
-    const float knobY = 58;
-    const float labelY = knobY - 20;
-    const float dy = 50;
 
     addLabel(
-        Vec(knobX, labelY + 0 * dy),
+        Vec(14-6, 166),
         "Fc");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(knobX, knobY),
+        Vec(6, 185),
         module, Comp::FC_PARAM));
-
-    addLabel(
-        Vec(knobX + 1 * knobDx + 3, labelY),
-        "Q");
-    addParam(SqHelper::createParam<Blue30Knob>(
-        icomp,
-        Vec(knobX + 1 * knobDx, knobY),
-        module, Comp::Q_PARAM));
-
-    addLabel(
-        Vec(knobX + 2 * knobDx + 3, labelY),
-        "R");
-    addParam(SqHelper::createParam<Blue30Knob>(
-        icomp,
-        Vec(knobX + 2 * knobDx, knobY),
-        module, Comp::R_PARAM));
-
-    addLabel(
-        Vec(knobX + 2 * knobDx - 3, labelY + 1 * dy),
-        "Vol");
-    addParam(SqHelper::createParam<Blue30Knob>(
-        icomp,
-        Vec(knobX + 2 * knobDx, knobY + 1 * dy),
-        module, Comp::VOL_PARAM));
-
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
-        Vec(12, 113),
+        Vec(12, 228),
         module,
         Comp::FC_TRIM_PARAM));
 
     addLabel(
-        Vec(74, 244),
+        Vec(55-8, 166),
+        "Q");
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(45, 185),
+        module, Comp::Q_PARAM));
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(51, 228),
+        module,
+        Comp::Q_TRIM_PARAM));
+
+    addLabel(
+        Vec(95-8 , 166),
+        "R");
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(84, 185),
+        module, Comp::R_PARAM));
+    addParam(SqHelper::createParam<Trimpot>(
+        icomp,
+        Vec(90, 228),
+        module,
+        Comp::R_TRIM_PARAM));
+
+    addLabel(
+        Vec(10-8, 32),
+        "Vol");
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(6, 50),
+        module, Comp::VOL_PARAM));
+
+    addLabel(
+        Vec(83-10, 32),
         "Limit");
     addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(92, 264),
+        Vec(92, 50),
         module, Comp::LIMITER_PARAM));
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(13, knobY + 2 * dy),
+        Vec(6, 97),
         module,
         Comp::MODE_PARAM);
-    p->box.size.x = 97;  // width
+    p->box.size.x = 104;  // width
     p->box.size.y = 22;
     p->text = "LP";
     p->setLabels({"LP", "BP", "HP", "N"});
@@ -231,10 +235,10 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
 
     p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(13, knobY + 3 * dy),
+        Vec(6, 127),
         module,
         Comp::TOPOLOGY_PARAM);
-    p->box.size.x = 97;  // width was 54
+    p->box.size.x = 104;  // width was 54
     p->box.size.y = 22;
     p->text = "12dB";
     p->setLabels({"12dB", "24dB", "Par", "Par -"});
@@ -250,51 +254,44 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
 }
 
 void F2Widget::addJacks(F2Module* module, std::shared_ptr<IComposite> icomp) {
-    const float jackX = 11;
-    const float jackDx = 39;
-  //  const float jackX2 = 48;
-
-    const float jackY = 277;
-    const float labelY = jackY - 18;
-    const float dy = 45;
 
     addLabel(
-        Vec(jackX + jackDx - 2, labelY + 1 * dy),
+        Vec(14-8, 258),
         "Fc");
     addInput(createInput<PJ301MPort>(
-        Vec(jackX + jackDx, jackY + 1 * dy),
+        Vec(9, 275),
         module,
         Comp::FC_INPUT));
 
     addLabel(
-        Vec(jackX + 1, labelY),
+        Vec(55-8, 258),
         "Q");
     addInput(createInput<PJ301MPort>(
-        Vec(jackX, jackY),
+        Vec(49, 275),
         module,
         Comp::Q_INPUT));
 
     addLabel(
-        Vec(jackX + jackDx + 1, labelY),
+        Vec(95-8, 258),
         "R");
     addInput(createInput<PJ301MPort>(
-        Vec(jackX + jackDx, jackY),
+        Vec(87 , 274),
         module,
         Comp::R_INPUT));
 
     addLabel(
-        Vec(jackX, labelY + 1 * dy),
+        Vec(15-8, 303),
         "In");
     addInput(createInput<PJ301MPort>(
-        Vec(jackX, jackY + 1 * dy),
+        Vec(9, 320),
         module,
         Comp::AUDIO_INPUT));
 
     addLabel(
-        Vec(jackX + 2 * jackDx - 5, labelY + dy),
+        Vec(87-8, 303),
         "Out");
     addOutput(createOutput<PJ301MPort>(
-        Vec(jackX + 2 * jackDx, jackY +dy),
+        Vec(87, 320),
         module,
         Comp::AUDIO_OUTPUT));
 };

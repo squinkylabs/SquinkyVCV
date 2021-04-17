@@ -135,6 +135,8 @@ public:
         CV_UPDATE_FREQ,
         VOL_PARAM,
         SCHEMA_PARAM,
+        Q_TRIM_PARAM,
+        R_TRIM_PARAM,
         NUM_PARAMS
     };
 
@@ -328,47 +330,7 @@ inline void F2_Poly<TBase>::setupVolume() {
     volume = float_4(procVolume);
 }
 
-#if 0 // this version worked
-inline float_4 computeGain(bool twoStages, float_4 q, float_4 r) {
-
-    // convert the bool to 4 masks
-    float_4 useTwoStages = twoStages ? SimdBlocks::maskTrue() : SimdBlocks::maskFalse();
-    float_4 twoOK =SimdBlocks::ifelse((r > 1), SimdBlocks::maskFalse(), SimdBlocks::maskTrue());
-
-    SQINFO("\n----- compute gain");
-    SQINFO("q=%s, r=%s", toStr(q).c_str(), toStr(r).c_str());
-    SQINFO("use2=%s twoOK=%s", toStr(useTwoStages).c_str(), toStr(twoOK).c_str());
-
-    useTwoStages = useTwoStages & twoOK;
-
-    float_4 outputGain_n = SimdBlocks::ifelse(useTwoStages, (1.f / (q * q)), (1.f / q));
-
-    SQINFO("use2, fianl=%s", toStr(useTwoStages).c_str());
-    SQINFO("g=%s", toStr(outputGain_n).c_str());
-
-#if 0
-    float_4 outputGain_n = 1 / q;
-    if (twoStages) {
-        outputGain_n *= 1 / q;
-    }
-    #endif
-
-    // let's try "half bass suck"
-    // TODO: make faster
-    {
-        for (int i = 0; i < 4; ++i) {
-            auto dbGain = AudioMath::db(outputGain_n[i]);
-            dbGain *= .5f;
-            auto gain = AudioMath::gainFromDb(dbGain);
-            outputGain_n[i] = gain;
-        }
-    }
-    return outputGain_n;
-}
-#endif
-
 inline float_4 computeGain(bool twoStages, float_4 q4, float_4 r4) {
-
     float_4 outputGain4 = 0;
     // let's try "half bass suck"
     // TODO: make faster
@@ -385,10 +347,9 @@ inline float_4 computeGain(bool twoStages, float_4 q4, float_4 r4) {
             } else if (r_ >= 2.f) {
                 g_ = oneOverQ;
             } else {
-                float interp = r_ / 2.f;        // 0..1
+                float interp = r_ / 2.f;  // 0..1
                 g_ = interp * oneOverQ + (1.f - interp) * oneOverQSq;
             }
-
 
             auto dbGain = AudioMath::db(g_);
             dbGain *= .5f;
@@ -443,42 +404,10 @@ inline void F2_Poly<TBase>::setupFreq() {
             float_4 q = fastQFunc(qVolts, numStages);
             params1[bank].setQ(q);
             params2[bank].setQ(q);
-#if 0
-            outputGain_n = 1 / q;
-            if (numStages == 2) {
-                outputGain_n *= 1 / q;
-            }
-
-            // let's try "half bass suck"
-            // TODO: make faster
-            {
-                for (int i = 0; i < 4; ++i) {
-                    auto dbGain = AudioMath::db(outputGain_n[i]);
-                    dbGain *= .5f;
-                    auto gain = AudioMath::gainFromDb(dbGain);
-                    outputGain_n[i] = gain;
-                }
-            }
-
-            outputGain_n = SimdBlocks::min(outputGain_n, float_4(1.f));
-#endif
 
             outputGain_n = computeGain(numStages == 2, q, rVolts);
             //printf("q = %f, oututGain-n = %f\n", q[0], outputGain_n[0]);
         }
-
-#if 0
-        SqInput& rPort = TBase::inputs[R_INPUT];
-        float_4 rVolts = F2_Poly<TBase>::params[R_PARAM].value;
-        rVolts += rPort.getPolyVoltageSimd<float_4>(baseChannel);
-        rVolts = rack::simd::clamp(rVolts, 0, 10);
-        const bool rChanged = rack::simd::movemask(rVolts != lastRv[bank]);
-        if (rChanged) {
-            lastRv[bank] = rVolts;
-            processedRValue = rack::dsp::approxExp2_taylor5(rVolts / 3.f);
-            //printf("rv=%f procR = %f\n", rVolts[0], processedRValue[0]);
-        }
-#endif
 
         SqInput& fcPort = TBase::inputs[FC_INPUT];
         float_4 fcCV = fcPort.getPolyVoltageSimd<float_4>(baseChannel);
@@ -699,6 +628,12 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i) {
             break;
         case F2_Poly<TBase>::FC_TRIM_PARAM:
             ret = {-1, 1, 0, "Fc modulation trim"};
+            break;
+        case F2_Poly<TBase>::Q_TRIM_PARAM:
+            ret = { -1, 1, 0, "Q modulation trim" };
+            break;
+        case F2_Poly<TBase>::R_TRIM_PARAM:
+            ret = { -1, 1, 0, "R modulation trim" };
             break;
         case F2_Poly<TBase>::CV_UPDATE_FREQ:
             ret = {0, 1, 0, "CV update fidelity"};
