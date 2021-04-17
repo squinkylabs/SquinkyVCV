@@ -223,7 +223,7 @@ private:
     void setupLimiter();
 
     static float_4 fastQFunc(float_4 qV, int numStages);
-    static std::pair<float_4, float_4> fastFcFunc2(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime);
+    static std::pair<float_4, float_4> fastFcFunc2(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime, bool twoPeaks);
 
     using processFunction = void (F2_Poly<TBase>::*)(const typename TBase::ProcessArgs& args);
     processFunction procFun;
@@ -302,7 +302,7 @@ inline float_4 F2_Poly<TBase>::fastQFunc(float_4 qV, int numStages) {
 }
 
 template <class TBase>
-inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc2(float_4 freqVolts, float_4 r, float oversample, float sampleTime) {
+inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc2(float_4 freqVolts, float_4 r, float oversample, float sampleTime, bool twoPeaks) {
     assert(oversample == 4);
     assert(sampleTime < .0001);
     float_4 freq = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(freqVolts + 30 - 4) / 1073741824;
@@ -311,8 +311,8 @@ inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc2(float_4 freqVolts
     freq *= sampleTime;
 
     // we could pass in 1/r, too
-    float_4 f1 = freq / r;
-    float_4 f2 = freq * r;
+    float_4 f1 = twoPeaks ? freq / r : freq;
+    float_4 f2 = twoPeaks ? freq * r : freq;
     return std::make_pair(f1, f2);
 }
 
@@ -369,28 +369,6 @@ inline float_4 computeGain(bool twoStages, float_4 q, float_4 r) {
 
 inline float_4 computeGain(bool twoStages, float_4 q4, float_4 r4) {
 
-    // convert the bool to 4 masks
- //   float_4 useTwoStages = twoStages ? SimdBlocks::maskTrue() : SimdBlocks::maskFalse();
- //   float_4 twoOK =SimdBlocks::ifelse((r > 1), SimdBlocks::maskFalse(), SimdBlocks::maskTrue());
-
- //   SQINFO("\n----- compute gain");
- //   SQINFO("q=%s, r=%s", toStr(q).c_str(), toStr(r).c_str());
- //   SQINFO("use2=%s twoOK=%s", toStr(useTwoStages).c_str(), toStr(twoOK).c_str());
-
- //   useTwoStages = useTwoStages & twoOK;
-
- //   float_4 outputGain_n = SimdBlocks::ifelse(useTwoStages, (1.f / (q * q)), (1.f / q));
-
- //   SQINFO("use2, fianl=%s", toStr(useTwoStages).c_str());
- //   SQINFO("g=%s", toStr(outputGain_n).c_str());
-
-#if 0
-    float_4 outputGain_n = 1 / q;
-    if (twoStages) {
-        outputGain_n *= 1 / q;
-    }
-    #endif
-
     float_4 outputGain4 = 0;
     // let's try "half bass suck"
     // TODO: make faster
@@ -414,7 +392,7 @@ inline float_4 computeGain(bool twoStages, float_4 q4, float_4 r4) {
 
             auto dbGain = AudioMath::db(g_);
             dbGain *= .5f;
-            g_ = AudioMath::gainFromDb(dbGain);
+            g_ = float(AudioMath::gainFromDb(dbGain));
             outputGain4[i] = g_;
         }
     }
@@ -506,7 +484,7 @@ inline void F2_Poly<TBase>::setupFreq() {
         float_4 fcCV = fcPort.getPolyVoltageSimd<float_4>(baseChannel);
         const bool fcCVChanged = rack::simd::movemask(fcCV != lastFcVC[bank]);
 
-        if (fcCVChanged || rChanged || fcKnobChanged || fcTrimChanged) {
+        if (fcCVChanged || rChanged || fcKnobChanged || fcTrimChanged || topologyChanged) {
             // SQINFO("changed: %d, %d, %d, %d", fcCVChanged, rChanged, fcKnobChanged, fcTrimChanged);
             lastFcVC[bank] = fcCV;
 
@@ -516,7 +494,7 @@ inline void F2_Poly<TBase>::setupFreq() {
                 lastFcTrim);
             // SQINFO("cv=%f, knob=%f, trim=%f combined = %f", fcCV[0], lastFcKnob, lastFcTrim, combinedFcVoltage[0]);
 
-            auto fr = fastFcFunc2(combinedFcVoltage, processedRValue, float(oversample), sampleTime);
+            auto fr = fastFcFunc2(combinedFcVoltage, processedRValue, float(oversample), sampleTime, numStages == 2);
 
             params1[bank].setFreq(fr.first);
             params2[bank].setFreq(fr.second);

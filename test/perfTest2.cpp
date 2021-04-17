@@ -390,9 +390,10 @@ static void testF2_24l()
     args.sampleTime = 1.f / 44100.f;
     args.sampleRate = 44199;
 
-    MeasureTime<float>::run(overheadInOut, "testF2 (24/lim mod)", [&comp, args]() {
+    MeasureTime<float>::run(overheadInOut, "testF2 (24/lim mod q,r)", [&comp, args]() {
         comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
-        comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.inputs[Comp::Q_INPUT].setVoltage(TestBuffers<float>::get());
+        comp.inputs[Comp::R_INPUT].setVoltage(TestBuffers<float>::get());
         comp.process(args);
         return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
         }, 1);
@@ -418,7 +419,7 @@ static void testF2_24l_hires()
     args.sampleTime = 1.f / 44100.f;
     args.sampleRate = 44199;
 
-    MeasureTime<float>::run(overheadInOut, "testF2 (24/lim mod) hires", [&comp, args]() {
+    MeasureTime<float>::run(overheadInOut, "testF2 (24/lim mod fc) hires", [&comp, args]() {
         comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
         comp.inputs[Comp::FC_INPUT].setVoltage(TestBuffers<float>::get());
         comp.process(args);
