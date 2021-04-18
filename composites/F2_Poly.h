@@ -379,6 +379,7 @@ inline float_4 processR(float_4 rawR) {
 
 template <class TBase>
 inline void F2_Poly<TBase>::setupFreq() {
+    //SQINFO("set freq");
     const float sampleTime = TBase::engineGetSampleTime();
     const int topologyInt = int(std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     const int numStages = (topologyInt == 0) ? 1 : 2;
@@ -408,17 +409,18 @@ inline void F2_Poly<TBase>::setupFreq() {
         const int baseChannel = 4 * bank;
 
         // First, let's round up all the CV for this bank
-        SqInput& port = TBase::inputs[FC_INPUT];
-        float_4 fcCV = port.getPolyVoltageSimd<float_4>(baseChannel);
+        SqInput& fCport = TBase::inputs[FC_INPUT];
+        float_4 fcCV = fCport.getPolyVoltageSimd<float_4>(baseChannel);
         const bool fcCVChanged = rack::simd::movemask(fcCV != lastFcCV[bank]);
+       // SQINFO("read fc cv bank %d = %s", bank, toStr(fcCV).c_str());
 
-        port = TBase::inputs[Q_INPUT];
-        float_4 qCV = port.getPolyVoltageSimd<float_4>(baseChannel);
+        SqInput& qport = TBase::inputs[Q_INPUT];
+        float_4 qCV = qport.getPolyVoltageSimd<float_4>(baseChannel);
         
         const bool qCVChanged = rack::simd::movemask(qCV != lastQCV[bank]);
 
-        port = TBase::inputs[R_INPUT];
-        float_4 rCV = port.getPolyVoltageSimd<float_4>(baseChannel);
+        SqInput& rport = TBase::inputs[R_INPUT];
+        float_4 rCV = rport.getPolyVoltageSimd<float_4>(baseChannel);
         const bool rCVChanged =  rack::simd::movemask(rCV != lastRCV[bank]);
 
         // if R changed, do calcs that depend only on R
@@ -431,7 +433,6 @@ inline void F2_Poly<TBase>::setupFreq() {
                 lastRTrim);
             processedRValue[bank] = processR(combinedRVolage);
         }
-
 
         // compute Q. depends on R
         if (qCVChanged || qKnobChanged || qTrimChanged ||
@@ -471,6 +472,14 @@ inline void F2_Poly<TBase>::setupFreq() {
             params2[bank].setFreq(fr.second);
         }
     }
+#if 0
+    {
+        SqInput& port = TBase::inputs[FC_INPUT];
+        float_4 fcCV = port.getPolyVoltageSimd<float_4>(0);
+     
+        SQINFO("exit fc cv bank 0 = %s", toStr(fcCV).c_str());
+    }
+#endif
 }
 
 template <class TBase>

@@ -212,6 +212,7 @@ int main(int argc, char** argv) {
     }
 
     testSimpleQuantizer();
+    testFilterComposites();
 
     testFlac();
     testADSRSampler();
@@ -258,7 +259,7 @@ int main(int argc, char** argv) {
     testMultiLag2();
     testCmprsr();
     testCompressor();
-    testFilterComposites();
+
     testSimpleQuantizer();
 
     testVec();
