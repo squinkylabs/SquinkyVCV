@@ -52,7 +52,24 @@ static void testMasterParents() {
     assertEQ(ar, 3);
 }
 
+static void testMideDoesntParent() {
+    const char* data = R"foo(
+        <midi>ampeg_release=2
+        <region>key=31
+         )foo";
+    auto ci = compile_it(data);
+    auto pool = ci->_pool();
+    assertEQ(pool.size(), 1);
+
+    std::vector<CompiledRegionPtr> x;
+    pool._getAllRegions(x);
+    auto region = x[0];
+    auto ar = region->ampeg_release;
+    assertEQ(ar, .001f);
+}
+
 void testx7() {
     testGlobalParents();
     testMasterParents();
+    testMideDoesntParent();
 }

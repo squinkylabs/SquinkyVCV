@@ -122,16 +122,12 @@ void HeadingTrackerTester::testRegionAndGlobal() {
         switch (i) {
             case SHeading::Type::Region:
                 assert(t.curHeadingsIndex[i] == 0);
-             //   assert(t.nextHeadingsIndex[i] < 0);
                 break;
             case SHeading::Type::Global:
                 assert(t.curHeadingsIndex[i] < 0);
-            // let's not over assert... who cares about next?
-             //   assert(t.nextHeadingsIndex[i] < 0);
                 break;
             default:
                 assert(t.curHeadingsIndex[i] < 0);
-             //   assert(t.nextHeadingsIndex[i] < 0);
         }
     }
 }
