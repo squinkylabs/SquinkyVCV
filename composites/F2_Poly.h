@@ -210,7 +210,7 @@ private:
     float lastVolume = -1;
     int lastTopology = -1;
 
-    float_4 processedRValue = -1;
+    float_4 processedRValue[4] = {-1};
     float_4 volume = {-1};
 
     // Divider divn;
@@ -407,7 +407,6 @@ inline void F2_Poly<TBase>::setupFreq() {
     for (int bank = 0; bank < numBanks_m; bank++) {
         const int baseChannel = 4 * bank;
 
-
         // First, let's round up all the CV for this bank
         SqInput& port = TBase::inputs[FC_INPUT];
         float_4 fcCV = port.getPolyVoltageSimd<float_4>(baseChannel);
@@ -415,7 +414,7 @@ inline void F2_Poly<TBase>::setupFreq() {
 
         port = TBase::inputs[Q_INPUT];
         float_4 qCV = port.getPolyVoltageSimd<float_4>(baseChannel);
-        qCV = rack::simd::clamp(qCV, 0, 10);
+        
         const bool qCVChanged = rack::simd::movemask(qCV != lastQCV[bank]);
 
         port = TBase::inputs[R_INPUT];
@@ -425,14 +424,14 @@ inline void F2_Poly<TBase>::setupFreq() {
         // if R changed, do calcs that depend only on R
         if (rCVChanged || rTrimChanged || rKnobChanged) {
             lastRCV[bank] = rCV;
+            rCV = rack::simd::clamp(rCV, 0, 10);
             float_4 combinedRVolage = scaleFc(
                 rCV,
                 lastRKnob,
                 lastRTrim);
-            processedRValue = processR(combinedRVolage);
+            processedRValue[bank] = processR(combinedRVolage);
         }
 
-     //   const bool qChanged = rack::simd::movemask(qVolts != lastQv[bank]);
 
         // compute Q. depends on R
         if (qCVChanged || qKnobChanged || qTrimChanged ||
@@ -440,6 +439,7 @@ inline void F2_Poly<TBase>::setupFreq() {
             rCVChanged || rTrimChanged || rKnobChanged) {
 
             lastQCV[bank] = qCV;
+            qCV = rack::simd::clamp(qCV, 0, 10);
             float_4 combinedQ = scaleFc(
                 qCV,
                 lastQKnob,
@@ -449,11 +449,9 @@ inline void F2_Poly<TBase>::setupFreq() {
             params2[bank].setQ(q);
 
             // is it just rCV, or should it be combined? I think combined
-            outputGain_n = computeGain(numStages == 2, q, rCV);
-            //printf("q = %f, oututGain-n = %f\n", q[0], outputGain_n[0]);
+            outputGain_n = computeGain(numStages == 2, q, processedRValue[bank]);
         }
 
-      
 
         if (fcCVChanged || fcKnobChanged || fcTrimChanged ||
             rCVChanged || rKnobChanged || rTrimChanged ||
@@ -467,7 +465,7 @@ inline void F2_Poly<TBase>::setupFreq() {
                 lastFcTrim);
             // SQINFO("cv=%f, knob=%f, trim=%f combined = %f", fcCV[0], lastFcKnob, lastFcTrim, combinedFcVoltage[0]);
 
-            auto fr = fastFcFunc2(combinedFcVoltage, processedRValue, float(oversample), sampleTime, numStages == 2);
+            auto fr = fastFcFunc2(combinedFcVoltage, processedRValue[bank], float(oversample), sampleTime, numStages == 2);
 
             params1[bank].setFreq(fr.first);
             params2[bank].setFreq(fr.second);
@@ -544,7 +542,6 @@ inline void F2_Poly<TBase>::stepn() {
 template <class TBase>
 inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args) {
     divm.step();
-    // divn.step();
 
     // always do the CV calc, even though it might be divided.
     stepn();
