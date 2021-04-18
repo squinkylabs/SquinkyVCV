@@ -198,17 +198,20 @@ private:
     int numChannels_m = 0;
     int numBanks_m = 0;
     Topology topology_m = Topology::SINGLE;
-    float_4 lastQv[4] = {-1};
-    float_4 lastRv[4] = {-1};
-    float_4 volume = {-1};
-
-    float_4 lastFcVC[4] = {-1};
+    float_4 lastQCV[4] = {-1};
+    float_4 lastRCV[4] = {-1};
+    float_4 lastFcCV[4] = {-1};
     float lastFcKnob = -1;
     float lastFcTrim = -1;
+    float lastRKnob = -1;
+    float lastRTrim = -1;
+    float lastQKnob = -1;
+    float lastQTrim = -1;
     float lastVolume = -1;
     int lastTopology = -1;
 
     float_4 processedRValue = -1;
+    float_4 volume = {-1};
 
     // Divider divn;
     // default to 1/4 SR cv update, go on next one
@@ -360,6 +363,20 @@ inline float_4 computeGain(bool twoStages, float_4 q4, float_4 r4) {
     return outputGain4;
 }
 
+inline float_4 processR(float_4 rawR) {
+    for (int i = 0; i < 4; ++i) {
+        float r = rawR[i];
+
+        if (r > 3) {
+            r -= 1.5;
+        } else {
+            r /= 2;  // make less sensitive for low value
+        }
+        rawR[i] = r;
+    }
+    return rack::dsp::approxExp2_taylor5(rawR / 3.f);
+}
+
 template <class TBase>
 inline void F2_Poly<TBase>::setupFreq() {
     const float sampleTime = TBase::engineGetSampleTime();
@@ -374,48 +391,75 @@ inline void F2_Poly<TBase>::setupFreq() {
     const bool fcKnobChanged = lastFcKnob != F2_Poly<TBase>::params[FC_PARAM].value;
     const bool fcTrimChanged = lastFcTrim != F2_Poly<TBase>::params[FC_TRIM_PARAM].value;
 
+    const bool rKnobChanged = lastRKnob != F2_Poly<TBase>::params[R_PARAM].value;
+    const bool rTrimChanged = lastRTrim != F2_Poly<TBase>::params[R_TRIM_PARAM].value;
+
+    const bool qKnobChanged = lastQKnob != F2_Poly<TBase>::params[Q_PARAM].value;
+    const bool qTrimChanged = lastQTrim != F2_Poly<TBase>::params[Q_TRIM_PARAM].value;
+
     lastFcKnob = F2_Poly<TBase>::params[FC_PARAM].value;
     lastFcTrim = F2_Poly<TBase>::params[FC_TRIM_PARAM].value;
+    lastQKnob = F2_Poly<TBase>::params[Q_PARAM].value;
+    lastQTrim = F2_Poly<TBase>::params[Q_TRIM_PARAM].value;
+    lastRKnob = F2_Poly<TBase>::params[R_PARAM].value;
+    lastRTrim = F2_Poly<TBase>::params[R_TRIM_PARAM].value;
 
     for (int bank = 0; bank < numBanks_m; bank++) {
         const int baseChannel = 4 * bank;
 
-        // qVolts =  4 Q vales for this bank, clamped
-        SqInput& qPort = TBase::inputs[Q_INPUT];
-        float_4 qVolts = F2_Poly<TBase>::params[Q_PARAM].value;
-        qVolts += qPort.getPolyVoltageSimd<float_4>(baseChannel);
-        qVolts = rack::simd::clamp(qVolts, 0, 10);
 
-        // rVolts = 4 R values for this bank. rVolts is raw, processedRValue is exp
-        SqInput& rPort = TBase::inputs[R_INPUT];
-        float_4 rVolts = F2_Poly<TBase>::params[R_PARAM].value;
-        rVolts += rPort.getPolyVoltageSimd<float_4>(baseChannel);
-        rVolts = rack::simd::clamp(rVolts, 0, 10);
-        const bool rChanged = rack::simd::movemask(rVolts != lastRv[bank]);
-        if (rChanged) {
-            lastRv[bank] = rVolts;
-            processedRValue = rack::dsp::approxExp2_taylor5(rVolts / 3.f);
-            //printf("rv=%f procR = %f\n", rVolts[0], processedRValue[0]);
+        // First, let's round up all the CV for this bank
+        SqInput& port = TBase::inputs[FC_INPUT];
+        float_4 fcCV = port.getPolyVoltageSimd<float_4>(baseChannel);
+        const bool fcCVChanged = rack::simd::movemask(fcCV != lastFcCV[bank]);
+
+        port = TBase::inputs[Q_INPUT];
+        float_4 qCV = port.getPolyVoltageSimd<float_4>(baseChannel);
+        qCV = rack::simd::clamp(qCV, 0, 10);
+        const bool qCVChanged = rack::simd::movemask(qCV != lastQCV[bank]);
+
+        port = TBase::inputs[R_INPUT];
+        float_4 rCV = port.getPolyVoltageSimd<float_4>(baseChannel);
+        const bool rCVChanged =  rack::simd::movemask(rCV != lastRCV[bank]);
+
+        // if R changed, do calcs that depend only on R
+        if (rCVChanged || rTrimChanged || rKnobChanged) {
+            lastRCV[bank] = rCV;
+            float_4 combinedRVolage = scaleFc(
+                rCV,
+                lastRKnob,
+                lastRTrim);
+            processedRValue = processR(combinedRVolage);
         }
 
-        int changeMask = rack::simd::movemask(qVolts != lastQv[bank]);
-        if (changeMask || topologyChanged || rChanged) {
-            lastQv[bank] = qVolts;
-            float_4 q = fastQFunc(qVolts, numStages);
+     //   const bool qChanged = rack::simd::movemask(qVolts != lastQv[bank]);
+
+        // compute Q. depends on R
+        if (qCVChanged || qKnobChanged || qTrimChanged ||
+            topologyChanged || 
+            rCVChanged || rTrimChanged || rKnobChanged) {
+
+            lastQCV[bank] = qCV;
+            float_4 combinedQ = scaleFc(
+                qCV,
+                lastQKnob,
+                lastQTrim);
+            float_4 q = fastQFunc(combinedQ, numStages);
             params1[bank].setQ(q);
             params2[bank].setQ(q);
 
-            outputGain_n = computeGain(numStages == 2, q, rVolts);
+            // is it just rCV, or should it be combined? I think combined
+            outputGain_n = computeGain(numStages == 2, q, rCV);
             //printf("q = %f, oututGain-n = %f\n", q[0], outputGain_n[0]);
         }
 
-        SqInput& fcPort = TBase::inputs[FC_INPUT];
-        float_4 fcCV = fcPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const bool fcCVChanged = rack::simd::movemask(fcCV != lastFcVC[bank]);
+      
 
-        if (fcCVChanged || rChanged || fcKnobChanged || fcTrimChanged || topologyChanged) {
+        if (fcCVChanged || fcKnobChanged || fcTrimChanged ||
+            rCVChanged || rKnobChanged || rTrimChanged ||
+            topologyChanged) {
             // SQINFO("changed: %d, %d, %d, %d", fcCVChanged, rChanged, fcKnobChanged, fcTrimChanged);
-            lastFcVC[bank] = fcCV;
+            lastFcCV[bank] = fcCV;
 
             float_4 combinedFcVoltage = scaleFc(
                 fcCV,
@@ -630,10 +674,10 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i) {
             ret = {-1, 1, 0, "Fc modulation trim"};
             break;
         case F2_Poly<TBase>::Q_TRIM_PARAM:
-            ret = { -1, 1, 0, "Q modulation trim" };
+            ret = {-1, 1, 0, "Q modulation trim"};
             break;
         case F2_Poly<TBase>::R_TRIM_PARAM:
-            ret = { -1, 1, 0, "R modulation trim" };
+            ret = {-1, 1, 0, "R modulation trim"};
             break;
         case F2_Poly<TBase>::CV_UPDATE_FREQ:
             ret = {0, 1, 0, "CV update fidelity"};
