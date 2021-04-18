@@ -1,14 +1,15 @@
 
 #include "F2_Poly.h"
-#include "F4.h"
+//#include "F4.h"
 #include "TestComposite.h"
 #include "asserts.h"
 #include "simd.h"
 #include "tutil.h"
 
 using Comp2_Poly = F2_Poly<TestComposite>;
-using Comp4 = F4<TestComposite>;
+//using Comp4 = F4<TestComposite>;
 
+#if 0
 template <class T>
 static void testF2Fc(float fcParam, float cv, float expectedFcGain) {
     auto setup = [fcParam, cv](T& comp) {
@@ -21,20 +22,33 @@ static void testF2Fc(float fcParam, float cv, float expectedFcGain) {
     };
     testArbitrary<T>(setup, validate);
 }
+#endif
 
-static void testF2Fc_Poly(float fcParam, float cv, float expectedFcGain) {
+// TODO: use channel
+static void testF2Fc_Poly(float fcParam, float cv, float expectedFcGain, float expectedFcGainWithCV, int channel) {
     // printf("\n---- testF2Fc_Poly %f, %f, %f\n", fcParam, cv, expectedFcGain); fflush(stdout);
-    auto setup = [fcParam, cv](Comp2_Poly& comp) {
+    auto setup1 = [fcParam, cv](Comp2_Poly& comp) {
+        // here we will leave the attenuverters on 0
         comp.params[Comp2_Poly::FC_PARAM].value = fcParam;
         comp.inputs[Comp2_Poly::FC_INPUT].setVoltage(cv, 0);
         comp.inputs[Comp2_Poly::AUDIO_INPUT].channels = 4;
     };
 
-    auto validate = [expectedFcGain](Comp2_Poly& comp) {
+    auto setup2 = [expectedFcGain](Comp2_Poly& comp) {
+        // this is the old expected gain
         simd_assertClosePct(comp._params1()._fcGain(), float_4(expectedFcGain), 10);
+
+        // now turn up the assenuverter
+        comp.params[Comp2_Poly::FC_PARAM].value = 1; 
     };
-    testArbitrary<Comp2_Poly>(setup, validate);
+
+    auto validate = [expectedFcGainWithCV](Comp2_Poly& comp) {
+        simd_assertClosePct(comp._params1()._fcGain(), float_4(expectedFcGainWithCV), 10);
+    };
+    testArbitrary3<Comp2_Poly>(setup1, setup2, validate);
 }
+
+
 
 static void testF2Q_Poly(float qParam, float qcv, float expectedQGain) {
     auto setup = [qParam, qcv](Comp2_Poly& comp) {
@@ -78,11 +92,17 @@ static void testF2R_Poly(float rParam, float rcv, float fcParam, float expectedF
     testArbitrary<Comp2_Poly>(setup, validate);
 }
 
+static void testF2Fc_Poly(int channel) {
+    testF2Fc_Poly(0, 0, .00058f, .0011f, channel);
+    testF2Fc_Poly(0, -10, .00058f, .0011f, channel);
+    testF2Fc_Poly(10, 0, .6f, 0.00116485f, channel);  // hmm... we are losing the top of the range - should scale it down below .5
+    testF2Fc_Poly(10, 10, .6f, .00116f, channel);
+}
+
 static void testF2Fc_Poly() {
-    testF2Fc_Poly(0, 0, .00058f);
-    testF2Fc_Poly(0, -10, .00058f);
-    testF2Fc_Poly(10, 0, .6f);  // hmm... we are losing the top of the range - should scale it down below .5
-    testF2Fc_Poly(10, 10, .6f);
+    for (int channel = 0; channel < 16; ++channel) {
+        testF2Fc_Poly(channel);
+    }
 }
 
 static void testF2Q_Poly() {
@@ -100,10 +120,11 @@ static void testF2R_Poly() {
     testF2R_Poly(10, 0, 2.5, 0.00329471f, .00329471f);
 }
 
+#if 0
 static void testF4Fc() {
     testF2Fc<Comp4>(0, 0, .00058f);
 }
-
+#endif
 static void testPolyChannelsF2() {
     testPolyChannels<Comp2_Poly>(Comp2_Poly::AUDIO_INPUT, Comp2_Poly::AUDIO_OUTPUT, 16);
 }
@@ -209,12 +230,16 @@ static void testPolyFc(int chan) {
 
         SQINFO("comp outputs = %f, %f", comp1.outputs[Comp2_Poly::AUDIO_OUTPUT].getVoltage(chan), comp2.outputs[Comp2_Poly::AUDIO_OUTPUT].getVoltage(chan));
         assertGT(v2, v1 + 5);       // the one fully open should pass more
+        if (chan > 0) assertEQ( comp1.outputs[Comp2_Poly::AUDIO_OUTPUT].getVoltage(chan-1), 0);
+        if (chan < 15) assertEQ( comp1.outputs[Comp2_Poly::AUDIO_OUTPUT].getVoltage(chan+1), 0);
     };
     testArbitrary2<Comp2_Poly>(setup1, setup2, validate);
 }
 
 static void testPolyFc() {
-    testPolyFc(0);
+    for (int i = 0; i < 16; ++i) {
+        testPolyFc(i);
+    }
 }
 
 void testFilterComposites() {

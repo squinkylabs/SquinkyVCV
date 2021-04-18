@@ -85,6 +85,11 @@ inline void testArbitrary( std::function<void(T&)> setup, std::function<void(T&)
     validate(comp);
 }
 
+/**
+ * Creates two instance of T,
+ * calls different setup functions on each.
+ * calls validate with both
+ */
 template <class T>
 inline void testArbitrary2( std::function<void(T&)> setup1, std::function<void(T&)> setup2, std::function<void(T&, T&)> validate)
 {
@@ -96,15 +101,35 @@ inline void testArbitrary2( std::function<void(T&)> setup1, std::function<void(T
     setup1(comp1);
     setup2(comp2);
     TestComposite::ProcessArgs args; // =  {44100, 1/44100}; 
-    SQINFO("proc 1");
     for (int i = 0; i < 40; ++i) {
         comp1.process(args);
-      
     }
-    SQINFO("proc 2");
     for (int i = 0; i < 40; ++i) {
         comp2.process(args);
-
     }
     validate(comp1, comp2);
+}
+
+// only one comp, but calls:
+//  setup1
+//  <process>
+//  setup2
+//  <process>
+//  validate
+template <class T>
+inline void testArbitrary3( std::function<void(T&)> setup1, std::function<void(T&)> setup2, std::function<void(T&)> validate)
+{
+    T comp;
+    initComposite(comp);
+
+    setup1(comp);
+    TestComposite::ProcessArgs args; // =  {44100, 1/44100}; 
+    for (int i = 0; i < 40; ++i) {
+        comp.process(args);
+    }
+    setup2(comp);
+    for (int i = 0; i < 40; ++i) {
+        comp.process(args);
+    }
+    validate(comp);
 }
