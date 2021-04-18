@@ -8,7 +8,7 @@
 #include "SParse.h"
 #include "SamplerPlayback.h"
 
-#define _LOGOV
+//#define _LOGOV
 
 // checks to see if the region is playable
 bool RegionPool::shouldRegionPlayNow(const VoicePlayParameter& params, const CompiledRegion* region, float random) {

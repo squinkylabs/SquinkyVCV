@@ -96,7 +96,7 @@ static void testRemoveRelease() {
         <region>sample=a key=2
          )foo";
     auto inst = makeTest(data);
-    inst->_dump(0);
+    // inst->_dump(0);
     std::vector<CompiledRegionPtr> regions;
     inst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);

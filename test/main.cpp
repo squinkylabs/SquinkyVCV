@@ -112,6 +112,7 @@ extern void testx3();
 extern void testx4();
 extern void testx5();
 extern void testx6();
+extern void testx7();
 extern void testADSR();
 extern void testADSRSampler();
 extern void testWavThread();
@@ -222,6 +223,7 @@ int main(int argc, char** argv) {
     testx4();  
     testx5();
     testx6();
+    testx7();
 
     testSampComposite();
  
