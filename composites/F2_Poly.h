@@ -180,8 +180,8 @@ public:
 
     void onSampleRateChange() override;
 
-    const StateVariableFilterParams2<T>& _params1() const;
-    const StateVariableFilterParams2<T>& _params2() const;
+    const StateVariableFilterParams2<T>& _params1(int bank) const;
+    const StateVariableFilterParams2<T>& _params2(int bank) const;
 
 private:
     StateVariableFilterParams2<T> params1[4];
@@ -288,13 +288,13 @@ inline void F2_Poly<TBase>::onSampleRateChange() {
 }
 
 template <class TBase>
-inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params1() const {
-    return params1[0];
+inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params1(int bank) const {
+    return params1[bank];
 }
 
 template <class TBase>
-inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params2() const {
-    return params2[0];
+inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params2(int bank) const {
+    return params2[bank];
 }
 
 template <class TBase>
@@ -449,6 +449,8 @@ inline void F2_Poly<TBase>::setupFreq() {
             params1[bank].setQ(q);
             params2[bank].setQ(q);
 
+            // SQINFO("in q calc, cv=%f, trim =%f bank=%d p1g=%f p2g=%f", qCV, lastQTrim, params1[bank]._qGain()[0], params2[bank]._qGain()[0]);
+
             // is it just rCV, or should it be combined? I think combined
             outputGain_n = computeGain(numStages == 2, q, processedRValue[bank]);
         }
@@ -464,12 +466,14 @@ inline void F2_Poly<TBase>::setupFreq() {
                 fcCV,
                 lastFcKnob,
                 lastFcTrim);
-            // SQINFO("cv=%f, knob=%f, trim=%f combined = %f", fcCV[0], lastFcKnob, lastFcTrim, combinedFcVoltage[0]);
+            //SQINFO("in fc calc. cv=%f, knob=%f, trim=%f combined = %f", fcCV[0], lastFcKnob, lastFcTrim, combinedFcVoltage[0]);
+           
 
             auto fr = fastFcFunc2(combinedFcVoltage, processedRValue[bank], float(oversample), sampleTime, numStages == 2);
 
             params1[bank].setFreq(fr.first);
             params2[bank].setFreq(fr.second);
+            // SQINFO("p1 fc gain=%f p2 = %f bank=%d", params1[bank]._fcGain()[0], params2[bank]._fcGain()[0], bank);
         }
     }
 #if 0
