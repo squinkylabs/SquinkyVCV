@@ -49,6 +49,14 @@ public:
 };
 
 /**
+ * 2021 apr
+ *  a) mono 12 + lim        9.12   
+ *  b) 12 no lim            9.2  
+ *  c) 16 chan  24 + lim    58.5
+ *  d) 24 lim mod q,r,fc    20.5
+ *  e) " " 4ch              24.7
+ *  f) 24 lim 4ch no mod    24.4
+ * 
  * 2021 - re-boot
  * mono 12 + lim:   9.02
  * 12 no lim        8.9  

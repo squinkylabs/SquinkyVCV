@@ -1,6 +1,7 @@
 
 #pragma once
 
+A B C       // don't include this file!
 #include <assert.h>
 
 #include <memory>

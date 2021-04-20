@@ -3,7 +3,7 @@
 #include "WidgetComposite.h"
 
 #ifdef _F2
-#include "F2.h"
+// #include "F2.h"
 #include "F2_Poly.h"
 #include "SqStream.h"
 #include "ctrl/PopupMenuParamWidget.h"
