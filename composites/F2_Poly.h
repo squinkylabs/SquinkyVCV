@@ -11,6 +11,7 @@
 #include "IComposite.h"
 #include "Limiter.h"
 #include "ObjectCache.h"
+#include "SimdBlocks.h"
 #include "SqLog.h"
 #include "SqMath.h"
 #include "SqPort.h"
@@ -49,13 +50,15 @@ public:
 };
 
 /**
- * 2021 apr
+ * 2021 apr, fixed tests
+ * Q: why isn't e) slower than d? oh, I know!!!
  *  a) mono 12 + lim        9.12   
  *  b) 12 no lim            9.2  
  *  c) 16 chan  24 + lim    58.5
- *  d) 24 lim mod q,r,fc    20.5
- *  e) " " 4ch              24.7
- *  f) 24 lim 4ch no mod    24.4
+ *  d) 24 lim mod q,r,fc    67.8
+ *  e) " " 4ch              67.1
+ *  f) 24 lim 4ch no mod    24.5
+ *  g) 24 lib               19.7
  * 
  * 2021 - re-boot
  * mono 12 + lim:   9.02
@@ -387,7 +390,6 @@ inline float_4 processR(float_4 rawR) {
 
 template <class TBase>
 inline void F2_Poly<TBase>::setupFreq() {
-    //SQINFO("set freq");
     const float sampleTime = TBase::engineGetSampleTime();
     const int topologyInt = int(std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     const int numStages = (topologyInt == 0) ? 1 : 2;
@@ -406,6 +408,8 @@ inline void F2_Poly<TBase>::setupFreq() {
     const bool qKnobChanged = lastQKnob != F2_Poly<TBase>::params[Q_PARAM].value;
     const bool qTrimChanged = lastQTrim != F2_Poly<TBase>::params[Q_TRIM_PARAM].value;
 
+
+
     lastFcKnob = F2_Poly<TBase>::params[FC_PARAM].value;
     lastFcTrim = F2_Poly<TBase>::params[FC_TRIM_PARAM].value;
     lastQKnob = F2_Poly<TBase>::params[Q_PARAM].value;
@@ -420,7 +424,6 @@ inline void F2_Poly<TBase>::setupFreq() {
         SqInput& fCport = TBase::inputs[FC_INPUT];
         float_4 fcCV = fCport.getPolyVoltageSimd<float_4>(baseChannel);
         const bool fcCVChanged = rack::simd::movemask(fcCV != lastFcCV[bank]);
-       // SQINFO("read fc cv bank %d = %s", bank, toStr(fcCV).c_str());
 
         SqInput& qport = TBase::inputs[Q_INPUT];
         float_4 qCV = qport.getPolyVoltageSimd<float_4>(baseChannel);
@@ -469,7 +472,6 @@ inline void F2_Poly<TBase>::setupFreq() {
             topologyChanged) {
             // SQINFO("changed: %d, %d, %d, %d", fcCVChanged, rChanged, fcKnobChanged, fcTrimChanged);
             lastFcCV[bank] = fcCV;
-
             float_4 combinedFcVoltage = scaleFc(
                 fcCV,
                 lastFcKnob,

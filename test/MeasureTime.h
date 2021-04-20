@@ -102,6 +102,7 @@ public:
     static const size_t size = 60000;
     static void put(T x)
     {
+         assert(bInit);
         destData[destIndex++] = x;
         if (destIndex >= size) {
             destIndex = 0;
@@ -109,6 +110,7 @@ public:
     }
     static T get()
     {
+        assert(bInit);
         T ret = sourceData[sourceIndex++];
         if (sourceIndex >= size) {
             sourceIndex = 0;
@@ -116,17 +118,21 @@ public:
         return ret;
     }
     //
-    TestBuffers()
+    static void doInit()
     {
+        if (bInit) return;
+
         for (int i = 0; i < size; ++i) {
             sourceData[i] = (float) rand() / (float) RAND_MAX;
         }
+        bInit = true;
     }
 private:
     static size_t sourceIndex;
     static size_t destIndex;
     static T sourceData[size];
     static T destData[size];
+    static bool bInit;
 };
 
 template <typename T>
@@ -140,3 +146,6 @@ size_t TestBuffers<T>::sourceIndex = 0;
 
 template <typename T>
 size_t TestBuffers<T>::destIndex = 512;
+
+template <typename T>
+bool TestBuffers<T>::bInit = false;

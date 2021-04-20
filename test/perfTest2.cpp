@@ -386,6 +386,10 @@ static void testF2_24l() {
     comp.init();
 
     comp.inputs[Comp::AUDIO_INPUT].channels = 1;
+    comp.inputs[Comp::FC_INPUT].channels = 1;
+    comp.inputs[Comp::Q_INPUT].channels = 1;
+    comp.inputs[Comp::R_INPUT].channels = 1;
+
     comp.params[Comp::TOPOLOGY_PARAM].value = float(Comp::Topology::SERIES);
     comp.params[Comp::LIMITER_PARAM].value = 1;
 
@@ -420,6 +424,10 @@ static void testF2_24l4() {
     comp.init();
 
     comp.inputs[Comp::AUDIO_INPUT].channels = 4;
+    comp.inputs[Comp::FC_INPUT].channels = 4;
+    comp.inputs[Comp::Q_INPUT].channels = 4;
+    comp.inputs[Comp::R_INPUT].channels = 4;
+
     comp.params[Comp::TOPOLOGY_PARAM].value = float(Comp::Topology::SERIES);
     comp.params[Comp::LIMITER_PARAM].value = 1;
 
@@ -532,7 +540,6 @@ static void testF2_24l_4() {
             return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
         },
         1);
-
 }
 
 static void testF2_g() {
@@ -713,8 +720,10 @@ static void testCompKnee16Hard() {
 void perfTest2() {
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
+
 #ifndef _MSC_VER
 
+    testF2_24l();
     testF2_Poly1();
     testF2_Poly16();
     testF2_Poly16_hires();
