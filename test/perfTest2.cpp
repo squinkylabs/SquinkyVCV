@@ -445,10 +445,10 @@ static void testF2_24l4() {
 
     MeasureTime<float>::run(
         overheadInOut, "testF2:e (24/lim mod q,r,fc) 4ch", [&comp, args]() {
-            comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
-            comp.inputs[Comp::Q_INPUT].setVoltage(TestBuffers<float>::get());
-            comp.inputs[Comp::R_INPUT].setVoltage(TestBuffers<float>::get());
-            comp.inputs[Comp::FC_INPUT].setVoltage(TestBuffers<float>::get());
+            comp.inputs[Comp::AUDIO_INPUT].setVoltageSimd(TestBuffers<float>::get4(), 0);
+            comp.inputs[Comp::Q_INPUT].setVoltageSimd(TestBuffers<float>::get4(), 0);
+            comp.inputs[Comp::R_INPUT].setVoltageSimd(TestBuffers<float>::get4(), 0);
+            comp.inputs[Comp::FC_INPUT].setVoltageSimd(TestBuffers<float>::get4(), 0);
             comp.process(args);
             return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);
         },
@@ -534,7 +534,7 @@ static void testF2_24l_4() {
 
     MeasureTime<float>::run(
         overheadInOut, "testF2:f (24/lim) 4ch", [&comp, args]() {
-            comp.inputs[Comp::AUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+            comp.inputs[Comp::AUDIO_INPUT].setVoltageSimd(TestBuffers<float>::get4(), 0);
             // comp.inputs[Comp::FC_INPUT].setVoltage(TestBuffers<float>::get());
             comp.process(args);
             return comp.outputs[Comp::AUDIO_OUTPUT].getVoltage(0);

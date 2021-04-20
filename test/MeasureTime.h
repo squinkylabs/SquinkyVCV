@@ -117,6 +117,16 @@ public:
         }
         return ret;
     }
+
+     static float_4 get4()
+    {
+        assert(bInit);
+        T ret = sourceData[sourceIndex++];
+        if (sourceIndex >= size) {
+            sourceIndex = 0;
+        }
+        return ret;
+    }
     //
     static void doInit()
     {

@@ -52,13 +52,14 @@ public:
 /**
  * 2021 apr, fixed tests
  * Q: why isn't e) slower than d? oh, I know!!!
- *  a) mono 12 + lim        9.12   
- *  b) 12 no lim            9.2  
- *  c) 16 chan  24 + lim    58.5
- *  d) 24 lim mod q,r,fc    67.8
- *  e) " " 4ch              67.1
- *  f) 24 lim 4ch no mod    24.5
- *  g) 24 lib               19.7
+ * 
+ *  a) mono 12db + lim        9.12   
+ *  b) 12db no lim            9.2  
+ *  c) 16 chan  24db + lim    58.5
+ *  d) 24 lim mod-> q,r,fc    63.0
+ *  e) " " 4ch     " "        64.1
+ *  f) 24 lim 4ch no mod      24.5
+ *  g) 24 lim no mo           19.7
  * 
  * 2021 - re-boot
  * mono 12 + lim:   9.02
