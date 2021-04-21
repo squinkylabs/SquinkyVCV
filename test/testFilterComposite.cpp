@@ -261,12 +261,13 @@ static void testPolyFc() {
     }
 }
 
-
 static void testGain(bool two) {
     for (float q = .5f; q < 110; q += .9f) {
         for (float r = .9f; r < 10; r += .09f) {
-            auto x = Comp2_Poly::computeGain_fast(two, q, r);
-            auto y = Comp2_Poly::computeGain_slow(two, q, r);
+            float_4 rb(r, 1.1f * r, 1.2f * r, 1.3f * r);
+            float_4 qb(q, 1.1f * q, 1.2f * q, 1.3f * q);
+            auto x = Comp2_Poly::computeGain_fast(two, qb, rb);
+            auto y = Comp2_Poly::computeGain_slow(two, qb, rb);
 
             simd_assertClosePct(x, y, 10);
             //SQINFO("q=%f r=%f g=%f", q, r, x);
@@ -279,6 +280,15 @@ static void testGain() {
     testGain(false);
 }
 
+static void testComputeR() {
+    for (float r = .9f; r < 10; r += .09f) {
+        float_4 rb(r, 1.1f * r, 1.2f * r, 1.3f * r);
+
+        auto x = Comp2_Poly::processR_slow(rb);
+        auto y = Comp2_Poly::processR_fast(rb);
+         simd_assertClosePct(x, y, 10);
+    }
+}
 
 void testFilterComposites() {
     testF2Fc_Poly();
@@ -289,4 +299,5 @@ void testFilterComposites() {
     testPolyChannelsF2();
     testPolyFc();
     testGain();
+    testComputeR();
 }

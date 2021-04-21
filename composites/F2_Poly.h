@@ -53,13 +53,13 @@ public:
  * 2021 apr, fixed tests
  * take out the volume cals, e goes to 28.6 
  * 
- *  a) mono 12db + lim        9.12   
- *  b) 12db no lim            9.2  
- *  c) 16 chan  24db + lim    58.5
- *  d) 24 lim mod-> q,r,fc    63.0  -> 28 (round 1)
- *  e) " " 4ch     " "        64.1  -> 29
- *  f) 24 lim 4ch no mod      24.5
- *  g) 24 lim no mo           19.7
+ *  a) mono 12db + lim        9.12   -> 9.06 
+ *  b) 12db no lim            9.2   -> 8.9
+ *  c) 16 chan  24db + lim    58.5  -> 58.07
+ *  d) 24 lim mod-> q,r,fc    63.0  -> 26.9 (round 2)
+ *  e) " " 4ch     " "        64.1  -> 27.9
+ *  f) 24 lim 4ch no mod      24.5  -> 19.7
+ *  g) 24 lim no mo           19.7  -> 19.5
  * 
  * 2021 - re-boot
  * mono 12 + lim:   9.02
@@ -197,6 +197,8 @@ public:
 
     static float_4 computeGain_fast(bool twoStages, float_4 q4, float_4 r4);
     static float_4 computeGain_slow(bool twoStages, float_4 q4, float_4 r4);
+    static float_4 processR_slow(float_4 rawR) ;
+    static float_4 processR_fast(float_4 rawR);
 
 private:
     StateVariableFilterParams2<T> params1[4];
@@ -401,7 +403,17 @@ inline float_4 computeGain(bool twoStages, float_4 q4, float_4 r4) {
     return .1;
 }
 #endif
-inline float_4 processR(float_4 rawR) {
+
+
+template <class TBase>
+inline float_4 F2_Poly<TBase>::processR_fast(float_4 r) {
+    r = SimdBlocks::ifelse((r > 3), r - 1.5, r * .5f);
+    r = rack::dsp::approxExp2_taylor5(r / 3.f);
+    return r;
+}
+
+template <class TBase>
+inline float_4 F2_Poly<TBase>::processR_slow(float_4 rawR) {
     for (int i = 0; i < 4; ++i) {
         float r = rawR[i];
 
@@ -467,7 +479,7 @@ inline void F2_Poly<TBase>::setupFreq() {
                 rCV,
                 lastRKnob,
                 lastRTrim);
-            processedRValue[bank] = processR(combinedRVolage);
+            processedRValue[bank] = processR_fast(combinedRVolage);
         }
 
         // compute Q. depends on R
