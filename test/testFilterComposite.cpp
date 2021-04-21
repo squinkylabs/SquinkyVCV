@@ -43,8 +43,7 @@ static void testF2Fc_Poly(float fcParam, float cv, float expectedFcGain, float e
             const int subChannel = i % 4;
             if (i == channel || cv < .01) {
                 assertClosePct(comp._params1(bank)._fcGain()[subChannel], expectedFcGainWithCV, 10);
-            }
-            else {
+            } else {
                 assertNotClosePct(comp._params1(bank)._fcGain()[subChannel], expectedFcGainWithCV, 10);
             }
         }
@@ -53,7 +52,7 @@ static void testF2Fc_Poly(float fcParam, float cv, float expectedFcGain, float e
 }
 
 static void testF2Fc_Poly(int channel) {
-    testF2Fc_Poly(0, 0, .00058f, .00058f, channel);     // no change when trim changed, becuase no CV
+    testF2Fc_Poly(0, 0, .00058f, .00058f, channel);        // no change when trim changed, becuase no CV
     testF2Fc_Poly(5, 1, 0.0186376f, 0.0372752f, channel);  // now allow some CV
     testF2Fc_Poly(5, 5, .0186f, .596f, channel);
 }
@@ -64,10 +63,9 @@ static void testF2Fc_Poly() {
     }
 }
 
-
 //--------------------------------------------------------------------------------
 static void testF2Q_Poly(float qParam, float qcv, float expectedQGain, float expectedQGainWithCV, int channel) {
-   // SQINFO("\n---- testF2Q_Poly ch=%d %f, %f, %f, %f", channel, qParam, qcv, expectedQGain, expectedQGainWithCV);
+    // SQINFO("\n---- testF2Q_Poly ch=%d %f, %f, %f, %f", channel, qParam, qcv, expectedQGain, expectedQGainWithCV);
 
     auto setup1 = [qParam, qcv, channel](Comp2_Poly& comp) {
         comp.params[Comp2_Poly::Q_PARAM].value = qParam;
@@ -76,7 +74,7 @@ static void testF2Q_Poly(float qParam, float qcv, float expectedQGain, float exp
     };
 
     auto setup2 = [expectedQGain](Comp2_Poly& comp) {
-      //  simd_assertClosePct(comp._params1(0)._qGain(), float_4(expectedQGain), 10);
+        //  simd_assertClosePct(comp._params1(0)._qGain(), float_4(expectedQGain), 10);
 
         for (int i = 0; i < 16; ++i) {
             const int bank = i / 4;
@@ -89,15 +87,13 @@ static void testF2Q_Poly(float qParam, float qcv, float expectedQGain, float exp
     };
 
     auto validate = [expectedQGainWithCV, channel, qcv](Comp2_Poly& comp) {
-       
         for (int i = 0; i < 16; ++i) {
             const int bank = i / 4;
             const int subChannel = i % 4;
             // SQINFO("in validate, q gain = %f sub=%d i=%d", comp._params1(bank)._qGain()[subChannel], subChannel, i);
             if (i == channel || qcv < .01) {
                 assertClosePct(comp._params1(bank)._qGain()[subChannel], expectedQGainWithCV, 10);
-            }
-            else {
+            } else {
                 assertNotClosePct(comp._params1(bank)._qGain()[subChannel], expectedQGainWithCV, 10);
             }
         }
@@ -106,12 +102,12 @@ static void testF2Q_Poly(float qParam, float qcv, float expectedQGain, float exp
 }
 
 static void testF2Q_Poly(int channel) {
-   // testF2Q_Poly(0, 0, 2, 2, channel);
-  //  testF2Q_Poly(0, -10, 2, 2, channel);        // negative q gets clipped?
+    // testF2Q_Poly(0, 0, 2, 2, channel);
+    //  testF2Q_Poly(0, -10, 2, 2, channel);        // negative q gets clipped?
     testF2Q_Poly(1, 2, .916f, .285f, channel);
 
-   // testF2Q_Poly(5, 0, .104f, .104f, channel);
-  //  testF2Q_Poly(5, 10, .104f, .0098f, channel);
+    // testF2Q_Poly(5, 0, .104f, .104f, channel);
+    //  testF2Q_Poly(5, 10, .104f, .0098f, channel);
 }
 
 static void testF2Q_Poly() {
@@ -135,8 +131,6 @@ static void testF2R_Poly(float rParam, float rcv, float fcParam, float expectedF
     };
     testArbitrary<Comp2_Poly>(setup, validate);
 }
-
-
 
 static void testF2R_Poly() {
     //  void testF2R(float rParam, float rcv, float fcParam, float expectedFcGain1, float expectedFcGain2)
@@ -267,6 +261,25 @@ static void testPolyFc() {
     }
 }
 
+
+static void testGain(bool two) {
+    for (float q = .5f; q < 110; q += .9f) {
+        for (float r = .9f; r < 10; r += .09f) {
+            auto x = Comp2_Poly::computeGain_fast(two, q, r);
+            auto y = Comp2_Poly::computeGain_slow(two, q, r);
+
+            simd_assertClosePct(x, y, 10);
+            //SQINFO("q=%f r=%f g=%f", q, r, x);
+        }
+    }
+}
+
+static void testGain() {
+    testGain(true);
+    testGain(false);
+}
+
+
 void testFilterComposites() {
     testF2Fc_Poly();
     testF2Q_Poly();
@@ -275,4 +288,5 @@ void testFilterComposites() {
     testFcFunc();
     testPolyChannelsF2();
     testPolyFc();
+    testGain();
 }

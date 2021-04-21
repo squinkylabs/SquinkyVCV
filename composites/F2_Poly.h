@@ -51,13 +51,13 @@ public:
 
 /**
  * 2021 apr, fixed tests
- * Q: why isn't e) slower than d? oh, I know!!!
+ * take out the volume cals, e goes to 28.6 
  * 
  *  a) mono 12db + lim        9.12   
  *  b) 12db no lim            9.2  
  *  c) 16 chan  24db + lim    58.5
- *  d) 24 lim mod-> q,r,fc    63.0
- *  e) " " 4ch     " "        64.1
+ *  d) 24 lim mod-> q,r,fc    63.0  -> 28 (round 1)
+ *  e) " " 4ch     " "        64.1  -> 29
  *  f) 24 lim 4ch no mod      24.5
  *  g) 24 lim no mo           19.7
  * 
@@ -194,6 +194,9 @@ public:
 
     const StateVariableFilterParams2<T>& _params1(int bank) const;
     const StateVariableFilterParams2<T>& _params2(int bank) const;
+
+    static float_4 computeGain_fast(bool twoStages, float_4 q4, float_4 r4);
+    static float_4 computeGain_slow(bool twoStages, float_4 q4, float_4 r4);
 
 private:
     StateVariableFilterParams2<T> params1[4];
@@ -345,7 +348,25 @@ inline void F2_Poly<TBase>::setupVolume() {
     volume = float_4(procVolume);
 }
 
-inline float_4 computeGain(bool twoStages, float_4 q4, float_4 r4) {
+template <class TBase>
+inline float_4 F2_Poly<TBase>::computeGain_fast(bool twoStages, float_4 q4, float_4 r4) {
+    const float_4 oneOverQ = 1.0f / q4;
+    if (!twoStages) {
+        return sqrt(oneOverQ);
+    }
+    const float_4 oneOverQSq = 1.0f / (q4 * q4);
+
+    const float_4 interp = r4 * float_4(.5f);
+    const float_4 g_interp = interp * oneOverQ + (float_4(1.f) - interp) * oneOverQSq;
+
+    float_4 g = SimdBlocks::ifelse((r4 > float_4(2.f)), oneOverQ, g_interp);
+    g = sqrt(g);
+    return g;
+}
+
+#if 1
+template <class TBase>
+inline float_4 F2_Poly<TBase>::computeGain_slow(bool twoStages, float_4 q4, float_4 r4) {
     float_4 outputGain4 = 0;
     // let's try "half bass suck"
     // TODO: make faster
@@ -372,9 +393,14 @@ inline float_4 computeGain(bool twoStages, float_4 q4, float_4 r4) {
             outputGain4[i] = g_;
         }
     }
+    //SQINFO("cg(%f, %f) = %f", q4[0], r4[0]);
     return outputGain4;
 }
-
+#else
+inline float_4 computeGain(bool twoStages, float_4 q4, float_4 r4) {
+    return .1;
+}
+#endif
 inline float_4 processR(float_4 rawR) {
     for (int i = 0; i < 4; ++i) {
         float r = rawR[i];
@@ -409,8 +435,6 @@ inline void F2_Poly<TBase>::setupFreq() {
     const bool qKnobChanged = lastQKnob != F2_Poly<TBase>::params[Q_PARAM].value;
     const bool qTrimChanged = lastQTrim != F2_Poly<TBase>::params[Q_TRIM_PARAM].value;
 
-
-
     lastFcKnob = F2_Poly<TBase>::params[FC_PARAM].value;
     lastFcTrim = F2_Poly<TBase>::params[FC_TRIM_PARAM].value;
     lastQKnob = F2_Poly<TBase>::params[Q_PARAM].value;
@@ -428,12 +452,12 @@ inline void F2_Poly<TBase>::setupFreq() {
 
         SqInput& qport = TBase::inputs[Q_INPUT];
         float_4 qCV = qport.getPolyVoltageSimd<float_4>(baseChannel);
-        
+
         const bool qCVChanged = rack::simd::movemask(qCV != lastQCV[bank]);
 
         SqInput& rport = TBase::inputs[R_INPUT];
         float_4 rCV = rport.getPolyVoltageSimd<float_4>(baseChannel);
-        const bool rCVChanged =  rack::simd::movemask(rCV != lastRCV[bank]);
+        const bool rCVChanged = rack::simd::movemask(rCV != lastRCV[bank]);
 
         // if R changed, do calcs that depend only on R
         if (rCVChanged || rTrimChanged || rKnobChanged) {
@@ -448,9 +472,8 @@ inline void F2_Poly<TBase>::setupFreq() {
 
         // compute Q. depends on R
         if (qCVChanged || qKnobChanged || qTrimChanged ||
-            topologyChanged || 
+            topologyChanged ||
             rCVChanged || rTrimChanged || rKnobChanged) {
-
             lastQCV[bank] = qCV;
             qCV = rack::simd::clamp(qCV, 0, 10);
             float_4 combinedQ = scaleFc(
@@ -464,9 +487,8 @@ inline void F2_Poly<TBase>::setupFreq() {
             // SQINFO("in q calc, cv=%f, trim =%f bank=%d p1g=%f p2g=%f", qCV, lastQTrim, params1[bank]._qGain()[0], params2[bank]._qGain()[0]);
 
             // is it just rCV, or should it be combined? I think combined
-            outputGain_n = computeGain(numStages == 2, q, processedRValue[bank]);
+            outputGain_n = computeGain_fast(numStages == 2, q, processedRValue[bank]);
         }
-
 
         if (fcCVChanged || fcKnobChanged || fcTrimChanged ||
             rCVChanged || rKnobChanged || rTrimChanged ||
@@ -478,7 +500,6 @@ inline void F2_Poly<TBase>::setupFreq() {
                 lastFcKnob,
                 lastFcTrim);
             //SQINFO("in fc calc. cv=%f, knob=%f, trim=%f combined = %f", fcCV[0], lastFcKnob, lastFcTrim, combinedFcVoltage[0]);
-           
 
             auto fr = fastFcFunc2(combinedFcVoltage, processedRValue[bank], float(oversample), sampleTime, numStages == 2);
 
