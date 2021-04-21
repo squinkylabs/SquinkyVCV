@@ -17,14 +17,10 @@
 #include "SqPort.h"
 #include "StateVariableFilter2.h"
 
-//#include "dsp/common.hpp"
-//#include "dsp/approx.hpp"
 #include <algorithm>
 
 #include "simd.h"
 
-// Let's leave this off.
-// #define _ACDETECT
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
@@ -51,15 +47,17 @@ public:
 
 /**
  * 2021 apr, fixed tests
- * take out the volume cals, e goes to 28.6 
+
+ *                          orig      round2     zero rate
+ *  a) mono 12db + lim        9.12   -> 9.06    7.6
+ *  b) 12db no lim            9.2   -> 8.9      7.7
+ *  c) 16 chan  24db + lim    58.5  -> 58.07    55
+ *  d) 24 lim mod-> q,r,fc    63.0  -> 26.9     17
+ *  e) " " 4ch     " "        64.1  -> 27.9     17
+ *  f) 24 lim 4ch no mod      24.5  -> 19.7     16.4
+ *  g) 24 lim no mo           19.7  -> 19.5     16.4
  * 
- *  a) mono 12db + lim        9.12   -> 9.06 
- *  b) 12db no lim            9.2   -> 8.9
- *  c) 16 chan  24db + lim    58.5  -> 58.07
- *  d) 24 lim mod-> q,r,fc    63.0  -> 26.9 (round 2)
- *  e) " " 4ch     " "        64.1  -> 27.9
- *  f) 24 lim 4ch no mod      24.5  -> 19.7
- *  g) 24 lim no mo           19.7  -> 19.5
+ * hal
  * 
  * 2021 - re-boot
  * mono 12 + lim:   9.02
@@ -166,9 +164,6 @@ public:
     };
 
     enum LightIds {
-#ifdef _ACDETECT
-        LIGHT_TEST,
-#endif
         NUM_LIGHTS
     };
 
@@ -252,14 +247,11 @@ private:
 
     void processOneBankSeries(const typename TBase::ProcessArgs& args);
     void processOneBank12_lim(const typename TBase::ProcessArgs& args);
+   // void processOneBank24_lim(const typename TBase::ProcessArgs& args);
     void processOneBank12_nolim(const typename TBase::ProcessArgs& args);
     void processGeneric(const typename TBase::ProcessArgs& args);
 
     AudioMath_4::ScaleFun scaleFc = AudioMath_4::makeScalerWithBipolarAudioTrim(0, 10, 0, 10);
-#ifdef _ACDETECT
-    ACDetector ac;
-    void checkForACCV();
-#endif
 };
 
 template <class TBase>
@@ -287,10 +279,8 @@ inline void F2_Poly<TBase>::stepm() {
     setupProcFunc();
     limiterEnabled_m = bool(std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
 
-#if !defined(_ACDETECT)
     const bool hres = bool(.5f < std::round(F2_Poly<TBase>::params[CV_UPDATE_FREQ].value));
     stepNmax = hres ? 0 : 3;
-#endif
 }
 
 template <class TBase>
@@ -363,10 +353,10 @@ inline float_4 F2_Poly<TBase>::computeGain_fast(bool twoStages, float_4 q4, floa
 
     float_4 g = SimdBlocks::ifelse((r4 > float_4(2.f)), oneOverQ, g_interp);
     g = sqrt(g);
+    SQINFO("g = %f", g[0]);
     return g;
 }
 
-#if 1
 template <class TBase>
 inline float_4 F2_Poly<TBase>::computeGain_slow(bool twoStages, float_4 q4, float_4 r4) {
     float_4 outputGain4 = 0;
@@ -398,12 +388,6 @@ inline float_4 F2_Poly<TBase>::computeGain_slow(bool twoStages, float_4 q4, floa
     //SQINFO("cg(%f, %f) = %f", q4[0], r4[0]);
     return outputGain4;
 }
-#else
-inline float_4 computeGain(bool twoStages, float_4 q4, float_4 r4) {
-    return .1;
-}
-#endif
-
 
 template <class TBase>
 inline float_4 F2_Poly<TBase>::processR_fast(float_4 r) {
@@ -496,8 +480,6 @@ inline void F2_Poly<TBase>::setupFreq() {
             params1[bank].setQ(q);
             params2[bank].setQ(q);
 
-            // SQINFO("in q calc, cv=%f, trim =%f bank=%d p1g=%f p2g=%f", qCV, lastQTrim, params1[bank]._qGain()[0], params2[bank]._qGain()[0]);
-
             // is it just rCV, or should it be combined? I think combined
             outputGain_n = computeGain_fast(numStages == 2, q, processedRValue[bank]);
         }
@@ -511,23 +493,13 @@ inline void F2_Poly<TBase>::setupFreq() {
                 fcCV,
                 lastFcKnob,
                 lastFcTrim);
-            //SQINFO("in fc calc. cv=%f, knob=%f, trim=%f combined = %f", fcCV[0], lastFcKnob, lastFcTrim, combinedFcVoltage[0]);
 
             auto fr = fastFcFunc2(combinedFcVoltage, processedRValue[bank], float(oversample), sampleTime, numStages == 2);
 
             params1[bank].setFreq(fr.first);
             params2[bank].setFreq(fr.second);
-            // SQINFO("p1 fc gain=%f p2 = %f bank=%d", params1[bank]._fcGain()[0], params2[bank]._fcGain()[0], bank);
         }
     }
-#if 0
-    {
-        SqInput& port = TBase::inputs[FC_INPUT];
-        float_4 fcCV = port.getPolyVoltageSimd<float_4>(0);
-     
-        SQINFO("exit fc cv bank 0 = %s", toStr(fcCV).c_str());
-    }
-#endif
 }
 
 template <class TBase>
@@ -556,32 +528,6 @@ inline void F2_Poly<TBase>::setupProcFunc() {
     }
 }
 
-#ifdef _ACDETECT
-template <class TBase>
-inline void F2_Poly<TBase>::checkForACCV() {
-    SqInput& qPort = TBase::inputs[Q_INPUT];
-    SqInput& rPort = TBase::inputs[R_INPUT];
-    SqInput& fcPort = TBase::inputs[FC_INPUT];
-    if (!qPort.isConnected() && !rPort.isConnected() && !fcPort.isConnected()) {
-        stepNmax = 0;
-        TBase::lights[LIGHT_TEST].value = 0;
-        return;
-    }
-
-    float_4 total4 = float_4(0);
-    for (int bank = 0; bank < numBanks_m; bank++) {
-        const int baseChannel = 4 * bank;
-        total4 += qPort.getPolyVoltageSimd<float_4>(baseChannel);
-        total4 += rPort.getPolyVoltageSimd<float_4>(baseChannel);
-        total4 += fcPort.getPolyVoltageSimd<float_4>(baseChannel);
-    }
-    float total = total4[0] + total4[1] + total4[2] + total4[3];
-    bool b = ac.step(total);
-    stepNmax = b ? 3 : 0;
-    TBase::lights[LIGHT_TEST].value = b ? 10.f : 0.f;
-}
-#endif
-
 template <class TBase>
 inline void F2_Poly<TBase>::stepn() {
     ++stepNcounter;
@@ -589,9 +535,7 @@ inline void F2_Poly<TBase>::stepn() {
         return;
     }
     stepNcounter = 0;
-#ifdef _ACDETECT
-    checkForACCV();
-#endif
+
     setupFreq();
     setupVolume();
 }
@@ -636,9 +580,7 @@ inline void F2_Poly<TBase>::processOneBank12_lim(const typename TBase::ProcessAr
     const float_4 input = inPort.getPolyVoltageSimd<float_4>(0);
 
     T output = (*filterFunc)(input, state1[0], params1[0]);
-    // auto xx = output[0];
     output = limiter.step(output);
-    // SQINFO("lim in=%f out=%f", xx, output[0]);
 
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
     ENDPROC(0);
