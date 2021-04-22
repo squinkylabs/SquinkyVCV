@@ -45,9 +45,17 @@ public:
 };
 
 /**
- * 2021 apr, fixed tests
-
- *                          orig      round2     zero rate
+ * with optimizations and Vu
+ *  a) mono 12db + lim       9.2  
+ *  b) 12db no lim           9.17    
+ *  c) 16 chan  24db + lim   60.75
+ *  d) 24 lim mod-> q,r,fc   27.6
+ *  e) " " 4ch     " "       28.6  
+ *  f) 24 lim 4ch no mod     20.4  
+ *  g) 24 lim no mo          20      
+ *  
+ * 2021 apr, fixed test
+ *                           orig      round2   zero CV update
  *  a) mono 12db + lim        9.12   -> 9.06    7.6
  *  b) 12db no lim            9.2   -> 8.9      7.7
  *  c) 16 chan  24db + lim    58.5  -> 58.07    55
