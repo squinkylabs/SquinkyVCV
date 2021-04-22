@@ -373,11 +373,11 @@ static void testPeak4_3()
 {
     PeakDetector4 p;
     p.step( float_4(1,2,3,4));
-    p.decay(.1);
+    p.decay(.1f);
     assertEQ(p.get(), 4);
 
     p.step(float_4(3, 4, 5, 6));
-    p.decay(.1);
+    p.decay(.1f);
     assertEQ(p.get(), 6);
 }
 

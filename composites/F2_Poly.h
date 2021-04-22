@@ -149,11 +149,12 @@ public:
         MODE_PARAM,
         LIMITER_PARAM,
         FC_TRIM_PARAM,
-        CV_UPDATE_FREQ,
+        UNUSED_CV_UPDATE_FREQ,
         VOL_PARAM,
         SCHEMA_PARAM,
         Q_TRIM_PARAM,
         R_TRIM_PARAM,
+        ALT_LIMITER_PARAM,
         NUM_PARAMS
     };
 
@@ -232,6 +233,7 @@ private:
     float lastQTrim = -1;
     float lastVolume = -1;
     int lastTopology = -1;
+    int lastAltLimiter = -1;
 
     float_4 processedRValue[4] = {-1};
     float_4 volume = {-1};
@@ -293,14 +295,24 @@ inline void F2_Poly<TBase>::stepm() {
     setupProcFunc();
     limiterEnabled_m = bool(std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
 
-    const bool hres = bool(.5f < std::round(F2_Poly<TBase>::params[CV_UPDATE_FREQ].value));
-    stepNmax = hres ? 0 : 3;
+    bool altLim =  bool(std::round(F2_Poly<TBase>::params[ALT_LIMITER_PARAM].value));
+    if (altLim != (lastAltLimiter == 1)) {
+        lastAltLimiter = altLim;
+        setupLimiter();
+    }
+
+    stepNmax = 3;
 }
 
 template <class TBase>
 inline void F2_Poly<TBase>::setupLimiter() {
-    limiter.setTimes(1, 100, TBase::engineGetSampleTime());
-    limiter.setInputGain(4);
+    const bool alt = (lastAltLimiter == 1);
+    limiter.setTimes(
+        alt ? 3.f : 1.f, 
+        alt ? 20.f: 100.f, 
+        TBase::engineGetSampleTime());
+    limiter.setInputGain(alt ? 20 : 4);
+    SQINFO("setupLim, alt = %d", alt);
 }
 
 template <class TBase>
@@ -367,7 +379,7 @@ inline float_4 F2_Poly<TBase>::computeGain_fast(bool twoStages, float_4 q4, floa
 
     float_4 g = SimdBlocks::ifelse((r4 > float_4(2.f)), oneOverQ, g_interp);
     g = sqrt(g);
-    // SQINFO("g = %f", g[0]);
+    //SQINFO("g = %f", g[0]);
     return g;
 }
 
@@ -576,12 +588,11 @@ inline void F2_Poly<TBase>::updateVUOutput() {
     const float dim = .2f;
     const float bright = .8f;
     TBase::lights[VOL3_LIGHT].value = (level >= lMax) ? bright : dim;
-    TBase::lights[VOL2_LIGHT].value = (level >= ((lMax-2) * .5)) ? bright : dim;
+    TBase::lights[VOL2_LIGHT].value = (level >= ((lMax - 2) * .5)) ? bright : dim;
     TBase::lights[VOL1_LIGHT].value = (level >= (lMax * .25f)) ? bright : dim;
     TBase::lights[VOL0_LIGHT].value = (level >= (lMax * .125f)) ? bright : dim;
-   // SQINFO("level = %.2f", level);
+    // SQINFO("level = %.2f", level);
 }
-
 
 #define ENDPROC(chan)                                \
     output *= volume;                                \
@@ -708,7 +719,7 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i) {
         case F2_Poly<TBase>::R_TRIM_PARAM:
             ret = {-1, 1, 0, "R modulation trim"};
             break;
-        case F2_Poly<TBase>::CV_UPDATE_FREQ:
+        case F2_Poly<TBase>::UNUSED_CV_UPDATE_FREQ:
             ret = {0, 1, 0, "CV update fidelity"};
             break;
         case F2_Poly<TBase>::VOL_PARAM:
@@ -716,6 +727,9 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i) {
             break;
         case F2_Poly<TBase>::SCHEMA_PARAM:
             ret = {0, 10, 0, "schema"};
+            break;
+        case F2_Poly<TBase>::ALT_LIMITER_PARAM:
+            ret = {0, 1, 1, "alt limit"};
             break;
         default:
             assert(false);

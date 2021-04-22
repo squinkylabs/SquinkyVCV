@@ -161,8 +161,11 @@ void F2Widget::appendContextMenu(Menu* theMenu) {
     ManualMenuItem* manual = new ManualMenuItem("F2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/apr/docs/f2.md");
     theMenu->addChild(manual);
 
-    SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::CV_UPDATE_FREQ);
-    item->text = "CV Fidelity";
+ //   SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::CV_UPDATE_FREQ);
+//    item->text = "CV Fidelity";
+
+    SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::ALT_LIMITER_PARAM);
+    item->text = "Alt Limiter";
     theMenu->addChild(item);
 }
 
