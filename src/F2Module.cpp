@@ -152,6 +152,7 @@ struct F2Widget : ModuleWidget {
 
     void addJacks(F2Module* module, std::shared_ptr<IComposite> icomp);
     void addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp);
+    void addLights(F2Module* module);
 };
 
 void F2Widget::appendContextMenu(Menu* theMenu) {
@@ -165,10 +166,38 @@ void F2Widget::appendContextMenu(Menu* theMenu) {
     theMenu->addChild(item);
 }
 
-void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
+void F2Widget::addLights(F2Module* module) {
+    float xLED = 50;
+    float yVol1 = 50;
+    float dyPoles = 8;
+    for (int i = 0; i < 4; ++i) {
+        switch (i) {
+            case 0:
+            case 1:
+                addChild(createLightCentered<SmallLight<GreenLight>>(
+                    Vec(xLED, yVol1 + dyPoles * (3 - i)),
+                    module,
+                    Comp::VOL0_LIGHT + i));
+                break;
+            case 2:
+                addChild(createLightCentered<SmallLight<YellowLight>>(
+                    Vec(xLED, yVol1 + dyPoles * (3 - i)),
+                    module,
+                    Comp::VOL0_LIGHT + i));
+                break;
+            case 3:
+                addChild(createLightCentered<SmallLight<RedLight>>(
+                    Vec(xLED, yVol1 + dyPoles * (3 - i)),
+                    module,
+                    Comp::VOL0_LIGHT + i));
+                break;
+        }
+    }
+}
 
+void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
     addLabel(
-        Vec(14-6, 166),
+        Vec(14 - 6, 166),
         "Fc");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -181,7 +210,7 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
         Comp::FC_TRIM_PARAM));
 
     addLabel(
-        Vec(55-8, 166),
+        Vec(55 - 8, 166),
         "Q");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -194,7 +223,7 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
         Comp::Q_TRIM_PARAM));
 
     addLabel(
-        Vec(95-8 , 166),
+        Vec(95 - 8, 166),
         "R");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -207,7 +236,7 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
         Comp::R_TRIM_PARAM));
 
     addLabel(
-        Vec(10-8, 32),
+        Vec(10 - 8, 32),
         "Vol");
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -215,7 +244,7 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
         module, Comp::VOL_PARAM));
 
     addLabel(
-        Vec(83-10, 32),
+        Vec(83 - 10, 32),
         "Limit");
     addParam(SqHelper::createParam<CKSS>(
         icomp,
@@ -254,9 +283,8 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
 }
 
 void F2Widget::addJacks(F2Module* module, std::shared_ptr<IComposite> icomp) {
-
     addLabel(
-        Vec(14-8, 258),
+        Vec(14 - 8, 258),
         "Fc");
     addInput(createInput<PJ301MPort>(
         Vec(9, 275),
@@ -264,7 +292,7 @@ void F2Widget::addJacks(F2Module* module, std::shared_ptr<IComposite> icomp) {
         Comp::FC_INPUT));
 
     addLabel(
-        Vec(55-8, 258),
+        Vec(55 - 8, 258),
         "Q");
     addInput(createInput<PJ301MPort>(
         Vec(49, 275),
@@ -272,15 +300,15 @@ void F2Widget::addJacks(F2Module* module, std::shared_ptr<IComposite> icomp) {
         Comp::Q_INPUT));
 
     addLabel(
-        Vec(95-8, 258),
+        Vec(95 - 8, 258),
         "R");
     addInput(createInput<PJ301MPort>(
-        Vec(87 , 274),
+        Vec(87, 274),
         module,
         Comp::R_INPUT));
 
     addLabel(
-        Vec(15-8, 303),
+        Vec(15 - 8, 303),
         "In");
     addInput(createInput<PJ301MPort>(
         Vec(9, 320),
@@ -288,7 +316,7 @@ void F2Widget::addJacks(F2Module* module, std::shared_ptr<IComposite> icomp) {
         Comp::AUDIO_INPUT));
 
     addLabel(
-        Vec(87-8, 303),
+        Vec(87 - 8, 303),
         "Out");
     addOutput(createOutput<PJ301MPort>(
         Vec(87, 320),
@@ -311,6 +339,7 @@ F2Widget::F2Widget(F2Module* module) {
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
     addKnobs(module, icomp);
+    addLights(module);
 
     // screws
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));

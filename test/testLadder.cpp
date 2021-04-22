@@ -315,12 +315,40 @@ static void testPeak0()
     assertEQ(p.get(), 8.4f);
 }
 
+static void testPeak4_0()
+{
+    PeakDetector4 p;
+    p.step(0);
+    assertEQ(p.get(), 0);
+    p.step(4.4f);
+
+    p.decay(.1f);
+    assertEQ(p.get(), 4.4f);
+
+    p.step(8.4f);
+    p.decay(.1f);
+    assertEQ(p.get(), 8.4f);
+}
+
 static void testPeak1()
 {
     PeakDetector p;
     p.step(5);
+  //  p.decay(.1f);
     assertEQ(p.get(), 5);
     p.step(4.4f);
+ //   p.decay(.1f);
+    assertEQ(p.get(), 5);
+}
+
+static void testPeak4_1()
+{
+    PeakDetector4 p;
+    p.step(5);
+    p.decay(.1f);
+    assertEQ(p.get(), 5);
+    p.step(4.4f);
+    p.decay(.1f);
     assertEQ(p.get(), 5);
 }
 
@@ -332,6 +360,26 @@ static void testPeak2()
     assertLT(p.get(), 5);
 }
 
+static void testPeak4_2()
+{
+    PeakDetector4 p;
+    p.setDecay(4);
+    p.step(5);
+    p.decay(4.f / 44000);
+    assertLT(p.get(), 5);
+}
+
+static void testPeak4_3()
+{
+    PeakDetector4 p;
+    p.step( float_4(1,2,3,4));
+    p.decay(.1);
+    assertEQ(p.get(), 4);
+
+    p.step(float_4(3, 4, 5, 6));
+    p.decay(.1);
+    assertEQ(p.get(), 6);
+}
 
 static void testEdgeInMiddleUnity(bool is4PLP)
 {
@@ -730,6 +778,10 @@ void testLadder()
     testPeak0();
     testPeak1();
     testPeak2();
+    testPeak4_0();
+    testPeak4_1();
+    testPeak4_2();
+    testPeak4_3();
 
     testProcVarsPoly();
     testProcVarsStereo();

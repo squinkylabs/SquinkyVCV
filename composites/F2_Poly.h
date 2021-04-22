@@ -3,6 +3,7 @@
 
 #include <assert.h>
 
+#include <algorithm>
 #include <memory>
 
 #include "ACDetector.h"
@@ -11,14 +12,12 @@
 #include "IComposite.h"
 #include "Limiter.h"
 #include "ObjectCache.h"
+#include "PeakDetector.h"
 #include "SimdBlocks.h"
 #include "SqLog.h"
 #include "SqMath.h"
 #include "SqPort.h"
 #include "StateVariableFilter2.h"
-
-#include <algorithm>
-
 #include "simd.h"
 
 #ifndef _CLAMP
@@ -164,6 +163,10 @@ public:
     };
 
     enum LightIds {
+        VOL0_LIGHT,
+        VOL1_LIGHT,
+        VOL2_LIGHT,
+        VOL3_LIGHT,
         NUM_LIGHTS
     };
 
@@ -192,7 +195,7 @@ public:
 
     static float_4 computeGain_fast(bool twoStages, float_4 q4, float_4 r4);
     static float_4 computeGain_slow(bool twoStages, float_4 q4, float_4 r4);
-    static float_4 processR_slow(float_4 rawR) ;
+    static float_4 processR_slow(float_4 rawR);
     static float_4 processR_fast(float_4 rawR);
 
 private:
@@ -231,6 +234,7 @@ private:
     int stepNmax = 3;
 
     Divider divm;
+    PeakDetector4 peak;
     void stepn();
     void stepm();
     void setupFreq();
@@ -238,6 +242,7 @@ private:
     void setupModes();
     void setupProcFunc();
     void setupLimiter();
+    void updateVUOutput();
 
     static float_4 fastQFunc(float_4 qV, int numStages);
     static std::pair<float_4, float_4> fastFcFunc2(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime, bool twoPeaks);
@@ -247,7 +252,7 @@ private:
 
     void processOneBankSeries(const typename TBase::ProcessArgs& args);
     void processOneBank12_lim(const typename TBase::ProcessArgs& args);
-   // void processOneBank24_lim(const typename TBase::ProcessArgs& args);
+    // void processOneBank24_lim(const typename TBase::ProcessArgs& args);
     void processOneBank12_nolim(const typename TBase::ProcessArgs& args);
     void processGeneric(const typename TBase::ProcessArgs& args);
 
@@ -263,6 +268,7 @@ inline void F2_Poly<TBase>::init() {
         this->stepm();
     });
     setupLimiter();
+    peak.setDecay(2);
 }
 
 template <class TBase>
@@ -353,7 +359,7 @@ inline float_4 F2_Poly<TBase>::computeGain_fast(bool twoStages, float_4 q4, floa
 
     float_4 g = SimdBlocks::ifelse((r4 > float_4(2.f)), oneOverQ, g_interp);
     g = sqrt(g);
-    SQINFO("g = %f", g[0]);
+    // SQINFO("g = %f", g[0]);
     return g;
 }
 
@@ -538,6 +544,7 @@ inline void F2_Poly<TBase>::stepn() {
 
     setupFreq();
     setupVolume();
+    updateVUOutput();
 }
 
 template <class TBase>
@@ -551,9 +558,27 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args) {
     (this->*procFun)(args);
 }
 
+template <class TBase>
+inline void F2_Poly<TBase>::updateVUOutput() {
+    const int divFactor = stepNmax + 1;
+    peak.decay(divFactor * TBase::engineGetSampleTime() * 5);
+    const float level = peak.get();
+    // TODO: these values are not the right ones for us
+    const float lMax = 10;
+    const float dim = .2f;
+    const float bright = .8f;
+    TBase::lights[VOL3_LIGHT].value = (level >= lMax) ? bright : dim;
+    TBase::lights[VOL2_LIGHT].value = (level >= ((lMax-2) * .5)) ? bright : dim;
+    TBase::lights[VOL1_LIGHT].value = (level >= (lMax * .25f)) ? bright : dim;
+    TBase::lights[VOL0_LIGHT].value = (level >= (lMax * .125f)) ? bright : dim;
+   // SQINFO("level = %.2f", level);
+}
+
+
 #define ENDPROC(chan)                                \
     output *= volume;                                \
     output = rack::simd::clamp(output, -20.f, 20.f); \
+    peak.step(output);                               \
     outPort.setVoltageSimd(output, chan);
 
 template <class TBase>
