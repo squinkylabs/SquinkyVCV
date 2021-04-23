@@ -176,6 +176,7 @@ public:
         VOL1_LIGHT,
         VOL2_LIGHT,
         VOL3_LIGHT,
+        LIMITER_LIGHT,
         NUM_LIGHTS
     };
 
@@ -302,6 +303,8 @@ inline void F2_Poly<TBase>::stepm() {
     }
 
     stepNmax = 3;
+
+    TBase::lights[LIMITER_LIGHT].value = (limiterEnabled_m) ? 1.f : .2;
 }
 
 template <class TBase>

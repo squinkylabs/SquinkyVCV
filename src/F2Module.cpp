@@ -196,6 +196,10 @@ void F2Widget::addLights(F2Module* module) {
                 break;
         }
     }
+    addChild(createLightCentered<SmallLight<GreenLight>>(
+        Vec(84, 57),
+        module,
+        Comp::LIMITER_LIGHT));
 }
 
 void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
