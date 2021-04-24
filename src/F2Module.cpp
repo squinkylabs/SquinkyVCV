@@ -159,7 +159,7 @@ struct F2Widget : ModuleWidget {
 void F2Widget::appendContextMenu(Menu* theMenu) {
     MenuLabel* spacerLabel = new MenuLabel();
     theMenu->addChild(spacerLabel);
-    ManualMenuItem* manual = new ManualMenuItem("F2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/apr/docs/f2.md");
+    ManualMenuItem* manual = new ManualMenuItem("F2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
     theMenu->addChild(manual);
 
     //   SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::CV_UPDATE_FREQ);
