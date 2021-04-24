@@ -91,7 +91,7 @@ public:
     float hirand = 1;
 
     float amp_veltrack = 100;
-    float ampeg_release = .001f;
+    float ampeg_release = .03f;         // correct default, not .001
 
     CompiledGroupPtrWeak weakParent;
     int lineNumber = -1;

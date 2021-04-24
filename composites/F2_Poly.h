@@ -702,7 +702,7 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i) {
             ret = {0, 3, 0, "Mode"};
             break;
         case F2_Poly<TBase>::FC_PARAM:
-            ret = {0, 10, 5, "Fc"};
+            ret = {0, 10, 5, "Cutoff freq (Fc)"};
             break;
         case F2_Poly<TBase>::R_PARAM:
             ret = {0, 10, 0, "Spread (R)"};
