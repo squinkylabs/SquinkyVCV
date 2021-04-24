@@ -137,8 +137,8 @@ void F2Module::process(const ProcessArgs& args) {
 
 struct F2Widget : ModuleWidget {
     F2Widget(F2Module*);
-    //   DECLARE_MANUAL("Basic VCF Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
 
+#ifdef _LAB
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK) {
         Label* label = new Label();
         label->box.pos = v;
@@ -147,6 +147,7 @@ struct F2Widget : ModuleWidget {
         addChild(label);
         return label;
     }
+#endif
 
     void appendContextMenu(Menu* menu) override;
 
@@ -161,8 +162,8 @@ void F2Widget::appendContextMenu(Menu* theMenu) {
     ManualMenuItem* manual = new ManualMenuItem("F2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/apr/docs/f2.md");
     theMenu->addChild(manual);
 
- //   SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::CV_UPDATE_FREQ);
-//    item->text = "CV Fidelity";
+    //   SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::CV_UPDATE_FREQ);
+    //    item->text = "CV Fidelity";
 
     SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::ALT_LIMITER_PARAM);
     item->text = "Alt Limiter";
@@ -171,7 +172,7 @@ void F2Widget::appendContextMenu(Menu* theMenu) {
 
 void F2Widget::addLights(F2Module* module) {
     float xLED = 50;
-    float yVol1 = 50;
+    float yVol1 = 50 + 2;
     float dyPoles = 8;
     for (int i = 0; i < 4; ++i) {
         switch (i) {
@@ -203,35 +204,39 @@ void F2Widget::addLights(F2Module* module) {
 }
 
 void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
+#ifdef _LAB
     addLabel(
         Vec(14 - 6, 166),
         "Fc");
+#endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(6, 185),
+        Vec(7, 185),
         module, Comp::FC_PARAM));
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
-        Vec(12, 228),
+        Vec(13, 228),
         module,
         Comp::FC_TRIM_PARAM));
-
+#ifdef _LAB
     addLabel(
         Vec(55 - 8, 166),
         "Q");
+#endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(45, 185),
         module, Comp::Q_PARAM));
     addParam(SqHelper::createParam<Trimpot>(
         icomp,
-        Vec(51, 228),
+        Vec(50.5, 228),
         module,
         Comp::Q_TRIM_PARAM));
-
+#ifdef _LAB
     addLabel(
         Vec(95 - 8, 166),
         "R");
+#endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         Vec(84, 185),
@@ -241,26 +246,28 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
         Vec(90, 228),
         module,
         Comp::R_TRIM_PARAM));
-
+#ifdef _LAB
     addLabel(
         Vec(10 - 8, 32),
         "Vol");
+#endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(6, 50),
+        Vec(7, 50),
         module, Comp::VOL_PARAM));
-
+#ifdef _LAB
     addLabel(
         Vec(83 - 10, 32),
         "Limit");
+#endif
     addParam(SqHelper::createParam<CKSS>(
         icomp,
-        Vec(92, 50),
+        Vec(93, 51),
         module, Comp::LIMITER_PARAM));
 
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(6, 97),
+        Vec(7, 97),
         module,
         Comp::MODE_PARAM);
     p->box.size.x = 104;  // width
@@ -271,7 +278,7 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
 
     p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(6, 127),
+        Vec(7, 131),
         module,
         Comp::TOPOLOGY_PARAM);
     p->box.size.x = 104;  // width was 54
@@ -290,41 +297,47 @@ void F2Widget::addKnobs(F2Module* module, std::shared_ptr<IComposite> icomp) {
 }
 
 void F2Widget::addJacks(F2Module* module, std::shared_ptr<IComposite> icomp) {
+#ifdef _LAB
     addLabel(
         Vec(14 - 8, 258),
         "Fc");
+#endif
     addInput(createInput<PJ301MPort>(
-        Vec(9, 275),
+        Vec(10, 275),
         module,
         Comp::FC_INPUT));
-
+#ifdef _LAB
     addLabel(
         Vec(55 - 8, 258),
         "Q");
+#endif
     addInput(createInput<PJ301MPort>(
-        Vec(49, 275),
+        Vec(48, 275),
         module,
         Comp::Q_INPUT));
-
+#ifdef _LAB
     addLabel(
         Vec(95 - 8, 258),
         "R");
+#endif
     addInput(createInput<PJ301MPort>(
         Vec(87, 274),
         module,
         Comp::R_INPUT));
-
+#ifdef _LAB
     addLabel(
         Vec(15 - 8, 303),
         "In");
+#endif
     addInput(createInput<PJ301MPort>(
-        Vec(9, 320),
+        Vec(10, 320),
         module,
         Comp::AUDIO_INPUT));
-
+#ifdef _LAB
     addLabel(
         Vec(87 - 8, 303),
         "Out");
+#endif
     addOutput(createOutput<PJ301MPort>(
         Vec(87, 320),
         module,
@@ -341,7 +354,9 @@ F2Widget::F2Widget(F2Module* module) {
     setModule(module);
     SqHelper::setPanel(this, "res/f2-panel.svg");
 
+#ifdef _LAB
     addLabel(Vec(50, 10), "F2");
+#endif
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     addJacks(module, icomp);
