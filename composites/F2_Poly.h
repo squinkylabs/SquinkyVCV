@@ -315,7 +315,7 @@ inline void F2_Poly<TBase>::setupLimiter() {
         alt ? 20.f: 100.f, 
         TBase::engineGetSampleTime());
     limiter.setInputGain(alt ? 20 : 4);
-    SQINFO("setupLim, alt = %d", alt);
+    // SQINFO("setupLim, alt = %d", alt);
 }
 
 template <class TBase>
