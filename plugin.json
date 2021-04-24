@@ -231,7 +231,7 @@
 		{
 			"slug": "squinkylabs-f2",
 			"name": "F2",
-			"disabled": true,
+			"disabled": false,
 			"description": "Multimode state-variable filter",
 			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md",
 			"tags": ["VCF", "Polyphonic"]

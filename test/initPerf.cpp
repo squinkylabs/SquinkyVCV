@@ -11,6 +11,7 @@ static void setup()
 #ifdef _DEBUG
 //    assert(false);  // don't run this in debug
 #endif
+    TestBuffers<float>::doInit();
     double d = .1;
     const double scale = 1.0 / RAND_MAX;
     overheadInOut = MeasureTime<float>::run(0.0, "test1 (do nothing i/o)", [&d, scale]() {

@@ -648,6 +648,7 @@ static void testRandomRange1() {
     assertEQ(test.size(), 3);
 }
 
+#if 0 // deleted this file
 static void testParseDX() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -656,6 +657,7 @@ static void testParseDX() {
     assert(err.empty());
     assertEQ(inst->groups.size(), 1);
 }
+#endif
 
 extern int compileCount;
 
@@ -716,7 +718,7 @@ void testx() {
     testParseSimpleDrum();
     testRandomRange0();
     testRandomRange1();
-    testParseDX();
+   // testParseDX();
     testParseCurve();
 
     assert(parseCount == 0);

@@ -205,13 +205,15 @@ int main(int argc, char** argv) {
 
     if (runPerf) {
         initPerf();
-        perfTest3();
         perfTest2();
+        perfTest3();
+    
         perfTest();
         return 0;
     }
 
     testSimpleQuantizer();
+    testFilterComposites();
 
     testFlac();
     testADSRSampler();
@@ -258,7 +260,7 @@ int main(int argc, char** argv) {
     testMultiLag2();
     testCmprsr();
     testCompressor();
-    testFilterComposites();
+
     testSimpleQuantizer();
 
     testVec();
