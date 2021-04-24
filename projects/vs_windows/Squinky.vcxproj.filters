@@ -630,11 +630,17 @@
     <ClCompile Include="..\..\test\testOscSmoother.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testx.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\dsp\samp\SLex.cpp">
       <Filter>Source Files\dsp\samp</Filter>
     </ClCompile>
     <ClCompile Include="..\..\dsp\samp\SParse.cpp">
       <Filter>Source Files\dsp\samp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testx2.cpp">
+      <Filter>Source Files\test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\dsp\samp\WaveLoader.cpp">
       <Filter>Source Files\dsp\samp</Filter>
@@ -650,6 +656,9 @@
     </ClCompile>
     <ClCompile Include="..\..\dsp\samp\CompiledInstrument.cpp">
       <Filter>Source Files\dsp\samp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testx3.cpp">
+      <Filter>Source Files\test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\dsp\samp\CompiledRegion.cpp">
       <Filter>Source Files\dsp\samp</Filter>
@@ -669,6 +678,9 @@
     <ClCompile Include="..\..\util\SqLog.cpp">
       <Filter>Source Files\dsp\utils</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testx4.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\test\testACDetector.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
@@ -685,6 +697,12 @@
       <Filter>Header Files\test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\test\testCompressorParamHolder.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testx5.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\testx6.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\test\testADSRSampler.cpp">
@@ -738,31 +756,13 @@
     <ClCompile Include="..\..\dsp\samp\WaveLoaders.cpp">
       <Filter>Source Files\dsp\samp</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\test\testx.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\testx2.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\testHeadingTracker.cpp">
+    <ClCompile Include="..\..\test\testx7.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\dsp\samp\HeadingTracker.cpp">
       <Filter>Source Files\dsp\samp</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\test\testx3.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\testx4.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\testx5.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\testx6.cpp">
-      <Filter>Source Files\test</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\test\testx7.cpp">
+    <ClCompile Include="..\..\test\testHeadingTracker.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
   </ItemGroup>

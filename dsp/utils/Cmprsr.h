@@ -219,7 +219,7 @@ inline float_4 Cmprsr::stepPoly(float_4 input) {
     // TODO: optimized case for all curves the same
     for (int iChan = 0; iChan < 4; ++iChan) {
         if (ratio[iChan] == Ratios::HardLimit) {
-            const float reductionGain = threshold[iChan] / envelope[iChan];
+            // const float reductionGain = threshold[iChan] / envelope[iChan];
             gain_[iChan] = (envelope[iChan] > threshold[iChan]) ? threshold[iChan] / envelope[iChan] : 1.f;
         }
         else {

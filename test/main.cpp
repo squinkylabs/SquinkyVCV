@@ -207,13 +207,15 @@ int main(int argc, char** argv) {
 
     if (runPerf) {
         initPerf();
-        perfTest3();
         perfTest2();
+        perfTest3();
+    
         perfTest();
         return 0;
     }
 
- 
+    testSimpleQuantizer();
+    testFilterComposites();
 
     testHeadingTracker();
 
@@ -227,7 +229,6 @@ int main(int argc, char** argv) {
 
     testSampComposite();
  
-
     testFlac();
     testADSRSampler();
     testStreamer();
@@ -264,7 +265,7 @@ int main(int argc, char** argv) {
     testMultiLag2();
     testCmprsr();
     testCompressor();
-    testFilterComposites();
+
     testSimpleQuantizer();
 
     testVec();

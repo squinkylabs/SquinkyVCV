@@ -21,7 +21,7 @@ static void testx0() {
 }
 #endif
 
-static void testx_1() {
+static void testx1() {
     SLexPtr lex = SLex::go("<global>");
     assert(lex);
     lex->validate();
@@ -31,7 +31,7 @@ static void testx_1() {
     assertEQ(ptag->tagName, "global");
 }
 
-static void testx_2() {
+static void testx2() {
     SLexPtr lex = SLex::go("=");
     assert(lex);
     lex->validate();
@@ -39,7 +39,7 @@ static void testx_2() {
     assert(lex->items[0]->itemType == SLexItem::Type::Equal);
 }
 
-static void testx_3() {
+static void testx3() {
     SLexPtr lex = SLex::go("qrst");
     assert(lex);
     lex->validate();
@@ -408,6 +408,7 @@ static void testLexNewLine() {
     assertEQ(lex->items.size(), 3);
 }
 
+
 static void testLexCommentInFile() {
     auto lex = SLex::go("sample=a/b//c");
     assert(lex);
@@ -725,6 +726,8 @@ static void testRandomRange1() {
 }
 
 
+#if 0 // deleted this file
+
 static void testParseDX() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -738,6 +741,7 @@ static void testParseDX() {
     assertEQ(inst->headings[0]->values.size(), 2);
     assertEQ(inst->headings[1]->values.size(), 5);
 }
+#endif
 
 
 extern int compileCount;
@@ -764,9 +768,9 @@ void testx() {
     assert(parseCount == 0);
 
     //testx0();
-    testx_1();
-    testx_2();
-    testx_3();
+    testx1();
+    testx2();
+    testx3();
     testxKVP();
     testxKVP2();
     testLexComment();
@@ -830,9 +834,8 @@ void testx() {
     testRandomRange0();
     testRandomRange1();
 
-    testParseDX();
+    // merge conflict here. does this work? a: it was deleted in main
+    //testParseDX();
     testParseCurve();
-
-
     assert(parseCount == 0);
 }

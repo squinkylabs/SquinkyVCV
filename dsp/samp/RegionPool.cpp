@@ -122,6 +122,7 @@ void RegionPool::sortByPitchAndVelocity(std::vector<CompiledRegionPtr>& array) {
 
 // new one, for new parser
 bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
+#if 1   // new parser. merge conflict here
     HeadingTracker ht(in->headings);
 
     // SQINFO("---- buildCompiledTree with %d regions", in->headings.size());
@@ -148,6 +149,27 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
             maybeAddToKeyswitchList(cReg);
             if (cReg->sw_default >= 0) {
                 currentSwitch_ = cReg->sw_default;
+#else
+    for (auto group : in->groups) {
+        auto cGroup = std::make_shared<CompiledGroup>(group);
+        if (!cGroup->shouldIgnore()) {
+            for (auto reg : group->regions) {
+                // SQWARN("need to add global info");
+                CompiledRegionPtr cReg = std::make_shared<CompiledRegion>(reg->lineNumber);
+                cReg->addRegionInfo(in->global.compiledValues);
+                cReg->addRegionInfo(group->compiledValues);
+                cReg->addRegionInfo(reg->compiledValues);
+
+                // actually we should do our ignoreing on the region
+                if (!cReg->shouldIgnore()) {
+                    //  auto cReg = std::make_shared<CompiledRegion>(reg, cGroup, group);
+                    maybeAddToKeyswitchList(cReg);
+                    if (cReg->sw_default >= 0) {
+                        currentSwitch_ = cReg->sw_default;
+                    }
+                    regions.push_back(cReg);
+                }
+#endif
             }
             // SQINFO("adding");
             regions.push_back(cReg);

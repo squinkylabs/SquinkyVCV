@@ -14,8 +14,8 @@ extern void testPlayInfoSmallPiano();
 // Note that making a region out of the context of an insturment is now quite involved.
 // We may need a test halper for this if we plan on doing it much.
 
+
 static CompiledRegionPtr makeTestRegion(bool usePitch, const std::string& minVal, const std::string& maxVal) {
-#if 1
     //SHeading h;
    // SRegionPtr sr = std::make_shared<SRegion>(1234, h);
   //  gp->regions.push_back(sr);
@@ -42,7 +42,12 @@ static CompiledRegionPtr makeTestRegion(bool usePitch, const std::string& minVal
 
     //  //CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
     return r0;
-#else
+}
+
+#if 0   // merge conflict here
+
+static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::string& minVal, const std::string& maxVal) {
+
     SHeading h;
     SRegionPtr sr = std::make_shared<SRegion>(1234, h);
     gp->regions.push_back(sr);
@@ -68,8 +73,8 @@ static CompiledRegionPtr makeTestRegion(bool usePitch, const std::string& minVal
 
     //  //CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
     return r0;
-#endif
 }
+#endif
 
 static void testOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, bool shouldOverlap) {
     assert(mina <= maxa);

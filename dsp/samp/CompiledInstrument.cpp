@@ -289,7 +289,8 @@ void CompiledInstrument::expandAllKV(SamplerErrorContext& err, SInstrumentPtr in
     for (auto iter : inst->headings) {
         iter->compiledValues = SamplerSchema::compile(err, iter->values);
     }
-#if 0
+#if 0   // old stuff. merge conflict
+
     inst->global.compiledValues = SamplerSchema::compile(err, inst->global.values);
     inst->master.compiledValues = SamplerSchema::compile(err, inst->master.values);
     //   inst->control.compiledValues = SamplerSchema::compile(inst->control.values);

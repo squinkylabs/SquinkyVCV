@@ -457,6 +457,7 @@ inline void Sub<TBase>::stepm() {
     setupQuantizer();
     setupWaveforms();
     numDualChannels = std::max<int>(1, TBase::inputs[VOCT_INPUT].channels);
+    numDualChannels = std::min(numDualChannels, 8);
     Sub<TBase>::outputs[Sub<TBase>::MAIN_OUTPUT].setChannels(numDualChannels);
 
     const int numVCO = numDualChannels * 2;

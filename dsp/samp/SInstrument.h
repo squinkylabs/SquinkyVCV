@@ -21,6 +21,7 @@ public:
 class SInstrument {
 public:
 
+
     SHeading global;
     SHeading master;
     SHeading currentControl;        // in aria instruments this values changes as we compiled,      

@@ -5,7 +5,6 @@
 #include "SamplerPlayback.h"
 #include "SamplerErrorContext.h"
 
-
 class st {
 public:
     static CompiledRegionPtr makeRegion(const std::string& s) {

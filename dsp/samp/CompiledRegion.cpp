@@ -269,6 +269,70 @@ int CompiledRegion::pitchRange() const {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+#if 0   // incoming merge conflict
+CompiledGroup::CompiledGroup(SGroupPtr group) : lineNumber(group->lineNumber) {
+    compileCount++;
+
+    // do we still need all these members in groups?
+    // do they really do something anymore?
+    auto value = group->compiledValues->get(Opcode::TRIGGER);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Discrete);
+        //ignore = (trigger != DiscreteValue::ATTACK);
+        trigger = value->discrete;
+    }
+
+    value = group->compiledValues->get(Opcode::SEQ_LENGTH);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Int);
+        sequence_length = value->numericInt;
+    }
+    value = group->compiledValues->get(Opcode::LO_RAND);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Float);
+        lorand = value->numericFloat;
+    }
+    value = group->compiledValues->get(Opcode::HI_RAND);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Float);
+        hirand = value->numericFloat;
+    }
+}
+
+CompiledGroup::CompiledGroup(int line) : lineNumber(line) {
+    compileCount++;
+}
+
+bool CompiledGroup::shouldIgnore() const {
+    bool dontIgnore = trigger == SamplerSchema::DiscreteValue::NONE || trigger == SamplerSchema::DiscreteValue::ATTACK;
+    return !dontIgnore;
+}
+
+CompiledRegion::Type CompiledGroup::type() const {
+    CompiledRegion::Type theType = CompiledRegion::Type::Base;
+    if (this->sequence_length > 0) {
+        theType = CompiledRegion::Type::RoundRobin;
+    } else if (this->lorand >= 0) {
+        // the group has prob on it.
+        theType = CompiledRegion::Type::GRandom;
+    } else {
+        bool isProbabilty = !regions.empty();  // assume if any regions we are a probability group
+        for (auto child : regions) {
+            // lorand=0 hirand=0.3
+            if (child->lorand < 0) {
+                isProbabilty = false;
+            }
+        }
+        if (isProbabilty) {
+            theType = CompiledRegion::Type::Random;
+            if (regions.size() < 2) SQWARN("rand region no options");
+            //assert(regions.size() > 1);
+        }
+    }
+    return theType;
+}
+
+#endif
 void CompiledRegion::_dump(int depth) const {
     SQINFO("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d", isKeyswitched(), sw_lolast, sw_hilast);
     SQINFO("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);

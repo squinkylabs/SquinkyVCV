@@ -9,11 +9,14 @@
 #include <vector>
 
 class CompiledRegion;
-
 class VoicePlayInfo;
 class ISamplerPlayback;
 
 using CompiledRegionPtr = std::shared_ptr<CompiledRegion>;
+
+//using CompiledGroupPtr = std::shared_ptr<CompiledGroup>;
+//using CompiledGroupPtrWeak = std::weak_ptr<CompiledGroup>;
+
 using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
 using ISamplerPlaybackPtr = std::shared_ptr<ISamplerPlayback>;
 
@@ -84,7 +87,7 @@ public:
     float hirand = 1;
 
     float amp_veltrack = 100;
-    float ampeg_release = .001f;
+    float ampeg_release = .03f;         // correct default, not .001
 
     int lineNumber = -1;
 

@@ -51,20 +51,9 @@ void testPolyChannels(int  inputPort, int outputPort, int numChannels)
     TestComposite::ProcessArgs args; // default is ok. old gcc doesn't like =  {44100.f, 1.f/44100.f}; 
 
     comp.process(args);
-    // const int outputChannels = comp.outputs[outputPort].channels;
 
     assertEQ(int(comp.outputs[outputPort].channels), numChannels);
     for (int i = 0; i < numChannels; ++i) {
-
-    #if 0
-       // printf("i = %d\n", i);
-        // should start out at zero output
-        if (i < 4) {
-            for (int j=0; j < 4; ++j) {
-                printf("channel %d, looking at %d output = %f\n", i, j, comp.outputs[outputPort].getVoltage(i));  fflush(stdout);
-            }
-        }
-    #endif
         assertEQ(comp.outputs[outputPort].getVoltage(i), 0);
         comp.inputs[inputPort].setVoltage(10, i);
        // for (int j=0; j<100; ++j) {
@@ -90,6 +79,55 @@ inline void testArbitrary( std::function<void(T&)> setup, std::function<void(T&)
 
     setup(comp);
     TestComposite::ProcessArgs args; // =  {44100, 1/44100}; 
+    for (int i = 0; i < 40; ++i) {
+        comp.process(args);
+    }
+    validate(comp);
+}
+
+/**
+ * Creates two instance of T,
+ * calls different setup functions on each.
+ * calls validate with both
+ */
+template <class T>
+inline void testArbitrary2( std::function<void(T&)> setup1, std::function<void(T&)> setup2, std::function<void(T&, T&)> validate)
+{
+    T comp1;
+    T comp2;
+    initComposite(comp1);
+    initComposite(comp2);
+
+    setup1(comp1);
+    setup2(comp2);
+    TestComposite::ProcessArgs args; // =  {44100, 1/44100}; 
+    for (int i = 0; i < 40; ++i) {
+        comp1.process(args);
+    }
+    for (int i = 0; i < 40; ++i) {
+        comp2.process(args);
+    }
+    validate(comp1, comp2);
+}
+
+// only one comp, but calls:
+//  setup1
+//  <process>
+//  setup2
+//  <process>
+//  validate
+template <class T>
+inline void testArbitrary3( std::function<void(T&)> setup1, std::function<void(T&)> setup2, std::function<void(T&)> validate)
+{
+    T comp;
+    initComposite(comp);
+
+    setup1(comp);
+    TestComposite::ProcessArgs args; // =  {44100, 1/44100}; 
+    for (int i = 0; i < 40; ++i) {
+        comp.process(args);
+    }
+    setup2(comp);
     for (int i = 0; i < 40; ++i) {
         comp.process(args);
     }

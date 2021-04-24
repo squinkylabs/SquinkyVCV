@@ -3,6 +3,7 @@
 
 #include <assert.h>
 
+#include <algorithm>
 #include <memory>
 
 #include "ACDetector.h"
@@ -10,19 +11,15 @@
 #include "Divider.h"
 #include "IComposite.h"
 #include "Limiter.h"
+#include "ObjectCache.h"
+#include "PeakDetector.h"
+#include "SimdBlocks.h"
 #include "SqLog.h"
 #include "SqMath.h"
 #include "SqPort.h"
 #include "StateVariableFilter2.h"
-
-//#include "dsp/common.hpp"
-//#include "dsp/approx.hpp"
-#include <algorithm>
-
 #include "simd.h"
 
-// Let's leave this off.
-// #define _ACDETECT
 #ifndef _CLAMP
 #define _CLAMP
 namespace std {
@@ -48,6 +45,27 @@ public:
 };
 
 /**
+ * with optimizations and Vu
+ *  a) mono 12db + lim       9.2  
+ *  b) 12db no lim           9.17    
+ *  c) 16 chan  24db + lim   60.75
+ *  d) 24 lim mod-> q,r,fc   27.6
+ *  e) " " 4ch     " "       28.6  
+ *  f) 24 lim 4ch no mod     20.4  
+ *  g) 24 lim no mo          20      
+ *  
+ * 2021 apr, fixed test
+ *                           orig      round2   zero CV update
+ *  a) mono 12db + lim        9.12   -> 9.06    7.6
+ *  b) 12db no lim            9.2   -> 8.9      7.7
+ *  c) 16 chan  24db + lim    58.5  -> 58.07    55
+ *  d) 24 lim mod-> q,r,fc    63.0  -> 26.9     17
+ *  e) " " 4ch     " "        64.1  -> 27.9     17
+ *  f) 24 lim 4ch no mod      24.5  -> 19.7     16.4
+ *  g) 24 lim no mo           19.7  -> 19.5     16.4
+ * 
+ * hal
+ * 
  * 2021 - re-boot
  * mono 12 + lim:   9.02
  * 12 no lim        8.9  
@@ -131,7 +149,12 @@ public:
         MODE_PARAM,
         LIMITER_PARAM,
         FC_TRIM_PARAM,
-        CV_UPDATE_FREQ,
+        UNUSED_CV_UPDATE_FREQ,
+        VOL_PARAM,
+        SCHEMA_PARAM,
+        Q_TRIM_PARAM,
+        R_TRIM_PARAM,
+        ALT_LIMITER_PARAM,
         NUM_PARAMS
     };
 
@@ -149,9 +172,11 @@ public:
     };
 
     enum LightIds {
-#ifdef _ACDETECT
-        LIGHT_TEST,
-#endif
+        VOL0_LIGHT,
+        VOL1_LIGHT,
+        VOL2_LIGHT,
+        VOL3_LIGHT,
+        LIMITER_LIGHT,
         NUM_LIGHTS
     };
 
@@ -175,8 +200,13 @@ public:
 
     void onSampleRateChange() override;
 
-    const StateVariableFilterParams2<T>& _params1() const;
-    const StateVariableFilterParams2<T>& _params2() const;
+    const StateVariableFilterParams2<T>& _params1(int bank) const;
+    const StateVariableFilterParams2<T>& _params2(int bank) const;
+
+    static float_4 computeGain_fast(bool twoStages, float_4 q4, float_4 r4);
+    static float_4 computeGain_slow(bool twoStages, float_4 q4, float_4 r4);
+    static float_4 processR_slow(float_4 rawR);
+    static float_4 processR_fast(float_4 rawR);
 
 private:
     StateVariableFilterParams2<T> params1[4];
@@ -185,6 +215,7 @@ private:
     StateVariableFilterState2<T> state2[4];
     Limiter limiter;
     StateVariableFilter2<T>::processFunction filterFunc = nullptr;
+    std::shared_ptr<LookupTableParams<float>> audioTaperLookupParams = ObjectCache<float>::getAudioTaper();
     const int oversample = 4;
 
     float_4 outputGain_n = 0;
@@ -192,14 +223,21 @@ private:
     int numChannels_m = 0;
     int numBanks_m = 0;
     Topology topology_m = Topology::SINGLE;
-    float_4 lastQv[4] = {-1};
-    float_4 lastRv[4] = {-1};
-
-    float_4 lastFcVC[4] = {-1};
+    float_4 lastQCV[4] = {-1};
+    float_4 lastRCV[4] = {-1};
+    float_4 lastFcCV[4] = {-1};
     float lastFcKnob = -1;
     float lastFcTrim = -1;
+    float lastRKnob = -1;
+    float lastRTrim = -1;
+    float lastQKnob = -1;
+    float lastQTrim = -1;
+    float lastVolume = -1;
+    int lastTopology = -1;
+    int lastAltLimiter = -1;
 
-    float_4 processedRValue = -1;
+    float_4 processedRValue[4] = {-1};
+    float_4 volume = {-1};
 
     // Divider divn;
     // default to 1/4 SR cv update, go on next one
@@ -207,29 +245,29 @@ private:
     int stepNmax = 3;
 
     Divider divm;
+    PeakDetector4 peak;
     void stepn();
     void stepm();
     void setupFreq();
+    void setupVolume();
     void setupModes();
     void setupProcFunc();
     void setupLimiter();
+    void updateVUOutput();
 
     static float_4 fastQFunc(float_4 qV, int numStages);
-    static std::pair<float_4, float_4> fastFcFunc2(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime);
+    static std::pair<float_4, float_4> fastFcFunc2(float_4 freqVolts, float_4 rVolts, float oversample, float sampleTime, bool twoPeaks);
 
     using processFunction = void (F2_Poly<TBase>::*)(const typename TBase::ProcessArgs& args);
     processFunction procFun;
 
     void processOneBankSeries(const typename TBase::ProcessArgs& args);
     void processOneBank12_lim(const typename TBase::ProcessArgs& args);
+    // void processOneBank24_lim(const typename TBase::ProcessArgs& args);
     void processOneBank12_nolim(const typename TBase::ProcessArgs& args);
     void processGeneric(const typename TBase::ProcessArgs& args);
 
     AudioMath_4::ScaleFun scaleFc = AudioMath_4::makeScalerWithBipolarAudioTrim(0, 10, 0, 10);
-#ifdef _ACDETECT
-    ACDetector ac;
-    void checkForACCV();
-#endif
 };
 
 template <class TBase>
@@ -241,6 +279,7 @@ inline void F2_Poly<TBase>::init() {
         this->stepm();
     });
     setupLimiter();
+    peak.setDecay(2);
 }
 
 template <class TBase>
@@ -257,15 +296,26 @@ inline void F2_Poly<TBase>::stepm() {
     setupProcFunc();
     limiterEnabled_m = bool(std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
 
-#if !defined(_ACDETECT)
-    const bool hres = bool(.5f < std::round(F2_Poly<TBase>::params[CV_UPDATE_FREQ].value));
-    stepNmax = hres ? 0 : 3;
-    #endif
+    bool altLim =  bool(std::round(F2_Poly<TBase>::params[ALT_LIMITER_PARAM].value));
+    if (altLim != (lastAltLimiter == 1)) {
+        lastAltLimiter = altLim;
+        setupLimiter();
+    }
+
+    stepNmax = 3;
+
+    TBase::lights[LIMITER_LIGHT].value = (limiterEnabled_m) ? 1.f : .2;
 }
 
 template <class TBase>
 inline void F2_Poly<TBase>::setupLimiter() {
-    limiter.setTimes(1, 100, TBase::engineGetSampleTime());
+    const bool alt = (lastAltLimiter == 1);
+    limiter.setTimes(
+        alt ? 3.f : 1.f, 
+        alt ? 20.f: 100.f, 
+        TBase::engineGetSampleTime());
+    limiter.setInputGain(alt ? 20 : 4);
+    // SQINFO("setupLim, alt = %d", alt);
 }
 
 template <class TBase>
@@ -274,13 +324,13 @@ inline void F2_Poly<TBase>::onSampleRateChange() {
 }
 
 template <class TBase>
-inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params1() const {
-    return params1[0];
+inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params1(int bank) const {
+    return params1[bank];
 }
 
 template <class TBase>
-inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params2() const {
-    return params2[0];
+inline const StateVariableFilterParams2<float_4>& F2_Poly<TBase>::_params2(int bank) const {
+    return params2[bank];
 }
 
 template <class TBase>
@@ -293,7 +343,7 @@ inline float_4 F2_Poly<TBase>::fastQFunc(float_4 qV, int numStages) {
 }
 
 template <class TBase>
-inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc2(float_4 freqVolts, float_4 r, float oversample, float sampleTime) {
+inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc2(float_4 freqVolts, float_4 r, float oversample, float sampleTime, bool twoPeaks) {
     assert(oversample == 4);
     assert(sampleTime < .0001);
     float_4 freq = rack::dsp::FREQ_C4 * rack::dsp::approxExp2_taylor5(freqVolts + 30 - 4) / 1073741824;
@@ -302,9 +352,92 @@ inline std::pair<float_4, float_4> F2_Poly<TBase>::fastFcFunc2(float_4 freqVolts
     freq *= sampleTime;
 
     // we could pass in 1/r, too
-    float_4 f1 = freq / r;
-    float_4 f2 = freq * r;
+    float_4 f1 = twoPeaks ? freq / r : freq;
+    float_4 f2 = twoPeaks ? freq * r : freq;
     return std::make_pair(f1, f2);
+}
+
+template <class TBase>
+inline void F2_Poly<TBase>::setupVolume() {
+    const float v = F2_Poly<TBase>::params[VOL_PARAM].value;
+    if (lastVolume == v) {
+        return;
+    }
+
+    lastVolume = v;
+    const float procVolume = 4 * std::sqrt(2.f) * LookupTable<float>::lookup(*audioTaperLookupParams, v / 100);
+    volume = float_4(procVolume);
+}
+
+template <class TBase>
+inline float_4 F2_Poly<TBase>::computeGain_fast(bool twoStages, float_4 q4, float_4 r4) {
+    const float_4 oneOverQ = 1.0f / q4;
+    if (!twoStages) {
+        return sqrt(oneOverQ);
+    }
+    const float_4 oneOverQSq = 1.0f / (q4 * q4);
+
+    const float_4 interp = r4 * float_4(.5f);
+    const float_4 g_interp = interp * oneOverQ + (float_4(1.f) - interp) * oneOverQSq;
+
+    float_4 g = SimdBlocks::ifelse((r4 > float_4(2.f)), oneOverQ, g_interp);
+    g = sqrt(g);
+    //SQINFO("g = %f", g[0]);
+    return g;
+}
+
+template <class TBase>
+inline float_4 F2_Poly<TBase>::computeGain_slow(bool twoStages, float_4 q4, float_4 r4) {
+    float_4 outputGain4 = 0;
+    // let's try "half bass suck"
+    // TODO: make faster
+    {
+        for (int i = 0; i < 4; ++i) {
+            float g_ = 0;
+            float q_ = q4[i];
+            float r_ = r4[i];
+
+            float oneOverQ = 1.f / q_;
+            float oneOverQSq = 1.f / (q_ * q_);
+            if (!twoStages) {
+                g_ = oneOverQ;
+            } else if (r_ >= 2.f) {
+                g_ = oneOverQ;
+            } else {
+                float interp = r_ / 2.f;  // 0..1
+                g_ = interp * oneOverQ + (1.f - interp) * oneOverQSq;
+            }
+
+            auto dbGain = AudioMath::db(g_);
+            dbGain *= .5f;
+            g_ = float(AudioMath::gainFromDb(dbGain));
+            outputGain4[i] = g_;
+        }
+    }
+    //SQINFO("cg(%f, %f) = %f", q4[0], r4[0]);
+    return outputGain4;
+}
+
+template <class TBase>
+inline float_4 F2_Poly<TBase>::processR_fast(float_4 r) {
+    r = SimdBlocks::ifelse((r > 3), r - 1.5, r * .5f);
+    r = rack::dsp::approxExp2_taylor5(r / 3.f);
+    return r;
+}
+
+template <class TBase>
+inline float_4 F2_Poly<TBase>::processR_slow(float_4 rawR) {
+    for (int i = 0; i < 4; ++i) {
+        float r = rawR[i];
+
+        if (r > 3) {
+            r -= 1.5;
+        } else {
+            r /= 2;  // make less sensitive for low value
+        }
+        rawR[i] = r;
+    }
+    return rack::dsp::approxExp2_taylor5(rawR / 3.f);
 }
 
 template <class TBase>
@@ -312,62 +445,85 @@ inline void F2_Poly<TBase>::setupFreq() {
     const float sampleTime = TBase::engineGetSampleTime();
     const int topologyInt = int(std::round(F2_Poly<TBase>::params[TOPOLOGY_PARAM].value));
     const int numStages = (topologyInt == 0) ? 1 : 2;
+    bool topologyChanged = false;
+    if (topologyInt != lastTopology) {
+        lastTopology = topologyInt;
+        topologyChanged = true;
+    }
 
     const bool fcKnobChanged = lastFcKnob != F2_Poly<TBase>::params[FC_PARAM].value;
     const bool fcTrimChanged = lastFcTrim != F2_Poly<TBase>::params[FC_TRIM_PARAM].value;
 
+    const bool rKnobChanged = lastRKnob != F2_Poly<TBase>::params[R_PARAM].value;
+    const bool rTrimChanged = lastRTrim != F2_Poly<TBase>::params[R_TRIM_PARAM].value;
+
+    const bool qKnobChanged = lastQKnob != F2_Poly<TBase>::params[Q_PARAM].value;
+    const bool qTrimChanged = lastQTrim != F2_Poly<TBase>::params[Q_TRIM_PARAM].value;
+
     lastFcKnob = F2_Poly<TBase>::params[FC_PARAM].value;
     lastFcTrim = F2_Poly<TBase>::params[FC_TRIM_PARAM].value;
+    lastQKnob = F2_Poly<TBase>::params[Q_PARAM].value;
+    lastQTrim = F2_Poly<TBase>::params[Q_TRIM_PARAM].value;
+    lastRKnob = F2_Poly<TBase>::params[R_PARAM].value;
+    lastRTrim = F2_Poly<TBase>::params[R_TRIM_PARAM].value;
 
     for (int bank = 0; bank < numBanks_m; bank++) {
         const int baseChannel = 4 * bank;
-        SqInput& qPort = TBase::inputs[Q_INPUT];
 
-        float_4 qVolts = F2_Poly<TBase>::params[Q_PARAM].value;
-        qVolts += qPort.getPolyVoltageSimd<float_4>(baseChannel);
-        qVolts = rack::simd::clamp(qVolts, 0, 10);
+        // First, let's round up all the CV for this bank
+        SqInput& fCport = TBase::inputs[FC_INPUT];
+        float_4 fcCV = fCport.getPolyVoltageSimd<float_4>(baseChannel);
+        const bool fcCVChanged = rack::simd::movemask(fcCV != lastFcCV[bank]);
 
-        int changeMask = rack::simd::movemask(qVolts != lastQv[bank]);
-        if (changeMask) {
-            lastQv[bank] = qVolts;
-            float_4 q = fastQFunc(qVolts, numStages);
+        SqInput& qport = TBase::inputs[Q_INPUT];
+        float_4 qCV = qport.getPolyVoltageSimd<float_4>(baseChannel);
+
+        const bool qCVChanged = rack::simd::movemask(qCV != lastQCV[bank]);
+
+        SqInput& rport = TBase::inputs[R_INPUT];
+        float_4 rCV = rport.getPolyVoltageSimd<float_4>(baseChannel);
+        const bool rCVChanged = rack::simd::movemask(rCV != lastRCV[bank]);
+
+        // if R changed, do calcs that depend only on R
+        if (rCVChanged || rTrimChanged || rKnobChanged) {
+            lastRCV[bank] = rCV;
+            rCV = rack::simd::clamp(rCV, 0, 10);
+            float_4 combinedRVolage = scaleFc(
+                rCV,
+                lastRKnob,
+                lastRTrim);
+            processedRValue[bank] = processR_fast(combinedRVolage);
+        }
+
+        // compute Q. depends on R
+        if (qCVChanged || qKnobChanged || qTrimChanged ||
+            topologyChanged ||
+            rCVChanged || rTrimChanged || rKnobChanged) {
+            lastQCV[bank] = qCV;
+            qCV = rack::simd::clamp(qCV, 0, 10);
+            float_4 combinedQ = scaleFc(
+                qCV,
+                lastQKnob,
+                lastQTrim);
+            float_4 q = fastQFunc(combinedQ, numStages);
             params1[bank].setQ(q);
             params2[bank].setQ(q);
 
-            outputGain_n = 1 / q;
-            if (numStages == 2) {
-                outputGain_n *= 1 / q;
-            }
-            outputGain_n = SimdBlocks::min(outputGain_n, float_4(1.f));
-            //printf("q = %f, oututGain-n = %f\n", q[0], outputGain_n[0]);
+            // is it just rCV, or should it be combined? I think combined
+            outputGain_n = computeGain_fast(numStages == 2, q, processedRValue[bank]);
         }
 
-        SqInput& rPort = TBase::inputs[R_INPUT];
-        float_4 rVolts = F2_Poly<TBase>::params[R_PARAM].value;
-        rVolts += rPort.getPolyVoltageSimd<float_4>(baseChannel);
-        rVolts = rack::simd::clamp(rVolts, 0, 10);
-        const bool rChanged = rack::simd::movemask(rVolts != lastRv[bank]);
-        if (rChanged) {
-            lastRv[bank] = rVolts;
-            processedRValue = rack::dsp::approxExp2_taylor5(rVolts / 3.f);
-            //printf("rv=%f procR = %f\n", rVolts[0], processedRValue[0]);
-        }
-
-        SqInput& fcPort = TBase::inputs[FC_INPUT];
-        float_4 fcCV = fcPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const bool fcCVChanged = rack::simd::movemask(fcCV != lastFcVC[bank]);
-
-        if (fcCVChanged || rChanged || fcKnobChanged || fcTrimChanged) {
+        if (fcCVChanged || fcKnobChanged || fcTrimChanged ||
+            rCVChanged || rKnobChanged || rTrimChanged ||
+            topologyChanged) {
             // SQINFO("changed: %d, %d, %d, %d", fcCVChanged, rChanged, fcKnobChanged, fcTrimChanged);
-            lastFcVC[bank] = fcCV;
-
+            lastFcCV[bank] = fcCV;
             float_4 combinedFcVoltage = scaleFc(
                 fcCV,
                 lastFcKnob,
                 lastFcTrim);
-            // SQINFO("cv=%f, knob=%f, trim=%f combined = %f", fcCV[0], lastFcKnob, lastFcTrim, combinedFcVoltage[0]);
 
-            auto fr = fastFcFunc2(combinedFcVoltage, processedRValue, float(oversample), sampleTime);
+            auto fr = fastFcFunc2(combinedFcVoltage, processedRValue[bank], float(oversample), sampleTime, numStages == 2);
 
             params1[bank].setFreq(fr.first);
             params2[bank].setFreq(fr.second);
@@ -401,32 +557,6 @@ inline void F2_Poly<TBase>::setupProcFunc() {
     }
 }
 
-#ifdef _ACDETECT
-template <class TBase>
-inline void F2_Poly<TBase>::checkForACCV() {
-    SqInput& qPort = TBase::inputs[Q_INPUT];
-    SqInput& rPort = TBase::inputs[R_INPUT];
-    SqInput& fcPort = TBase::inputs[FC_INPUT];
-    if (!qPort.isConnected() && !rPort.isConnected() && !fcPort.isConnected()) {
-        stepNmax = 0;
-        TBase::lights[LIGHT_TEST].value = 0;
-        return;
-    }
-
-    float_4 total4 = float_4(0);
-    for (int bank = 0; bank < numBanks_m; bank++) {
-        const int baseChannel = 4 * bank;  
-        total4 += qPort.getPolyVoltageSimd<float_4>(baseChannel);
-        total4 += rPort.getPolyVoltageSimd<float_4>(baseChannel);
-        total4 += fcPort.getPolyVoltageSimd<float_4>(baseChannel);
-    }
-    float total = total4[0] + total4[1] + total4[2] + total4[3]; 
-    bool b = ac.step(total);
-    stepNmax = b ? 3 : 0;
-    TBase::lights[LIGHT_TEST].value = b ? 10.f : 0.f;
-}
-#endif
-
 template <class TBase>
 inline void F2_Poly<TBase>::stepn() {
     ++stepNcounter;
@@ -434,16 +564,15 @@ inline void F2_Poly<TBase>::stepn() {
         return;
     }
     stepNcounter = 0;
-#ifdef _ACDETECT   
-    checkForACCV();
-#endif
+
     setupFreq();
+    setupVolume();
+    updateVUOutput();
 }
 
 template <class TBase>
 inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args) {
     divm.step();
-    // divn.step();
 
     // always do the CV calc, even though it might be divided.
     stepn();
@@ -451,6 +580,28 @@ inline void F2_Poly<TBase>::process(const typename TBase::ProcessArgs& args) {
     assert(procFun);
     (this->*procFun)(args);
 }
+
+template <class TBase>
+inline void F2_Poly<TBase>::updateVUOutput() {
+    const int divFactor = stepNmax + 1;
+    peak.decay(divFactor * TBase::engineGetSampleTime() * 5);
+    const float level = peak.get();
+    // TODO: these values are not the right ones for us
+    const float lMax = 10;
+    const float dim = .2f;
+    const float bright = .8f;
+    TBase::lights[VOL3_LIGHT].value = (level >= lMax) ? bright : dim;
+    TBase::lights[VOL2_LIGHT].value = (level >= ((lMax - 2) * .5)) ? bright : dim;
+    TBase::lights[VOL1_LIGHT].value = (level >= (lMax * .25f)) ? bright : dim;
+    TBase::lights[VOL0_LIGHT].value = (level >= (lMax * .125f)) ? bright : dim;
+    // SQINFO("level = %.2f", level);
+}
+
+#define ENDPROC(chan)                                \
+    output *= volume;                                \
+    output = rack::simd::clamp(output, -20.f, 20.f); \
+    peak.step(output);                               \
+    outPort.setVoltageSimd(output, chan);
 
 template <class TBase>
 inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessArgs& args) {
@@ -467,8 +618,7 @@ inline void F2_Poly<TBase>::processOneBankSeries(const typename TBase::ProcessAr
     }
 
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-    output = rack::simd::clamp(output, -10.f, 10.f);
-    outPort.setVoltageSimd(output, 0);
+    ENDPROC(0);
 }
 
 template <class TBase>
@@ -480,8 +630,7 @@ inline void F2_Poly<TBase>::processOneBank12_lim(const typename TBase::ProcessAr
     output = limiter.step(output);
 
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-    output = rack::simd::clamp(output, -10.f, 10.f);
-    outPort.setVoltageSimd(output, 0);
+    ENDPROC(0);
 }
 
 template <class TBase>
@@ -493,8 +642,7 @@ inline void F2_Poly<TBase>::processOneBank12_nolim(const typename TBase::Process
     output *= outputGain_n;
 
     SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-    output = rack::simd::clamp(output, -10.f, 10.f);
-    outPort.setVoltageSimd(output, 0);
+    ENDPROC(0);
 }
 
 template <class TBase>
@@ -534,9 +682,7 @@ inline void F2_Poly<TBase>::processGeneric(const typename TBase::ProcessArgs& ar
         }
 
         SqOutput& outPort = TBase::outputs[AUDIO_OUTPUT];
-        output = rack::simd::clamp(output, -10.f, 10.f);
-
-        outPort.setVoltageSimd(output, baseChannel);
+        ENDPROC(baseChannel);
     }
 }
 
@@ -556,13 +702,13 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i) {
             ret = {0, 3, 0, "Mode"};
             break;
         case F2_Poly<TBase>::FC_PARAM:
-            ret = {0, 10, 5, "Fc"};
+            ret = {0, 10, 5, "Cutoff freq (Fc)"};
             break;
         case F2_Poly<TBase>::R_PARAM:
-            ret = {0, 10, 0, "R"};
+            ret = {0, 10, 0, "Spread (R)"};
             break;
         case F2_Poly<TBase>::Q_PARAM:
-            ret = {0, 10, 2, "Q"};
+            ret = {0, 10, 2, "Resonance (Q)"};
             break;
         case F2_Poly<TBase>::LIMITER_PARAM:
             ret = {0, 1, 1, "Limiter"};
@@ -570,8 +716,23 @@ inline IComposite::Config F2_PolyDescription<TBase>::getParam(int i) {
         case F2_Poly<TBase>::FC_TRIM_PARAM:
             ret = {-1, 1, 0, "Fc modulation trim"};
             break;
-        case F2_Poly<TBase>::CV_UPDATE_FREQ:
+        case F2_Poly<TBase>::Q_TRIM_PARAM:
+            ret = {-1, 1, 0, "Q modulation trim"};
+            break;
+        case F2_Poly<TBase>::R_TRIM_PARAM:
+            ret = {-1, 1, 0, "R modulation trim"};
+            break;
+        case F2_Poly<TBase>::UNUSED_CV_UPDATE_FREQ:
             ret = {0, 1, 0, "CV update fidelity"};
+            break;
+        case F2_Poly<TBase>::VOL_PARAM:
+            ret = {0, 100, 50, "Output volume"};
+            break;
+        case F2_Poly<TBase>::SCHEMA_PARAM:
+            ret = {0, 10, 0, "schema"};
+            break;
+        case F2_Poly<TBase>::ALT_LIMITER_PARAM:
+            ret = {0, 1, 1, "alt limit"};
             break;
         default:
             assert(false);

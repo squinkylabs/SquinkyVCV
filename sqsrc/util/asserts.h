@@ -43,6 +43,7 @@ inline bool isMask(float_4 m)
 #define assertGE(_Experssion1, _Expression2) ((void)0)
 #define assertClose(_Experssion1, _Expression2, _Expression3) ((void)0)
 #define assertClosePct(_Experssion1, _Expression2, _Expression3) ((void)0)
+#define assertNotClosePct(_Experssion1, _Expression2, _Expression3) ((void)0)
 #define assertEvCount(x)  ((void)0)
 #define assertNoMidi()  ((void)0)
 
@@ -87,6 +88,11 @@ inline bool isMask(float_4 m)
     actual << " expected=" << expected << " allowable diff = " << diff << std::endl << std::flush; \
     assert(false); }}
 
+#define assertNotClosePct(actual, expected, pct) { float diff = expected * pct / 100; \
+    if (AudioMath::closeTo(actual, expected, diff)) { \
+    std::cout << "assertNotClosePct failed actual value =" << \
+    actual << " expected=" << expected << " allowable diff = " << diff << std::endl << std::flush; \
+    assert(false); }}
 
 // assert less than
 #define assertLT(actual, expected) if ( actual >= expected) { \
