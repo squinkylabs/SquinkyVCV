@@ -260,7 +260,9 @@ static void testCompPolyOrig() {
     assertLT(x3, 50);
 }
 
-
+static void testPolyAttack() {
+    assert(false);
+}
 
 void testCompressor()
 {
@@ -274,4 +276,5 @@ void testCompressor()
 
     // testCompPolyOrig();
     testCompPoly();
+    testPolyAttack();
 }
