@@ -1008,7 +1008,7 @@ static void testCompileAmpegRelease() {
     params.midiPitch = 20;
     ci->play(info, params, nullptr, 0);
     assert(info.valid);
-    assertEQ(info.ampeg_release, .001f);
+    assertEQ(info.ampeg_release, .03f);
 }
 
 static void testCompileAmpVel() {

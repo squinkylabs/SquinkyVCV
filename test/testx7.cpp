@@ -65,7 +65,7 @@ static void testMideDoesntParent() {
     pool._getAllRegions(x);
     auto region = x[0];
     auto ar = region->ampeg_release;
-    assertEQ(ar, .001f);
+    assertEQ(ar, .03f);
 }
 
 void testx7() {

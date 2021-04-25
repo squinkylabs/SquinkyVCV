@@ -70,7 +70,7 @@ static void testGlobalAmpeg() {
     assertEQ(creg->ampeg_release, 1);
 }
 
-// tests 1 ms default of ampeg_release
+// tests 30 ms default of ampeg_release
 static void testDefaultAmpeg() {
     const char* data = R"foo(<global>
         <group>
@@ -83,7 +83,7 @@ static void testDefaultAmpeg() {
     inst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);
     CompiledRegionPtr creg = regions[0];
-    assertClosePct(creg->ampeg_release, .001f, 1);
+    assertClosePct(creg->ampeg_release, .03f, 1);
 }
 
 // test we prune release group
