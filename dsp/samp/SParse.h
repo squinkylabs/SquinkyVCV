@@ -42,12 +42,17 @@ public:
         Global,
         Control,
         Master,
+        // This is kind of a hack, but...
+        // All headings are sort of treaded the same, but not all of
+        // them are inherited by regions. So ATM, all of the types above
+        // DO participate in inheritance, and the ones below do not.
+        NUM_TYPES_INHERIT = Master + 1,
         Curve,
         Effect,
         Midi,
         Sample,
         Unknown,
-        NUM_TYPES
+        NUM_TYPES_ALL
     };
 
     SHeading(Type t, int lnNumber) : lineNumber(lnNumber), type(t) {

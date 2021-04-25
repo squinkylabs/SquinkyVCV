@@ -7,7 +7,7 @@ bool HeadingTracker::valid() const {
         return true;
     }
 
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
     for (int i = 0; i < elements; ++i) {
         if (i == int(SHeading::Type::Region)) {
             if (curHeadingsIndex[i] != regionHeadingIndex) {
@@ -38,7 +38,7 @@ SHeadingPtr HeadingTracker::getCurrent(SHeading::Type t) {
 }
 
 HeadingTracker::HeadingTracker(const SHeadingList& hl) : headings(hl) {
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
     curHeadingsIndex.resize(elements, -1);
     nextHeadingsIndex.resize(elements, -1);
 
@@ -60,37 +60,41 @@ HeadingTracker::HeadingTracker(const SHeadingList& hl) : headings(hl) {
 
     // new fill the non-region slots
     // iterate through every heading we have in order
+  //  const size_t headingIndexLimit = std::min(headings.size(), size_t(SHeading::Type::NUM_TYPES_INHERIT));
+  //  SQINFO("size=%d, limit=%d", headings.size(), headingIndexLimit);
     for (int headingIndex = 0; headingIndex < headings.size(); ++headingIndex) {
         const SHeadingPtr heading = headings[headingIndex];
 
         // we have already done regions, so filter them out of the loop
         if (heading->type != SHeading::Type::Region) {
             const int typeIndex = int(heading->type);
+            if (typeIndex < int(SHeading::Type::NUM_TYPES_INHERIT)) {
 
-            // if we haven't found a heading of this type for our current slow
-            bool addedToCurrentSlot = false;
-            if (curHeadingsIndex[typeIndex] < 0) {
-                // if this index is before our region, and can parent it
-                if (headingIndex < curHeadingsIndex[regionIndex]) {
-                    curHeadingsIndex[typeIndex] = headingIndex;
-                    addedToCurrentSlot = true;
+                // if we haven't found a heading of this type for our current slow
+                bool addedToCurrentSlot = false;
+                if (curHeadingsIndex[typeIndex] < 0) {
+                    // if this index is before our region, and can parent it
+                    if (headingIndex < curHeadingsIndex[regionIndex]) {
+                        curHeadingsIndex[typeIndex] = headingIndex;
+                        addedToCurrentSlot = true;
+                    }
                 }
-            }
 #if 1  // tried to fix bug                                 \
     // If heading under consideration not used for current \
     // and next is empty
-            if (!addedToCurrentSlot && nextHeadingsIndex[typeIndex] < 0) {
-                // if we need a next, anything after prev is ok
-                nextHeadingsIndex[typeIndex] = headingIndex;
-                assert(nextHeadingsIndex[typeIndex] > curHeadingsIndex[typeIndex]);
-            }
+                if (!addedToCurrentSlot && nextHeadingsIndex[typeIndex] < 0) {
+                    // if we need a next, anything after prev is ok
+                    nextHeadingsIndex[typeIndex] = headingIndex;
+                    assert(nextHeadingsIndex[typeIndex] > curHeadingsIndex[typeIndex]);
+                }
 #else
-            else if ((nextHeadingsIndex[typeIndex] < 0) && (headingIndex > curHeadingsIndex[typeIndex])) {
-                // if we need a next, anything after prev is ok
-                nextHeadingsIndex[typeIndex] = headingIndex;
-                assert(nextHeadingsIndex[typeIndex] > curHeadingsIndex[typeIndex]);
-            }
+                else if ((nextHeadingsIndex[typeIndex] < 0) && (headingIndex > curHeadingsIndex[typeIndex])) {
+                    // if we need a next, anything after prev is ok
+                    nextHeadingsIndex[typeIndex] = headingIndex;
+                    assert(nextHeadingsIndex[typeIndex] > curHeadingsIndex[typeIndex]);
+                }
 #endif
+            }
         }
     }
 
@@ -110,7 +114,7 @@ void HeadingTracker::nextRegion() {
     const int curRegionHeadingIndex = curHeadingsIndex[regionIndex];
 
     // now that we have advanced region, let's think about moving up others
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
     for (int i = 0; i < elements; ++i) {
         // if we are a region parent
         if (i != regionIndex) {

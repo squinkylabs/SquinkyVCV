@@ -41,7 +41,7 @@ void HeadingTrackerTester::testInit() {
     SHeadingList hl;
     HeadingTracker t(hl);
 
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
     assertEQ(t.curHeadingsIndex.size(), elements);
     assertEQ(t.nextHeadingsIndex.size(), elements);
 
@@ -52,7 +52,7 @@ void HeadingTrackerTester::testInit() {
 }
 
 void HeadingTrackerTester::testOneRegion() {
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
 
     SHeadingList hl;
     SHeadingPtr reg = std::make_shared<SHeading>(SHeading::Type::Region, 0);
@@ -71,7 +71,7 @@ void HeadingTrackerTester::testOneRegion() {
 }
 
 void HeadingTrackerTester::testTwoRegions() {
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
 
     SHeadingList hl;
     hl.push_back(std::make_shared<SHeading>(SHeading::Type::Region, 0));
@@ -90,7 +90,7 @@ void HeadingTrackerTester::testTwoRegions() {
 }
 
 void HeadingTrackerTester::testThreeRegions() {
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
 
     SHeadingList hl;
     hl.push_back(std::make_shared<SHeading>(SHeading::Type::Region, 0));
@@ -110,7 +110,7 @@ void HeadingTrackerTester::testThreeRegions() {
 }
 
 void HeadingTrackerTester::testRegionAndGlobal() {
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
 
     // region before global - global has no effect
     SHeadingList hl;
@@ -133,7 +133,7 @@ void HeadingTrackerTester::testRegionAndGlobal() {
 }
 
 void HeadingTrackerTester::testRegionAndGlobal2() {
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
 
     // region after global, global has effect
     SHeadingList hl;
@@ -159,7 +159,7 @@ void HeadingTrackerTester::testRegionAndGlobal2() {
 }
 
 void HeadingTrackerTester::testNext1() {
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
 
     SHeadingList hl;
     hl.push_back(std::make_shared<SHeading>(SHeading::Type::Region, 0));
@@ -173,7 +173,7 @@ void HeadingTrackerTester::testNext1() {
 }
 
 void HeadingTrackerTester::testNext3() {
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
 
     SHeadingList hl;
     hl.push_back(std::make_shared<SHeading>(SHeading::Type::Region, 0));
@@ -231,7 +231,7 @@ void HeadingTrackerTester::testDrum() {
     HeadingTracker t(hl);
 
     // first region, r1, g1 in effect
-    const size_t elements = int(SHeading::Type::NUM_TYPES);
+    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
     for (int i = 0; i < elements; ++i) {
         if (i == (int)SHeading::Type::Region) {
             assertEQ(t.curHeadingsIndex[i], 1);

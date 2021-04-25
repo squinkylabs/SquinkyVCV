@@ -133,7 +133,7 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
         CompiledRegionPtr cReg = std::make_shared<CompiledRegion>(curRegion->lineNumber);
 
         // now add in all the parents
-        for (int typeIndex = int(SHeading::Type::NUM_TYPES) - 1; typeIndex >= int(SHeading::Type::Region); typeIndex--) {
+        for (int typeIndex = int(SHeading::Type::NUM_TYPES_INHERIT) - 1; typeIndex >= int(SHeading::Type::Region); typeIndex--) {
             SHeading::Type type = SHeading::Type(typeIndex);
             auto nextParent = ht.getCurrent(type);
             if (nextParent) {
