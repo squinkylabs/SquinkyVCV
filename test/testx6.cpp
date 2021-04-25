@@ -82,7 +82,7 @@ static void testDefaultAmpeg() {
     inst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);
     CompiledRegionPtr creg = regions[0];
-    assertClosePct(creg->ampeg_release, .001f, 1);
+    assertClosePct(creg->ampeg_release, .03f, 1);
 }
 
 // test we prune release group
