@@ -212,6 +212,10 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    // mode these up where while we work...
+    testCompressorParamHolder();
+    testCompressor();
+
     testSimpleQuantizer();
     testFilterComposites();
 
@@ -230,7 +234,7 @@ int main(int argc, char** argv) {
     testSampComposite();
 
     testADSR();
-    testCompressorParamHolder();
+
     testWavThread();
     testIComposite();
     testClockRecovery();
@@ -259,7 +263,7 @@ int main(int argc, char** argv) {
     testWVCO();
     testMultiLag2();
     testCmprsr();
-    testCompressor();
+
 
     testSimpleQuantizer();
 

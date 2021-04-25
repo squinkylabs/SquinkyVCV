@@ -32,7 +32,7 @@ public:
     void setThreshold(float th);
     void setCurve(Ratios);
 
-    void setTimesPoly(float_4 attackMs, float_4 releaseMs, float sampleTime, float_4 enableDistortionReduction);
+    void setTimesPoly(float_4 attackMs, float_4 releaseMs, float sampleTime);
     void setThresholdPoly(float_4 th);
     void setCurvePoly(const Ratios*);
 
@@ -47,6 +47,8 @@ public:
         return !!ratioCurves[0];
     }
 
+    MultiLag2& _getLag() { return lag; };
+    MultiLPF2& _getAF() { return attackFilter; }
 private:
     MultiLag2 lag;
     MultiLPF2 attackFilter;
@@ -232,8 +234,8 @@ inline float_4 Cmprsr::stepPoly(float_4 input) {
     return gain_ * input;
 }
 
-inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float sampleTime, float_4 enableDistortionReduction) {
-    simd_assertMask(enableDistortionReduction);
+inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float sampleTime) {
+   // simd_assertMask(enableDistortionReduction);
     const float_4 correction = 2 * M_PI;
     const float_4 releaseHz = 1000.f / (releaseMs * correction);
     const float_4 attackHz = 1000.f / (attackMs * correction);
@@ -247,7 +249,10 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
     // attackFilter.cutoff
 
 
-    this->reduceDistortionPoly = SimdBlocks::ifelse( attackMs < float_4(.1f), SimdBlocks::maskFalse(), enableDistortionReduction);
+   // this->reduceDistortionPoly = SimdBlocks::ifelse( attackMs < float_4(.1f), SimdBlocks::maskFalse(), enableDistortionReduction);
+    
+    // let's had code on for poly. It's always on anyway.
+    this->reduceDistortionPoly = SimdBlocks::maskTrue();
     lag.setInstantAttackPoly(attackMs < float_4(.1f));
 
     lag.setAttackPoly(attackHz * sampleTime);

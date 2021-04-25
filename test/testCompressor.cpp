@@ -1,12 +1,10 @@
 
-
 #include "Compressor.h"
 #include "Compressor2.h"
-
+#include "asserts.h"
 #include "tutil.h"
 
-#include "asserts.h"
-
+#include "SqLog.h"
 
 static void testLimiterPolyL() {
     using Comp = Compressor<TestComposite>;
@@ -89,7 +87,6 @@ static void testCompLim() {
     testCompLim(Comp::RAUDIO_INPUT, Comp::RAUDIO_OUTPUT);
 }
 
-
 static void testCompRatio(int inputId, int outputId, Cmprsr::Ratios ratio) {
     using Comp = Compressor<TestComposite>;
     std::shared_ptr<Comp> comp = std::make_shared<Comp>();
@@ -116,20 +113,20 @@ static void testCompRatio(int inputId, int outputId, Cmprsr::Ratios ratio) {
 
     float expectedRatio = 0;
     switch (ratio) {
-    case Cmprsr::Ratios::_2_1_hard:
-        expectedRatio = 2;
-        break;
-    case Cmprsr::Ratios::_4_1_hard:
-        expectedRatio = 4;
-        break;
-    case Cmprsr::Ratios::_8_1_hard:
-        expectedRatio = 8;
-        break;
-    case Cmprsr::Ratios::_20_1_hard:
-        expectedRatio = 20;
-        break;
-    default:
-        assert(false);
+        case Cmprsr::Ratios::_2_1_hard:
+            expectedRatio = 2;
+            break;
+        case Cmprsr::Ratios::_4_1_hard:
+            expectedRatio = 4;
+            break;
+        case Cmprsr::Ratios::_8_1_hard:
+            expectedRatio = 8;
+            break;
+        case Cmprsr::Ratios::_20_1_hard:
+            expectedRatio = 20;
+            break;
+        default:
+            assert(false);
     }
 
     for (int mult = 2; (mult * threshV) < 10; mult *= 2) {
@@ -213,8 +210,6 @@ private:
 };
 
 static void testCompPoly() {
-
-
     TestBothComp<Compressor2<TestComposite>> test2;
     test2.testPoly();
 
@@ -260,12 +255,47 @@ static void testCompPolyOrig() {
     assertLT(x3, 50);
 }
 
-static void testPolyAttack() {
-    assert(false);
+using Comp2 = Compressor2<TestComposite>;
+static void run(Comp2& comp, int times) {
+    TestComposite::ProcessArgs args;
+    for (int i = 0; i < times; ++i) {
+        comp.process(args);
+    }
 }
 
-void testCompressor()
-{
+static void init(Comp2& comp) {
+    comp.init();
+    initComposite(comp);
+
+}
+
+static void testPolyAttack() {
+    SQINFO("--- testPolyAttack");
+    Comp2 comp;
+    init(comp);
+    run(comp, 16);
+  
+    Cmprsr& c = comp._getComp(0);
+    MultiLPF2& lpf = c._getAF();
+    const float_4 initA = lpf._getL();
+    SQINFO("init af=%s", toStr(initA).c_str());
+
+    comp.params[Comp2::CHANNEL_PARAM].value = 2;
+    run(comp, 40);
+    comp.params[Comp2::ATTACK_PARAM].value = .2f;
+    run(comp, 40);
+    const float_4 A2 =  lpf._getL();
+
+    SQINFO("init af=%s", toStr(initA).c_str());
+    SQINFO("new af=%s", toStr(A2).c_str());
+    simd_assertNE(initA, A2);
+   
+    assertEQ(initA[0], A2[0]);
+
+  // assert(false);
+}
+
+void testCompressor() {
     testLimiterPolyL();
     testLimiterPolyR();
 

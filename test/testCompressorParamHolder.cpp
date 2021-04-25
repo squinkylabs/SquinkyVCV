@@ -31,6 +31,22 @@ static void test0() {
     assertEQ(CompressorParmHolder::numBanks, 4);
 }
 
+static void testInitValues() {
+    const CompressorParmHolder p;
+    for (int channel = 0; channel < CompressorParmHolder::numChannels; ++channel) {
+        const int bank = channel / 4;
+        assertEQ(0, p.getAttack(channel));
+        simd_assertEQ(float_4::zero(), p.getAttacks(bank));
+
+        assertEQ(0, p.getRelease(channel));
+        simd_assertEQ(float_4::zero(), p.getReleases(bank));
+
+        assertEQ(false, p.getEnabled(channel));
+        simd_assertEQ(SimdBlocks::maskFalse(), p.getAttacks(bank));
+        
+    }
+}
+
 static void testAttack(unsigned int channel) {
     assert(channel < CompressorParmHolder::numChannels);
     const unsigned int bank = channel / 4;
@@ -47,6 +63,12 @@ static void testAttack(unsigned int channel) {
 
    const unsigned subChannel = channel - (bank * 4);
    assertEQ(c.getAttacks(bank)[subChannel], x);
+
+   for (int i=0; i < CompressorParmHolder::numChannels; ++i) {
+       if (i != channel) {
+           assertNE(c.getAttack(i), x);
+       }
+   }
 }
 
 
@@ -66,6 +88,12 @@ static void testRelease(unsigned int channel) {
 
     const unsigned subChannel = channel - (bank * 4);
     assertEQ(c.getReleases(bank)[subChannel], x);
+
+    for (int i = 0; i < CompressorParmHolder::numChannels; ++i) {
+        if (i != channel) {
+            assertNE(c.getRelease(i), x);
+        }
+    }
 }
 
 static void testThreshold(unsigned int channel) {
@@ -84,6 +112,12 @@ static void testThreshold(unsigned int channel) {
 
     const unsigned subChannel = channel - (bank * 4);
     assertEQ(c.getThresholds(bank)[subChannel], x);
+
+    for (int i = 0; i < CompressorParmHolder::numChannels; ++i) {
+        if (i != channel) {
+            assertNE(c.getThreshold(i), x);
+        }
+    }
 }
 
 static void testMakeupGain(unsigned int channel) {
@@ -102,11 +136,18 @@ static void testMakeupGain(unsigned int channel) {
 
     const unsigned subChannel = channel - (bank * 4);
     assertEQ(c.getMakeupGains(bank)[subChannel], x);
+
+    for (int i = 0; i < CompressorParmHolder::numChannels; ++i) {
+        if (i != channel) {
+            assertNE(c.getMakeupGain(i), x);
+        }
+    }
 }
 
 
 void testCompressorParamHolder() {
     test0();
+    testInitValues();
     for (int i = 0; i < CompressorParmHolder::numChannels; ++i) {
         testAttack(i);
 

@@ -28,8 +28,6 @@ public:
     int getNumParams() override;
 };
 
-
-
 /**
  */
 template <class TBase>
@@ -111,9 +109,10 @@ public:
     }
     float getChannelGain(int ch) const;
 
+    Cmprsr& _getComp(int bank);
+
 private:
     CompressorParmHolder compParams;
-    unsigned int currentChannel = 0;        // which of the 16 channels we are editing ATM.
 
     Cmprsr compressors[4];
     void setupLimiter();
@@ -122,7 +121,9 @@ private:
 
     int numChannels_m = 0;
     int numBanks_m = 0;
-
+    int currentBank_m = -1;
+    int currentSubChannel_m = -1;
+    unsigned int currentChannel_m = -1;  // which of the 16 channels we are editing ATM.
 
     float_4 wetLevel = 0;
     float_4 dryLevel = 0;
@@ -167,6 +168,11 @@ inline void Compressor2<TBase>::init() {
     LookupTableFactory<float>::makeGenericExpTaper(64, attackFunctionParams, 0, 1, .05, 30);
     LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, 100, 1600);
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
+}
+
+template <class TBase>
+inline Cmprsr& Compressor2<TBase>::_getComp(int bank) {
+    return compressors[bank];
 }
 
 /*
@@ -225,11 +231,14 @@ inline void Compressor2<TBase>::stepn() {
     SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
 
-
     numChannels_m = inPort.channels;
     outPort.setChannels(numChannels_m);
 
     numBanks_m = (numChannels_m / 4) + ((numChannels_m % 4) ? 1 : 0);
+
+    currentChannel_m = int(std::round(TBase::params[CHANNEL_PARAM].value));
+    currentBank_m = currentChannel_m / 4;
+    currentSubChannel_m = currentChannel_m % 4;
 
     pollAttackRelease();
 
@@ -290,11 +299,20 @@ inline void Compressor2<TBase>::pollAttackRelease() {
 
         const float attack = LookupTable<float>::lookup(attackFunctionParams, rawAttack);
         const float release = LookupTable<float>::lookup(releaseFunctionParams, rawRelease);
+#if 1
+        compParams.setAttack(currentChannel_m, attack);
+        //assert(false);
+        compressors[currentBank_m].setTimesPoly(
+            compParams.getAttacks(currentBank_m),
+            compParams.getReleases(currentBank_m),
+            TBase::engineGetSampleTime());
 
+#else  // old mono code
         for (int i = 0; i < 4; ++i) {
             compressors[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
             //     compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
         }
+#endif
     }
 }
 

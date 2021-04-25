@@ -95,6 +95,7 @@ static void testCompZeroAttack(bool reduceDist, int numChan) {
 
 // same as mono - all channels the same, but uses poly API
 static void testCompZeroAttackPoly(float_4 reduceDist, int numChan) {
+    
     assert(numChan == 1 || numChan == 4);
     const float sampleRate = 44100;
     const float threshold = 5;
@@ -106,7 +107,7 @@ static void testCompZeroAttackPoly(float_4 reduceDist, int numChan) {
 
     Cmprsr::Ratios r[4] = { Cmprsr::Ratios::_4_1_soft , Cmprsr::Ratios::_4_1_soft , Cmprsr::Ratios::_4_1_soft , Cmprsr::Ratios::_4_1_soft };
     comp.setCurvePoly(r);
-    comp.setTimesPoly(0, 100, sampleTime, reduceDist);
+    comp.setTimesPoly(0, 100, sampleTime);
     comp.setThresholdPoly(threshold);
 
     // try some voltages before thresh
@@ -175,9 +176,12 @@ static void testIndependentAttack(int indChan) {
     attack[indChan] = 1000;
     float_4 release = 0;
     float sampleTime = 1.f / 44100.f;
-    float_4 enableDistReduction = 0;
 
-    cmp.setTimesPoly(attack, release, sampleTime, enableDistReduction);
+
+    // can't turn this off anymore
+    //float_4 enableDistReduction = 0;
+
+    cmp.setTimesPoly(attack, release, sampleTime);
 
     // finish test
    // assert(false);

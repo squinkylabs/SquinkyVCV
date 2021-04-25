@@ -110,10 +110,18 @@ inline  float_4 CompressorParmHolder::getEnableds(unsigned int bank) const {
     assert(bank < numBanks);
     return e[bank];
 }
+
+inline  bool CompressorParmHolder::getEnabled(unsigned int channel) const {
+    const unsigned bank = channel / 4;
+    const unsigned subChannel = channel - (bank * 4);
+    return e[bank][subChannel] != 0.f;
+}
+
 inline  float_4 CompressorParmHolder::getWetDryMixs(unsigned int bank) const {
     assert(bank < numBanks);
     return w[bank];
 }
+
 inline  int32_4 CompressorParmHolder::getRatios(unsigned int bank) const {
     assert(bank < numBanks);
     return ratio[bank];
@@ -125,7 +133,8 @@ inline  bool CompressorParmHolder::setAttack(unsigned int channel, float value) 
     float_4 temp = (a[bank] != value);
     bool ret = SimdBlocks::isTrue(temp);
     if (ret) {
-        a[bank] = value;
+        const unsigned int subChannel = channel % 4;
+        a[bank][subChannel] = value;
     }
     return ret;
 }
@@ -136,7 +145,8 @@ inline  bool CompressorParmHolder::setRelease(unsigned int channel, float value)
     float_4 temp = (r[bank] != value);
     bool ret = SimdBlocks::isTrue(temp);
     if (ret) {
-        r[bank] = value;
+        const unsigned int subChannel = channel % 4;
+        r[bank][subChannel] = value;
     }
     return ret;
 }
