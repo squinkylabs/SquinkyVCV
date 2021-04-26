@@ -43,7 +43,6 @@ static void testInitValues() {
 
         assertEQ(false, p.getEnabled(channel));
         simd_assertEQ(SimdBlocks::maskFalse(), p.getAttacks(bank));
-        
     }
 }
 
@@ -144,6 +143,78 @@ static void testMakeupGain(unsigned int channel) {
     }
 }
 
+static void testEnabled(unsigned int channel) {
+    assert(channel < CompressorParmHolder::numChannels);
+    const unsigned int bank = channel / 4;
+    assert(bank < CompressorParmHolder::numBanks);
+
+    CompressorParmHolder c;
+
+    bool b = c.setEnabled(channel, true);
+    assert(b);
+
+    assertEQ(c.getEnabled(channel), true);
+
+    const unsigned subChannel = channel - (bank * 4);
+    assertNE(c.getEnableds(bank)[subChannel], SimdBlocks::maskFalse()[0]);
+    simd_assertMask(c.getEnableds(bank));
+
+    for (int i = 0; i < CompressorParmHolder::numChannels; ++i) {
+        if (i != channel) {
+            assert(!c.getEnabled(i));
+        }
+    }
+}
+
+static void testWetDry(unsigned int channel) {
+    assert(channel < CompressorParmHolder::numChannels);
+    const unsigned int bank = channel / 4;
+    assert(bank < CompressorParmHolder::numBanks);
+
+    CompressorParmHolder c;
+
+    const float x = testValues[channel] - 1.23f;
+
+    bool b = c.setWetDry(channel, x);
+    assert(b);
+
+    assertEQ(c.getWetDryMix(channel), x);
+
+    const unsigned subChannel = channel - (bank * 4);
+    assertEQ(c.getWetDryMixs(bank)[subChannel], x);
+
+    for (int i = 0; i < CompressorParmHolder::numChannels; ++i) {
+        if (i != channel) {
+            assertNE(c.getWetDryMix(i), x);
+        }
+    }
+}
+
+static void testRatio(unsigned int channel) {
+
+    assert(channel < CompressorParmHolder::numChannels);
+    const unsigned int bank = channel / 4;
+    assert(bank < CompressorParmHolder::numBanks);
+
+    CompressorParmHolder c;
+
+   // const float x = testValues[channel] - 1.23f;
+    const int x = 5;
+
+    bool b = c.setRatio(channel, x);
+    assert(b);
+
+    assertEQ(c.getRatio(channel), x);
+
+    const unsigned subChannel = channel - (bank * 4);
+    assertEQ(c.getRatios(bank)[subChannel], x);
+
+    for (int i = 0; i < CompressorParmHolder::numChannels; ++i) {
+        if (i != channel) {
+            assertNE(c.getRatio(i), x);
+        }
+    }
+}
 
 void testCompressorParamHolder() {
     test0();
@@ -154,9 +225,9 @@ void testCompressorParamHolder() {
         testRelease(i);
         testThreshold(i);
         testMakeupGain(i);
-       // testEnabled(i);
-        //testWetDry(i);
-        //testRatio(i);
+        testEnabled(i);
+        testWetDry(i);
+        testRatio(i);
 
     }
 }
