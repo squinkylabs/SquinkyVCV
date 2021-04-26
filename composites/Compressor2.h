@@ -110,6 +110,7 @@ public:
     float getChannelGain(int ch) const;
 
     Cmprsr& _getComp(int bank);
+    const CompressorParmHolder& _getHolder() { return compParams; }
 
 private:
     CompressorParmHolder compParams;
@@ -236,7 +237,7 @@ inline void Compressor2<TBase>::stepn() {
 
     numBanks_m = (numChannels_m / 4) + ((numChannels_m % 4) ? 1 : 0);
 
-    currentChannel_m = int(std::round(TBase::params[CHANNEL_PARAM].value));
+    currentChannel_m = -1 + int(std::round(TBase::params[CHANNEL_PARAM].value));
     currentBank_m = currentChannel_m / 4;
     currentSubChannel_m = currentChannel_m % 4;
 

@@ -269,11 +269,27 @@ static void init(Comp2& comp) {
 
 }
 
+static void testPolyInit() {
+    SQINFO("--- testPolyAttack");
+    Comp2 comp;
+    init(comp);
+    run(comp, 40);
+
+    auto& holder = comp._getHolder();
+    float a = holder.getAttack(0);
+    float r = holder.getRelease(0);
+    
+    for (int channel = 0; channel < 16; ++channel) {
+        assertEQ(holder.getAttack(channel), a);
+        assertEQ(holder.getRelease(channel), r);
+    }
+
+}
 static void testPolyAttack() {
     SQINFO("--- testPolyAttack");
     Comp2 comp;
     init(comp);
-    run(comp, 16);
+    run(comp, 40);
   
     Cmprsr& c = comp._getComp(0);
     MultiLPF2& lpf = c._getAF();
@@ -306,5 +322,6 @@ void testCompressor() {
 
     // testCompPolyOrig();
     testCompPoly();
+    testPolyInit();
     testPolyAttack();
 }
