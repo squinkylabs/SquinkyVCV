@@ -169,6 +169,23 @@ inline void Compressor2<TBase>::init() {
     LookupTableFactory<float>::makeGenericExpTaper(64, attackFunctionParams, 0, 1, .05, 30);
     LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, 100, 1600);
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
+#if 0   // experiment in init
+    const auto saveCh = currentChannel_m;
+    const auto saveBank = currentBank_m;
+    const auto saveSub = currentSubChannel_m;
+
+    for (int i = 0; i<16; ++i) {
+        currentChannel_m = i;
+        currentBank_m = i / 4;
+        currentSubChannel_m = i % 4;
+
+        stepn();
+    }
+
+    currentChannel_m = saveCh;
+    currentBank_m = saveBank;
+    currentSubChannel_m = saveSub;
+#endif
 }
 
 template <class TBase>
@@ -238,6 +255,8 @@ inline void Compressor2<TBase>::stepn() {
     numBanks_m = (numChannels_m / 4) + ((numChannels_m % 4) ? 1 : 0);
 
     currentChannel_m = -1 + int(std::round(TBase::params[CHANNEL_PARAM].value));
+    assert(currentChannel_m >= 1);
+    assert(currentChannel_m <= 16);
     currentBank_m = currentChannel_m / 4;
     currentSubChannel_m = currentChannel_m % 4;
 
