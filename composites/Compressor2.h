@@ -52,7 +52,6 @@ public:
         THRESHOLD_PARAM,
         RATIO_PARAM,
         MAKEUPGAIN_PARAM,
-        //  REDUCEDISTORTION_PARAM,
         NOTBYPASS_PARAM,
         WETDRY_PARAM,
         CHANNEL_PARAM,
@@ -117,6 +116,7 @@ private:
 
     Cmprsr compressors[4];
     void setupLimiter();
+    void initAllParams();
     void stepn();
     void pollAttackRelease();
 
@@ -169,6 +169,7 @@ inline void Compressor2<TBase>::init() {
     LookupTableFactory<float>::makeGenericExpTaper(64, attackFunctionParams, 0, 1, .05, 30);
     LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, 100, 1600);
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
+    initAllParams();
 #if 0   // experiment in init
     const auto saveCh = currentChannel_m;
     const auto saveBank = currentBank_m;
@@ -186,6 +187,25 @@ inline void Compressor2<TBase>::init() {
     currentBank_m = saveBank;
     currentSubChannel_m = saveSub;
 #endif
+}
+
+/**
+ * This function should set all members of param holders to defaults,
+ * and then refresh all the compressors with those values
+ */
+template <class TBase>
+inline void Compressor2<TBase>::initAllParams() {
+    auto icomp = Compressor2<TBase>::getDescription();
+    for (int i=0; i<16; ++i) {
+        compParams.setAttack(i, icomp->getParam(ATTACK_PARAM).def);
+        compParams.setRelease(i, icomp->getParam(RELEASE_PARAM).def);
+        compParams.setRatio(i, int(std::round(icomp->getParam(RATIO_PARAM).def)));
+        compParams.setThreshold(i, icomp->getParam(THRESHOLD_PARAM).def);
+        compParams.setMakeupGain(i, icomp->getParam(MAKEUPGAIN_PARAM).def);
+        compParams.setEnabled(i, bool(std::round(icomp->getParam(NOTBYPASS_PARAM).def)));
+        compParams.setWetDry(i, icomp->getParam(WETDRY_PARAM).def);
+    }
+    
 }
 
 template <class TBase>
@@ -255,8 +275,8 @@ inline void Compressor2<TBase>::stepn() {
     numBanks_m = (numChannels_m / 4) + ((numChannels_m % 4) ? 1 : 0);
 
     currentChannel_m = -1 + int(std::round(TBase::params[CHANNEL_PARAM].value));
-    assert(currentChannel_m >= 1);
-    assert(currentChannel_m <= 16);
+    assert(currentChannel_m >= 0);
+    assert(currentChannel_m <= 15);
     currentBank_m = currentChannel_m / 4;
     currentSubChannel_m = currentChannel_m % 4;
 

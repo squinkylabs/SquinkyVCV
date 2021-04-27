@@ -1,10 +1,9 @@
 
 #include "Compressor.h"
 #include "Compressor2.h"
+#include "SqLog.h"
 #include "asserts.h"
 #include "tutil.h"
-
-#include "SqLog.h"
 
 static void testLimiterPolyL() {
     using Comp = Compressor<TestComposite>;
@@ -266,31 +265,53 @@ static void run(Comp2& comp, int times) {
 static void init(Comp2& comp) {
     comp.init();
     initComposite(comp);
-
 }
 
 static void testPolyInit() {
     SQINFO("--- testPolyAttack");
     Comp2 comp;
+
+    // before anything, params should all be zero
+    for (int i = 0; i < Comp2::NUM_PARAMS; ++i) {
+        assertEQ(comp.params[i].value, 0.f);
+    }
+
     init(comp);
+
+    {
+        const CompressorParmHolder& holder = comp._getHolder();
+        auto def = getDefaultParamValues<Comp2>();
+        for (int i = 0; i < def.size(); ++i) {
+            assertEQ(comp.params[i].value, def[i]);
+        }
+        for (int i = 0; i < 16; ++i) {
+            assertEQ(holder.getAttack(i), def[Comp2::ATTACK_PARAM]);
+            assertEQ(holder.getRelease(i), def[Comp2::RELEASE_PARAM]);
+            assertEQ(holder.getThreshold(i), def[Comp2::THRESHOLD_PARAM]);
+            assertEQ(holder.getRatio(i), def[Comp2::RATIO_PARAM]);
+            assertEQ(holder.getMakeupGain(i), def[Comp2::MAKEUPGAIN_PARAM]);
+            assertEQ(holder.getEnabled(i), bool(std::round(def[Comp2::NOTBYPASS_PARAM])));
+            assertEQ(holder.getWetDryMix(i), def[Comp2::WETDRY_PARAM]);
+        }
+    }
     run(comp, 40);
 
     auto& holder = comp._getHolder();
     float a = holder.getAttack(0);
     float r = holder.getRelease(0);
-    
+
     for (int channel = 0; channel < 16; ++channel) {
         assertEQ(holder.getAttack(channel), a);
         assertEQ(holder.getRelease(channel), r);
     }
-
 }
+
 static void testPolyAttack() {
     SQINFO("--- testPolyAttack");
     Comp2 comp;
     init(comp);
     run(comp, 40);
-  
+
     Cmprsr& c = comp._getComp(0);
     MultiLPF2& lpf = c._getAF();
     const float_4 initA = lpf._getL();
@@ -300,15 +321,15 @@ static void testPolyAttack() {
     run(comp, 40);
     comp.params[Comp2::ATTACK_PARAM].value = .2f;
     run(comp, 40);
-    const float_4 A2 =  lpf._getL();
+    const float_4 A2 = lpf._getL();
 
     SQINFO("init af=%s", toStr(initA).c_str());
     SQINFO("new af=%s", toStr(A2).c_str());
     simd_assertNE(initA, A2);
-   
+
     assertEQ(initA[0], A2[0]);
 
-  // assert(false);
+    // assert(false);
 }
 
 void testCompressor() {

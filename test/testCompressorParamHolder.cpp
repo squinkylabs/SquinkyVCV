@@ -23,8 +23,7 @@ static const float testValues[] = {
     1, 2, 3, 4,
     .1f, .2f, .3f, .4f,
     6, 7, 8, 9,
-    -1, -2, -3, -4
-};
+    -1, -2, -3, -4};
 
 static void test0() {
     assertEQ(CompressorParmHolder::numChannels, 16);
@@ -55,21 +54,18 @@ static void testAttack(unsigned int channel) {
 
     const float x = testValues[channel];
 
-    bool b = c.setAttack(channel, x);
-    assert(b);
-
+    c.setAttack(channel, x);
     assertEQ(c.getAttack(channel), x);
 
-   const unsigned subChannel = channel - (bank * 4);
-   assertEQ(c.getAttacks(bank)[subChannel], x);
+    const unsigned subChannel = channel - (bank * 4);
+    assertEQ(c.getAttacks(bank)[subChannel], x);
 
-   for (int i=0; i < CompressorParmHolder::numChannels; ++i) {
-       if (i != channel) {
-           assertNE(c.getAttack(i), x);
-       }
-   }
+    for (int i = 0; i < CompressorParmHolder::numChannels; ++i) {
+        if (i != channel) {
+            assertNE(c.getAttack(i), x);
+        }
+    }
 }
-
 
 static void testRelease(unsigned int channel) {
     assert(channel < CompressorParmHolder::numChannels);
@@ -80,8 +76,7 @@ static void testRelease(unsigned int channel) {
 
     const float x = testValues[channel] + 100;
 
-    bool b = c.setRelease(channel, x);
-    assert(b);
+    c.setRelease(channel, x);
 
     assertEQ(c.getRelease(channel), x);
 
@@ -104,8 +99,7 @@ static void testThreshold(unsigned int channel) {
 
     const float x = testValues[channel] - 10;
 
-    bool b = c.setThreshold(channel, x);
-    assert(b);
+    c.setThreshold(channel, x);
 
     assertEQ(c.getThreshold(channel), x);
 
@@ -128,8 +122,7 @@ static void testMakeupGain(unsigned int channel) {
 
     const float x = testValues[channel] - 1.23f;
 
-    bool b = c.setMakeupGain(channel, x);
-    assert(b);
+    c.setMakeupGain(channel, x);
 
     assertEQ(c.getMakeupGain(channel), x);
 
@@ -149,9 +142,7 @@ static void testEnabled(unsigned int channel) {
     assert(bank < CompressorParmHolder::numBanks);
 
     CompressorParmHolder c;
-
-    bool b = c.setEnabled(channel, true);
-    assert(b);
+    c.setEnabled(channel, true);
 
     assertEQ(c.getEnabled(channel), true);
 
@@ -175,8 +166,7 @@ static void testWetDry(unsigned int channel) {
 
     const float x = testValues[channel] - 1.23f;
 
-    bool b = c.setWetDry(channel, x);
-    assert(b);
+    c.setWetDry(channel, x);
 
     assertEQ(c.getWetDryMix(channel), x);
 
@@ -191,18 +181,16 @@ static void testWetDry(unsigned int channel) {
 }
 
 static void testRatio(unsigned int channel) {
-
     assert(channel < CompressorParmHolder::numChannels);
     const unsigned int bank = channel / 4;
     assert(bank < CompressorParmHolder::numBanks);
 
     CompressorParmHolder c;
 
-   // const float x = testValues[channel] - 1.23f;
+    // const float x = testValues[channel] - 1.23f;
     const int x = 5;
 
-    bool b = c.setRatio(channel, x);
-    assert(b);
+    c.setRatio(channel, x);
 
     assertEQ(c.getRatio(channel), x);
 
@@ -213,6 +201,34 @@ static void testRatio(unsigned int channel) {
         if (i != channel) {
             assertNE(c.getRatio(i), x);
         }
+    }
+}
+
+static void testAttack2() {
+    CompressorParmHolder c;
+    float value = .883f;
+    int ivalue = 52;
+    for (int i = 0; i < 16; ++i) {
+        c.setAttack(i, value);
+        assertEQ(c.getAttack(i), value);
+
+        c.setRelease(i, value);
+        assertEQ(c.getRelease(i), value);
+
+        c.setThreshold(i, value);
+        assertEQ(c.getThreshold(i), value);
+
+        c.setMakeupGain(i, value);
+        assertEQ(c.getMakeupGain(i), value);
+
+        c.setWetDry(i, value);
+        assertEQ(c.getWetDryMix(i), value);
+
+        c.setRatio(i, ivalue);
+        assertEQ(c.getRatio(i), ivalue);
+
+        c.setEnabled(i, true);
+        assert(c.getEnabled(i));
     }
 }
 
@@ -228,6 +244,6 @@ void testCompressorParamHolder() {
         testEnabled(i);
         testWetDry(i);
         testRatio(i);
-
     }
+    testAttack2();
 }
