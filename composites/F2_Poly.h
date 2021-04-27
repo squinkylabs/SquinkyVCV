@@ -326,7 +326,7 @@ inline void F2_Poly<TBase>::stepm() {
 
     stepNmax = 3;
 
-    TBase::lights[LIMITER_LIGHT].value = (limiterEnabled_m) ? 1.f : .2;
+    TBase::lights[LIMITER_LIGHT].value = (limiterEnabled_m) ? 1.f : .2f;
 }
 
 template <class TBase>
@@ -336,7 +336,7 @@ inline void F2_Poly<TBase>::setupLimiter() {
         alt ? 3.f : 1.f,
         alt ? 20.f : 100.f,
         TBase::engineGetSampleTime());
-    limiter.setInputGain(alt ? 20 : 4);
+    limiter.setInputGain(alt ? 20.f : 4.f);
     // SQINFO("setupLim, alt = %d", alt);
 }
 
