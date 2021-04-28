@@ -305,6 +305,7 @@ static void testPolyInit() {
     }
 }
 
+#if 0 // orig
 static void testPolyAttack() {
     SQINFO("--- testPolyAttack");
     Comp2 comp;
@@ -330,6 +331,113 @@ static void testPolyAttack() {
 
     // assert(false);
 }
+#endif
+
+
+static void testPolyAttack(int channel) {
+    SQINFO("--- testPolyAttack %d", channel);
+    Comp2 comp;
+    init(comp);
+    run(comp, 40);
+
+    const int bank = channel / 4;
+    const int subChannel = channel % 4;
+
+    // assert that all are the same to starts
+    if (channel == 0)
+    {
+        simd_assertEQ(comp._getComp(0)._getAF()._getL(), comp._getComp(1)._getAF()._getL());
+        simd_assertEQ(comp._getComp(0)._getAF()._getL(), comp._getComp(2)._getAF()._getL());
+        simd_assertEQ(comp._getComp(0)._getAF()._getL(), comp._getComp(3)._getAF()._getL());
+
+        const float_4 x = comp._getComp(0)._getAF()._getL();
+        assertEQ(x[0], x[1]);
+        assertEQ(x[0], x[2]);
+        assertEQ(x[0], x[3]);
+    }
+
+    // get the four channel compressor. assert on initial conditions
+    Cmprsr& c = comp._getComp(bank);
+    MultiLPF2& lpf = c._getAF();
+    
+
+    comp.params[Comp2::CHANNEL_PARAM].value = channel + 1.f;    // offset 01
+    run(comp, 40);
+    comp.params[Comp2::ATTACK_PARAM].value = .2f;
+    run(comp, 40);
+
+    const float_4 af = lpf._getL();
+    for (int i=0; i<4; ++i) {
+        int other = (i + 1) % 4;
+        if (i == subChannel) {
+            assertNE(af[i],  af[other])
+        } else if (other != subChannel) {
+        // figure out later
+         //   assertEQ(af[i], af[other]);
+        }
+    }
+}
+
+
+static void testPolyRelease(int channel) {
+    SQINFO("--- testPolyRelease %d", channel);
+    Comp2 comp;
+    init(comp);
+    run(comp, 40);
+
+    const int bank = channel / 4;
+    const int subChannel = channel % 4;
+
+    // assert that all are the same to starts
+    if (channel == 0)
+    {
+
+        simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(1)._getLag()._getLRelease());
+        simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(2)._getLag()._getLRelease());
+        simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(3)._getLag()._getLRelease());
+        const float_4 x = comp._getComp(0)._getLag()._getLRelease();
+        assertEQ(x[0], x[1]);
+        assertEQ(x[0], x[2]);
+        assertEQ(x[0], x[3]);
+
+    }
+
+    // get the four channel compressor. assert on initial conditions
+    Cmprsr& c = comp._getComp(bank);
+    MultiLag2& lag = c._getLag();
+
+
+    comp.params[Comp2::CHANNEL_PARAM].value = channel + 1.f;    // offset 01
+    run(comp, 40);
+    comp.params[Comp2::RELEASE_PARAM].value = .2f;
+    run(comp, 40);
+
+    const float_4 rf = lag._getLRelease();
+    for (int i = 0; i < 4; ++i) {
+        int other = (i + 1) % 4;
+        if (i == subChannel) {
+            assertNE(rf[i], rf[other])
+        }
+        else if (other != subChannel) {
+            // figure out later
+             //   assertEQ(af[i], af[other]);
+        }
+    }
+}
+
+static void testPolyParams() {
+
+    for (int i=0; i<15; ++i) {
+        testPolyAttack(i);
+        testPolyRelease(i);
+    }
+
+    // 2 works
+     testPolyAttack(3);
+     testPolyAttack(2);
+     testPolyAttack(1);
+     testPolyAttack(0);
+}
 
 void testCompressor() {
     testLimiterPolyL();
@@ -343,5 +451,5 @@ void testCompressor() {
     // testCompPolyOrig();
     testCompPoly();
     testPolyInit();
-    testPolyAttack();
+    testPolyParams();
 }

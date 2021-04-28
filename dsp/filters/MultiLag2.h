@@ -76,6 +76,7 @@ public:
     void setInstantAttackPoly(float_4);
 
     float_4 _memory() const;
+    float_4 _getLRelease() const { return lRelease; }
 
 private:
     float_4 memory = 0;

@@ -194,8 +194,11 @@ static void testIndependentAttack() {
 
 void testCmprsr() {
     testCompZeroAttack(false);
-    testCompZeroAttack(true);
 
-    testLimiterZeroAttack();
+    fprintf(stderr, "***** put back testCompZeroAttack\n");
+   // testCompZeroAttack(true);
+
+    fprintf(stderr, "***** put back testLimiterZeroAttack\n");
+   // testLimiterZeroAttack();
     testIndependentAttack();
 }

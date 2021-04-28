@@ -337,19 +337,19 @@ inline void Compressor2<TBase>::updateAttackAndRelease(int bank) {
     float_4 a, r;
 
     float_4 rawA_4 = compParams.getAttacks(bank);
-    float_4 rawR_4 = compParams.getAttacks(bank);
+    float_4 rawR_4 = compParams.getReleases(bank);
     for (int i = 0; i < 4; ++i) {
         const float rawAttack = rawA_4[i];
         const float rawRelease = rawR_4[i];
         const float attack = LookupTable<float>::lookup(attackFunctionParams, rawAttack);
         const float release = LookupTable<float>::lookup(releaseFunctionParams, rawRelease);
-        a[bank] = attack;
-        r[bank] = release;
+        a[i] = attack;
+        r[i] = release;
     }
     
     compressors[bank].setTimesPoly(
-        compParams.getAttacks(bank),
-        compParams.getReleases(bank),
+        a,
+        r,
         TBase::engineGetSampleTime());
 }
 
