@@ -221,6 +221,7 @@ private:
     float_4 outputGain_n = 0;
     bool limiterEnabled_m = 0;
     int numChannels_m = 0;
+    int lastNumChannels_m = 0;
     int numBanks_m = 0;
     Topology topology_m = Topology::SINGLE;
     float_4 lastQCV[4] = {-1};
@@ -235,6 +236,21 @@ private:
     float lastVolume = -1;
     int lastTopology = -1;
     int lastAltLimiter = -1;
+
+    void resetParamCache() {
+        lastQCV[4] = {-1};
+        lastRCV[4] = {-1};
+        lastFcCV[4] = {-1};
+        lastFcKnob = -1;
+        lastFcTrim = -1;
+        lastRKnob = -1;
+        lastRTrim = -1;
+        lastQKnob = -1;
+        lastQTrim = -1;
+        lastVolume = -1;
+        lastTopology = -1;
+        lastAltLimiter = -1;
+    }
 
     float_4 processedRValue[4] = {-1};
     float_4 volume = {-1};
@@ -292,11 +308,17 @@ inline void F2_Poly<TBase>::stepm() {
 
     numBanks_m = (numChannels_m / 4) + ((numChannels_m % 4) ? 1 : 0);
 
+  
+    if (lastNumChannels_m != numChannels_m) {
+        lastNumChannels_m = numChannels_m;
+        resetParamCache();
+    }
+
     setupModes();
     setupProcFunc();
     limiterEnabled_m = bool(std::round(F2_Poly<TBase>::params[LIMITER_PARAM].value));
 
-    bool altLim =  bool(std::round(F2_Poly<TBase>::params[ALT_LIMITER_PARAM].value));
+    bool altLim = bool(std::round(F2_Poly<TBase>::params[ALT_LIMITER_PARAM].value));
     if (altLim != (lastAltLimiter == 1)) {
         lastAltLimiter = altLim;
         setupLimiter();
@@ -304,17 +326,17 @@ inline void F2_Poly<TBase>::stepm() {
 
     stepNmax = 3;
 
-    TBase::lights[LIMITER_LIGHT].value = (limiterEnabled_m) ? 1.f : .2;
+    TBase::lights[LIMITER_LIGHT].value = (limiterEnabled_m) ? 1.f : .2f;
 }
 
 template <class TBase>
 inline void F2_Poly<TBase>::setupLimiter() {
     const bool alt = (lastAltLimiter == 1);
     limiter.setTimes(
-        alt ? 3.f : 1.f, 
-        alt ? 20.f: 100.f, 
+        alt ? 3.f : 1.f,
+        alt ? 20.f : 100.f,
         TBase::engineGetSampleTime());
-    limiter.setInputGain(alt ? 20 : 4);
+    limiter.setInputGain(alt ? 20.f : 4.f);
     // SQINFO("setupLim, alt = %d", alt);
 }
 

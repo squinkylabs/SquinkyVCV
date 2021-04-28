@@ -1,5 +1,11 @@
 # Change log for Squinky Labs modules
 
+## 10.0.18
+
+New module: F2
+
+Changed SFZ default release time to match Sforzando player, not the spec.
+
 ## 10.0.17
 
 Fixed links to SFZ Player in the VCV Library, and links to Organ 3
