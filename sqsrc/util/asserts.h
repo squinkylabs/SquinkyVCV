@@ -135,10 +135,16 @@ using int32_4 = rack::simd::int32_4;
     assertEQEx(a[2], b[2], "simd2"); \
     assertEQEx(a[3], b[3], "simd3");
 
+// every float must be different
 #define simd_assertNE(a, b) assertNEEx(a[0], b[0], "simd0"); \
     assertNEEx(a[1], b[1], "simd1"); \
     assertNEEx(a[2], b[2], "simd2"); \
     assertNEEx(a[3], b[3], "simd3");
+
+// at least one float must be different
+#define simd_assertNE_4(a, b) if (!(a[0]==b[0] && a[1]==b[1] && a[2]==b[2] && a[3]==b[3])) { \
+    std::cout << "simd_assertNE_4 failed. both are " << toStr(a); \
+    } 
 
 #define simd_assertClose(a, b, c) assertCloseEx(a[0], b[0], c, "simd0"); \
     assertCloseEx(a[1], b[1], c, "simd1"); \

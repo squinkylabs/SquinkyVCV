@@ -316,15 +316,15 @@ static void testPolyAttack() {
     const float_4 initA = lpf._getL();
     SQINFO("init af=%s", toStr(initA).c_str());
 
-    comp.params[Comp2::CHANNEL_PARAM].value = 2;
+    comp.params[Comp2::CHANNEL_PARAM].value = 2;    // offset 01
     run(comp, 40);
     comp.params[Comp2::ATTACK_PARAM].value = .2f;
     run(comp, 40);
     const float_4 A2 = lpf._getL();
 
-    SQINFO("init af=%s", toStr(initA).c_str());
-    SQINFO("new af=%s", toStr(A2).c_str());
-    simd_assertNE(initA, A2);
+    SQINFO("initAf=%s", toStr(initA).c_str());
+    SQINFO("A2f=%s", toStr(A2).c_str());
+    simd_assertNE_4(initA, A2);
 
     assertEQ(initA[0], A2[0]);
 
