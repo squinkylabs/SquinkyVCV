@@ -54,6 +54,8 @@ The [Changelog](../CHANGELOG.md) describes recent changes to our modules. (Notic
 
 ![Intro 2 image](./intro-2-110.png)
 
+[F2 Filter](./f2.md). A different sounding, CPU conserving, VCF with lots of sonic variations.
+
 [Comp](./compressor.md). A studio grade compressor. Will control dynamic range without otherwise coloring the sound.
 
 [Stairway](./filter.md). Polyphonic ladder filter with an enormous range of over-driven and clean sounds. Combines features from Moog, Oberheim, and Rossum filters and adds some some of our own, including four independent wave shapers.
