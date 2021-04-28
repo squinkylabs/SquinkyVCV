@@ -119,6 +119,7 @@ private:
     void initAllParams();
     void stepn();
     void pollAttackRelease();
+    void updateAttackAndRelease(int bank);
 
     int numChannels_m = 0;
     int numBanks_m = 0;
@@ -204,6 +205,10 @@ inline void Compressor2<TBase>::initAllParams() {
         compParams.setMakeupGain(i, icomp->getParam(MAKEUPGAIN_PARAM).def);
         compParams.setEnabled(i, bool(std::round(icomp->getParam(NOTBYPASS_PARAM).def)));
         compParams.setWetDry(i, icomp->getParam(WETDRY_PARAM).def);
+    }
+
+    for (int bank = 0; bank < 4; ++bank) {
+        updateAttackAndRelease(bank);
     }
     
 }
@@ -328,6 +333,27 @@ inline void Compressor2<TBase>::stepn() {
 }
 
 template <class TBase>
+inline void Compressor2<TBase>::updateAttackAndRelease(int bank) {
+    float_4 a, r;
+
+    float_4 rawA_4 = compParams.getAttacks(bank);
+    float_4 rawR_4 = compParams.getAttacks(bank);
+    for (int i = 0; i < 4; ++i) {
+        const float rawAttack = rawA_4[i];
+        const float rawRelease = rawR_4[i];
+        const float attack = LookupTable<float>::lookup(attackFunctionParams, rawAttack);
+        const float release = LookupTable<float>::lookup(releaseFunctionParams, rawRelease);
+        a[bank] = attack;
+        r[bank] = release;
+    }
+    
+    compressors[bank].setTimesPoly(
+        compParams.getAttacks(bank),
+        compParams.getReleases(bank),
+        TBase::engineGetSampleTime());
+}
+
+template <class TBase>
 inline void Compressor2<TBase>::pollAttackRelease() {
     const float rawAttack = Compressor2<TBase>::params[ATTACK_PARAM].value;
     const float rawRelease = Compressor2<TBase>::params[RELEASE_PARAM].value;
@@ -337,17 +363,14 @@ inline void Compressor2<TBase>::pollAttackRelease() {
         lastRawA = rawAttack;
         lastRawR = rawRelease;
 
+       
+#if 1
+        compParams.setAttack(currentChannel_m, rawAttack);
+        compParams.setRelease(currentChannel_m, rawRelease);
+        updateAttackAndRelease(currentBank_m);
+#else  // old mono code
         const float attack = LookupTable<float>::lookup(attackFunctionParams, rawAttack);
         const float release = LookupTable<float>::lookup(releaseFunctionParams, rawRelease);
-#if 1
-        compParams.setAttack(currentChannel_m, attack);
-        //assert(false);
-        compressors[currentBank_m].setTimesPoly(
-            compParams.getAttacks(currentBank_m),
-            compParams.getReleases(currentBank_m),
-            TBase::engineGetSampleTime());
-
-#else  // old mono code
         for (int i = 0; i < 4; ++i) {
             compressors[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
             //     compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);

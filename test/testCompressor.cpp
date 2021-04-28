@@ -268,7 +268,6 @@ static void init(Comp2& comp) {
 }
 
 static void testPolyInit() {
-    SQINFO("--- testPolyAttack");
     Comp2 comp;
 
     // before anything, params should all be zero
