@@ -47,8 +47,9 @@ public:
         return !!ratioCurves[0];
     }
 
-    MultiLag2& _getLag() { return lag; };
-    MultiLPF2& _getAF() { return attackFilter; }
+    const MultiLag2& _getLag() const { return lag; };
+    const MultiLPF2& _getAF() const { return attackFilter; }
+    float_4 _getTh() const { return threshold; }
 private:
     MultiLag2 lag;
     MultiLPF2 attackFilter;

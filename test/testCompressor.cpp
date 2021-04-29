@@ -358,7 +358,7 @@ static void testPolyAttack(int channel) {
 
     // get the four channel compressor. assert on initial conditions
     Cmprsr& c = comp._getComp(bank);
-    MultiLPF2& lpf = c._getAF();
+    const MultiLPF2& lpf = c._getAF();
     
 
     comp.params[Comp2::CHANNEL_PARAM].value = channel + 1.f;    // offset 01
@@ -402,7 +402,7 @@ static void testPolyRelease(int channel) {
 
     // get the four channel compressor. assert on initial conditions
     Cmprsr& c = comp._getComp(bank);
-    MultiLag2& lag = c._getLag();
+    const MultiLag2& lag = c._getLag();
 
 
     comp.params[Comp2::CHANNEL_PARAM].value = channel + 1.f;    // offset 01
@@ -436,10 +436,11 @@ static void testPolyThreshold(int channel) {
     // assert that all are the same to starts
     if (channel == 0)
     {
-        simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(1)._getLag()._getLRelease());
-        simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(2)._getLag()._getLRelease());
-        simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(3)._getLag()._getLRelease());
-        const float_4 x = comp._getComp(0)._getLag()._getLRelease();
+        simd_assertEQ(comp._getComp(0)._getTh(), comp._getComp(1)._getTh());
+        simd_assertEQ(comp._getComp(0)._getTh(), comp._getComp(2)._getTh());
+        simd_assertEQ(comp._getComp(0)._getTh(), comp._getComp(3)._getTh());
+      
+        const float_4 x = comp._getComp(0)._getTh();
         assertEQ(x[0], x[1]);
         assertEQ(x[0], x[2]);
         assertEQ(x[0], x[3]);
@@ -447,7 +448,7 @@ static void testPolyThreshold(int channel) {
 
     // get the four channel compressor. assert on initial conditions
     Cmprsr& c = comp._getComp(bank);
-    MultiLag2& lag = c._getLag();
+   // const MultiLag2& lag = c._getLag();
 
 
     comp.params[Comp2::CHANNEL_PARAM].value = channel + 1.f;    // offset 01
@@ -455,11 +456,12 @@ static void testPolyThreshold(int channel) {
     comp.params[Comp2::THRESHOLD_PARAM].value = .2f;
     run(comp, 40);
 
-    const float_4 rf = lag._getLRelease();
+  //  const float_4 rf = lag._getLRelease();
+    const float_4 th = c._getTh();
     for (int i = 0; i < 4; ++i) {
         int other = (i + 1) % 4;
         if (i == subChannel) {
-            assertNE(rf[i], rf[other])
+            assertNE(th[i], th[other])
         }
         else if (other != subChannel) {
             // figure out later

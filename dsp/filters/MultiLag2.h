@@ -21,7 +21,7 @@ public:
     void setCutoff(float);
     void setCutoffPoly(float_4);
 
-    float_4 _getL() { return l; }
+    float_4 _getL() const { return l; }
 private:
     float_4 l = 0;
     float_4 k = 0;

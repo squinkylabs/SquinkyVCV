@@ -381,6 +381,8 @@ inline void Compressor2<TBase>::pollThresholdAndRatio() {
     if (rawThreshold != lastRawThreshold || rawRatio != lastRawRatio) {
         lastRawThreshold = rawThreshold;
         lastRawRatio = rawRatio;
+        compParams.setThreshold(currentChannel_m, rawThreshold);
+        compParams.setRatio(currentChannel_m, int(std::round(rawRatio)));
         updateThresholdAndRatio(currentBank_m);
     }
 }
