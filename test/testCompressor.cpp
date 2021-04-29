@@ -391,7 +391,6 @@ static void testPolyRelease(int channel) {
     // assert that all are the same to starts
     if (channel == 0)
     {
-
         simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(1)._getLag()._getLRelease());
         simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(2)._getLag()._getLRelease());
         simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(3)._getLag()._getLRelease());
@@ -399,7 +398,6 @@ static void testPolyRelease(int channel) {
         assertEQ(x[0], x[1]);
         assertEQ(x[0], x[2]);
         assertEQ(x[0], x[3]);
-
     }
 
     // get the four channel compressor. assert on initial conditions
@@ -425,6 +423,51 @@ static void testPolyRelease(int channel) {
     }
 }
 
+
+static void testPolyThreshold(int channel) {
+    SQINFO("--- testPolyThreshold %d", channel);
+    Comp2 comp;
+    init(comp);
+    run(comp, 40);
+
+    const int bank = channel / 4;
+    const int subChannel = channel % 4;
+
+    // assert that all are the same to starts
+    if (channel == 0)
+    {
+        simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(1)._getLag()._getLRelease());
+        simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(2)._getLag()._getLRelease());
+        simd_assertEQ(comp._getComp(0)._getLag()._getLRelease(), comp._getComp(3)._getLag()._getLRelease());
+        const float_4 x = comp._getComp(0)._getLag()._getLRelease();
+        assertEQ(x[0], x[1]);
+        assertEQ(x[0], x[2]);
+        assertEQ(x[0], x[3]);
+    }
+
+    // get the four channel compressor. assert on initial conditions
+    Cmprsr& c = comp._getComp(bank);
+    MultiLag2& lag = c._getLag();
+
+
+    comp.params[Comp2::CHANNEL_PARAM].value = channel + 1.f;    // offset 01
+    run(comp, 40);
+    comp.params[Comp2::THRESHOLD_PARAM].value = .2f;
+    run(comp, 40);
+
+    const float_4 rf = lag._getLRelease();
+    for (int i = 0; i < 4; ++i) {
+        int other = (i + 1) % 4;
+        if (i == subChannel) {
+            assertNE(rf[i], rf[other])
+        }
+        else if (other != subChannel) {
+            // figure out later
+             //   assertEQ(af[i], af[other]);
+        }
+    }
+}
+
 static void testPolyParams() {
 
     for (int i=0; i<15; ++i) {
@@ -432,11 +475,8 @@ static void testPolyParams() {
         testPolyRelease(i);
     }
 
-    // 2 works
-     testPolyAttack(3);
-     testPolyAttack(2);
-     testPolyAttack(1);
-     testPolyAttack(0);
+    testPolyThreshold(2);
+
 }
 
 void testCompressor() {

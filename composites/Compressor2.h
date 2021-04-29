@@ -120,6 +120,8 @@ private:
     void stepn();
     void pollAttackRelease();
     void updateAttackAndRelease(int bank);
+    void pollThresholdAndRatio();
+    void updateThresholdAndRatio(int bank);
 
     int numChannels_m = 0;
     int numBanks_m = 0;
@@ -144,8 +146,8 @@ private:
     float lastRawMix = -1;
     float lastRawA = -1;
     float lastRawR = -1;
-    float lastThreshold = -1;
-    float lastRatio = -1;
+    float lastRawThreshold = -1;
+    float lastRawRatio = -1;
     int lastNumChannels = -1;
     bool bypassed = false;
 };
@@ -171,7 +173,7 @@ inline void Compressor2<TBase>::init() {
     LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, 100, 1600);
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
     initAllParams();
-#if 0   // experiment in init
+#if 0  // experiment in init
     const auto saveCh = currentChannel_m;
     const auto saveBank = currentBank_m;
     const auto saveSub = currentSubChannel_m;
@@ -197,7 +199,7 @@ inline void Compressor2<TBase>::init() {
 template <class TBase>
 inline void Compressor2<TBase>::initAllParams() {
     auto icomp = Compressor2<TBase>::getDescription();
-    for (int i=0; i<16; ++i) {
+    for (int i = 0; i < 16; ++i) {
         compParams.setAttack(i, icomp->getParam(ATTACK_PARAM).def);
         compParams.setRelease(i, icomp->getParam(RELEASE_PARAM).def);
         compParams.setRatio(i, int(std::round(icomp->getParam(RATIO_PARAM).def)));
@@ -209,8 +211,8 @@ inline void Compressor2<TBase>::initAllParams() {
 
     for (int bank = 0; bank < 4; ++bank) {
         updateAttackAndRelease(bank);
+        updateThresholdAndRatio(bank);
     }
-    
 }
 
 template <class TBase>
@@ -302,6 +304,8 @@ inline void Compressor2<TBase>::stepn() {
         makeupGain_m = float(AudioMath::gainFromDb(rawMakeupGain));
     }
 
+    pollThresholdAndRatio();
+#if 0
     const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, Compressor2<TBase>::params[THRESHOLD_PARAM].value);
     const float rawRatio = Compressor2<TBase>::params[RATIO_PARAM].value;
     if (lastThreshold != threshold || lastRatio != rawRatio || lastNumChannels != numChannels_m) {
@@ -327,6 +331,7 @@ inline void Compressor2<TBase>::stepn() {
 #endif
         }
     }
+#endif
 
     bypassed = !bool(std::round(Compressor2<TBase>::params[NOTBYPASS_PARAM].value));
     // printf("notbypass value = %f, bypassed = %d\n", Compressor2<TBase>::params[NOTBYPASS_PARAM].value, bypassed); fflush(stdout);
@@ -346,7 +351,7 @@ inline void Compressor2<TBase>::updateAttackAndRelease(int bank) {
         a[i] = attack;
         r[i] = release;
     }
-    
+
     compressors[bank].setTimesPoly(
         a,
         r,
@@ -363,20 +368,38 @@ inline void Compressor2<TBase>::pollAttackRelease() {
         lastRawA = rawAttack;
         lastRawR = rawRelease;
 
-       
-#if 1
         compParams.setAttack(currentChannel_m, rawAttack);
         compParams.setRelease(currentChannel_m, rawRelease);
         updateAttackAndRelease(currentBank_m);
-#else  // old mono code
-        const float attack = LookupTable<float>::lookup(attackFunctionParams, rawAttack);
-        const float release = LookupTable<float>::lookup(releaseFunctionParams, rawRelease);
-        for (int i = 0; i < 4; ++i) {
-            compressors[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
-            //     compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
-        }
-#endif
     }
+}
+
+template <class TBase>
+inline void Compressor2<TBase>::pollThresholdAndRatio() {
+    const float rawThreshold = Compressor2<TBase>::params[THRESHOLD_PARAM].value;
+    const float rawRatio = Compressor2<TBase>::params[RATIO_PARAM].value;
+    if (rawThreshold != lastRawThreshold || rawRatio != lastRawRatio) {
+        lastRawThreshold = rawThreshold;
+        lastRawRatio = rawRatio;
+        updateThresholdAndRatio(currentBank_m);
+    }
+}
+
+template <class TBase>
+inline void Compressor2<TBase>::updateThresholdAndRatio(int bank) {
+    auto rawRatios_4 = compParams.getRatios(bank);
+    float_4 rawThresholds_4 = compParams.getThresholds(bank);
+    float_4 th;
+    Cmprsr::Ratios r[4];
+  
+    for (int i=0; i< 4; ++i) {
+         const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, rawThresholds_4[i]);
+         th[i] = threshold;
+         r[i] =  Cmprsr::Ratios(rawRatios_4[i]);
+    }
+
+    compressors[bank].setThresholdPoly(th);
+    compressors[bank].setCurvePoly(r);
 }
 
 template <class TBase>
