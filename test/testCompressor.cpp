@@ -448,15 +448,12 @@ static void testPolyThreshold(int channel) {
 
     // get the four channel compressor. assert on initial conditions
     Cmprsr& c = comp._getComp(bank);
-   // const MultiLag2& lag = c._getLag();
-
 
     comp.params[Comp2::CHANNEL_PARAM].value = channel + 1.f;    // offset 01
     run(comp, 40);
     comp.params[Comp2::THRESHOLD_PARAM].value = .2f;
     run(comp, 40);
 
-  //  const float_4 rf = lag._getLRelease();
     const float_4 th = c._getTh();
     for (int i = 0; i < 4; ++i) {
         int other = (i + 1) % 4;
@@ -470,14 +467,62 @@ static void testPolyThreshold(int channel) {
     }
 }
 
+
+static void testPolyRatio(int channel) {
+    SQINFO("--- testPolyThreshold %d", channel);
+    Comp2 comp;
+    init(comp);
+    run(comp, 40);
+
+    const int bank = channel / 4;
+    const int subChannel = channel % 4;
+
+    // assert that all are the same to starts
+    if (channel == 0)
+    {
+        for (int i = 0; i < 4; ++i) {
+            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(1)._getRatio()[i]));
+            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(2)._getRatio()[i]));
+            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(3)._getRatio()[i]));
+            //  simd_assertEQ(comp._getComp(0)._getTh(), comp._getComp(2)._getTh());
+            //  simd_assertEQ(comp._getComp(0)._getTh(), comp._getComp(3)._getTh());
+        }
+
+        auto x = comp._getComp(0)._getRatio();
+        assertEQ(int(x[0]), int(x[1]));
+        assertEQ(int(x[0]), int(x[2]));
+        assertEQ(int(x[0]), int(x[3]));
+      
+    }
+
+    comp.params[Comp2::CHANNEL_PARAM].value = channel + 1.f;    // offset 01
+    run(comp, 40);
+    comp.params[Comp2::RATIO_PARAM].value = .2f;
+    run(comp, 40);
+
+    auto r = comp._getComp(bank)._getRatio();
+    for (int i = 0; i < 4; ++i) {
+        int other = (i + 1) % 4;
+        if (i == subChannel) {
+            assertNE(int(r[i]), int(r[other]))
+        }
+        else if (other != subChannel) {
+            // figure out later
+             //   assertEQ(af[i], af[other]);
+        }
+    }
+}
+
 static void testPolyParams() {
 
     for (int i=0; i<15; ++i) {
         testPolyAttack(i);
         testPolyRelease(i);
+        testPolyThreshold(i);
+        testPolyRatio(i);
     }
 
-    testPolyThreshold(2);
+ //   testPolyThreshold(2);
 
 }
 

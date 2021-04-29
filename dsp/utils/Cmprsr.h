@@ -50,6 +50,7 @@ public:
     const MultiLag2& _getLag() const { return lag; };
     const MultiLPF2& _getAF() const { return attackFilter; }
     float_4 _getTh() const { return threshold; }
+    const Ratios* _getRatio() const { return ratio; }
 private:
     MultiLag2 lag;
     MultiLPF2 attackFilter;
