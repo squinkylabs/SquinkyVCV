@@ -110,6 +110,7 @@ public:
 
     Cmprsr& _getComp(int bank);
     const CompressorParmHolder& _getHolder() { return compParams; }
+    float_4 _getWet(int bank) const { return wetLevel[bank]; }
 
 private:
     CompressorParmHolder compParams;
@@ -122,6 +123,8 @@ private:
     void updateAttackAndRelease(int bank);
     void pollThresholdAndRatio();
     void updateThresholdAndRatio(int bank);
+    void pollWetDry();
+    void updateWetDry(int bank);
 
     int numChannels_m = 0;
     int numBanks_m = 0;
@@ -129,8 +132,8 @@ private:
     int currentSubChannel_m = -1;
     unsigned int currentChannel_m = -1;  // which of the 16 channels we are editing ATM.
 
-    float_4 wetLevel = 0;
-    float_4 dryLevel = 0;
+    float_4 wetLevel[4] = {0};
+    float_4 dryLevel[4] = {0};
     float_4 makeupGain_m = 1;
     Divider divn;
 
@@ -212,6 +215,9 @@ inline void Compressor2<TBase>::initAllParams() {
     for (int bank = 0; bank < 4; ++bank) {
         updateAttackAndRelease(bank);
         updateThresholdAndRatio(bank);
+        updateWetDry(bank);
+
+        // TODO: put all the update here
     }
 }
 
@@ -288,7 +294,9 @@ inline void Compressor2<TBase>::stepn() {
     currentSubChannel_m = currentChannel_m % 4;
 
     pollAttackRelease();
+    pollWetDry();
 
+#if 0
     const float rawWetDry = Compressor2<TBase>::params[WETDRY_PARAM].value;
     if (rawWetDry != lastRawMix) {
         lastRawMix = rawWetDry;
@@ -297,6 +305,7 @@ inline void Compressor2<TBase>::stepn() {
         wetLevel *= wetLevel;
         dryLevel *= dryLevel;
     }
+#endif
 
     const float rawMakeupGain = Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value;
     if (lastRawMakeupGain != rawMakeupGain) {
@@ -388,6 +397,16 @@ inline void Compressor2<TBase>::pollThresholdAndRatio() {
 }
 
 template <class TBase>
+inline void Compressor2<TBase>::pollWetDry() {
+    const float rawWetDry = Compressor2<TBase>::params[WETDRY_PARAM].value;
+    if (rawWetDry != lastRawMix) {
+        lastRawMix = rawWetDry;
+        compParams.setWetDry(currentChannel_m, rawWetDry);
+        updateWetDry(currentBank_m);
+    }
+}
+
+template <class TBase>
 inline void Compressor2<TBase>::updateThresholdAndRatio(int bank) {
     auto rawRatios_4 = compParams.getRatios(bank);
     float_4 rawThresholds_4 = compParams.getThresholds(bank);
@@ -403,6 +422,33 @@ inline void Compressor2<TBase>::updateThresholdAndRatio(int bank) {
     compressors[bank].setThresholdPoly(th);
     compressors[bank].setCurvePoly(r);
 }
+
+/*
+ const float rawWetDry = Compressor2<TBase>::params[WETDRY_PARAM].value;
+    if (rawWetDry != lastRawMix) {
+        lastRawMix = rawWetDry;
+        wetLevel = LookupTable<float>::lookup(*panR, rawWetDry, true);
+        dryLevel = LookupTable<float>::lookup(*panL, rawWetDry, true);
+        wetLevel *= wetLevel;
+        dryLevel *= dryLevel;
+    }
+*/
+
+template <class TBase>
+inline void Compressor2<TBase>::updateWetDry(int bank) {
+    float_4 rawWetDry = compParams.getWetDryMixs(bank);
+    float_4 w = 0;
+    float_4 d = 0;
+    for (int i = 0; i < 4; ++i) {
+        w[i] = LookupTable<float>::lookup(*panR, rawWetDry[i], true);
+        d[i] = LookupTable<float>::lookup(*panL, rawWetDry[i], true);
+        w[i] *= w[i];
+        d[i] *= d[i];
+    }
+    wetLevel[bank] = w;
+    dryLevel[bank] = d;
+}
+
 
 template <class TBase>
 inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args) {
@@ -433,7 +479,7 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
         const int baseChannel = bank * 4;
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
         const float_4 wetOutput = compressors[bank].step(input) * makeupGain_m;
-        const float_4 mixedOutput = wetOutput * wetLevel + input * dryLevel;
+        const float_4 mixedOutput = wetOutput * wetLevel[bank] + input * dryLevel[bank];
 
         outPort.setVoltageSimd(mixedOutput, baseChannel);
     }
