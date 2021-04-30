@@ -176,23 +176,6 @@ inline void Compressor2<TBase>::init() {
     LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, 100, 1600);
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
     initAllParams();
-#if 0  // experiment in init
-    const auto saveCh = currentChannel_m;
-    const auto saveBank = currentBank_m;
-    const auto saveSub = currentSubChannel_m;
-
-    for (int i = 0; i<16; ++i) {
-        currentChannel_m = i;
-        currentBank_m = i / 4;
-        currentSubChannel_m = i % 4;
-
-        stepn();
-    }
-
-    currentChannel_m = saveCh;
-    currentBank_m = saveBank;
-    currentSubChannel_m = saveSub;
-#endif
 }
 
 /**
@@ -296,16 +279,6 @@ inline void Compressor2<TBase>::stepn() {
     pollAttackRelease();
     pollWetDry();
 
-#if 0
-    const float rawWetDry = Compressor2<TBase>::params[WETDRY_PARAM].value;
-    if (rawWetDry != lastRawMix) {
-        lastRawMix = rawWetDry;
-        wetLevel = LookupTable<float>::lookup(*panR, rawWetDry, true);
-        dryLevel = LookupTable<float>::lookup(*panL, rawWetDry, true);
-        wetLevel *= wetLevel;
-        dryLevel *= dryLevel;
-    }
-#endif
 
     const float rawMakeupGain = Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value;
     if (lastRawMakeupGain != rawMakeupGain) {
@@ -314,33 +287,6 @@ inline void Compressor2<TBase>::stepn() {
     }
 
     pollThresholdAndRatio();
-#if 0
-    const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, Compressor2<TBase>::params[THRESHOLD_PARAM].value);
-    const float rawRatio = Compressor2<TBase>::params[RATIO_PARAM].value;
-    if (lastThreshold != threshold || lastRatio != rawRatio || lastNumChannels != numChannels_m) {
-        lastThreshold = threshold;
-        lastRatio = rawRatio;
-        lastNumChannels = numChannels_m;
-        Cmprsr::Ratios ratio = Cmprsr::Ratios(int(std::round(rawRatio)));
-        for (int i = 0; i < 4; ++i) {
-            compressors[i].setThreshold(threshold);
-            compressors[i].setCurve(ratio);
-
-            if (i < numBanks_m) {
-                const int baseChannel = i * 4;
-                const int chanThisBank = std::min(4, numChannels_m - baseChannel);
-                compressors[i].setNumChannels(chanThisBank);
-            }
-#if 0
-            if (i < numBanksR_m) {
-                const int baseChannel = i * 4;
-                const int chanThisBankR = std::min(4, numChannelsR_m - baseChannel);
-                compressorsR[i].setNumChannels(chanThisBankR);
-            }
-#endif
-        }
-    }
-#endif
 
     bypassed = !bool(std::round(Compressor2<TBase>::params[NOTBYPASS_PARAM].value));
     // printf("notbypass value = %f, bypassed = %d\n", Compressor2<TBase>::params[NOTBYPASS_PARAM].value, bypassed); fflush(stdout);
@@ -423,17 +369,6 @@ inline void Compressor2<TBase>::updateThresholdAndRatio(int bank) {
     compressors[bank].setCurvePoly(r);
 }
 
-/*
- const float rawWetDry = Compressor2<TBase>::params[WETDRY_PARAM].value;
-    if (rawWetDry != lastRawMix) {
-        lastRawMix = rawWetDry;
-        wetLevel = LookupTable<float>::lookup(*panR, rawWetDry, true);
-        dryLevel = LookupTable<float>::lookup(*panL, rawWetDry, true);
-        wetLevel *= wetLevel;
-        dryLevel *= dryLevel;
-    }
-*/
-
 template <class TBase>
 inline void Compressor2<TBase>::updateWetDry(int bank) {
     float_4 rawWetDry = compParams.getWetDryMixs(bank);
@@ -449,29 +384,21 @@ inline void Compressor2<TBase>::updateWetDry(int bank) {
     dryLevel[bank] = d;
 }
 
-
 template <class TBase>
 inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args) {
     divn.step();
 
     SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
-    //   SqInput& inPortR = TBase::inputs[RAUDIO_INPUT];
-    //   SqOutput& outPortR = TBase::outputs[RAUDIO_OUTPUT];
 
+
+    // TODO: bypassed per channel - need to completely re-do
     if (bypassed) {
         for (int bank = 0; bank < numBanks_m; ++bank) {
             const int baseChannel = bank * 4;
             const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
             outPort.setVoltageSimd(input, baseChannel);
         }
-#if 0
-        for (int bank = 0; bank < numBanksR_m; ++bank) {
-            const int baseChannel = bank * 4;
-            const float_4 input = inPortR.getPolyVoltageSimd<float_4>(baseChannel);
-            outPortR.setVoltageSimd(input, baseChannel);
-        }
-#endif
         return;
     }
 
@@ -483,16 +410,6 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
 
         outPort.setVoltageSimd(mixedOutput, baseChannel);
     }
-#if 0
-    for (int bank = 0; bank < numBanksR_m; ++bank) {
-        const int baseChannel = bank * 4;
-        const float_4 input = inPortR.getPolyVoltageSimd<float_4>(baseChannel);
-        const float_4 wetOutput = compressorsR[bank].step(input) * makeupGain_m;
-        const float_4 mixedOutput = wetOutput * wetLevel + input * dryLevel;
-
-        outPortR.setVoltageSimd(mixedOutput, baseChannel);
-    }
-#endif
 }
 
 // TODO: do we still need this old init function? combine with other?

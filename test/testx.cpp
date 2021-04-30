@@ -157,7 +157,6 @@ static void testLexTwoKeys() {
     SLexPtr lex = SLex::go("a=b\nc=d");
     assert(lex);
     lex->validate();
-    //lex->_dump();
 
     assertEQ(lex->items.size(), 6);
     assert(lex->items.back()->itemType == SLexItem::Type::Identifier);
@@ -169,7 +168,6 @@ static void testLexTwoKeysOneLine() {
     SLexPtr lex = SLex::go("a=b c=d");
     assert(lex);
     lex->validate();
-    //lex->_dump();
 
     assertEQ(lex->items.size(), 6);
     assert(lex->items.back()->itemType == SLexItem::Type::Identifier);
@@ -181,7 +179,6 @@ static void testLexTwoRegionsWithKeys() {
     SLexPtr lex = SLex::go("<region>a=b\nc=d<region>q=w\ne=r");
     assert(lex);
     lex->validate();
-    //lex->_dump();
 
     assertEQ(lex->items.size(), 14);
     assert(lex->items.back()->itemType == SLexItem::Type::Identifier);
@@ -191,7 +188,6 @@ static void testLexTwoRegionsWithKeys() {
 
 static void testLexMangledId() {
     SLexPtr lex = SLex::go("<abd\ndef>");
-    // if (lex) lex->_dump();
     assert(!lex);
 }
 
@@ -293,7 +289,6 @@ static void testLexMarimba2() {
 
     assert(lex);
     lex->validate();
-    lex->_dump();
     assertEQ(lex->items.size(), 1001);
     // assert(false);
 }
@@ -377,7 +372,6 @@ label_cc$MW=MW ($MW)
 )foo");
     std::string err;
     auto lex = SLex::go(content, &err, 0);
-    lex->_dump();
 
     assert(lex && err.empty());
     assertEQ(lex->items.size(), 7);
@@ -404,8 +398,17 @@ static void testLexLabel2() {
 static void testLexNewLine() {
     auto lex = SLex::go("sample=BS DX7 Bright Bow-000-084-c5.wav\r\n");
     assert(lex);
-    lex->_dump();
     assertEQ(lex->items.size(), 3);
+}
+
+//
+static void testLexMacPath() {
+    auto lex = SLex::go("sample=/abs/path.wav");
+    assert(lex);
+    assertEQ(lex->items.size(), 3);
+    assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
+    SLexIdentifier* ident = static_cast<SLexIdentifier*>(lex->items[2].get());
+    assertEQ(ident->idName, "/abs/path.wav");
 }
 
 static void testparse1() {
@@ -501,9 +504,6 @@ static void testParseGroupAndValues() {
 
     assertEQ(inst->groups.size(), 1);
     assertEQ(inst->groups[0]->regions.size(), 1);
-
-    // inst->groups[0]->_dump();
-    // inst->groups[0]->regions[0]->_dump();
 
     assertEQ(inst->groups[0]->values.size(), 1);
     assertEQ(inst->groups[0]->regions[0]->values.size(), 0);
@@ -696,6 +696,7 @@ void testx() {
     //  testLexDefineFail();
     testLexLabel2();
     testLexNewLine();
+    testLexMacPath();
 
     testparse1();
     testParseRegion();

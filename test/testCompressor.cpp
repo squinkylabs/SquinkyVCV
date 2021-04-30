@@ -561,6 +561,18 @@ static void testPolyWetDry(int channel) {
 
 static void testPolyParams() {
 
+    /*
+    done:
+        ATTACK_PARAM,
+        RELEASE_PARAM,
+        THRESHOLD_PARAM,
+        RATIO_PARAM,
+        WETDRY_PARAM,
+    todo:
+        MAKEUPGAIN_PARAM,
+        NOTBYPASS_PARAM,
+        */
+
     for (int i=0; i<15; ++i) {
         testPolyAttack(i);
         testPolyRelease(i);
