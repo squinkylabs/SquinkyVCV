@@ -18,6 +18,7 @@ public:
      */
     void concat(const FilePath& other);
     bool empty() const;
+    bool isAbsolute() const { return abs; }
 
     // if this == "abc/def/j.txt"
     // will return abc/def
@@ -27,9 +28,11 @@ public:
     std::string getExtensionLC() const;
 private:
     std::string data;
+    bool abs = false;
 
     void fixSeparators();
     bool startsWithSeparator() const;
     bool endsWithSeparator() const;
     bool startsWithDot() const;
+    void initAbs();
 };

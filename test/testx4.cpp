@@ -42,6 +42,8 @@ static void testFilePathConcat1() {
     assertEQ(s.at(0), 'a');
     assertEQ(s.at(1), FilePath::nativeSeparator());
     assertEQ(s.at(2), 'b');
+
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathConcat2() {
@@ -54,6 +56,8 @@ static void testFilePathConcat2() {
     assertEQ(s.at(0), 'a');
     assertEQ(s.at(1), FilePath::nativeSeparator());
     assertEQ(s.at(2), 'b');
+
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathConcat3() {
@@ -66,6 +70,7 @@ static void testFilePathConcat3() {
     assertEQ(s.at(0), 'a');
     assertEQ(s.at(1), FilePath::nativeSeparator());
     assertEQ(s.at(2), 'b');
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathConcat4() {
@@ -78,6 +83,7 @@ static void testFilePathConcat4() {
     assertEQ(s.at(0), 'a');
     assertEQ(s.at(1), FilePath::nativeSeparator());
     assertEQ(s.at(2), 'b');
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathConcat5() {
@@ -88,6 +94,7 @@ static void testFilePathConcat5() {
     std::string s = a.toString();
     assertEQ(s.size(), 1);
     assertEQ(s.at(0), 'a');
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathConcat6() {
@@ -96,6 +103,7 @@ static void testFilePathConcat6() {
     a.concat(b);
     std::string s = a.toString();
     assertEQ(s, "abc");
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathGetPathPart() {
@@ -103,6 +111,7 @@ static void testFilePathGetPathPart() {
     FilePath path = a.getPathPart();
     FilePath expected("abc\\def\\ghi\\");  // trailing separators don't really make a difference
     assertEQ(path.toString(), expected.toString());
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathGetPathPart2() {
@@ -110,42 +119,49 @@ static void testFilePathGetPathPart2() {
     FilePath path = a.getPathPart();
     FilePath expected("");
     assertEQ(expected.toString(), path.toString());
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathGetFilenamePart() {
     FilePath a("abc/def\\ghi//a.txt");
     std::string fileName = a.getFilenamePart();
     assertEQ(fileName, "a.txt");
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathGetFilenamePart2() {
     FilePath a("a.txt");
     std::string fileName = a.getFilenamePart();
     assertEQ(fileName, "a.txt");
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathGetFilenamePart3() {
     FilePath a("abc/");
     std::string fileName = a.getFilenamePart();
     assertEQ(fileName, "");
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathGetFilenamePartNoExtension() {
     FilePath a("abc/def.hij");
     std::string fileName = a.getFilenamePartNoExtension();
     assertEQ(fileName, "def");
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathGetFilenamePartNoExtension2() {
     FilePath a("abc/def.hij.klm");
     std::string fileName = a.getFilenamePartNoExtension();
     assertEQ(fileName, "def.hij");
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathGetFilenamePartNoExtension3() {
     FilePath a("abc/def");
     std::string fileName = a.getFilenamePartNoExtension();
     assertEQ(fileName, "def");
+    assert(!a.isAbsolute());
 }
 
 static void testFilePathDoubleDot() {
@@ -154,6 +170,7 @@ static void testFilePathDoubleDot() {
     fp1.concat(fp2);
     FilePath expected("a/../b");
     assertEQ(fp1.toString(), expected.toString());
+    assert(!fp1.isAbsolute());
 }
 
 static void testFilePathExt() {
@@ -171,6 +188,11 @@ static void testFilePathExt() {
 
     FilePath fp5("a.WAVeFILE");
     assertEQ(fp5.getExtensionLC(), "wavefile");
+}
+
+static void testFilePathAbs() {
+    FilePath fp("c:\foo");
+    assert(fp.isAbsolute());
 }
 
 static void testSchemaFreeText1() {
@@ -323,6 +345,7 @@ void testx4() {
     testFilePathGetFilenamePartNoExtension2();
     testFilePathDoubleDot();
     testFilePathExt();
+    testFilePathAbs();
 
     testSchemaFreeText1();
     testSchemaTextBuiltIn();
