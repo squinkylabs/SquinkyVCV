@@ -571,18 +571,14 @@ static void testBypass(int channel) {
     // assert that all are the same to starts
     if (channel == 0)
     {
-        for (int i = 0; i < 4; ++i) {
-            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(1)._getRatio()[i]));
-            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(2)._getRatio()[i]));
-            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(3)._getRatio()[i]));
-            //  simd_assertEQ(comp._getComp(0)._getTh(), comp._getComp(2)._getTh());
-            //  simd_assertEQ(comp._getComp(0)._getTh(), comp._getComp(3)._getTh());
-        }
 
-        auto x = comp._getComp(0)._getRatio();
-        assertEQ(int(x[0]), int(x[1]));
-        assertEQ(int(x[0]), int(x[2]));
-        assertEQ(int(x[0]), int(x[3]));
+        float_4 x0 = SimdBlocks::ifelse(comp._getEn(0), float_4(1), float_4(0));
+        float_4 x1 = SimdBlocks::ifelse(comp._getEn(1), float_4(1), float_4(0));
+        float_4 x2 = SimdBlocks::ifelse(comp._getEn(2), float_4(1), float_4(0));
+        float_4 x3 = SimdBlocks::ifelse(comp._getEn(3), float_4(1), float_4(0));
+        simd_assertEQ(x0, x1);
+        simd_assertEQ(x0, x2);
+        simd_assertEQ(x0, x3);
       
     }
 
@@ -606,7 +602,7 @@ static void testBypass(int channel) {
 }
 
 static void testGain(int channel) {
-    SQINFO("--- testPolyWetDry %d", channel);
+    SQINFO("--- testGain %d", channel);
     Comp2 comp;
     init(comp);
     run(comp, 40);
@@ -617,32 +613,30 @@ static void testGain(int channel) {
     // assert that all are the same to starts
     if (channel == 0)
     {
-        for (int i = 0; i < 4; ++i) {
-            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(1)._getRatio()[i]));
-            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(2)._getRatio()[i]));
-            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(3)._getRatio()[i]));
-            //  simd_assertEQ(comp._getComp(0)._getTh(), comp._getComp(2)._getTh());
-            //  simd_assertEQ(comp._getComp(0)._getTh(), comp._getComp(3)._getTh());
-        }
+        float_4 x0 = comp._getG(0);
+        float_4 x1 = comp._getG(1);
+        float_4 x2 = comp._getG(2);
+        float_4 x3 = comp._getG(3);
+        simd_assertEQ(x0, x1);
+        simd_assertEQ(x0, x2);
+        simd_assertEQ(x0, x3);
 
-        auto x = comp._getComp(0)._getRatio();
-        assertEQ(int(x[0]), int(x[1]));
-        assertEQ(int(x[0]), int(x[2]));
-        assertEQ(int(x[0]), int(x[3]));
+        assertEQ(x0[0], x0[1]);
+        assertEQ(x0[0], x0[2]);
+        assertEQ(x0[0], x0[3]);
       
     }
 
     comp.params[Comp2::CHANNEL_PARAM].value = channel + 1.f;    // offset 01
     run(comp, 40);
-    comp.params[Comp2::MAKEUPGAIN_PARAM].value = 0.f;
+    comp.params[Comp2::MAKEUPGAIN_PARAM].value = 0.5f;
     run(comp, 40);
 
-    auto e = comp._getEn(bank);
-    float_4 en = SimdBlocks::ifelse(e, float_4(1), float_4(0));
+    auto g = comp._getG(bank);
     for (int i = 0; i < 4; ++i) {
         int other = (i + 1) % 4;
         if (i == subChannel) {
-            assertNE(en[i], en[other])
+            assertNE(g[i], g[other])
         }
         else if (other != subChannel) {
             // figure out later

@@ -113,6 +113,7 @@ public:
     const CompressorParmHolder& _getHolder() { return compParams; }
     float_4 _getWet(int bank) const { return wetLevel[bank]; }
     float_4 _getEn(int bank) const { return enabled[bank]; }
+    float_4 _getG(int bank) const { return makeupGain[bank]; }
 
 private:
     CompressorParmHolder compParams;
@@ -203,6 +204,7 @@ inline void Compressor2<TBase>::initAllParams() {
         compParams.setEnabled(i, bool(std::round(icomp->getParam(NOTBYPASS_PARAM).def)));
         compParams.setWetDry(i, icomp->getParam(WETDRY_PARAM).def);
         compParams.setEnabled(i, icomp->getParam(NOTBYPASS_PARAM).def);
+        compParams.setMakeupGain(i, icomp->getParam(MAKEUPGAIN_PARAM).def);
     }
 
     for (int bank = 0; bank < 4; ++bank) {
@@ -211,6 +213,7 @@ inline void Compressor2<TBase>::initAllParams() {
         updateWetDry(bank);
         updateMakeupGain(bank);
         updateBypassed(bank);
+        updateMakeupGain(bank);
 
         // TODO: put all the update here
     }
@@ -274,19 +277,29 @@ inline void Compressor2<TBase>::stepn() {
 
     pollAttackRelease();
     pollWetDry();
-
-
-    const float rawMakeupGain = Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value;
-    if (lastRawMakeupGain != rawMakeupGain) {
-        lastRawMakeupGain = rawMakeupGain;
-        makeupGain_m = float(AudioMath::gainFromDb(rawMakeupGain));
-    }
-
+    pollMakeupGain();
     pollThresholdAndRatio();
     pollBypassed();
+}
 
-  //  bypassed = !bool(std::round(Compressor2<TBase>::params[NOTBYPASS_PARAM].value));
-    // printf("notbypass value = %f, bypassed = %d\n", Compressor2<TBase>::params[NOTBYPASS_PARAM].value, bypassed); fflush(stdout);
+template <class TBase>
+inline void Compressor2<TBase>::pollMakeupGain() {
+    const float g = Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value;
+    if (g != lastRawMakeupGain) {
+        lastRawMakeupGain = g;
+        compParams.setMakeupGain(currentChannel_m, g);
+        updateMakeupGain(currentBank_m);
+    }
+}
+
+template <class TBase>
+inline void Compressor2<TBase>::updateMakeupGain(int bank) {
+    const float_4 rawMakeupGain = compParams.getMakeupGains(bank);
+    float_4 g;
+    for (int i = 0; i < 4; ++i) {
+        g[i] = float(AudioMath::gainFromDb(rawMakeupGain[i]));
+    }
+    makeupGain[bank] = g;
 }
 
 template <class TBase>
@@ -298,6 +311,7 @@ inline void Compressor2<TBase>::pollBypassed() {
         updateBypassed(currentBank_m);
     }
 }
+
 template <class TBase>
 inline void Compressor2<TBase>::updateBypassed(int bank) {
     enabled[bank] = compParams.getEnableds(bank);
@@ -409,7 +423,7 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
         const float_4 en = compParams.getEnableds(bank);
         simd_assertMask(en);
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const float_4 wetOutput = compressors[bank].step(input) * makeupGain[bank;
+        const float_4 wetOutput = compressors[bank].step(input) * makeupGain[bank];
         const float_4 mixedOutput = wetOutput * wetLevel[bank] + input * dryLevel[bank];
        
         const float_4 out = SimdBlocks::ifelse(en, mixedOutput, input);
@@ -418,25 +432,6 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
       //  SQINFO("output=%s", toStr(out).c_str());
         outPort.setVoltageSimd(out, baseChannel);
     }
-#if 0
-    if (bypassed) {
-        for (int bank = 0; bank < numBanks_m; ++bank) {
-            const int baseChannel = bank * 4;
-            const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-            outPort.setVoltageSimd(input, baseChannel);
-        }
-        return;
-    }
-
-    for (int bank = 0; bank < numBanks_m; ++bank) {
-        const int baseChannel = bank * 4;
-        const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const float_4 wetOutput = compressors[bank].step(input) * makeupGain_m;
-        const float_4 mixedOutput = wetOutput * wetLevel[bank] + input * dryLevel[bank];
-
-        outPort.setVoltageSimd(mixedOutput, baseChannel);
-    }
-#endif
 }
 
 // TODO: do we still need this old init function? combine with other?
