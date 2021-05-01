@@ -30,7 +30,7 @@ public:
      */
     void process(const ProcessArgs& args) override;
     void onSampleRateChange() override;
-    float getGainReductionDb();
+ //   float getGainReductionDb();
 
     std::shared_ptr<Comp> compressor;
     int getNumChannels() {
@@ -62,10 +62,12 @@ Compressor2Module::Compressor2Module()
     compressor->init();
 }
 
+#if 0
 float Compressor2Module::getGainReductionDb()
 {
     return compressor->getGainReductionDb();
 }
+#endif
 
 
 void Compressor2Module::process(const ProcessArgs& args)

@@ -90,7 +90,7 @@ public:
 
     void onSampleRateChange() override;
 
-    float getGainReductionDb() const;
+    //float getGainReductionDb() const;
     static const std::vector<std::string>& ratios();
     static const std::vector<std::string>& ratiosLong();
     static std::function<double(double)> getSlowAttackFunction() {
@@ -240,6 +240,7 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
     return gainReduction;
 }
 
+#if 0
 template <class TBase>
 inline float Compressor2<TBase>::getGainReductionDb() const {
     float_4 minGain_4 = 1;
@@ -258,6 +259,7 @@ inline float Compressor2<TBase>::getGainReductionDb() const {
     auto r = AudioMath::db(minGain);
     return -r;
 }
+#endif
 
 template <class TBase>
 inline void Compressor2<TBase>::stepn() {
