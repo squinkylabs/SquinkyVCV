@@ -11,6 +11,7 @@
 #include "IComposite.h"
 #include "LookupTableFactory.h"
 #include "ObjectCache.h"
+#include "SqLog.h"
 #include "SqPort.h"
 
 namespace rack {
@@ -111,6 +112,7 @@ public:
     Cmprsr& _getComp(int bank);
     const CompressorParmHolder& _getHolder() { return compParams; }
     float_4 _getWet(int bank) const { return wetLevel[bank]; }
+    float_4 _getEn(int bank) const { return enabled[bank]; }
 
 private:
     CompressorParmHolder compParams;
@@ -125,6 +127,8 @@ private:
     void updateThresholdAndRatio(int bank);
     void pollWetDry();
     void updateWetDry(int bank);
+    void pollBypassed();
+    void updateBypassed(int bank);
 
     int numChannels_m = 0;
     int numBanks_m = 0;
@@ -134,6 +138,7 @@ private:
 
     float_4 wetLevel[4] = {0};
     float_4 dryLevel[4] = {0};
+    float_4 enabled[4] = {0};
     float_4 makeupGain_m = 1;
     Divider divn;
 
@@ -152,7 +157,7 @@ private:
     float lastRawThreshold = -1;
     float lastRawRatio = -1;
     int lastNumChannels = -1;
-    bool bypassed = false;
+    bool lastNotBypassed = false;
 };
 
 template <class TBase>
@@ -193,6 +198,7 @@ inline void Compressor2<TBase>::initAllParams() {
         compParams.setMakeupGain(i, icomp->getParam(MAKEUPGAIN_PARAM).def);
         compParams.setEnabled(i, bool(std::round(icomp->getParam(NOTBYPASS_PARAM).def)));
         compParams.setWetDry(i, icomp->getParam(WETDRY_PARAM).def);
+        compParams.setEnabled(i, icomp->getParam(NOTBYPASS_PARAM).def);
     }
 
     for (int bank = 0; bank < 4; ++bank) {
@@ -222,22 +228,6 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
     // TODO:db
     float_4 g = compressors[bank].getGain();
     float gainReduction = g[subChan];
-#if 0
-    if (ch == 0) {
-        {
-            static int count = 0;
-            static float lastReduction = 0;
-            if (!AudioMath::closeTo(gainReduction, lastReduction, .05)) {
-                lastReduction = gainReduction;
-                printf("%d gain r [0] = %f full sse=%s\n", count++, gainReduction, toStr(g).c_str());
-                fflush(stdout);
-            }
-        }
-    }
-
- printf("gain r [%d] = %f\n",  ch, gainReduction);
-                fflush(stdout);
-#endif
     return gainReduction;
 }
 
@@ -287,9 +277,24 @@ inline void Compressor2<TBase>::stepn() {
     }
 
     pollThresholdAndRatio();
+    pollBypassed();
 
-    bypassed = !bool(std::round(Compressor2<TBase>::params[NOTBYPASS_PARAM].value));
+  //  bypassed = !bool(std::round(Compressor2<TBase>::params[NOTBYPASS_PARAM].value));
     // printf("notbypass value = %f, bypassed = %d\n", Compressor2<TBase>::params[NOTBYPASS_PARAM].value, bypassed); fflush(stdout);
+}
+
+template <class TBase>
+inline void Compressor2<TBase>::pollBypassed() {
+    const bool notByp = bool(std::round(Compressor2<TBase>::params[NOTBYPASS_PARAM].value));
+    if (notByp != lastNotBypassed) {
+        lastNotBypassed = notByp;
+        compParams.setEnabled(currentChannel_m, notByp);
+        updateBypassed(currentBank_m);
+    }
+}
+template <class TBase>
+inline void Compressor2<TBase>::updateBypassed(int bank) {
+    enabled[bank] = compParams.getEnableds(bank);
 }
 
 template <class TBase>
@@ -393,6 +398,21 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
 
 
     // TODO: bypassed per channel - need to completely re-do
+    for (int bank = 0; bank < numBanks_m; ++bank) {
+        const int baseChannel = bank * 4;
+        const float_4 en = compParams.getEnableds(bank);
+        simd_assertMask(en);
+        const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
+        const float_4 wetOutput = compressors[bank].step(input) * makeupGain_m;
+        const float_4 mixedOutput = wetOutput * wetLevel[bank] + input * dryLevel[bank];
+       
+        const float_4 out = SimdBlocks::ifelse(en, mixedOutput, input);
+      //  SQINFO("\nbank=%d input=%s wet=%s", bank, toStr(input).c_str(), toStr(wetOutput).c_str());
+      //  SQINFO("en=%s, true=%s", toStr(en).c_str(), toStr(SimdBlocks::maskTrue()).c_str());
+      //  SQINFO("output=%s", toStr(out).c_str());
+        outPort.setVoltageSimd(out, baseChannel);
+    }
+#if 0
     if (bypassed) {
         for (int bank = 0; bank < numBanks_m; ++bank) {
             const int baseChannel = bank * 4;
@@ -410,6 +430,7 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
 
         outPort.setVoltageSimd(mixedOutput, baseChannel);
     }
+#endif
 }
 
 // TODO: do we still need this old init function? combine with other?
