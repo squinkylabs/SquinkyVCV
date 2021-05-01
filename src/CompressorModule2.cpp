@@ -269,7 +269,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #ifdef _LAB
     addLabel(
         Vec(knobX2 - 10, 121 - 20),
-        "Makeup");
+        "Out");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,

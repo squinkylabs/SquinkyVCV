@@ -132,19 +132,20 @@ private:
     void updateBypassed(int bank);
     void pollMakeupGain();
     void updateMakeupGain(int bank);
+    void updateCurrentChannel();
 
     int numChannels_m = 0;
     int numBanks_m = 0;
     int currentBank_m = -1;
     int currentSubChannel_m = -1;
-    unsigned int currentChannel_m = -1;  // which of the 16 channels we are editing ATM.
+    int currentChannel_m = -1;  // which of the 16 channels we are editing ATM.
 
     float_4 wetLevel[4] = {0};
     float_4 dryLevel[4] = {0};
     float_4 enabled[4] = {0};
-    float_4 makeupGain[4] = { 1 };
+    float_4 makeupGain[4] = {1};
 
-   // float_4 makeupGain_m = 1;
+    // float_4 makeupGain_m = 1;
     Divider divn;
 
     // we could unify this stuff with the ui stuff, above.
@@ -161,8 +162,10 @@ private:
     float lastRawR = -1;
     float lastRawThreshold = -1;
     float lastRawRatio = -1;
-    int lastNumChannels = -1;
+    int lastChannelCount = -1;
     bool lastNotBypassed = false;
+
+    std::shared_ptr<IComposite> compDescription = {Compressor2<TBase>::getDescription()};
 };
 
 template <class TBase>
@@ -189,12 +192,37 @@ inline void Compressor2<TBase>::init() {
 }
 
 /**
+ * set all the params to the right setting for the new channel
+ */
+template <class TBase>
+inline void Compressor2<TBase>::updateCurrentChannel() {
+    /*
+     ATTACK_PARAM,
+        RELEASE_PARAM,
+        THRESHOLD_PARAM,
+        RATIO_PARAM,
+        MAKEUPGAIN_PARAM,
+        NOTBYPASS_PARAM,
+        WETDRY_PARAM,
+    for (int i=0; i< )
+    */
+
+    Compressor2<TBase>::params[ATTACK_PARAM].value = compParams.getAttack(currentChannel_m);
+    Compressor2<TBase>::params[RELEASE_PARAM].value = compParams.getRelease(currentChannel_m);
+    Compressor2<TBase>::params[THRESHOLD_PARAM].value = compParams.getThreshold(currentChannel_m);
+    Compressor2<TBase>::params[RATIO_PARAM].value = compParams.getRatio(currentChannel_m);
+    Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value = compParams.getMakeupGain(currentChannel_m);
+    Compressor2<TBase>::params[NOTBYPASS_PARAM].value = compParams.getEnabled(currentChannel_m);
+    Compressor2<TBase>::params[WETDRY_PARAM].value = compParams.getWetDryMix(currentChannel_m);
+}
+
+/**
  * This function should set all members of param holders to defaults,
  * and then refresh all the compressors with those values
  */
 template <class TBase>
 inline void Compressor2<TBase>::initAllParams() {
-    auto icomp = Compressor2<TBase>::getDescription();
+    auto icomp = compDescription;
     for (int i = 0; i < 16; ++i) {
         compParams.setAttack(i, icomp->getParam(ATTACK_PARAM).def);
         compParams.setRelease(i, icomp->getParam(RELEASE_PARAM).def);
@@ -214,7 +242,6 @@ inline void Compressor2<TBase>::initAllParams() {
         updateMakeupGain(bank);
         updateBypassed(bank);
         updateMakeupGain(bank);
-
         // TODO: put all the update here
     }
 }
@@ -240,27 +267,6 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
     return gainReduction;
 }
 
-#if 0
-template <class TBase>
-inline float Compressor2<TBase>::getGainReductionDb() const {
-    float_4 minGain_4 = 1;
-    if (bypassed) {
-        return 0;
-    }
-
-    for (int bank = 0; bank < numBanks_m; ++bank) {
-        minGain_4 = SimdBlocks::min(minGain_4, compressors[bank].getGain());
-    }
-
-    float minGain = minGain_4[0];
-    minGain = std::min(minGain, minGain_4[1]);
-    minGain = std::min(minGain, minGain_4[2]);
-    minGain = std::min(minGain, minGain_4[3]);
-    auto r = AudioMath::db(minGain);
-    return -r;
-}
-#endif
-
 template <class TBase>
 inline void Compressor2<TBase>::stepn() {
     SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
@@ -276,6 +282,11 @@ inline void Compressor2<TBase>::stepn() {
     assert(currentChannel_m <= 15);
     currentBank_m = currentChannel_m / 4;
     currentSubChannel_m = currentChannel_m % 4;
+
+    if (currentChannel_m != lastChannelCount) {
+        lastChannelCount = currentChannel_m;
+        updateCurrentChannel();
+    }
 
     pollAttackRelease();
     pollWetDry();
@@ -344,7 +355,7 @@ template <class TBase>
 inline void Compressor2<TBase>::pollAttackRelease() {
     const float rawAttack = Compressor2<TBase>::params[ATTACK_PARAM].value;
     const float rawRelease = Compressor2<TBase>::params[RELEASE_PARAM].value;
- //   const bool reduceDistortion = true;
+    //   const bool reduceDistortion = true;
 
     if (rawAttack != lastRawA || rawRelease != lastRawR) {
         lastRawA = rawAttack;
@@ -385,11 +396,11 @@ inline void Compressor2<TBase>::updateThresholdAndRatio(int bank) {
     float_4 rawThresholds_4 = compParams.getThresholds(bank);
     float_4 th;
     Cmprsr::Ratios r[4];
-  
-    for (int i=0; i< 4; ++i) {
-         const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, rawThresholds_4[i]);
-         th[i] = threshold;
-         r[i] =  Cmprsr::Ratios(rawRatios_4[i]);
+
+    for (int i = 0; i < 4; ++i) {
+        const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, rawThresholds_4[i]);
+        th[i] = threshold;
+        r[i] = Cmprsr::Ratios(rawRatios_4[i]);
     }
 
     compressors[bank].setThresholdPoly(th);
@@ -418,7 +429,6 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
     SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
 
-
     // TODO: bypassed per channel - need to completely re-do
     for (int bank = 0; bank < numBanks_m; ++bank) {
         const int baseChannel = bank * 4;
@@ -427,11 +437,11 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
         const float_4 wetOutput = compressors[bank].step(input) * makeupGain[bank];
         const float_4 mixedOutput = wetOutput * wetLevel[bank] + input * dryLevel[bank];
-       
+
         const float_4 out = SimdBlocks::ifelse(en, mixedOutput, input);
-      //  SQINFO("\nbank=%d input=%s wet=%s", bank, toStr(input).c_str(), toStr(wetOutput).c_str());
-      //  SQINFO("en=%s, true=%s", toStr(en).c_str(), toStr(SimdBlocks::maskTrue()).c_str());
-      //  SQINFO("output=%s", toStr(out).c_str());
+        //  SQINFO("\nbank=%d input=%s wet=%s", bank, toStr(input).c_str(), toStr(wetOutput).c_str());
+        //  SQINFO("en=%s, true=%s", toStr(en).c_str(), toStr(SimdBlocks::maskTrue()).c_str());
+        //  SQINFO("output=%s", toStr(out).c_str());
         outPort.setVoltageSimd(out, baseChannel);
     }
 }
