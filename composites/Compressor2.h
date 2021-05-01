@@ -344,7 +344,7 @@ template <class TBase>
 inline void Compressor2<TBase>::pollAttackRelease() {
     const float rawAttack = Compressor2<TBase>::params[ATTACK_PARAM].value;
     const float rawRelease = Compressor2<TBase>::params[RELEASE_PARAM].value;
-    const bool reduceDistortion = true;
+ //   const bool reduceDistortion = true;
 
     if (rawAttack != lastRawA || rawRelease != lastRawR) {
         lastRawA = rawAttack;
