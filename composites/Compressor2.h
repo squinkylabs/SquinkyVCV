@@ -129,6 +129,8 @@ private:
     void updateWetDry(int bank);
     void pollBypassed();
     void updateBypassed(int bank);
+    void pollMakeupGain();
+    void updateMakeupGain(int bank);
 
     int numChannels_m = 0;
     int numBanks_m = 0;
@@ -139,7 +141,9 @@ private:
     float_4 wetLevel[4] = {0};
     float_4 dryLevel[4] = {0};
     float_4 enabled[4] = {0};
-    float_4 makeupGain_m = 1;
+    float_4 makeupGain[4] = { 1 };
+
+   // float_4 makeupGain_m = 1;
     Divider divn;
 
     // we could unify this stuff with the ui stuff, above.
@@ -205,6 +209,8 @@ inline void Compressor2<TBase>::initAllParams() {
         updateAttackAndRelease(bank);
         updateThresholdAndRatio(bank);
         updateWetDry(bank);
+        updateMakeupGain(bank);
+        updateBypassed(bank);
 
         // TODO: put all the update here
     }
@@ -403,7 +409,7 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
         const float_4 en = compParams.getEnableds(bank);
         simd_assertMask(en);
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const float_4 wetOutput = compressors[bank].step(input) * makeupGain_m;
+        const float_4 wetOutput = compressors[bank].step(input) * makeupGain[bank;
         const float_4 mixedOutput = wetOutput * wetLevel[bank] + input * dryLevel[bank];
        
         const float_4 out = SimdBlocks::ifelse(en, mixedOutput, input);

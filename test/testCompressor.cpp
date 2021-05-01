@@ -604,6 +604,54 @@ static void testBypass(int channel) {
         }
     }
 }
+
+static void testGain(int channel) {
+    SQINFO("--- testPolyWetDry %d", channel);
+    Comp2 comp;
+    init(comp);
+    run(comp, 40);
+
+    const int bank = channel / 4;
+    const int subChannel = channel % 4;
+
+    // assert that all are the same to starts
+    if (channel == 0)
+    {
+        for (int i = 0; i < 4; ++i) {
+            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(1)._getRatio()[i]));
+            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(2)._getRatio()[i]));
+            assertEQ(int(comp._getComp(0)._getRatio()[i]), int(comp._getComp(3)._getRatio()[i]));
+            //  simd_assertEQ(comp._getComp(0)._getTh(), comp._getComp(2)._getTh());
+            //  simd_assertEQ(comp._getComp(0)._getTh(), comp._getComp(3)._getTh());
+        }
+
+        auto x = comp._getComp(0)._getRatio();
+        assertEQ(int(x[0]), int(x[1]));
+        assertEQ(int(x[0]), int(x[2]));
+        assertEQ(int(x[0]), int(x[3]));
+      
+    }
+
+    comp.params[Comp2::CHANNEL_PARAM].value = channel + 1.f;    // offset 01
+    run(comp, 40);
+    comp.params[Comp2::MAKEUPGAIN_PARAM].value = 0.f;
+    run(comp, 40);
+
+    auto e = comp._getEn(bank);
+    float_4 en = SimdBlocks::ifelse(e, float_4(1), float_4(0));
+    for (int i = 0; i < 4; ++i) {
+        int other = (i + 1) % 4;
+        if (i == subChannel) {
+            assertNE(en[i], en[other])
+        }
+        else if (other != subChannel) {
+            // figure out later
+             //   assertEQ(af[i], af[other]);
+        }
+    }
+}
+
+
 static void testPolyParams() {
 
     /*
@@ -613,9 +661,10 @@ static void testPolyParams() {
         THRESHOLD_PARAM,
         RATIO_PARAM,
         WETDRY_PARAM,
+                NOTBYPASS_PARAM,
     todo:
         MAKEUPGAIN_PARAM,
-        NOTBYPASS_PARAM,
+
         */
 
     for (int i=0; i<15; ++i) {
@@ -625,6 +674,7 @@ static void testPolyParams() {
         testPolyRatio(i);
         testPolyWetDry(i);
         testBypass(i);
+        testGain(i);
     }
 
  //   testPolyThreshold(2);
