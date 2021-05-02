@@ -13,9 +13,7 @@
 #include "ObjectCache.h"
 #include "SqLog.h"
 #include "SqPort.h"
-
 #include "engine/Port.hpp"
-
 
 namespace rack {
 namespace engine {
@@ -137,12 +135,15 @@ private:
     void pollMakeupGain();
     void updateMakeupGain(int bank);
     void updateCurrentChannel();
+    void pollStereo();
+    void makeAllSettingsStereo();
 
     int numChannels_m = 0;
     int numBanks_m = 0;
     int currentBank_m = -1;
     int currentSubChannel_m = -1;
     int currentChannel_m = -1;  // which of the 16 channels we are editing ATM.
+    int currentStereo_m = -1;
 
     float_4 wetLevel[4] = {0};
     float_4 dryLevel[4] = {0};
@@ -240,6 +241,48 @@ inline void Compressor2<TBase>::initAllParams() {
 }
 
 template <class TBase>
+inline void Compressor2<TBase>::makeAllSettingsStereo() {
+    for (int i = 0; i < 8; ++i) {
+        const int left = i * 2;
+        const int right = left + 1;
+
+        {
+            const float a = .5 * (compParams.getAttack(left) + compParams.getAttack(right));
+            compParams.setAttack(left, a);
+            compParams.setAttack(right, a);
+        }
+        {
+            const float r = .5 * (compParams.getRelease(left) + compParams.getRelease(right));
+            compParams.setRelease(left, r);
+            compParams.setRelease(right, r);
+        }
+        {
+            const int ratio = compParams.getRatio(left);
+            compParams.setRatio(right, ratio);
+        }
+        {
+            const float th = .5 * (compParams.getThreshold(left) + compParams.getThreshold(right));
+            compParams.setThreshold(left, th);
+            compParams.setThreshold(right, th);
+        }
+        {
+            const float m = .5 * (compParams.getMakeupGain(left) + compParams.getMakeupGain(right));
+            compParams.setMakeupGain(left, m);
+            compParams.setMakeupGain(right, m);
+        }
+        {
+            const bool b = compParams.getEnabled(left);
+            compParams.setEnabled(right, b);
+        }
+        {
+            const float w = .5 * (compParams.getWetDryMix(left) + compParams.getWetDryMix(right));
+            compParams.setWetDry(left, w);
+            compParams.setWetDry(right, w);
+        }
+    }
+}
+
+template <class TBase>
 inline Cmprsr& Compressor2<TBase>::_getComp(int bank) {
     return compressors[bank];
 }
@@ -286,8 +329,17 @@ inline void Compressor2<TBase>::stepn() {
     pollMakeupGain();
     pollThresholdAndRatio();
     pollBypassed();
+    pollStereo();
 }
 
+template <class TBase>
+inline void Compressor2<TBase>::pollStereo() {
+    int stereo = int(std::round(Compressor2<TBase>::params[STEREO_PARAM].value));
+    if (stereo != currentStereo_m) {
+        currentStereo_m = stereo;
+        makeAllSettingsStereo();
+    }
+}
 template <class TBase>
 inline void Compressor2<TBase>::pollMakeupGain() {
     const float g = Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value;
@@ -488,7 +540,7 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             ret = {1, 16, 1, "edit channel"};
             break;
         case Compressor2<TBase>::STEREO_PARAM:
-            ret = { 0, 1, 0, "stereo" };
+            ret = {0, 1, 0, "stereo"};
             break;
         default:
             assert(false);
