@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "SqStream.h"
 #include "ctrl/SqTooltips.h"
 #include "Compressor.h"
 

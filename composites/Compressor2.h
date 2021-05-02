@@ -56,6 +56,7 @@ public:
         NOTBYPASS_PARAM,
         WETDRY_PARAM,
         CHANNEL_PARAM,
+        STEREO_PARAM,
         NUM_PARAMS
     };
 
@@ -196,21 +197,10 @@ inline void Compressor2<TBase>::init() {
  */
 template <class TBase>
 inline void Compressor2<TBase>::updateCurrentChannel() {
-    /*
-     ATTACK_PARAM,
-        RELEASE_PARAM,
-        THRESHOLD_PARAM,
-        RATIO_PARAM,
-        MAKEUPGAIN_PARAM,
-        NOTBYPASS_PARAM,
-        WETDRY_PARAM,
-    for (int i=0; i< )
-    */
-
     Compressor2<TBase>::params[ATTACK_PARAM].value = compParams.getAttack(currentChannel_m);
     Compressor2<TBase>::params[RELEASE_PARAM].value = compParams.getRelease(currentChannel_m);
     Compressor2<TBase>::params[THRESHOLD_PARAM].value = compParams.getThreshold(currentChannel_m);
-    Compressor2<TBase>::params[RATIO_PARAM].value = compParams.getRatio(currentChannel_m);
+    Compressor2<TBase>::params[RATIO_PARAM].value = float(compParams.getRatio(currentChannel_m));
     Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value = compParams.getMakeupGain(currentChannel_m);
     Compressor2<TBase>::params[NOTBYPASS_PARAM].value = compParams.getEnabled(currentChannel_m);
     Compressor2<TBase>::params[WETDRY_PARAM].value = compParams.getWetDryMix(currentChannel_m);
@@ -493,6 +483,9 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             break;
         case Compressor2<TBase>::CHANNEL_PARAM:
             ret = {1, 16, 1, "edit channel"};
+            break;
+        case Compressor2<TBase>::STEREO_PARAM:
+            ret = { 0, 1, 0, "stereo" };
             break;
         default:
             assert(false);

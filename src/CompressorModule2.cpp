@@ -1,5 +1,6 @@
 
-#include "SqStream.h"
+#include "engine/Port.hpp"
+
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
 
@@ -162,7 +163,8 @@ public:
 
 struct CompressorWidget2 : ModuleWidget {
     CompressorWidget2(Compressor2Module*);
-    DECLARE_MANUAL("Comp Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md");
+    //   DECLARE_MANUAL("Comp Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md");
+    void appendContextMenu(Menu* menu) override;
 
 #ifdef _LAB
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK) {
@@ -179,6 +181,17 @@ struct CompressorWidget2 : ModuleWidget {
     void addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp);
     void addVu(Compressor2Module* module);
 };
+
+void CompressorWidget2::appendContextMenu(Menu* theMenu) {
+    MenuLabel* spacerLabel = new MenuLabel();
+    theMenu->addChild(spacerLabel);
+    ManualMenuItem* manual = new ManualMenuItem("F2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
+    theMenu->addChild(manual);
+
+    SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::STEREO_PARAM);
+    item->text = "Stereo";
+    theMenu->addChild(item);
+}
 
 void CompressorWidget2::addVu(Compressor2Module* module) {
     // VCA_1VUKnob* levelParam = createChild<VCA_1VUKnob>(Vec(90, 40), module, Comp::RELEASE_PARAM);
@@ -286,7 +299,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
         Vec(knobX2 + 8, 4 + knobY + 2 * dy),
         module,  Comp::BYPASS_PARAM));
 #else
-    ToggleButton *tog = SqHelper::createParam<ToggleButton>(
+    ToggleButton* tog = SqHelper::createParam<ToggleButton>(
         icomp,
         Vec(55, 229),
         module, Comp::NOTBYPASS_PARAM);
