@@ -1,9 +1,5 @@
 
-#include "engine/Port.hpp"
-
-#include "Squinky.hpp"
-#include "WidgetComposite.h"
-
+//#include "engine/Port.hpp"
 #include "Compressor2.h"
 #include "CompressorTooltips.h"
 #include "SqStream.h"
@@ -16,6 +12,7 @@
 #include "ctrl/SqVuMeter.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/ToggleButton.h"
+#include "engine/Port.hpp"
 
 using Comp = Compressor2<WidgetComposite>;
 
@@ -180,6 +177,10 @@ struct CompressorWidget2 : ModuleWidget {
     void addJacks(Compressor2Module* module, std::shared_ptr<IComposite> icomp);
     void addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp);
     void addVu(Compressor2Module* module);
+    void step() override;
+
+    int lastStereo = -1;
+    ParamWidget*channelKnob = nullptr;
 };
 
 void CompressorWidget2::appendContextMenu(Menu* theMenu) {
@@ -191,6 +192,21 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::STEREO_PARAM);
     item->text = "Stereo";
     theMenu->addChild(item);
+}
+
+void CompressorWidget2::step() {
+    ModuleWidget::step();
+    int stereo = int(std::round(::rack::appGet()->engine->getParam(module, Comp::STEREO_PARAM)));
+    if (stereo != lastStereo) {
+        lastStereo = stereo;
+
+        const int steps = stereo ? 8 : 16;
+        channelKnob->paramQuantity->maxValue = steps;
+        if (channelKnob->paramQuantity->getValue() > steps) {
+            ::rack::appGet()->engine->setParam(module, Comp::CHANNEL_PARAM, steps);
+        }
+        INFO("set knob max to %d", (int) channelKnob->paramQuantity->maxValue);
+    }
 }
 
 void CompressorWidget2::addVu(Compressor2Module* module) {
@@ -262,11 +278,13 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
         Vec(knobX3 - 10, 101 - 20),
         "Chan");
 #endif
-    addParam(SqHelper::createParam<Blue30SnapKnob>(
+    channelKnob = SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         // Vec(knobX, knobY + 1 * dy),
         Vec(knobX3, 101),
-        module, Comp::CHANNEL_PARAM));
+        module, Comp::CHANNEL_PARAM);
+
+    addParam(channelKnob);
 
 #ifdef _LAB
     addLabel(

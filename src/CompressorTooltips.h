@@ -5,6 +5,8 @@
 #include "ctrl/SqTooltips.h"
 #include "Compressor.h"
 
+#include "WidgetComposite.h"
+
 class LambdaQuantity : public SqTooltips::SQParamQuantity {
 public:
     LambdaQuantity(const ParamQuantity& other) : 

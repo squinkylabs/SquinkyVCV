@@ -14,6 +14,9 @@
 #include "SqLog.h"
 #include "SqPort.h"
 
+#include "engine/Port.hpp"
+
+
 namespace rack {
 namespace engine {
 struct Module;
