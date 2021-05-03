@@ -356,8 +356,12 @@ inline void Compressor2<TBase>::pollMakeupGain() {
     const float g = Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value;
     if (g != lastRawMakeupGain) {
         lastRawMakeupGain = g;
-          assert(!currentStereo_m);
-        compParams.setMakeupGain(currentChannel_m, g);
+        if (!currentStereo_m) {
+            compParams.setMakeupGain(currentChannel_m, g);
+        } else {
+            compParams.setMakeupGain(2 * currentChannel_m, g);
+            compParams.setMakeupGain(2 * currentChannel_m + 1, g);
+        }
         updateMakeupGain(currentBank_m);
     }
 }
@@ -379,8 +383,7 @@ inline void Compressor2<TBase>::pollBypassed() {
         lastNotBypassed = notByp;
         if (!currentStereo_m) {
             compParams.setEnabled(currentChannel_m, notByp);
-        }
-        else {
+        } else {
             compParams.setEnabled(2 * currentChannel_m, notByp);
             compParams.setEnabled(2 * currentChannel_m + 1, notByp);
         }
@@ -466,13 +469,11 @@ inline void Compressor2<TBase>::pollWetDry() {
         lastRawMix = rawWetDry;
         if (!currentStereo_m) {
             compParams.setWetDry(currentChannel_m, rawWetDry);
-        }
-        else {
+        } else {
             compParams.setWetDry(2 * currentChannel_m, rawWetDry);
             compParams.setWetDry(2 * currentChannel_m + 1, rawWetDry);
         }
         updateWetDry(currentBank_m);
-      
     }
 }
 

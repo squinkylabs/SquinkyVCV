@@ -51,22 +51,20 @@ public:
     const MultiLPF2& _getAF() const { return attackFilter; }
     float_4 _getTh() const { return threshold; }
     const Ratios* _getRatio() const { return ratio; }
+
 private:
     MultiLag2 lag;
     MultiLPF2 attackFilter;
 
     // TODO: get rid of the non-poly version
     bool reduceDistortion = false;
-    float_4 reduceDistortionPoly = { 0 };
-
+    float_4 reduceDistortionPoly = {0};
 
     float_4 threshold = 5;
     float_4 invThreshold = 1.f / 5.f;
 
-    int ratioIndex[4] = { 0 };
-    Ratios ratio[4] = { Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit };
-    //int ratioIndex = 0;
-   // Ratios ratio = Ratios::HardLimit;
+    int ratioIndex[4] = {0};
+    Ratios ratio[4] = {Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit};
     int maxChannel = 3;
 
 #ifdef _SQATOMIC
@@ -94,7 +92,6 @@ inline void Cmprsr::setNumChannels(int ch) {
     maxChannel = ch - 1;
     updateProcFun();
 }
-
 
 // only called for non poly
 inline void Cmprsr::updateProcFun() {
@@ -140,15 +137,12 @@ inline float_4 Cmprsr::step(float_4 input) {
 // only non poly
 inline float_4 Cmprsr::step1Comp(float_4 input) {
     assert(wasInit());
-    //printf("step1Comp gain = %s\n", toStr(gain_).c_str());
     lag.step(rack::simd::abs(input));
     float_4 envelope = lag.get();
 
     CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
-    //   gain = float_4(1);
     const float_4 level = envelope * invThreshold;
 
-    // gain[0] = CompCurves::lookup(table, level[0]);
     float_4 t = gain_;
     t[0] = CompCurves::lookup(table, level[0]);
     gain_ = t;
@@ -159,7 +153,6 @@ inline float_4 Cmprsr::step1Comp(float_4 input) {
 inline float_4 Cmprsr::step1NoDistComp(float_4 input) {
     assert(wasInit());
 
-    //printf("step1NoDist gain = %s\n", toStr(gain_).c_str());
     lag.step(rack::simd::abs(input));
     attackFilter.step(lag.get());
     float_4 envelope = attackFilter.get();
@@ -207,7 +200,6 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
     }
 }
 
-// only non-poly
 inline float_4 Cmprsr::stepPoly(float_4 input) {
     assert(wasInit());
     simd_assertMask(reduceDistortionPoly);
@@ -218,41 +210,37 @@ inline float_4 Cmprsr::stepPoly(float_4 input) {
     attackFilter.step(lag.get());
     envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
 
-
     // have to do the rest non-simd - in case the curves are all different.
     // TODO: optimized case for all curves the same
     for (int iChan = 0; iChan < 4; ++iChan) {
         if (ratio[iChan] == Ratios::HardLimit) {
             // const float reductionGain = threshold[iChan] / envelope[iChan];
             gain_[iChan] = (envelope[iChan] > threshold[iChan]) ? threshold[iChan] / envelope[iChan] : 1.f;
-        }
-        else {
+        } else {
             CompCurves::LookupPtr table = ratioCurves[ratioIndex[iChan]];
             const float level = envelope[iChan] * invThreshold[iChan];
             gain_[iChan] = CompCurves::lookup(table, level);
         }
-
     }
     return gain_ * input;
 }
 
 inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float sampleTime) {
-   // simd_assertMask(enableDistortionReduction);
+    // simd_assertMask(enableDistortionReduction);
     const float_4 correction = 2 * M_PI;
     const float_4 releaseHz = 1000.f / (releaseMs * correction);
     const float_4 attackHz = 1000.f / (attackMs * correction);
-  //  const float_4 normRelease = releaseHz * sampleTime;
+    //  const float_4 normRelease = releaseHz * sampleTime;
 
     // this sets:
     // this->reduce dist
-    // lag.instantAttack    
+    // lag.instantAttack
     // lag.release
     // lag.attack
     // attackFilter.cutoff
 
+    // this->reduceDistortionPoly = SimdBlocks::ifelse( attackMs < float_4(.1f), SimdBlocks::maskFalse(), enableDistortionReduction);
 
-   // this->reduceDistortionPoly = SimdBlocks::ifelse( attackMs < float_4(.1f), SimdBlocks::maskFalse(), enableDistortionReduction);
-    
     // let's had code on for poly. It's always on anyway.
     this->reduceDistortionPoly = SimdBlocks::maskTrue();
     lag.setInstantAttackPoly(attackMs < float_4(.1f));
@@ -260,10 +248,8 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
     lag.setAttackPoly(attackHz * sampleTime);
     attackFilter.setCutoffPoly(attackHz * sampleTime);
     lag.setReleasePoly(releaseHz * sampleTime);
-   
 
-
-    #if 0
+#if 0
 
     if (attackMs < .1) {
         reduceDistortion = false;  // no way to do this at zero attack
@@ -287,8 +273,8 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
     }
 
     lag.setRelease(normRelease);
-    #endif
-   // updateProcFun();
+#endif
+    // updateProcFun();
 }
 
 inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, bool enableDistortionReduction) {

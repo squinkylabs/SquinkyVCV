@@ -496,10 +496,6 @@ static void testPolyStereoThreshold(int stereoChannel) {
     const int leftChannel = stereoChannel * 2;
     const int bank = leftChannel / 4;
 
-    // get the four channel compressor. assert on initial conditions
-    //  Cmprsr& c = comp._getComp(bank);
-    //  const MultiLag2& lag = c._getLag();
-
     comp.params[Comp2::STEREO_PARAM].value = 1;
     comp.params[Comp2::CHANNEL_PARAM].value = stereoChannel + 1.f;  // offset 01
     run(comp, 40);
@@ -562,10 +558,6 @@ static void testPolyStereoRatio(int stereoChannel) {
     const int leftChannel = stereoChannel * 2;
     const int bank = leftChannel / 4;
 
-    // get the four channel compressor. assert on initial conditions
-    //  Cmprsr& c = comp._getComp(bank);
-    //  const MultiLag2& lag = c._getLag();
-
     comp.params[Comp2::STEREO_PARAM].value = 1;
     comp.params[Comp2::CHANNEL_PARAM].value = stereoChannel + 1.f;  // offset 01
     run(comp, 40);
@@ -626,10 +618,6 @@ static void testPolyStereoWetDry(int stereoChannel) {
     const int leftChannel = stereoChannel * 2;
     const int bank = leftChannel / 4;
 
-    // get the four channel compressor. assert on initial conditions
-    //  Cmprsr& c = comp._getComp(bank);
-    //  const MultiLag2& lag = c._getLag();
-
     comp.params[Comp2::STEREO_PARAM].value = 1;
     comp.params[Comp2::CHANNEL_PARAM].value = stereoChannel + 1.f;  // offset 01
     run(comp, 40);
@@ -642,7 +630,6 @@ static void testPolyStereoWetDry(int stereoChannel) {
     assertEQ(w[2], w[3]);
     assertNE(w[0], w[2]);
 }
-
 
 static void testBypass(int channel) {
     Comp2 comp;
@@ -689,17 +676,12 @@ static void testStereoBypass(int stereoChannel) {
     const int leftChannel = stereoChannel * 2;
     const int bank = leftChannel / 4;
 
-    // get the four channel compressor. assert on initial conditions
-    //  Cmprsr& c = comp._getComp(bank);
-    //  const MultiLag2& lag = c._getLag();
-
     comp.params[Comp2::STEREO_PARAM].value = 1;
     comp.params[Comp2::CHANNEL_PARAM].value = stereoChannel + 1.f;  // offset 01
     run(comp, 40);
     comp.params[Comp2::NOTBYPASS_PARAM].value = .0f;
     run(comp, 40);
 
-   // auto w = comp._getWet(bank);
     auto e = comp._getEn(bank);
     float_4 en = SimdBlocks::ifelse(e, float_4(1), float_4(0));
     // stereo pairs
@@ -748,6 +730,27 @@ static void testGain(int channel) {
     }
 }
 
+static void testStereoGain(int stereoChannel) {
+    Comp2 comp;
+    init(comp);
+    run(comp, 40);
+
+    const int leftChannel = stereoChannel * 2;
+    const int bank = leftChannel / 4;
+
+    comp.params[Comp2::STEREO_PARAM].value = 1;
+    comp.params[Comp2::CHANNEL_PARAM].value = stereoChannel + 1.f;  // offset 01
+    run(comp, 40);
+    comp.params[Comp2::MAKEUPGAIN_PARAM].value = .2f;
+    run(comp, 40);
+
+    auto g = comp._getG(bank);
+    // stereo pairs
+    assertEQ(g[0], g[1]);
+    assertEQ(g[2], g[3]);
+    assertNE(g[0], g[2]);
+}
+
 static void testPolyParams() {
     for (int i = 0; i < 15; ++i) {
         testPolyAttack(i);
@@ -768,6 +771,7 @@ static void testPolyStereoParams() {
         testPolyStereoRatio(i);
         testPolyStereoWetDry(i);
         testStereoBypass(i);
+        testStereoGain(i);
     }
 }
 
@@ -777,7 +781,6 @@ void testCompressor() {
 
     testCompUI();
     testCompLim();
-
     testCompRatio8();
 
     // testCompPolyOrig();
