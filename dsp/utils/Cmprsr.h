@@ -100,7 +100,7 @@ inline void Cmprsr::setNumChannels(int ch) {
 
 // only called for non poly
 inline void Cmprsr::updateProcFun() {
-     printf("in update, max = %d\n", maxChannel);
+    // printf("in update, max = %d\n", maxChannel);
     procFun = &Cmprsr::stepGeneric;
     if (maxChannel == 0 && (ratio[0] != Ratios::HardLimit)) {
         if (reduceDistortion) {

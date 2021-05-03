@@ -180,7 +180,9 @@ struct CompressorWidget2 : ModuleWidget {
     void step() override;
 
     int lastStereo = -1;
-    ParamWidget*channelKnob = nullptr;
+    ParamWidget* channelKnob = nullptr;
+    Label* channelIndicator = nullptr;
+    int lastChannel = -1;
 };
 
 void CompressorWidget2::appendContextMenu(Menu* theMenu) {
@@ -199,7 +201,7 @@ void CompressorWidget2::step() {
     if (!module) {
         return;
     }
-    int stereo = int(std::round(::rack::appGet()->engine->getParam(module, Comp::STEREO_PARAM)));
+    const int stereo = int(std::round(::rack::appGet()->engine->getParam(module, Comp::STEREO_PARAM)));
     if (stereo != lastStereo) {
         lastStereo = stereo;
 
@@ -208,7 +210,15 @@ void CompressorWidget2::step() {
         if (channelKnob->paramQuantity->getValue() > steps) {
             ::rack::appGet()->engine->setParam(module, Comp::CHANNEL_PARAM, steps);
         }
-        INFO("set knob max to %d", (int) channelKnob->paramQuantity->maxValue);
+        INFO("set knob max to %d", (int)channelKnob->paramQuantity->maxValue);
+    }
+
+    const int channel = int(std::round(::rack::appGet()->engine->getParam(module, Comp::CHANNEL_PARAM)));
+    if (channel != lastChannel) {
+        lastChannel = channel;
+        SqStream sq;
+        sq.add(channel);
+        channelIndicator->text = sq.str();
     }
 }
 
@@ -217,123 +227,96 @@ void CompressorWidget2::addVu(Compressor2Module* module) {
     //	levelParam->module = module;
     //	addChild(levelParam);
     auto vu = new VCA_1VUKnob();
-    vu->box.pos = Vec(90, 190);
+    vu->box.pos = Vec(92, 160);
     vu->module = module;
     addChild(vu);
-
-#if 0
-    auto vu = new SqVuMeter();
-    vu->box.size = Vec(72, 14);
-    //vu->box.pos = Vec(10, 254);
-    vu->box.pos = Vec(9, 82),
-    vu->setGetter( [module]() {
-        return module ? module->getGainReductionDb() : 4;
-    });
-    addChild(vu);
-#endif
 }
 
 void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
 #ifdef _LAB
-    const float knobX = 10;
-    const float knobX2 = 50;
-    const float knobX3 = 90;
-    // const float knobY = 58;
-    // const float labelY = knobY - 20;
-    // const float dy = 56;
-#endif
-
-#ifdef _LAB
     addLabel(
-        Vec(knobX - 4, 174 - 20),
+        Vec(1, 201),
         "Atck");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         //Vec(knobX, knobY + 0 * dy),
-        Vec(8, 174),
+        Vec(5, 218),
         module, Comp::ATTACK_PARAM));
 
 #ifdef _LAB
     addLabel(
-        Vec(knobX2 - 1, 174 - 20),
+        Vec(50, 201),
         "Rel");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         //Vec(knobX2, knobY + 0 * dy),
-        Vec(52, 174),
+        Vec(52, 218),
         module, Comp::RELEASE_PARAM));
 
 #ifdef _LAB
     addLabel(
-        Vec(knobX - 10, 121 - 20),
+        Vec(0, 149),
         "Thrsh");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
         // Vec(knobX, knobY + 1 * dy),
-        Vec(8, 121),
+        Vec(8, 165),
         module, Comp::THRESHOLD_PARAM));
 
 #ifdef _LAB
     addLabel(
-        Vec(knobX3 - 10, 101 - 20),
-        "Chan");
+        Vec(40, 38),
+        "Channel");
 #endif
     channelKnob = SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         // Vec(knobX, knobY + 1 * dy),
-        Vec(knobX3, 101),
+        Vec(8, 41),
         module, Comp::CHANNEL_PARAM);
 
     addParam(channelKnob);
+    channelIndicator = addLabel(Vec(62, 54), "");
 
 #ifdef _LAB
     addLabel(
-        Vec(knobX - 2, 225 - 20),
+        Vec(5, 251),
         "Mix");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        //Vec(knobX2, knobY + 1 * dy),
-        Vec(8, 225),
+        Vec(8, 269),
         module, Comp::WETDRY_PARAM));
 
 #ifdef _LAB
     addLabel(
-        Vec(knobX2 - 10, 121 - 20),
+        Vec(49, 149),
         "Out");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        //Vec(knobX, knobY + 2 * dy),
-        Vec(52, 121),
+        Vec(52, 165),
         module, Comp::MAKEUPGAIN_PARAM));
 
 #ifdef _LAB
-    addLabel(Vec(knobX2, 229 - 20), "1/0");
+    addLabel(Vec(50, 253), "1/0");
 #endif
-#if 0
-    addParam(SqHelper::createParam<CKSS>(
-        icomp,
-        Vec(knobX2 + 8, 4 + knobY + 2 * dy),
-        module,  Comp::BYPASS_PARAM));
-#else
+
     ToggleButton* tog = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(55, 229),
+        Vec(56, 273),
         module, Comp::NOTBYPASS_PARAM);
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
     addParam(tog);
-#endif
 
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
         //Vec(knobX,  - 11 + knobY + 3 * dy),
-        Vec(8, 50),
+        Vec(8, 101),
         module,
         Comp::RATIO_PARAM);
     p->box.size.x = 73;  // width
@@ -345,69 +328,26 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
 void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
 #ifdef _LAB
-    const float jackX = 10;
-    const float jackX2 = 50;
-    const float labelX = jackX - 6;
-    const float label2X = jackX2 - 6;
-
-    const float jackY = 288 + 44;
-    const float labelY = jackY - 18;
-
     addLabel(
-        Vec(labelX + 4, labelY),
+        Vec(12, 307),
         "In");
 #endif
     addInput(createInput<PJ301MPort>(
         //Vec(jackX, jackY),
-        Vec(11, jackY),
+        Vec(11, 326),
         module,
         Comp::LAUDIO_INPUT));
 
-#if 0
 #ifdef _LAB
     addLabel(
-        Vec(labelX+4, labelY + 1 * dy),
-        "InR");
-#endif
-    addInput(createInput<PJ301MPort>(
-       // Vec(jackX, jackY + 1 * dy),
-        Vec(11, 323),
-        module,
-        Comp::RAUDIO_INPUT));
-#endif
-
-#ifdef _LAB
-    addLabel(
-        Vec(label2X - 2, labelY),
+        Vec(86, 307),
         "Out");
 #endif
     addOutput(createOutput<PJ301MPort>(
         //Vec(jackX2, jackY + 0 * dy),
-        Vec(55, jackY),
+        Vec(91, 326),
         module,
         Comp::LAUDIO_OUTPUT));
-
-#if 0
-#ifdef _LAB
-    addLabel(
-        Vec(label2X - 2, labelY + 1 * dy),
-        "OutR");
-#endif
-    addOutput(createOutput<PJ301MPort>(
-       // Vec(jackX2, jackY + 1 * dy),
-        Vec(55, 323),
-        module,
-        Comp::RAUDIO_OUTPUT));
-#endif
-#if 0
-    addLabel(
-        Vec(labelX, labelY + 2 * dy),
-        "dbg");
-     addOutput(createOutput<PJ301MPort>(
-        Vec(jackX, jackY + 2 * dy),
-        module,
-        Comp::DEBUG_OUTPUT));
-#endif
 }
 
 /**
@@ -422,7 +362,7 @@ CompressorWidget2::CompressorWidget2(Compressor2Module* module) {
 
 #ifdef _LAB
     addLabel(
-        Vec(4, 17),
+        Vec(20, 15),
         "Compressor II");
 #endif
 
