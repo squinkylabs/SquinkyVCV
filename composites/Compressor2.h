@@ -108,6 +108,7 @@ public:
 
     int getNumVUChannels() const {
         // return numChannels_m;
+     //   SQINFO("getNumVUCH, ster=%d, numCh (raw)=%d ret %d\n",  currentStereo_m, numChannels_m, (currentStereo_m ? numChannels_m / 2 : numChannels_m));
         return currentStereo_m ? numChannels_m / 2 : numChannels_m;
     }
     float getChannelGain(int ch) const;
@@ -305,12 +306,27 @@ inline Cmprsr& Compressor2<TBase>::_getComp(int bank) {
  */
 template <class TBase>
 inline float Compressor2<TBase>::getChannelGain(int ch) const {
-    const int bank = ch / 4;
-    const int subChan = ch - bank * 4;
-    // TODO:db
-    float_4 g = compressors[bank].getGain();
-    float gainReduction = g[subChan];
-    return gainReduction;
+  
+    float gain = 1;
+
+    if (currentStereo_m == 1) {
+        const int channelLeft = 2 * ch;
+        const int bank = channelLeft / 4;
+        const int subChanL = channelLeft - bank * 4;
+        const float_4 g = compressors[bank].getGain();
+        const float gainL =  g[subChanL];
+        const float gainR =  g[subChanL + 1];
+      
+        gain = std::min(gainL, gainR);
+        //SQINFO("st ch=%d, b=%d chl=%d sub=%d ret=%.2f", ch, bank, channelLeft, subChanL, gain);
+    } else {
+          const int bank = ch / 4;
+        const int subChan = ch - bank * 4;
+      
+        float_4 g = compressors[bank].getGain();
+        gain = g[subChan];
+    }
+    return gain;
 }
 
 template <class TBase>
