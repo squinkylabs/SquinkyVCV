@@ -29,7 +29,6 @@ public:
     void onSampleRateChange() override;
     //   float getGainReductionDb();
 
-    std::shared_ptr<Comp> compressor;
     int getNumVUChannels() {
         return compressor->getNumVUChannels();
     }
@@ -37,7 +36,11 @@ public:
         return compressor->getChannelGain(channel);
     }
 
+    virtual json_t* dataToJson() override;
+    virtual void dataFromJson(json_t* root) override;
+
 private:
+    std::shared_ptr<Comp> compressor;
 };
 
 Compressor2Module::Compressor2Module() {
@@ -59,12 +62,41 @@ Compressor2Module::Compressor2Module() {
     compressor->init();
 }
 
-#if 0
-float Compressor2Module::getGainReductionDb()
-{
-    return compressor->getGainReductionDb();
+json_t* Compressor2Module::dataToJson() {
+    json_t* rootJ = json_object();
+    if (compressor) {
+        auto params = compressor->getParamHolder();
+        json_t* attacks = json_array();
+        json_t* releases = json_array();
+        json_t* thresholds = json_array();
+        json_t* makeups = json_array();
+        json_t* enableds = json_array();
+        json_t* wetdrys = json_array();
+       // json_t* attacks = json_array();
+        json_t* ratios = json_array();
+        for (int i = 0; i < 15; ++i) {
+            json_array_append_new(attacks, json_real(params.getAttack(i)));
+            json_array_append_new(releases, json_real(params.getRelease(i)));
+            json_array_append_new(thresholds, json_real(params.getThreshold(i)));
+            json_array_append_new(makeups, json_real(params.getMakeupGain(i)));
+            json_array_append_new(enableds, json_real(params.getEnabled(i)));
+            json_array_append_new(wetdrys, json_real(params.getWetDryMix(i)));
+            json_array_append_new(ratios, json_real(params.getRatio(i)));
+        }
+        json_object_set_new(rootJ, "attacks", attacks);
+        json_object_set_new(rootJ, "releases", releases);
+        json_object_set_new(rootJ, "thresholds", thresholds);
+        json_object_set_new(rootJ, "makeups", makeups);
+        json_object_set_new(rootJ, "enableds", enableds);
+        json_object_set_new(rootJ, "wetdrys", wetdrys);
+        json_object_set_new(rootJ, "ratios", ratios);
+    }
+    return rootJ;
 }
-#endif
+
+void Compressor2Module::dataFromJson(json_t* root) {
+    // assert(false);
+}
 
 void Compressor2Module::process(const ProcessArgs& args) {
     compressor->process(args);

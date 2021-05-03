@@ -278,7 +278,7 @@ static void testPolyInit() {
     init(comp);
 
     {
-        const CompressorParmHolder& holder = comp._getHolder();
+        const CompressorParmHolder& holder = comp.getParamHolder();
         auto def = getDefaultParamValues<Comp2>();
         for (int i = 0; i < def.size(); ++i) {
             assertEQ(comp.params[i].value, def[i]);
@@ -295,7 +295,7 @@ static void testPolyInit() {
     }
     run(comp, 40);
 
-    auto& holder = comp._getHolder();
+    auto& holder = comp.getParamHolder();
     float a = holder.getAttack(0);
     float r = holder.getRelease(0);
 

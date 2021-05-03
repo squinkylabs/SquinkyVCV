@@ -92,7 +92,6 @@ public:
 
     void onSampleRateChange() override;
 
-    //float getGainReductionDb() const;
     static const std::vector<std::string>& ratios();
     static const std::vector<std::string>& ratiosLong();
     static std::function<double(double)> getSlowAttackFunction() {
@@ -107,14 +106,13 @@ public:
     }
 
     int getNumVUChannels() const {
-        // return numChannels_m;
-     //   SQINFO("getNumVUCH, ster=%d, numCh (raw)=%d ret %d\n",  currentStereo_m, numChannels_m, (currentStereo_m ? numChannels_m / 2 : numChannels_m));
         return currentStereo_m ? numChannels_m / 2 : numChannels_m;
     }
     float getChannelGain(int ch) const;
+    CompressorParmHolder& getParamHolder() { return compParams; }
 
     Cmprsr& _getComp(int bank);
-    const CompressorParmHolder& _getHolder() { return compParams; }
+
     float_4 _getWet(int bank) const { return wetLevel[bank]; }
     float_4 _getEn(int bank) const { return enabled[bank]; }
     float_4 _getG(int bank) const { return makeupGain[bank]; }
@@ -306,7 +304,6 @@ inline Cmprsr& Compressor2<TBase>::_getComp(int bank) {
  */
 template <class TBase>
 inline float Compressor2<TBase>::getChannelGain(int ch) const {
-  
     float gain = 1;
 
     if (currentStereo_m == 1) {
@@ -314,15 +311,15 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
         const int bank = channelLeft / 4;
         const int subChanL = channelLeft - bank * 4;
         const float_4 g = compressors[bank].getGain();
-        const float gainL =  g[subChanL];
-        const float gainR =  g[subChanL + 1];
-      
+        const float gainL = g[subChanL];
+        const float gainR = g[subChanL + 1];
+
         gain = std::min(gainL, gainR);
         //SQINFO("st ch=%d, b=%d chl=%d sub=%d ret=%.2f", ch, bank, channelLeft, subChanL, gain);
     } else {
-          const int bank = ch / 4;
+        const int bank = ch / 4;
         const int subChan = ch - bank * 4;
-      
+
         float_4 g = compressors[bank].getGain();
         gain = g[subChan];
     }
