@@ -376,9 +376,14 @@ template <class TBase>
 inline void Compressor2<TBase>::pollBypassed() {
     const bool notByp = bool(std::round(Compressor2<TBase>::params[NOTBYPASS_PARAM].value));
     if (notByp != lastNotBypassed) {
-          assert(!currentStereo_m);
         lastNotBypassed = notByp;
-        compParams.setEnabled(currentChannel_m, notByp);
+        if (!currentStereo_m) {
+            compParams.setEnabled(currentChannel_m, notByp);
+        }
+        else {
+            compParams.setEnabled(2 * currentChannel_m, notByp);
+            compParams.setEnabled(2 * currentChannel_m + 1, notByp);
+        }
         updateBypassed(currentBank_m);
     }
 }
