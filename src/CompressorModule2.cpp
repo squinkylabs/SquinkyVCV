@@ -30,8 +30,8 @@ public:
     //   float getGainReductionDb();
 
     std::shared_ptr<Comp> compressor;
-    int getNumChannels() {
-        return compressor->getNumChannels();
+    int getNumVUChannels() {
+        return compressor->getNumVUChannels();
     }
     float getChannelGain(int channel) {
         return compressor->getChannelGain(channel);
@@ -101,7 +101,7 @@ public:
         const Vec margin = Vec(3, 3);
         Rect r = box.zeroPos().grow(margin.neg());
 
-        int channels = module ? module->getNumChannels() : 1;
+        int channels = module ? module->getNumVUChannels() : 1;
 
         // Segment value
         const float value = 1;
@@ -196,6 +196,9 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
 
 void CompressorWidget2::step() {
     ModuleWidget::step();
+    if (!module) {
+        return;
+    }
     int stereo = int(std::round(::rack::appGet()->engine->getParam(module, Comp::STEREO_PARAM)));
     if (stereo != lastStereo) {
         lastStereo = stereo;

@@ -106,8 +106,9 @@ public:
         return AudioMath::makeFunc_Exp(0, 10, .1, 10);
     }
 
-    int getNumChannels() const {
-        return numChannels_m;
+    int getNumVUChannels() const {
+       // return numChannels_m;
+       return currentStereo_m ? numChannels_m / 2 : numChannels_m;
     }
     float getChannelGain(int ch) const;
 
