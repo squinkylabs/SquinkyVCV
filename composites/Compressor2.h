@@ -522,7 +522,7 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
         const float_4 en = compParams.getEnableds(bank);
         simd_assertMask(en);
         const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const float_4 wetOutput = compressors[bank].step(input) * makeupGain[bank];
+        const float_4 wetOutput = compressors[bank].stepPoly(input) * makeupGain[bank];
         const float_4 mixedOutput = wetOutput * wetLevel[bank] + input * dryLevel[bank];
 
         const float_4 out = SimdBlocks::ifelse(en, mixedOutput, input);
@@ -537,8 +537,7 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
 template <class TBase>
 inline void Compressor2<TBase>::setupLimiter() {
     for (int i = 0; i < 4; ++i) {
-        compressors[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
-        //   compressorsR[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
+        compressors[i].setTimes(1, 100, TBase::engineGetSampleTime());
     }
 }
 

@@ -213,6 +213,8 @@ int main(int argc, char** argv) {
     }
 
     // mode these up where while we work...
+    testMultiLag2();
+    testCmprsr();
     testCompressorParamHolder();
     testCompressor();
 
@@ -261,8 +263,7 @@ int main(int argc, char** argv) {
     testSub();
     simd_testBiquad();
     testWVCO();
-    testMultiLag2();
-    testCmprsr();
+
 
 
     testSimpleQuantizer();

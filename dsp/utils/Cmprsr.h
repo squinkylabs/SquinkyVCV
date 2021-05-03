@@ -8,7 +8,12 @@
 #include <atomic>
 
 #include "MultiLag2.h"
+#include "SqLog.h"
 #include "SqMath.h"
+#include "simd.h"
+
+//#define _SQR        // pseudo RMS instead of rectify
+//#define _ENV            // output the envelope
 
 class Cmprsr {
 public:
@@ -28,7 +33,7 @@ public:
 
     float_4 step(float_4);
     float_4 stepPoly(float_4);
-    void setTimes(float attackMs, float releaseMs, float sampleTime, bool enableDistortionReduction);
+    void setTimes(float attackMs, float releaseMs, float sampleTime);
     void setThreshold(float th);
     void setCurve(Ratios);
 
@@ -95,7 +100,7 @@ inline void Cmprsr::setNumChannels(int ch) {
 
 // only called for non poly
 inline void Cmprsr::updateProcFun() {
-    // printf("in update, max = %d\n", maxChannel);
+     printf("in update, max = %d\n", maxChannel);
     procFun = &Cmprsr::stepGeneric;
     if (maxChannel == 0 && (ratio[0] != Ratios::HardLimit)) {
         if (reduceDistortion) {
@@ -137,8 +142,20 @@ inline float_4 Cmprsr::step(float_4 input) {
 // only non poly
 inline float_4 Cmprsr::step1Comp(float_4 input) {
     assert(wasInit());
+
+#ifdef _SQR
+    lag.step(input * input);
+    float_4 envelope = lag.get();
+    envelope = rack::simd::sqrt(envelope);
+
+#else
     lag.step(rack::simd::abs(input));
     float_4 envelope = lag.get();
+#endif
+#ifdef _ENV
+    return envelope;
+#else
+ //  SQINFO("step1comp");
 
     CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
     const float_4 level = envelope * invThreshold;
@@ -147,16 +164,27 @@ inline float_4 Cmprsr::step1Comp(float_4 input) {
     t[0] = CompCurves::lookup(table, level[0]);
     gain_ = t;
     return gain_ * input;
+#endif
 }
 
 // only non poly
 inline float_4 Cmprsr::step1NoDistComp(float_4 input) {
     assert(wasInit());
 
+#ifdef _SQR
+    lag.step(input * input);
+    attackFilter.step(lag.get());
+    float_4 envelope = attackFilter.get();
+    envelope = rack::simd::sqrt(envelope);
+#else
     lag.step(rack::simd::abs(input));
     attackFilter.step(lag.get());
     float_4 envelope = attackFilter.get();
+#endif
 
+#ifdef _ENV
+    return envelope;
+#else
     CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
 
     const float_4 level = envelope * invThreshold;
@@ -165,6 +193,7 @@ inline float_4 Cmprsr::step1NoDistComp(float_4 input) {
     t[0] = CompCurves::lookup(table, level[0]);
     gain_ = t;
     return gain_ * input;
+#endif
 }
 
 // only non-poly
@@ -277,7 +306,8 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
     // updateProcFun();
 }
 
-inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, bool enableDistortionReduction) {
+
+inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime) {
     const float correction = 2 * M_PI;
     const float releaseHz = 1000.f / (releaseMs * correction);
     const float normRelease = releaseHz * sampleTime;
@@ -287,18 +317,16 @@ inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime, 
         lag.setInstantAttack(true);
         lag.setRelease(normRelease);
     } else {
-        reduceDistortion = enableDistortionReduction;
+        reduceDistortion = true;
         const float correction = 2 * M_PI;
         float attackHz = 1000.f / (attackMs * correction);
         lag.setInstantAttack(false);
 
         const float normAttack = attackHz * sampleTime;
-        if (enableDistortionReduction) {
-            lag.setAttack(normAttack * 4);
-            attackFilter.setCutoff(normAttack * 1);
-        } else {
-            lag.setAttack(normAttack);
-        }
+
+        lag.setAttack(normAttack * 4);
+        attackFilter.setCutoff(normAttack * 1);
+
     }
 
     lag.setRelease(normRelease);

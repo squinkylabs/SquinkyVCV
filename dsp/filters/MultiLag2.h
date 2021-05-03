@@ -8,7 +8,8 @@
 #include "simd.h"
 
 /**
- * MultiLag2 is based on MultiLag, but uses VCV SIMD library
+ * MultiLag2 is based on MultiLag, but uses VCV SIMD library.
+ * It's a simple one pole lowpass.
  */
 class MultiLPF2 {
 public:
@@ -22,6 +23,7 @@ public:
     void setCutoffPoly(float_4);
 
     float_4 _getL() const { return l; }
+
 private:
     float_4 l = 0;
     float_4 k = 0;
@@ -57,6 +59,11 @@ inline void MultiLPF2::setCutoffPoly(float_4 fs) {
 }
 
 ///////////////////////////////////////////////////////////////////
+
+/**
+ * MultiLag2
+ * 4 channels of Lag with independent attack and release.
+ */
 
 class MultiLag2 {
 public:
@@ -101,7 +108,7 @@ inline void MultiLag2::setInstantAttack(bool b) {
 inline void MultiLag2::setInstantAttackPoly(float_4 inst) {
     instant = inst;
     simd_assertMask(instant);
- }
+}
 
 inline void MultiLag2::setEnable(bool b) {
     enabled = b;
@@ -126,8 +133,6 @@ inline void MultiLag2::step(float_4 input) {
     //  printf("l=%s k=%s\n", toStr(l).c_str(), toStr(k).c_str());
     float_4 temp = input * k;
     float_4 laggedMemory = temp + memory * l;
-    // memory *= l;
-    //  memory += temp;
     const float_4 isInstantAttack = isAttack & instant;
     //   printf("in step. isInsta = %s isAtt = %s\n", toStr(isInstantAttack).c_str(), toStr(isAttack).c_str());
     memory = SimdBlocks::ifelse(isInstantAttack, input, laggedMemory);

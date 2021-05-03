@@ -308,7 +308,6 @@ template <class TBase>
 inline void Compressor<TBase>::pollAttackRelease() {
     const float rawAttack = Compressor<TBase>::params[ATTACK_PARAM].value;
     const float rawRelease = Compressor<TBase>::params[RELEASE_PARAM].value;
-    const bool reduceDistortion = true;
 
     if (rawAttack != lastRawA || rawRelease != lastRawR) {
         lastRawA = rawAttack;
@@ -318,8 +317,8 @@ inline void Compressor<TBase>::pollAttackRelease() {
         const float release = LookupTable<float>::lookup(releaseFunctionParams, rawRelease);
 
         for (int i = 0; i < 4; ++i) {
-            compressorsL[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
-            compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
+            compressorsL[i].setTimes(attack, release, TBase::engineGetSampleTime());
+            compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime());
         }
     }
 }
@@ -369,8 +368,8 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args) 
 template <class TBase>
 inline void Compressor<TBase>::setupLimiter() {
     for (int i = 0; i < 4; ++i) {
-        compressorsL[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
-        compressorsR[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
+        compressorsL[i].setTimes(1, 100, TBase::engineGetSampleTime());
+        compressorsR[i].setTimes(1, 100, TBase::engineGetSampleTime());
     }
 }
 
