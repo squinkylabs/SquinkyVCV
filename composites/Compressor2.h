@@ -107,8 +107,8 @@ public:
     }
 
     int getNumVUChannels() const {
-       // return numChannels_m;
-       return currentStereo_m ? numChannels_m / 2 : numChannels_m;
+        // return numChannels_m;
+        return currentStereo_m ? numChannels_m / 2 : numChannels_m;
     }
     float getChannelGain(int ch) const;
 
@@ -139,11 +139,20 @@ private:
     void pollStereo();
     void makeAllSettingsStereo();
 
+    /**
+     * numChannels_m is the total mono channels. So even in
+     * stereo-8 mode, there can still be 0..15 of these
+     */
     int numChannels_m = 0;
     int numBanks_m = 0;
     int currentBank_m = -1;
-    int currentSubChannel_m = -1;
-    int currentChannel_m = -1;  // which of the 16 channels we are editing ATM.
+
+    /**  
+     * Which of the channels we are editing ATM.
+     * In mono this will be from 0..15
+     * in stereo this will be from 0..7
+     */
+    int currentChannel_m = -1;
     int currentStereo_m = -1;
 
     float_4 wetLevel[4] = {0};
@@ -248,12 +257,12 @@ inline void Compressor2<TBase>::makeAllSettingsStereo() {
         const int right = left + 1;
 
         {
-            const float a = .5 * (compParams.getAttack(left) + compParams.getAttack(right));
+            const float a = .5f * (compParams.getAttack(left) + compParams.getAttack(right));
             compParams.setAttack(left, a);
             compParams.setAttack(right, a);
         }
         {
-            const float r = .5 * (compParams.getRelease(left) + compParams.getRelease(right));
+            const float r = .5f * (compParams.getRelease(left) + compParams.getRelease(right));
             compParams.setRelease(left, r);
             compParams.setRelease(right, r);
         }
@@ -262,12 +271,12 @@ inline void Compressor2<TBase>::makeAllSettingsStereo() {
             compParams.setRatio(right, ratio);
         }
         {
-            const float th = .5 * (compParams.getThreshold(left) + compParams.getThreshold(right));
+            const float th = .5f * (compParams.getThreshold(left) + compParams.getThreshold(right));
             compParams.setThreshold(left, th);
             compParams.setThreshold(right, th);
         }
         {
-            const float m = .5 * (compParams.getMakeupGain(left) + compParams.getMakeupGain(right));
+            const float m = .5f * (compParams.getMakeupGain(left) + compParams.getMakeupGain(right));
             compParams.setMakeupGain(left, m);
             compParams.setMakeupGain(right, m);
         }
@@ -276,7 +285,7 @@ inline void Compressor2<TBase>::makeAllSettingsStereo() {
             compParams.setEnabled(right, b);
         }
         {
-            const float w = .5 * (compParams.getWetDryMix(left) + compParams.getWetDryMix(right));
+            const float w = .5f * (compParams.getWetDryMix(left) + compParams.getWetDryMix(right));
             compParams.setWetDry(left, w);
             compParams.setWetDry(right, w);
         }
@@ -306,6 +315,8 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
 
 template <class TBase>
 inline void Compressor2<TBase>::stepn() {
+    pollStereo();
+
     SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
 
@@ -317,8 +328,8 @@ inline void Compressor2<TBase>::stepn() {
     currentChannel_m = -1 + int(std::round(TBase::params[CHANNEL_PARAM].value));
     assert(currentChannel_m >= 0);
     assert(currentChannel_m <= 15);
-    currentBank_m = currentChannel_m / 4;
-    currentSubChannel_m = currentChannel_m % 4;
+    if (currentStereo_m) assert(currentChannel_m <= 7);
+    currentBank_m = currentStereo_m ? (currentChannel_m / 2) : (currentChannel_m / 4);
 
     if (currentChannel_m != lastChannelCount) {
         lastChannelCount = currentChannel_m;
@@ -330,7 +341,6 @@ inline void Compressor2<TBase>::stepn() {
     pollMakeupGain();
     pollThresholdAndRatio();
     pollBypassed();
-    pollStereo();
 }
 
 template <class TBase>
@@ -346,6 +356,7 @@ inline void Compressor2<TBase>::pollMakeupGain() {
     const float g = Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value;
     if (g != lastRawMakeupGain) {
         lastRawMakeupGain = g;
+          assert(!currentStereo_m);
         compParams.setMakeupGain(currentChannel_m, g);
         updateMakeupGain(currentBank_m);
     }
@@ -365,6 +376,7 @@ template <class TBase>
 inline void Compressor2<TBase>::pollBypassed() {
     const bool notByp = bool(std::round(Compressor2<TBase>::params[NOTBYPASS_PARAM].value));
     if (notByp != lastNotBypassed) {
+          assert(!currentStereo_m);
         lastNotBypassed = notByp;
         compParams.setEnabled(currentChannel_m, notByp);
         updateBypassed(currentBank_m);
@@ -407,8 +419,16 @@ inline void Compressor2<TBase>::pollAttackRelease() {
         lastRawA = rawAttack;
         lastRawR = rawRelease;
 
-        compParams.setAttack(currentChannel_m, rawAttack);
-        compParams.setRelease(currentChannel_m, rawRelease);
+        if (!currentStereo_m) {
+            compParams.setAttack(currentChannel_m, rawAttack);
+            compParams.setRelease(currentChannel_m, rawRelease);
+        } else {
+            assert(currentChannel_m < 8);
+            compParams.setAttack(2 * currentChannel_m, rawAttack);
+            compParams.setAttack(2 * currentChannel_m + 1, rawAttack);
+            compParams.setRelease(2 * currentChannel_m, rawRelease);
+            compParams.setRelease(2 * currentChannel_m + 1, rawRelease);
+        }
         updateAttackAndRelease(currentBank_m);
     }
 }
@@ -420,8 +440,16 @@ inline void Compressor2<TBase>::pollThresholdAndRatio() {
     if (rawThreshold != lastRawThreshold || rawRatio != lastRawRatio) {
         lastRawThreshold = rawThreshold;
         lastRawRatio = rawRatio;
-        compParams.setThreshold(currentChannel_m, rawThreshold);
-        compParams.setRatio(currentChannel_m, int(std::round(rawRatio)));
+
+        if (!currentStereo_m) {
+            compParams.setThreshold(currentChannel_m, rawThreshold);
+            compParams.setRatio(currentChannel_m, int(std::round(rawRatio)));
+        } else {
+            compParams.setThreshold(2 * currentChannel_m, rawThreshold);
+            compParams.setThreshold(2 * currentChannel_m + 1, rawThreshold);
+            compParams.setRatio(2 * currentChannel_m, int(std::round(rawRatio)));
+            compParams.setRatio(2 * currentChannel_m + 1, int(std::round(rawRatio)));
+        }
         updateThresholdAndRatio(currentBank_m);
     }
 }
@@ -431,8 +459,15 @@ inline void Compressor2<TBase>::pollWetDry() {
     const float rawWetDry = Compressor2<TBase>::params[WETDRY_PARAM].value;
     if (rawWetDry != lastRawMix) {
         lastRawMix = rawWetDry;
-        compParams.setWetDry(currentChannel_m, rawWetDry);
+        if (!currentStereo_m) {
+            compParams.setWetDry(currentChannel_m, rawWetDry);
+        }
+        else {
+            compParams.setWetDry(2 * currentChannel_m, rawWetDry);
+            compParams.setWetDry(2 * currentChannel_m + 1, rawWetDry);
+        }
         updateWetDry(currentBank_m);
+      
     }
 }
 
