@@ -1,6 +1,6 @@
 # How does SFZ Player work
 
-Each "voice" of SFZ Player is quite simple. There is a monophonic sample streamer that uses a cubic spline for high quality interpolation. The pitch of the sample streamer it determined by the V/Oct CV, as well the the exponential CV input and knobs.
+Each "voice" of SFZ Player is quite simple. There is a monophonic sample streamer that uses a cubic spline for high quality interpolation. The pitch of the sample streamer is determined by the V/Oct CV, as well as the exponential CV input and knobs.
 
 There is also a through zero linear FM input that will phase modulate the sample streamer.
 
