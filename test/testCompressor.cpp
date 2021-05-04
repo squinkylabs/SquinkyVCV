@@ -21,6 +21,7 @@ static void testCompUI() {
     assert(r.size() == size_t(Cmprsr::Ratios::NUM_RATIOS));
 
     Cmprsr c;
+    c.setIsPolyCV(false);
     for (int i = 0; i < int(Cmprsr::Ratios::NUM_RATIOS); ++i) {
         c.setCurve(Cmprsr::Ratios(i));
         c.step(0);

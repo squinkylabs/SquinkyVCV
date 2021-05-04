@@ -86,8 +86,25 @@ template <class TBase>
 class Compressor : public TBase {
 public:
     Compressor(Module* module) : TBase(module) {
+        compressorsL[0].setIsPolyCV(false);
+        compressorsL[1].setIsPolyCV(false);
+        compressorsL[2].setIsPolyCV(false);
+        compressorsL[3].setIsPolyCV(false);
+        compressorsR[0].setIsPolyCV(false);
+        compressorsR[1].setIsPolyCV(false);
+        compressorsR[2].setIsPolyCV(false);
+        compressorsR[3].setIsPolyCV(false);
     }
+
     Compressor() : TBase() {
+        compressorsL[0].setIsPolyCV(false);
+        compressorsL[1].setIsPolyCV(false);
+        compressorsL[2].setIsPolyCV(false);
+        compressorsL[3].setIsPolyCV(false);
+        compressorsR[0].setIsPolyCV(false);
+        compressorsR[1].setIsPolyCV(false);
+        compressorsR[2].setIsPolyCV(false);
+        compressorsR[3].setIsPolyCV(false);
     }
 
     /**
@@ -104,7 +121,6 @@ public:
         THRESHOLD_PARAM,
         RATIO_PARAM,
         MAKEUPGAIN_PARAM,
-        //  REDUCEDISTORTION_PARAM,
         NOTBYPASS_PARAM,
         WETDRY_PARAM,
         NUM_PARAMS

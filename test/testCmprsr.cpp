@@ -8,6 +8,7 @@ static void testLimiterZeroAttack2() {
     const float sampleTime = 1.f / sampleRate;
 
     Cmprsr comp;
+    comp.setIsPolyCV(false);
     assert(comp.wasInit());
     comp.setNumChannels(1);
     comp.setCurve(Cmprsr::Ratios::HardLimit);
@@ -46,6 +47,7 @@ static void testCompZeroAttack2(int numChan) {
     const float sampleTime = 1.f / sampleRate;
 
     Cmprsr comp;
+    comp.setIsPolyCV(false);
     assert(comp.wasInit());
     comp.setNumChannels(numChan);
     comp.setCurve(Cmprsr::Ratios::_4_1_soft);
@@ -102,6 +104,7 @@ static void testCompZeroAttackPoly(float_4 reduceDist, int numChan) {
     const float sampleTime = 1.f / sampleRate;
 
     Cmprsr comp;
+    comp.setIsPolyCV(true);
     assert(comp.wasInit());
     comp.setNumChannels(numChan);
 
@@ -178,6 +181,7 @@ static float_4 run(Cmprsr& cmp, int times, float_4 input) {
 
 static void testIndependentAttack(int indChan) {
     Cmprsr cmp;
+    cmp.setIsPolyCV(true);
 
     // attack will be the same, except independent channel will be much longer
     float_4 attack = 0;

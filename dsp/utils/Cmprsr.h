@@ -42,11 +42,12 @@ public:
     void setCurvePoly(const Ratios*);
 
     void setNumChannels(int);
-
+  
     const MultiLag2& _lag() const;
     static const std::vector<std::string>& ratios();
     static const std::vector<std::string>& ratiosLong();
     float_4 getGain() const;
+    void setIsPolyCV(bool poly);
 
     static bool wasInit() {
         return !!ratioCurves[0];
@@ -71,6 +72,9 @@ private:
     int ratioIndex[4] = {0};
     Ratios ratio[4] = {Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit};
     int maxChannel = 3;
+
+    bool cvIsPoly = false;
+    bool polySet = false;
 
 #ifdef _SQATOMIC
     std::atomic<float_4> gain_;
@@ -98,6 +102,12 @@ inline void Cmprsr::setNumChannels(int ch) {
     updateProcFun();
 }
 
+inline void Cmprsr::setIsPolyCV(bool poly) {
+
+    polySet = true;
+    cvIsPoly = poly;
+}
+
 // only called for non poly
 inline void Cmprsr::updateProcFun() {
     // printf("in update, max = %d\n", maxChannel);
@@ -112,6 +122,9 @@ inline void Cmprsr::updateProcFun() {
 }
 
 inline void Cmprsr::setCurve(Ratios r) {
+    assert(polySet);
+    assert(!cvIsPoly);
+   
     ratio[0] = r;
     ratio[1] = r;
     ratio[2] = r;
@@ -124,6 +137,9 @@ inline void Cmprsr::setCurve(Ratios r) {
 }
 
 inline void Cmprsr::setCurvePoly(const Ratios* r) {
+    assert(polySet);
+    assert(cvIsPoly);
+
     ratio[0] = r[0];
     ratio[1] = r[1];
     ratio[2] = r[2];
@@ -136,12 +152,17 @@ inline void Cmprsr::setCurvePoly(const Ratios* r) {
 }
 
 inline float_4 Cmprsr::step(float_4 input) {
+    assert(polySet);
+    assert(!cvIsPoly);
     return (this->*procFun)(input);
 }
 
 // only non poly
 inline float_4 Cmprsr::step1Comp(float_4 input) {
     assert(wasInit());
+    assert(polySet);
+    assert(!cvIsPoly);
+
 
 #ifdef _SQR
     lag.step(input * input);
@@ -170,6 +191,8 @@ inline float_4 Cmprsr::step1Comp(float_4 input) {
 // only non poly
 inline float_4 Cmprsr::step1NoDistComp(float_4 input) {
     assert(wasInit());
+    assert(polySet);
+    assert(!cvIsPoly);
 
 #ifdef _SQR
     lag.step(input * input);
@@ -199,6 +222,8 @@ inline float_4 Cmprsr::step1NoDistComp(float_4 input) {
 // only non-poly
 inline float_4 Cmprsr::stepGeneric(float_4 input) {
     assert(wasInit());
+    assert(polySet);
+    assert(!cvIsPoly);
 
     float_4 envelope;
     if (reduceDistortion) {
@@ -232,6 +257,8 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
 inline float_4 Cmprsr::stepPoly(float_4 input) {
     assert(wasInit());
     simd_assertMask(reduceDistortionPoly);
+    assert(polySet);
+    assert(cvIsPoly);
 
     float_4 envelope;
 
@@ -255,6 +282,8 @@ inline float_4 Cmprsr::stepPoly(float_4 input) {
 }
 
 inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float sampleTime) {
+    assert(polySet);
+    assert(cvIsPoly);
     // simd_assertMask(enableDistortionReduction);
     const float_4 correction = 2 * M_PI;
     const float_4 releaseHz = 1000.f / (releaseMs * correction);
@@ -308,6 +337,8 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
 
 
 inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime) {
+    assert(polySet);
+    assert(!cvIsPoly);
     const float correction = 2 * M_PI;
     const float releaseHz = 1000.f / (releaseMs * correction);
     const float normRelease = releaseHz * sampleTime;
@@ -326,7 +357,6 @@ inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime) 
 
         lag.setAttack(normAttack * 4);
         attackFilter.setCutoff(normAttack * 1);
-
     }
 
     lag.setRelease(normRelease);

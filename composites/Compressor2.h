@@ -36,8 +36,17 @@ template <class TBase>
 class Compressor2 : public TBase {
 public:
     Compressor2(Module* module) : TBase(module) {
+        compressors[0].setIsPolyCV(true);
+        compressors[1].setIsPolyCV(true);
+        compressors[2].setIsPolyCV(true);
+        compressors[3].setIsPolyCV(true);
     }
+
     Compressor2() : TBase() {
+        compressors[0].setIsPolyCV(true);
+        compressors[1].setIsPolyCV(true);
+        compressors[2].setIsPolyCV(true);
+        compressors[3].setIsPolyCV(true);
     }
 
     /**
@@ -550,12 +559,13 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
 template <class TBase>
 inline void Compressor2<TBase>::setupLimiter() {
     for (int i = 0; i < 4; ++i) {
-        compressors[i].setTimes(1, 100, TBase::engineGetSampleTime());
+        compressors[i].setTimesPoly(1, 100, TBase::engineGetSampleTime());
     }
 }
 
 template <class TBase>
 inline void Compressor2<TBase>::onSampleRateChange() {
+    // should probably just reset cache here??
     setupLimiter();
 }
 
