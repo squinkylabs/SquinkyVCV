@@ -195,6 +195,7 @@ public:
 
     void _setupPerfTest();
 
+    void suppressErrors();
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
                              // SInstrumentPtr instrument;
@@ -282,6 +283,14 @@ inline void Samp<TBase>::init() {
 template <class TBase>
 inline float Samp<TBase>::getProgressPct() const {
     return sharedState->uiw_getProgressPercent();
+}
+
+template <class TBase>
+inline void Samp<TBase>::suppressErrors() {
+    playback[0].suppressErrors();
+    playback[1].suppressErrors();
+    playback[2].suppressErrors();
+    playback[3].suppressErrors();
 }
 
 template <class TBase>

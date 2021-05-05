@@ -87,6 +87,7 @@ public:
     bool _isTransposed(int channel) const;
     float _transAmt(int channel) const;
 
+    void suppressErrors() { printErrors = false; }
 private:
     CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;
@@ -107,4 +108,5 @@ private:
     // float_4 pitchMod = {0};
     void updatePitch();
     int myIndex = -1;
+    bool printErrors = true;
 };
