@@ -42,7 +42,7 @@ public:
     void setCurvePoly(const Ratios*);
 
     void setNumChannels(int);
-  
+
     const MultiLag2& _lag() const;
     static const std::vector<std::string>& ratios();
     static const std::vector<std::string>& ratiosLong();
@@ -103,7 +103,6 @@ inline void Cmprsr::setNumChannels(int ch) {
 }
 
 inline void Cmprsr::setIsPolyCV(bool poly) {
-
     polySet = true;
     cvIsPoly = poly;
 }
@@ -124,7 +123,7 @@ inline void Cmprsr::updateProcFun() {
 inline void Cmprsr::setCurve(Ratios r) {
     assert(polySet);
     assert(!cvIsPoly);
-   
+
     ratio[0] = r;
     ratio[1] = r;
     ratio[2] = r;
@@ -163,7 +162,6 @@ inline float_4 Cmprsr::step1Comp(float_4 input) {
     assert(polySet);
     assert(!cvIsPoly);
 
-
 #ifdef _SQR
     lag.step(input * input);
     float_4 envelope = lag.get();
@@ -176,7 +174,7 @@ inline float_4 Cmprsr::step1Comp(float_4 input) {
 #ifdef _ENV
     return envelope;
 #else
- //  SQINFO("step1comp");
+    //  SQINFO("step1comp");
 
     CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
     const float_4 level = envelope * invThreshold;
@@ -287,8 +285,8 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
     // simd_assertMask(enableDistortionReduction);
     const float_4 correction = 2 * M_PI;
     const float_4 releaseHz = 1000.f / (releaseMs * correction);
-    const float_4 attackHz = 1000.f / (attackMs * correction);
-    //  const float_4 normRelease = releaseHz * sampleTime;
+    //  const float_4 attackHz = 1000.f / (attackMs * correction);
+     const float_4 normRelease = releaseHz * sampleTime;
 
     // this sets:
     // this->reduce dist
@@ -300,41 +298,73 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
     // this->reduceDistortionPoly = SimdBlocks::ifelse( attackMs < float_4(.1f), SimdBlocks::maskFalse(), enableDistortionReduction);
 
     // let's had code on for poly. It's always on anyway.
+#if 0
     this->reduceDistortionPoly = SimdBlocks::maskTrue();
     lag.setInstantAttackPoly(attackMs < float_4(.1f));
 
     lag.setAttackPoly(attackHz * sampleTime);
     attackFilter.setCutoffPoly(attackHz * sampleTime);
     lag.setReleasePoly(releaseHz * sampleTime);
+#endif
+
+#if 1
+   
+    // for now, just do the scalar code 4 times
+    // build these up
+    float_4 instantAttack;
+    float_4 lagAttack = 10;
+    float_4 filterAttack = 10;
+    float_4 reduceDistortion;
+
+    for (int i = 0; i < 4; ++i) {
+        if (attackMs[i] < .1) {
+            reduceDistortion[i] = SimdBlocks::maskFalse()[0];  // no way to do this at zero attack
+            instantAttack[i] = SimdBlocks::maskTrue()[0];
+        } else {
+            reduceDistortion[i] = SimdBlocks::maskTrue()[0]; 
+            const float correction = 2 * M_PI;
+            const float attackHz =  1000.f / (attackMs[i] * correction);
+            const float normAttack = attackHz * sampleTime;
+            lagAttack[i] = 4 * normAttack;
+            filterAttack[i] = normAttack;
+            instantAttack[i] =  SimdBlocks::maskFalse()[0];
+        }
+    }
+    lag.setAttackPoly(lagAttack);
+    lag.setInstantAttackPoly(instantAttack);
+    attackFilter.setCutoffPoly(filterAttack);
+    lag.setReleasePoly(normRelease);
+#endif
+
+
+
 
 #if 0
+    for (int i = 0; i < 4; ++i) {
+        if (attackMs[i] < .1) {
+            reduceDistortion = false;  // no way to do this at zero attack
+            lag.setInstantAttack(true);
+            lag.setRelease(normRelease);
+        } else {
+            reduceDistortion = enableDistortionReduction;
+            const float correction = 2 * M_PI;
+            float attackHz = 1000.f / (attackMs * correction);
+            lag.setInstantAttack(false);
 
-    if (attackMs < .1) {
-        reduceDistortion = false;  // no way to do this at zero attack
-        lag.setInstantAttack(true);
+            const float normAttack = attackHz * sampleTime;
+            if (enableDistortionReduction) {
+                lag.setAttack(normAttack * 4);
+                attackFilter.setCutoff(normAttack * 1);
+            } else {
+                lag.setAttack(normAttack);
+            }
+        }
+
         lag.setRelease(normRelease);
     }
-    else {
-        reduceDistortion = enableDistortionReduction;
-        const float correction = 2 * M_PI;
-        float attackHz = 1000.f / (attackMs * correction);
-        lag.setInstantAttack(false);
-
-        const float normAttack = attackHz * sampleTime;
-        if (enableDistortionReduction) {
-            lag.setAttack(normAttack * 4);
-            attackFilter.setCutoff(normAttack * 1);
-        }
-        else {
-            lag.setAttack(normAttack);
-        }
-    }
-
-    lag.setRelease(normRelease);
 #endif
     // updateProcFun();
 }
-
 
 inline void Cmprsr::setTimes(float attackMs, float releaseMs, float sampleTime) {
     assert(polySet);

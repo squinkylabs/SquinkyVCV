@@ -307,7 +307,6 @@ static void testPolyInit() {
 }
 
 static void testPolyAttack(int channel) {
-    SQINFO("--- testPolyAttack %d", channel);
     Comp2 comp;
     init(comp);
     run(comp, 40);
@@ -349,7 +348,6 @@ static void testPolyAttack(int channel) {
 }
 
 static void testPolyStereoAttack(int stereoChannel) {
-    SQINFO("--- testPolyStereoAttac k %d", stereoChannel);
     assert(stereoChannel >= 0 && stereoChannel < 8);
 
     Comp2 comp;
@@ -381,7 +379,6 @@ static void testPolyStereoAttack(int stereoChannel) {
 }
 
 static void testPolyRelease(int channel) {
-    SQINFO("--- testPolyRelease %d", channel);
     Comp2 comp;
     init(comp);
     run(comp, 40);
@@ -422,7 +419,6 @@ static void testPolyRelease(int channel) {
 }
 
 static void testPolyStereoRelease(int stereoChannel) {
-    SQINFO("--- testPolyRelease %d", stereoChannel);
     Comp2 comp;
     init(comp);
     run(comp, 40);
@@ -449,7 +445,6 @@ static void testPolyStereoRelease(int stereoChannel) {
 }
 
 static void testPolyThreshold(int channel) {
-    SQINFO("--- testPolyThreshold %d", channel);
     Comp2 comp;
     init(comp);
     run(comp, 40);
@@ -512,7 +507,6 @@ static void testPolyStereoThreshold(int stereoChannel) {
 }
 
 static void testPolyRatio(int channel) {
-    SQINFO("--- testPolyThreshold %d", channel);
     Comp2 comp;
     init(comp);
     run(comp, 40);

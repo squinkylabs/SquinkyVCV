@@ -96,7 +96,7 @@ static void testCompZeroAttack2(int numChan) {
 
 
 // same as mono - all channels the same, but uses poly API
-static void testCompZeroAttackPoly(float_4 reduceDist, int numChan) {
+static void testCompZeroAttackPoly(int numChan) {
     
     assert(numChan == 1 || numChan == 4);
     const float sampleRate = 44100;
@@ -161,12 +161,11 @@ static void testLimiterZeroAttack() {
 static void testCompZeroAttack(bool poly) {
     if (!poly) {
         testCompZeroAttack2(4);
-        testCompZeroAttack2(4);
+       // testCompZeroAttack2(4);
         testCompZeroAttack2(1);
     } else {
-        testCompZeroAttackPoly(SimdBlocks::maskTrue(), 4);
-        testCompZeroAttackPoly(SimdBlocks::maskFalse(), 4);
-        testCompZeroAttackPoly(SimdBlocks::maskTrue(), 1);
+        testCompZeroAttackPoly(4);
+        testCompZeroAttackPoly(1);
     }
 }
 
@@ -229,11 +228,7 @@ static void testIndependentAttack() {
 
 void testCmprsr() {
     testCompZeroAttack(false);
-
-    fprintf(stderr, "***** put back testCompZeroAttack\n");
-   // testCompZeroAttack(true);
-
-    fprintf(stderr, "***** put back testLimiterZeroAttack\n");
-   // testLimiterZeroAttack();
+    testCompZeroAttack(true);
+    testLimiterZeroAttack();
     testIndependentAttack();
 }
