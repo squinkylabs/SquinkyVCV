@@ -16,7 +16,9 @@
 
 using Comp = Compressor2<WidgetComposite>;
 
-/**
+/**********************************************************
+ * 
+ *  MODULE definition
  */
 struct Compressor2Module : Module {
 public:
@@ -138,8 +140,6 @@ void Compressor2Module::dataFromJson(json_t* rootJ) {
         value = json_array_get(ratiosJ, i);
         params.setRatio(i, json_integer_value(value));
     }
-
-    // assert(false);
 }
 
 void Compressor2Module::process(const ProcessArgs& args) {
@@ -150,13 +150,14 @@ void Compressor2Module::onSampleRateChange() {
     compressor->onSampleRateChange();
 }
 
-////////////////////
-// module widget
-////////////////////
+/*****************************************************************************
+
+    Module widget
+
+******************************************************************************/
 
 #define _LAB
 
-#if 1
 // this control adapted from Fundamental VCA 16 channel level meter
 // widget::TransparentWidget
 class VCA_1VUKnob : public widget::TransparentWidget {
@@ -175,9 +176,8 @@ public:
         nvgFill(args.vg);
 
         const Vec margin = Vec(3, 3);
-        Rect r = box.zeroPos().grow(margin.neg());
-
-        int channels = module ? module->getNumVUChannels() : 1;
+        const Rect r = box.zeroPos().grow(margin.neg());
+        const int channels = module ? module->getNumVUChannels() : 1;
 
         // Segment value
         const float value = 1;
@@ -203,9 +203,7 @@ public:
             const double y0 = r.pos.y;
             const double h = db * r.size.y / dbMaxReduction;
 
-            // INFO("ch=%d gain=%f", c, gain);
             if (h >= 0.005f) {
-                // INFO("c=%d va = %.2f gain=%.2f", c, gain);
                 nvgRect(args.vg,
                         r.pos.x + r.size.x * c / channels,
                         y0,
@@ -218,7 +216,6 @@ public:
         nvgFill(args.vg);
 
         // Invisible separators
-
         nvgBeginPath(args.vg);
         for (int i = 1; i <= numberOfSegments; i++) {
             nvgRect(args.vg,
@@ -232,11 +229,8 @@ public:
     }
 };
 
-#endif
-
 struct CompressorWidget2 : ModuleWidget {
     CompressorWidget2(Compressor2Module*);
-    //   DECLARE_MANUAL("Comp Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor.md");
     void appendContextMenu(Menu* menu) override;
 
 #ifdef _LAB
@@ -286,7 +280,7 @@ void CompressorWidget2::step() {
         if (channelKnob->paramQuantity->getValue() > steps) {
             ::rack::appGet()->engine->setParam(module, Comp::CHANNEL_PARAM, steps);
         }
-        INFO("set knob max to %d", (int)channelKnob->paramQuantity->maxValue);
+        // INFO("set knob max to %d", (int)channelKnob->paramQuantity->maxValue);
     }
 
     const int channel = int(std::round(::rack::appGet()->engine->getParam(module, Comp::CHANNEL_PARAM)));
@@ -299,9 +293,6 @@ void CompressorWidget2::step() {
 }
 
 void CompressorWidget2::addVu(Compressor2Module* module) {
-    // VCA_1VUKnob* levelParam = createChild<VCA_1VUKnob>(Vec(90, 40), module, Comp::RELEASE_PARAM);
-    //	levelParam->module = module;
-    //	addChild(levelParam);
     auto vu = new VCA_1VUKnob();
     vu->box.pos = Vec(92, 160);
     vu->module = module;
@@ -316,7 +307,6 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        //Vec(knobX, knobY + 0 * dy),
         Vec(5, 218),
         module, Comp::ATTACK_PARAM));
 
@@ -327,7 +317,6 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        //Vec(knobX2, knobY + 0 * dy),
         Vec(52, 218),
         module, Comp::RELEASE_PARAM));
 
@@ -338,7 +327,6 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        // Vec(knobX, knobY + 1 * dy),
         Vec(8, 165),
         module, Comp::THRESHOLD_PARAM));
 
@@ -349,10 +337,8 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #endif
     channelKnob = SqHelper::createParam<Blue30SnapKnob>(
         icomp,
-        // Vec(knobX, knobY + 1 * dy),
         Vec(8, 41),
         module, Comp::CHANNEL_PARAM);
-
     addParam(channelKnob);
     channelIndicator = addLabel(Vec(62, 54), "");
 
@@ -391,7 +377,6 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        //Vec(knobX,  - 11 + knobY + 3 * dy),
         Vec(8, 101),
         module,
         Comp::RATIO_PARAM);
@@ -420,7 +405,6 @@ void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<ICom
         "Out");
 #endif
     addOutput(createOutput<PJ301MPort>(
-        //Vec(jackX2, jackY + 0 * dy),
         Vec(91, 326),
         module,
         Comp::LAUDIO_OUTPUT));

@@ -118,6 +118,7 @@ extern void testWavThread();
 extern void testACDetector();
 extern void testCmprsr();
 extern void testCompressor();
+extern void testCompressorII();
 extern void testCompressorParamHolder();
 extern void testStreamer();
 extern void testSampComposite();
@@ -217,6 +218,7 @@ int main(int argc, char** argv) {
     testCmprsr();
     testCompressorParamHolder();
     testCompressor();
+    testCompressorII();
 
     testSimpleQuantizer();
     testFilterComposites();

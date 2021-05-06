@@ -114,6 +114,7 @@
     <ClCompile Include="..\..\test\testADSRSampler.cpp" />
     <ClCompile Include="..\..\test\testCmprsr.cpp" />
     <ClCompile Include="..\..\test\testCompressor.cpp" />
+    <ClCompile Include="..\..\test\testCompressorII.cpp" />
     <ClCompile Include="..\..\test\testCompressorParamHolder.cpp" />
     <ClCompile Include="..\..\test\testFlac.cpp" />
     <ClCompile Include="..\..\test\testSampComposite.cpp" />
