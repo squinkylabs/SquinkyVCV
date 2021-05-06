@@ -339,7 +339,7 @@ static void testPolyAttack(int channel) {
     for (int i = 0; i < 4; ++i) {
         int other = (i + 1) % 4;
         if (i == subChannel) {
-            assertNE(af[i], af[other])
+            assertNE(af[i], af[other]);
         } else if (other != subChannel) {
             // figure out later
             //   assertEQ(af[i], af[other]);
@@ -410,7 +410,7 @@ static void testPolyRelease(int channel) {
     for (int i = 0; i < 4; ++i) {
         int other = (i + 1) % 4;
         if (i == subChannel) {
-            assertNE(rf[i], rf[other])
+            assertNE(rf[i], rf[other]);
         } else if (other != subChannel) {
             // figure out later
             //   assertEQ(af[i], af[other]);
@@ -476,7 +476,7 @@ static void testPolyThreshold(int channel) {
     for (int i = 0; i < 4; ++i) {
         int other = (i + 1) % 4;
         if (i == subChannel) {
-            assertNE(th[i], th[other])
+            assertNE(th[i], th[other]);
         } else if (other != subChannel) {
             // figure out later
             //   assertEQ(af[i], af[other]);
@@ -537,7 +537,7 @@ static void testPolyRatio(int channel) {
     for (int i = 0; i < 4; ++i) {
         int other = (i + 1) % 4;
         if (i == subChannel) {
-            assertNE(int(r[i]), int(r[other]))
+            assertNE(int(r[i]), int(r[other]));
         } else if (other != subChannel) {
             // figure out later
             //   assertEQ(af[i], af[other]);
@@ -597,7 +597,7 @@ static void testPolyWetDry(int channel) {
     for (int i = 0; i < 4; ++i) {
         int other = (i + 1) % 4;
         if (i == subChannel) {
-            assertNE(w[i], w[other])
+            assertNE(w[i], w[other]);
         } else if (other != subChannel) {
             // figure out later
             //   assertEQ(af[i], af[other]);
@@ -655,7 +655,7 @@ static void testBypass(int channel) {
     for (int i = 0; i < 4; ++i) {
         int other = (i + 1) % 4;
         if (i == subChannel) {
-            assertNE(en[i], en[other])
+            assertNE(en[i], en[other]);
         } else if (other != subChannel) {
             // figure out later
             //   assertEQ(af[i], af[other]);
@@ -717,7 +717,7 @@ static void testGain(int channel) {
     for (int i = 0; i < 4; ++i) {
         int other = (i + 1) % 4;
         if (i == subChannel) {
-            assertNE(g[i], g[other])
+            assertNE(g[i], g[other]);
         } else if (other != subChannel) {
             // figure out later
             //   assertEQ(af[i], af[other]);

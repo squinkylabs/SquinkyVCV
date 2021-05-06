@@ -208,7 +208,6 @@ int main(int argc, char** argv) {
         initPerf();
         perfTest2();
         perfTest3();
-    
         perfTest();
         return 0;
     }
