@@ -219,13 +219,20 @@ inline void Compressor2<TBase>::init() {
  */
 template <class TBase>
 inline void Compressor2<TBase>::updateCurrentChannel() {
-    Compressor2<TBase>::params[ATTACK_PARAM].value = compParams.getAttack(currentChannel_m);
+
+
+    //SQINFO("update current channel called with stereo = %d", currentStereo_m);
+   // SQINFO("update current channel about to set thre to %f curch=%d\n", compParams.getThreshold(currentChannel_m), currentChannel_m);
+    
+    const int sourceParamChannel = currentStereo_m ? (currentChannel_m * 2) : currentChannel_m;
+    assert(sourceParamChannel < 16);
+    Compressor2<TBase>::params[ATTACK_PARAM].value = compParams.getAttack(sourceParamChannel);
     Compressor2<TBase>::params[RELEASE_PARAM].value = compParams.getRelease(currentChannel_m);
-    Compressor2<TBase>::params[THRESHOLD_PARAM].value = compParams.getThreshold(currentChannel_m);
-    Compressor2<TBase>::params[RATIO_PARAM].value = float(compParams.getRatio(currentChannel_m));
-    Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value = compParams.getMakeupGain(currentChannel_m);
-    Compressor2<TBase>::params[NOTBYPASS_PARAM].value = compParams.getEnabled(currentChannel_m);
-    Compressor2<TBase>::params[WETDRY_PARAM].value = compParams.getWetDryMix(currentChannel_m);
+    Compressor2<TBase>::params[THRESHOLD_PARAM].value = compParams.getThreshold(sourceParamChannel);
+    Compressor2<TBase>::params[RATIO_PARAM].value = float(compParams.getRatio(sourceParamChannel));
+    Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value = compParams.getMakeupGain(sourceParamChannel);
+    Compressor2<TBase>::params[NOTBYPASS_PARAM].value = compParams.getEnabled(sourceParamChannel);
+    Compressor2<TBase>::params[WETDRY_PARAM].value = compParams.getWetDryMix(sourceParamChannel);
 }
 
 /**
@@ -280,6 +287,7 @@ inline void Compressor2<TBase>::makeAllSettingsStereo() {
         }
         {
             const float th = .5f * (compParams.getThreshold(left) + compParams.getThreshold(right));
+            // SQINFO("makeAllSettingsStereo setting %d and %d to %f", left, right, th);
             compParams.setThreshold(left, th);
             compParams.setThreshold(right, th);
         }
@@ -373,6 +381,7 @@ inline void Compressor2<TBase>::pollStereo() {
         makeAllSettingsStereo();
     }
 }
+
 template <class TBase>
 inline void Compressor2<TBase>::pollMakeupGain() {
     const float g = Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value;

@@ -216,9 +216,10 @@ int main(int argc, char** argv) {
     // mode these up where while we work...
     testMultiLag2();
     testCmprsr();
+    testCompressorII();
     testCompressorParamHolder();
     testCompressor();
-    testCompressorII();
+   
 
     testSimpleQuantizer();
     testFilterComposites();
