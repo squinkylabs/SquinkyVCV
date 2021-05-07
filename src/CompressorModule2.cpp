@@ -12,6 +12,7 @@
 #include "ctrl/SqVuMeter.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/ToggleButton.h"
+#include "ctrl/SubMenuParamCtrl.h"
 #include "engine/Port.hpp"
 
 using Comp = Compressor2<WidgetComposite>;
@@ -264,6 +265,11 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::STEREO_PARAM);
     item->text = "Stereo";
     theMenu->addChild(item);
+
+    
+   // SubMenuParamCtrl* p = new SubMenuParamCtrl();
+   // theMenu->addChild(p);
+    SubMenuParamCtrl::create(theMenu, "experiment", {"test1", "test2"});
 }
 
 void CompressorWidget2::step() {

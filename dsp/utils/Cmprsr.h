@@ -53,7 +53,7 @@ public:
      * when linked adjacent stereo pairs
      * operate as linked stereo
      */
-    void setLinked(bool bLinked) {}
+    void setLinked(bool bLinked) { isLinked = bLinked; }
 
     static bool wasInit() {
         return !!ratioCurves[0];
@@ -74,7 +74,7 @@ private:
 
     float_4 threshold = 5;
     float_4 invThreshold = 1.f / 5.f;
-    float_4 envelope = 0;
+    bool isLinked = false;
 
     int ratioIndex[4] = {0};
     Ratios ratio[4] = {Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit};
@@ -173,7 +173,6 @@ inline float_4 Cmprsr::step1Comp(float_4 input) {
     lag.step(input * input);
     float_4 envelope = lag.get();
     envelope = rack::simd::sqrt(envelope);
-
 #else
     lag.step(rack::simd::abs(input));
     float_4 envelope = lag.get();
@@ -280,11 +279,21 @@ inline float_4 Cmprsr::stepPoly(float_4 input) {
     float_4 envelope;
 
 #ifdef _SQR
-    lag.step(rack::simd::abs(input * input));
+    auto inp = input * input;
+    if (isLinked) {
+        float avg = (inp[0] + inp[1]) * .5f;
+        inp[0] = avg;
+        inp[1] = avg;
+        avg = (inp[2] + inp[3]) * .5f;
+        inp[2] = avg;
+        inp[3] = avg;
+    }
+    lag.step(inp);
     attackFilter.step(lag.get());
     envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get()); 
     envelope = rack::simd::sqrt(envelope);  
 #else
+    assert(!isLinked);
     lag.step(rack::simd::abs(input));
     attackFilter.step(lag.get());
     envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
