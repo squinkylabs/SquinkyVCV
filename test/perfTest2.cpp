@@ -16,6 +16,7 @@
 #include "ObjectCache.h"
 #include "Slew4.h"
 #include "TestComposite.h"
+#include "tutil.h"
 
 extern double overheadOutOnly;
 extern double overheadInOut;
@@ -588,6 +589,7 @@ static void testComp2Knee16() {
     Comp comp;
 
     comp.init();
+    initComposite(comp);
 
     comp.inputs[Comp::LAUDIO_INPUT].channels = 16;
     comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);

@@ -27,6 +27,20 @@ public:
 };
 
 /**
+ * SQ:
+ * 1 ch lim: 4.6
+ * 1 cha curve 
+ * 16 cha lim:  20
+ * 16 ch curve: 124
+ * comp2 16: 150
+ * 
+ * Starting on comp2, here's where we are
+ * 1 ch lim: 4.6
+ * 1 cha curve 
+ * 16 cha lim:  15.9
+ * 16 ch curve: 121
+ * comp2 16: 149
+ * 
  * expand range to 40db
  * 1 ch lim: 5
  * 1 cha curve 12.8

@@ -12,7 +12,7 @@
 #include "SqMath.h"
 #include "simd.h"
 
-//#define _SQR        // pseudo RMS instead of rectify
+#define _SQR        // pseudo RMS instead of rectify
 //#define _ENV            // output the envelope
 
 class Cmprsr {
@@ -224,6 +224,17 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
     assert(!cvIsPoly);
 
     float_4 envelope;
+
+#ifdef _SQR
+   if (reduceDistortion) {
+        lag.step(rack::simd::abs(input * input));
+        attackFilter.step(lag.get());
+        envelope = rack::simd::sqrt(attackFilter.get());
+    } else {
+        lag.step(rack::simd::abs(input * input));
+        envelope = rack::simd::sqrt(lag.get());
+    }
+#else
     if (reduceDistortion) {
         lag.step(rack::simd::abs(input));
         attackFilter.step(lag.get());
@@ -232,6 +243,7 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
         lag.step(rack::simd::abs(input));
         envelope = lag.get();
     }
+#endif
 
     if (ratio[0] == Ratios::HardLimit) {
         float_4 reductionGain = threshold / envelope;
@@ -260,9 +272,16 @@ inline float_4 Cmprsr::stepPoly(float_4 input) {
 
     float_4 envelope;
 
+#ifdef _SQR
+    lag.step(rack::simd::abs(input * input));
+    attackFilter.step(lag.get());
+    envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get()); 
+    envelope = rack::simd::sqrt(envelope);  
+#else
     lag.step(rack::simd::abs(input));
     attackFilter.step(lag.get());
     envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
+#endif
 
     // have to do the rest non-simd - in case the curves are all different.
     // TODO: optimized case for all curves the same
