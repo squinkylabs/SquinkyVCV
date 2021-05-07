@@ -67,6 +67,7 @@ public:
         WETDRY_PARAM,
         CHANNEL_PARAM,
         STEREO_PARAM,
+        EXPERIMENT_PARAM,
         NUM_PARAMS
     };
 
@@ -614,6 +615,9 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             break;
         case Compressor2<TBase>::STEREO_PARAM:
             ret = {0, 1, 0, "stereo"};
+            break;
+        case Compressor2<TBase>::EXPERIMENT_PARAM:
+            ret = {0, 2, 0, "expoeriment"};
             break;
         default:
             assert(false);

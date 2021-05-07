@@ -1,10 +1,11 @@
 
-//#include "engine/Port.hpp"
+
 #include "Compressor2.h"
 #include "CompressorTooltips.h"
 #include "SqStream.h"
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
+#include "ctrl/SubMenuParamCtrl.h"
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
@@ -12,7 +13,6 @@
 #include "ctrl/SqVuMeter.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/ToggleButton.h"
-#include "ctrl/SubMenuParamCtrl.h"
 #include "engine/Port.hpp"
 
 using Comp = Compressor2<WidgetComposite>;
@@ -269,7 +269,7 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     
    // SubMenuParamCtrl* p = new SubMenuParamCtrl();
    // theMenu->addChild(p);
-    SubMenuParamCtrl::create(theMenu, "experiment", {"test1", "test2"});
+    SubMenuParamCtrl::create(theMenu, "experiment", {"test1", "test2"}, module, Comp::EXPERIMENT_PARAM);
 }
 
 void CompressorWidget2::step() {
