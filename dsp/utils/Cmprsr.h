@@ -49,6 +49,12 @@ public:
     float_4 getGain() const;
     void setIsPolyCV(bool poly);
 
+    /**
+     * when linked adjacent stereo pairs
+     * operate as linked stereo
+     */
+    void setLinked(bool bLinked) {}
+
     static bool wasInit() {
         return !!ratioCurves[0];
     }
@@ -68,6 +74,7 @@ private:
 
     float_4 threshold = 5;
     float_4 invThreshold = 1.f / 5.f;
+    float_4 envelope = 0;
 
     int ratioIndex[4] = {0};
     Ratios ratio[4] = {Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit, Ratios::HardLimit};

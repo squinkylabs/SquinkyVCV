@@ -18,7 +18,6 @@ static void init(Comp2& comp) {
 }
 
 static void testMB_1() {
-    SQINFO("\n------------- testMB_1");
     Comp2 comp;
     init(comp);
     // run normal
@@ -51,7 +50,38 @@ static void testMB_1() {
     assertEQ(comp.params[Comp2::THRESHOLD_PARAM].value, 10.f);
 }
 
+
+/*
+enum class Ratios {
+        HardLimit,
+        _2_1_soft,
+        _2_1_hard,
+        _4_1_soft,
+        */
+static void testUnLinked()
+{
+    Cmprsr cmp;
+    cmp.setIsPolyCV(false);
+
+  //  float_4 tmp = float(Cmprsr::Ratios::_4_1_soft);
+    cmp.setCurve(Cmprsr::Ratios::_8_1_hard);
+    cmp.setTimes(0, 100, 1.f / 44100.f);
+    cmp.setThreshold(.1f);
+
+    cmp.setIsPolyCV(true);
+    float_4 input(1, 2, 3, 4);
+    float_4 x;
+    for (int i = 0; i < 10; ++i) {
+        x = cmp.stepPoly(input);
+    }
+    // 0 and 1 are quite endependent, so both channels will get heavility compressed
+   // float ratio = x[1] / x[0];
+    
+    assertClosePct(x[0], x[1], 20);
+}
+
 void testCompressorII( ) {
     testMB_1();
+    testUnLinked();
    
 }
