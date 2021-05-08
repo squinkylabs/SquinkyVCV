@@ -54,9 +54,7 @@ static void testMB_1() {
     assertEQ(comp.params[Comp2::THRESHOLD_PARAM].value, 10.f);
 }
 
-
-static void testUnLinked()
-{
+static void testUnLinked() {
     Cmprsr cmp;
     cmp.setIsPolyCV(false);
 
@@ -73,8 +71,7 @@ static void testUnLinked()
     assertClosePct(x[0], x[1], 20);
 }
 
-static void testLinked()
-{
+static void testLinked() {
     Cmprsr cmp;
     cmp.setIsPolyCV(false);
 
@@ -90,17 +87,97 @@ static void testLinked()
         x = cmp.stepPoly(input);
     }
     x = cmp.stepPoly(input);
-   // assertClosePct(x[0], x[1], 20);
-   const float in1_ratio = input[1] / input[0];
-   const float in2_ratio = input[3] / input[2];
-   const float rx1 = x[1] / x[0];
-   assertClosePct(x[1] / x[0], in1_ratio, 10);
-   assertClosePct(x[3] / x[2], in2_ratio, 10);
+    // assertClosePct(x[0], x[1], 20);
+    const float in1_ratio = input[1] / input[0];
+    const float in2_ratio = input[3] / input[2];
+    const float rx1 = x[1] / x[0];
+    assertClosePct(x[1] / x[0], in1_ratio, 10);
+    assertClosePct(x[3] / x[2], in2_ratio, 10);
 }
 
-void testCompressorII( ) {
+// test that after we change to stereo that
+// all the channels are refreshed, not just the current one
+
+static void testMB_2() {
+    Comp2 comp;
+    init(comp);
+
+    // force mono, run
+    comp.params[Comp2::STEREO_PARAM].value = 0;
+    run(comp);
+
+    // verify initial th very high
+    for (int i = 0; i < 4; ++i) {
+        auto x = comp._getComp(0)._getTh();
+        simd_assertEQ(x, float_4(10));
+    }
+
+    // set thresh really low on channel 1 and 16
+    comp.params[Comp2::CHANNEL_PARAM].value = 1;
+    run(comp);
+    comp.params[Comp2::THRESHOLD_PARAM].value = 0;
+    run(comp);
+    comp.params[Comp2::CHANNEL_PARAM].value = 16;
+    run(comp);
+    comp.params[Comp2::THRESHOLD_PARAM].value = 0;
+    run(comp);
+    // verify that the theshold is correct
+    // the TH we assert against are just "known goods".
+    // But the do look reasonable. The important thing
+    // is that stereo pairs are the same.
+    for (int i = 0; i < 4; ++i) {
+        auto x = comp._getComp(i)._getTh();
+        switch (i) {
+            case 0: {
+                float_4 expect(.1f, 10, 10, 10);
+                simd_assertEQ(x, expect);
+            } break;
+            case 3: {
+                float_4 expect(10, 10, 10, .1f);
+                simd_assertEQ(x, expect);
+            } break;
+
+            case 1:
+            case 2: {
+                float_4 expect(10);
+                simd_assertEQ(x, expect);
+            } break;
+            default:
+                assert(false);
+        }
+    }
+
+    // now set to stereo
+    comp.params[Comp2::STEREO_PARAM].value = 1;
+    run(comp);
+
+    // verify all th are normalized
+    // verify that the theshold is correct
+    for (int i = 0; i < 4; ++i) {
+        auto x = comp._getComp(i)._getTh();
+        switch (i) {
+            case 0: {
+                float_4 expect(1, 1, 10, 10);
+                simd_assertEQ(x, expect);
+            } break;
+            case 3: {
+                float_4 expect(10, 10, 1, 1);
+                simd_assertEQ(x, expect);
+            } break;
+            case 1:
+            case 2: {
+                float_4 expect(10);
+                simd_assertEQ(x, expect);
+            } break;
+            default:
+                assert(false);
+        }
+    }
+}
+
+void testCompressorII() {
     testMB_1();
     testUnLinked();
     testLinked();
-   
+    testMB_2();
 }
