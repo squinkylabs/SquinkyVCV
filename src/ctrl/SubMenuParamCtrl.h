@@ -7,17 +7,21 @@
 
 class SubMenuParamCtrl : public ::rack::MenuItem {
 public:
+    using RenderFunc = std::function<std::string(int)>;
+    static void create(Menu*, const std::string& label, const std::vector<std::string>& children,
+                       Module*, int param, RenderFunc func);
     static void create(Menu*, const std::string& label, const std::vector<std::string>& children,
                        Module*, int param);
     ::rack::ui::Menu* createChildMenu() override;
 
 private:
-    SubMenuParamCtrl(const std::vector<std::string>& children, Module*, int param);
+    SubMenuParamCtrl(const std::vector<std::string>& children, Module*, int param, RenderFunc func);
     int getCurrentSetting();
     void setParam(int value);
     const std::vector<std::string> items;
     Module* const module;
     const int paramNumber;
+    RenderFunc const func = nullptr;
 };
 
 inline void SubMenuParamCtrl::create(
@@ -25,13 +29,28 @@ inline void SubMenuParamCtrl::create(
     const std::string& label,
     const std::vector<std::string>& children,
     Module* module,
-    int param) {
-    SubMenuParamCtrl* temporaryThis = new SubMenuParamCtrl(children, module, param);
+    int param,
+    RenderFunc func) {
+
+    SubMenuParamCtrl* temporaryThis = new SubMenuParamCtrl(children, module, param, func);
     temporaryThis->text = label;
     menu->addChild(temporaryThis);
 }
 
-inline SubMenuParamCtrl::SubMenuParamCtrl(const std::vector<std::string>& children, Module* module, int param) : items(children), module(module), paramNumber(param) {
+inline void SubMenuParamCtrl::create(
+    Menu* menu,
+    const std::string& label,
+    const std::vector<std::string>& children,
+    Module* module,
+    int param) {
+
+    SubMenuParamCtrl* temporaryThis = new SubMenuParamCtrl(children, module, param, nullptr);
+    temporaryThis->text = label;
+    menu->addChild(temporaryThis);
+}
+
+inline SubMenuParamCtrl::SubMenuParamCtrl(const std::vector<std::string>& children, Module* module, int param, RenderFunc fun) :
+    items(children), module(module), paramNumber(param), func(fun) {
 }
 
 inline int SubMenuParamCtrl::getCurrentSetting() {
@@ -42,22 +61,13 @@ inline void SubMenuParamCtrl::setParam(int value) {
     ::rack::appGet()->engine->setParam(module, paramNumber, value);
 }
 
-/*
-   SqMenuItem(const char* label,
-                std::function<bool()> isCheckedFn,
-               std::function<void()> clickFn) : _isCheckedFn(isCheckedFn),
-                                                _onActionFn(clickFn) {
-                                                    */
 inline ::rack::ui::Menu* SubMenuParamCtrl::createChildMenu() {
     ::rack::ui::Menu* menu = new ::rack::ui::Menu();
-#if 0
-    auto label = ::rack::construct<::rack::ui::MenuLabel>(
-        &rack::ui::MenuLabel::text,
-        "Base octave");
-#endif
     int value = 0;
     for (auto item : items) {
-        const char* kluge = item.c_str();
+        //const char* kluge = item.c_str();
+
+        std::string itemText = this->func ? this->func(value) : item;
 
         auto isCheckedFn = [this, value]() {
             return this->getCurrentSetting() == value;
@@ -66,7 +76,7 @@ inline ::rack::ui::Menu* SubMenuParamCtrl::createChildMenu() {
             this->setParam(value);
         };
 
-        SqMenuItem* mi = new SqMenuItem(kluge, isCheckedFn, onActionFn);
+        SqMenuItem* mi = new SqMenuItem(itemText.c_str(), isCheckedFn, onActionFn);
         menu->addChild(mi);
         ++value;
     }

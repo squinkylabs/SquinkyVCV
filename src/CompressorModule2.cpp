@@ -5,13 +5,13 @@
 #include "SqStream.h"
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
-#include "ctrl/SubMenuParamCtrl.h"
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
 #include "ctrl/SqTooltips.h"
 #include "ctrl/SqVuMeter.h"
 #include "ctrl/SqWidgets.h"
+#include "ctrl/SubMenuParamCtrl.h"
 #include "ctrl/ToggleButton.h"
 #include "engine/Port.hpp"
 
@@ -254,6 +254,11 @@ struct CompressorWidget2 : ModuleWidget {
     ParamWidget* channelKnob = nullptr;
     Label* channelIndicator = nullptr;
     int lastChannel = -1;
+
+    Label* stereoLabel = nullptr;
+    // int lastStereoType = -1;
+    Label* channelTypeLabel = nullptr;
+    int lastChannelType = 01;
 };
 
 void CompressorWidget2::appendContextMenu(Menu* theMenu) {
@@ -262,14 +267,32 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     ManualMenuItem* manual = new ManualMenuItem("F2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
     theMenu->addChild(manual);
 
+#if 0
     SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::STEREO_PARAM);
     item->text = "Stereo";
     theMenu->addChild(item);
+#endif
 
-    
-   // SubMenuParamCtrl* p = new SubMenuParamCtrl();
-   // theMenu->addChild(p);
     SubMenuParamCtrl::create(theMenu, "stereo/mono", {"mono", "stereo", "linked-stereo"}, module, Comp::STEREO_PARAM);
+
+    auto render = [this](int value) {
+        const bool isStereo = ::rack::appGet()->engine->getParam(this->module, Comp::STEREO_PARAM) > .5;
+        std::string text;
+        switch (value) {
+            case 0:
+                text = isStereo ? "1-8" : "1-16";
+                break;
+            case 1:
+                text = isStereo ? "9-16" : "1-16";
+                break;
+            case 2:
+                text = "Group/Aux";
+                break;
+        }
+        return text;
+    };
+
+    SubMenuParamCtrl::create(theMenu, "panel channels", {"1-8", "9-16", "Group/Aux"}, module, Comp::LABELS_PARAM, render);
 }
 
 void CompressorWidget2::step() {
@@ -286,6 +309,18 @@ void CompressorWidget2::step() {
         if (channelKnob->paramQuantity->getValue() > steps) {
             ::rack::appGet()->engine->setParam(module, Comp::CHANNEL_PARAM, steps);
         }
+
+        switch (stereo) {
+            case 0:
+                stereoLabel->text = "Mode: multi-mono";
+                break;
+            case 1:
+                stereoLabel->text = "Mode: stereo";
+                break;
+            case 2:
+                stereoLabel->text = "Mode: linked-stereo";
+                break;
+        }
         // INFO("set knob max to %d", (int)channelKnob->paramQuantity->maxValue);
     }
 
@@ -296,6 +331,31 @@ void CompressorWidget2::step() {
         sq.add(channel);
         channelIndicator->text = sq.str();
     }
+
+    const bool isStereo = stereo > 0;
+    const int labelsCode =  int(std::round(::rack::appGet()->engine->getParam(module, Comp::LABELS_PARAM)));
+    if (labelsCode != lastChannelType) {
+        lastChannelType = labelsCode;
+        switch(labelsCode) {
+          case 0:
+                channelTypeLabel->text = isStereo ? "1-8" : "1-16";
+                break;
+            case 1:
+                channelTypeLabel->text = isStereo ? "9-16" : "1-16";
+                break;
+            case 2:
+                channelTypeLabel->text = "Group/Aux";
+                break;
+
+        }
+    }
+
+#if 0
+       Label* stereoLabel = nullptr;
+    int lastStereoType = -1;
+    Label* channelTypeLabel = nullptr;
+    int lastChannelType = 01
+#endif
 }
 
 void CompressorWidget2::addVu(Compressor2Module* module) {
@@ -308,7 +368,7 @@ void CompressorWidget2::addVu(Compressor2Module* module) {
 void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
 #ifdef _LAB
     addLabel(
-        Vec(1, 201),
+        Vec(1, 200),
         "Atck");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -318,7 +378,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(50, 201),
+        Vec(50, 200),
         "Rel");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -328,7 +388,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(0, 149),
+        Vec(0, 148),
         "Thrsh");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -360,7 +420,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(49, 149),
+        Vec(49, 148),
         "Out");
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -371,6 +431,9 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #ifdef _LAB
     addLabel(Vec(50, 253), "1/0");
 #endif
+
+    stereoLabel = addLabel(Vec(10, 76), "Mode:");
+    channelTypeLabel = addLabel(Vec(10, 90), "Channels:");
 
     ToggleButton* tog = SqHelper::createParam<ToggleButton>(
         icomp,
@@ -383,7 +446,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(8, 101),
+        Vec(8, 115),
         module,
         Comp::RATIO_PARAM);
     p->box.size.x = 73;  // width
