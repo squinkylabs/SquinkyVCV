@@ -269,7 +269,7 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     
    // SubMenuParamCtrl* p = new SubMenuParamCtrl();
    // theMenu->addChild(p);
-    SubMenuParamCtrl::create(theMenu, "experiment", {"test1", "test2"}, module, Comp::EXPERIMENT_PARAM);
+    SubMenuParamCtrl::create(theMenu, "stereo/mono", {"mono", "stereo", "linked-stereo"}, module, Comp::STEREO_PARAM);
 }
 
 void CompressorWidget2::step() {

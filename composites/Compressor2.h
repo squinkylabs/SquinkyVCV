@@ -614,10 +614,10 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             ret = {1, 16, 1, "edit channel"};
             break;
         case Compressor2<TBase>::STEREO_PARAM:
-            ret = {0, 1, 0, "stereo"};
+            ret = {0, 2, 2, "stereo"};
             break;
         case Compressor2<TBase>::EXPERIMENT_PARAM:
-            ret = {0, 2, 0, "expoeriment"};
+            ret = {0, 2, 0, "experiment"};
             break;
         default:
             assert(false);
