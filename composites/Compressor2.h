@@ -148,6 +148,7 @@ private:
     void updateCurrentChannel();
     void pollStereo();
     void makeAllSettingsStereo();
+    void setLinkAllBanks(bool);
 
     /**
      * numChannels_m is the total mono channels. So even in
@@ -377,10 +378,18 @@ inline void Compressor2<TBase>::stepn() {
 
 template <class TBase>
 inline void Compressor2<TBase>::pollStereo() {
-    int stereo = int(std::round(Compressor2<TBase>::params[STEREO_PARAM].value));
+    const int stereo = int(std::round(Compressor2<TBase>::params[STEREO_PARAM].value));
     if (stereo != currentStereo_m) {
         currentStereo_m = stereo;
         makeAllSettingsStereo();
+        setLinkAllBanks(stereo == 2);
+    }
+}
+
+template <class TBase>
+inline void Compressor2<TBase>::setLinkAllBanks(bool linked) {
+    for (int i=0; i<3; ++i) {
+        compressors[i].setLinked(linked);
     }
 }
 

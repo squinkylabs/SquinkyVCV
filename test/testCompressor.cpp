@@ -309,6 +309,7 @@ static void testPolyInit() {
 static void testPolyAttack(int channel) {
     Comp2 comp;
     init(comp);
+    comp.params[Comp2::STEREO_PARAM].value = 0; // set multi mono
     run(comp, 40);
 
     const int bank = channel / 4;
@@ -381,6 +382,7 @@ static void testPolyStereoAttack(int stereoChannel) {
 static void testPolyRelease(int channel) {
     Comp2 comp;
     init(comp);
+    comp.params[Comp2::STEREO_PARAM].value = 0; // set to multi mono
     run(comp, 40);
 
     const int bank = channel / 4;
@@ -447,6 +449,7 @@ static void testPolyStereoRelease(int stereoChannel) {
 static void testPolyThreshold(int channel) {
     Comp2 comp;
     init(comp);
+    comp.params[Comp2::STEREO_PARAM].value = 0; // set to multi mono
     run(comp, 40);
 
     const int bank = channel / 4;
@@ -509,6 +512,7 @@ static void testPolyStereoThreshold(int stereoChannel) {
 static void testPolyRatio(int channel) {
     Comp2 comp;
     init(comp);
+    comp.params[Comp2::STEREO_PARAM].value = 0; // set to multi mono
     run(comp, 40);
 
     const int bank = channel / 4;
@@ -569,6 +573,7 @@ static void testPolyStereoRatio(int stereoChannel) {
 static void testPolyWetDry(int channel) {
     Comp2 comp;
     init(comp);
+    comp.params[Comp2::STEREO_PARAM].value = 0; // set to multi mono
     run(comp, 40);
 
     const int bank = channel / 4;
@@ -629,6 +634,7 @@ static void testPolyStereoWetDry(int stereoChannel) {
 static void testBypass(int channel) {
     Comp2 comp;
     init(comp);
+    comp.params[Comp2::STEREO_PARAM].value = 0; // set to multi mono
     run(comp, 40);
 
     const int bank = channel / 4;
@@ -688,6 +694,7 @@ static void testStereoBypass(int stereoChannel) {
 static void testGain(int channel) {
     Comp2 comp;
     init(comp);
+    comp.params[Comp2::STEREO_PARAM].value = 0; // set to multi mono
     run(comp, 40);
 
     const int bank = channel / 4;

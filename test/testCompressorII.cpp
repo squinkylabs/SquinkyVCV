@@ -25,7 +25,11 @@ static void testMB_1() {
 
     // default first channel on
     assertEQ(int(std::round(comp.params[Comp2::CHANNEL_PARAM].value)), 1);
-    assertEQ(bool(std::round(comp.params[Comp2::STEREO_PARAM].value)), false);
+    assertEQ(int(std::round(comp.params[Comp2::STEREO_PARAM].value)), 2);
+
+    // now set to mono, the old default.
+    comp.params[Comp2::STEREO_PARAM].value = 0;
+
     // assert thresh 1 is max (numbering doesn't start at 0, but 1)
     assertEQ(comp.params[Comp2::THRESHOLD_PARAM].value, 10.f);
     // assert threash 2 is max

@@ -338,13 +338,13 @@ void CompressorWidget2::step() {
         lastChannelType = labelsCode;
         switch(labelsCode) {
           case 0:
-                channelTypeLabel->text = isStereo ? "1-8" : "1-16";
+                channelTypeLabel->text = isStereo ? "Channels: 1-8" : "Channels: 1-16";
                 break;
             case 1:
-                channelTypeLabel->text = isStereo ? "9-16" : "1-16";
+                channelTypeLabel->text = isStereo ? "Channels: 9-16" : "Channels: 1-16";
                 break;
             case 2:
-                channelTypeLabel->text = "Group/Aux";
+                channelTypeLabel->text = "Channels: Group/Aux";
                 break;
 
         }
