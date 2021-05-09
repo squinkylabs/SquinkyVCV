@@ -10,6 +10,9 @@
  */
 class CompressorParmHolder {
 public:
+    CompressorParmHolder() = default;
+    CompressorParmHolder(const CompressorParmHolder&) = delete;
+    const CompressorParmHolder& operator = (const CompressorParmHolder&) = delete;
     static const unsigned int numChannels = {16};
     static const unsigned int numBanks = {numChannels / 4};
 

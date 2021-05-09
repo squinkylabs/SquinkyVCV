@@ -5,6 +5,7 @@
 #include "SqStream.h"
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
+#include "C2Json.h"
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
@@ -66,6 +67,11 @@ Compressor2Module::Compressor2Module() {
 }
 
 json_t* Compressor2Module::dataToJson() {
+
+    const CompressorParmHolder& params = compressor->getParamHolder();
+    C2Json ser;
+    return ser.paramsToJson(params);
+    #if 0
     json_t* rootJ = json_object();
     if (compressor) {
         auto params = compressor->getParamHolder();
@@ -94,9 +100,14 @@ json_t* Compressor2Module::dataToJson() {
         json_object_set_new(rootJ, "ratios", ratios);
     }
     return rootJ;
+#endif
 }
 
 void Compressor2Module::dataFromJson(json_t* rootJ) {
+    CompressorParmHolder* params = &compressor->getParamHolder();
+    C2Json ser;
+   ser.jsonToParams(rootJ, params);
+#if 0
     json_t* attacksJ = json_object_get(rootJ, "attacks");
     json_t* releasesJ = json_object_get(rootJ, "releases");
     json_t* thresholdsJ = json_object_get(rootJ, "thresholds");
@@ -141,6 +152,7 @@ void Compressor2Module::dataFromJson(json_t* rootJ) {
         value = json_array_get(ratiosJ, i);
         params.setRatio(i, json_integer_value(value));
     }
+#endif
 }
 
 void Compressor2Module::process(const ProcessArgs& args) {
