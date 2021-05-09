@@ -10,6 +10,9 @@ public:
     void jsonToParams(json_t* json, CompressorParmHolder* outParams);
     bool jsonToParamsNew(json_t* json, CompressorParmHolder* outParams);
 
+    void copyToClip(const CompressorParamChannel&);
+    bool getClipAsParamChannel(CompressorParamChannel*);
+
 private:
     const char* attack_ = "attack";
     const char* release_ = "release";
@@ -49,38 +52,6 @@ inline json_t* C2Json::paramsToJsonOneChannel(const CompressorParmHolder& params
     return objJ;
 }
 
-#if 0
-inline json_t* C2Json::paramsToJson(const CompressorParmHolder& params) {
-    json_t* rootJ = json_object();
-
-  //  auto params = compressor->getParamHolder();
-    json_t* attacks = json_array();
-    json_t* releases = json_array();
-    json_t* thresholds = json_array();
-    json_t* makeups = json_array();
-    json_t* enableds = json_array();
-    json_t* wetdrys = json_array();
-    json_t* ratios = json_array();
-    for (int i = 0; i < 16; ++i) {
-        json_array_append_new(attacks, json_real(params.getAttack(i)));
-        json_array_append_new(releases, json_real(params.getRelease(i)));
-        json_array_append_new(thresholds, json_real(params.getThreshold(i)));
-        json_array_append_new(makeups, json_real(params.getMakeupGain(i)));
-        json_array_append_new(enableds, json_boolean(params.getEnabled(i)));
-        json_array_append_new(wetdrys, json_real(params.getWetDryMix(i)));
-        json_array_append_new(ratios, json_integer(params.getRatio(i)));
-    }
-    json_object_set_new(rootJ, "attacks", attacks);
-    json_object_set_new(rootJ, "releases", releases);
-    json_object_set_new(rootJ, "thresholds", thresholds);
-    json_object_set_new(rootJ, "makeups", makeups);
-    json_object_set_new(rootJ, "enableds", enableds);
-    json_object_set_new(rootJ, "wetdrys", wetdrys);
-    json_object_set_new(rootJ, "ratios", ratios);
-
-    return rootJ;
-}
-#endif
 inline void C2Json::jsonToParams(json_t* json, CompressorParmHolder* outParams) {
 #if 0
     WARN("JSON to params");
@@ -114,7 +85,7 @@ inline bool C2Json::jsonToParamsNew(json_t* json, CompressorParmHolder* outParam
 }
 
 inline bool C2Json::jsonToParamOneChannel(json_t* obj, CompressorParmHolder* outParams, int channel) {
-    assert(channel >=0 && channel <= 15);
+    assert(channel >= 0 && channel <= 15);
 
     json_t* attackJ = json_object_get(obj, attack_);
     json_t* releaseJ = json_object_get(obj, release_);
@@ -185,3 +156,36 @@ inline void C2Json::jsonToParamsOrig(json_t* rootJ, CompressorParmHolder* params
         params->setRatio(i, json_integer_value(value));
     }
 }
+
+#if 0
+inline json_t* C2Json::paramsToJson(const CompressorParmHolder& params) {
+    json_t* rootJ = json_object();
+
+  //  auto params = compressor->getParamHolder();
+    json_t* attacks = json_array();
+    json_t* releases = json_array();
+    json_t* thresholds = json_array();
+    json_t* makeups = json_array();
+    json_t* enableds = json_array();
+    json_t* wetdrys = json_array();
+    json_t* ratios = json_array();
+    for (int i = 0; i < 16; ++i) {
+        json_array_append_new(attacks, json_real(params.getAttack(i)));
+        json_array_append_new(releases, json_real(params.getRelease(i)));
+        json_array_append_new(thresholds, json_real(params.getThreshold(i)));
+        json_array_append_new(makeups, json_real(params.getMakeupGain(i)));
+        json_array_append_new(enableds, json_boolean(params.getEnabled(i)));
+        json_array_append_new(wetdrys, json_real(params.getWetDryMix(i)));
+        json_array_append_new(ratios, json_integer(params.getRatio(i)));
+    }
+    json_object_set_new(rootJ, "attacks", attacks);
+    json_object_set_new(rootJ, "releases", releases);
+    json_object_set_new(rootJ, "thresholds", thresholds);
+    json_object_set_new(rootJ, "makeups", makeups);
+    json_object_set_new(rootJ, "enableds", enableds);
+    json_object_set_new(rootJ, "wetdrys", wetdrys);
+    json_object_set_new(rootJ, "ratios", ratios);
+
+    return rootJ;
+}
+#endif

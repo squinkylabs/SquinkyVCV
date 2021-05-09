@@ -43,8 +43,9 @@ public:
     virtual json_t* dataToJson() override;
     virtual void dataFromJson(json_t* root) override;
 
-private:
     std::shared_ptr<Comp> compressor;
+private:
+   
 };
 
 Compressor2Module::Compressor2Module() {
@@ -194,14 +195,71 @@ struct CompressorWidget2 : ModuleWidget {
 
     Label* stereoLabel = nullptr;
     Label* channelTypeLabel = nullptr;
+
+    Compressor2Module* const cModule;
+     CompressorParamChannel pasteBuffer;
+
+    void setAllChannelsToCurrent();
+    void copy();
+    void paste();
 };
+
+void CompressorWidget2::setAllChannelsToCurrent() {
+    if (module) {
+        cModule->compressor->ui_setAllChannelsToCurrent();
+    }
+}
+
+void CompressorWidget2::copy() {
+    CompressorParamChannel ch;
+    const CompressorParmHolder& params = cModule->compressor->getParamHolder();
+    int currentChannel = -1 + int(std::round(::rack::appGet()->engine->getParam(module, Comp::CHANNEL_PARAM)));
+    INFO("paste using cur ch = %d", currentChannel);
+    ch.copy(params, currentChannel);
+    C2Json json;
+    json.copyToClip(ch);
+}
+
+void CompressorWidget2::paste() {
+    C2Json json;
+    bool b = json.getClipAsParamChannel(&pasteBuffer);
+    if (module) {
+        cModule->compressor->ui_paste(&pasteBuffer);
+    }
+}
 
 void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     MenuLabel* spacerLabel = new MenuLabel();
     theMenu->addChild(spacerLabel);
-    ManualMenuItem* manual = new ManualMenuItem("F2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
+    ManualMenuItem* manual = new ManualMenuItem("F2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/c2/docs/compressor2.md");
     theMenu->addChild(manual);
 
+    theMenu->addChild(new SqMenuItem(
+        "copy",
+        []() {
+            return false;  // we are never checked
+        },
+        [this]() {
+            this->copy();
+        }));
+    theMenu->addChild(new SqMenuItem(
+        "paste",
+        []() {
+            return false;  //TODO: enable when clip
+        },
+        [this]() {
+            this->paste();
+        }));
+    spacerLabel = new MenuLabel();
+    theMenu->addChild(spacerLabel);
+    theMenu->addChild(new SqMenuItem(
+        "set all channels to current",
+        []() {
+            return false;  //TODO: enable when clip
+        },
+        [this]() {
+            this->setAllChannelsToCurrent();
+        }));
     SubMenuParamCtrl::create(theMenu, "stereo/mono", {"mono", "stereo", "linked-stereo"}, module, Comp::STEREO_PARAM);
 
     auto render = [this](int value) {
@@ -448,8 +506,9 @@ void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<ICom
  * This is not shared by all modules in the DLL, just one
  */
 
-CompressorWidget2::CompressorWidget2(Compressor2Module* module) {
+CompressorWidget2::CompressorWidget2(Compressor2Module* module) : cModule(module) {
     setModule(module);
+    
     SqHelper::setPanel(this, "res/compressor2_panel.svg");
 
 #ifdef _LAB

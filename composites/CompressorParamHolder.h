@@ -57,6 +57,21 @@ private:
     int32_4 ratio[numBanks] = {0, 0, 0, 0};
 };
 
+class CompressorParamChannel {
+public:
+    float attack=0;
+    float release=0;
+    float threshold=0;
+    float makeupGain=0;
+    bool enabled=false;
+    float wetDryMix=0;
+    int ratio=0;
+
+    void copy( const CompressorParmHolder&, int channel);
+};
+
+
+
 inline float_4 CompressorParmHolder::getAttacks(unsigned int bank) const {
     assert(bank < numBanks);
     return a[bank];

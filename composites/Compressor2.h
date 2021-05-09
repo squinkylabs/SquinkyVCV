@@ -122,6 +122,9 @@ public:
     float getChannelGain(int ch) const;
     CompressorParmHolder& getParamHolder() { return compParams; }
 
+    void ui_paste(CompressorParamChannel* pasteData);
+    void ui_setAllChannelsToCurrent();
+
     Cmprsr& _getComp(int bank);
 
     float_4 _getWet(int bank) const { return wetLevel[bank]; }
