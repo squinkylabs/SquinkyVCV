@@ -1,5 +1,8 @@
 #pragma once
 
+#include "CompressorParamHolder.h"
+#include "jansson.h"
+
 class C2Json {
 public:
     json_t* paramsToJson(const CompressorParmHolder& params);

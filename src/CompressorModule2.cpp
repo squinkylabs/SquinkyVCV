@@ -1,11 +1,11 @@
 
 
+#include "C2Json.h"
 #include "Compressor2.h"
 #include "CompressorTooltips.h"
 #include "SqStream.h"
 #include "Squinky.hpp"
 #include "WidgetComposite.h"
-#include "C2Json.h"
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
@@ -67,92 +67,15 @@ Compressor2Module::Compressor2Module() {
 }
 
 json_t* Compressor2Module::dataToJson() {
-
     const CompressorParmHolder& params = compressor->getParamHolder();
     C2Json ser;
     return ser.paramsToJson(params);
-    #if 0
-    json_t* rootJ = json_object();
-    if (compressor) {
-        auto params = compressor->getParamHolder();
-        json_t* attacks = json_array();
-        json_t* releases = json_array();
-        json_t* thresholds = json_array();
-        json_t* makeups = json_array();
-        json_t* enableds = json_array();
-        json_t* wetdrys = json_array();
-        json_t* ratios = json_array();
-        for (int i = 0; i < 16; ++i) {
-            json_array_append_new(attacks, json_real(params.getAttack(i)));
-            json_array_append_new(releases, json_real(params.getRelease(i)));
-            json_array_append_new(thresholds, json_real(params.getThreshold(i)));
-            json_array_append_new(makeups, json_real(params.getMakeupGain(i)));
-            json_array_append_new(enableds, json_boolean(params.getEnabled(i)));
-            json_array_append_new(wetdrys, json_real(params.getWetDryMix(i)));
-            json_array_append_new(ratios, json_integer(params.getRatio(i)));
-        }
-        json_object_set_new(rootJ, "attacks", attacks);
-        json_object_set_new(rootJ, "releases", releases);
-        json_object_set_new(rootJ, "thresholds", thresholds);
-        json_object_set_new(rootJ, "makeups", makeups);
-        json_object_set_new(rootJ, "enableds", enableds);
-        json_object_set_new(rootJ, "wetdrys", wetdrys);
-        json_object_set_new(rootJ, "ratios", ratios);
-    }
-    return rootJ;
-#endif
 }
 
 void Compressor2Module::dataFromJson(json_t* rootJ) {
     CompressorParmHolder* params = &compressor->getParamHolder();
     C2Json ser;
-   ser.jsonToParams(rootJ, params);
-#if 0
-    json_t* attacksJ = json_object_get(rootJ, "attacks");
-    json_t* releasesJ = json_object_get(rootJ, "releases");
-    json_t* thresholdsJ = json_object_get(rootJ, "thresholds");
-    json_t* makeupsJ = json_object_get(rootJ, "makeups");
-    json_t* enabledsJ = json_object_get(rootJ, "enableds");
-    json_t* ratiosJ = json_object_get(rootJ, "ratios");
-
-    if (!json_is_array(attacksJ) || !json_is_array(releasesJ) || !json_is_array(thresholdsJ) ||
-        !json_is_array(makeupsJ) || !json_is_array(enabledsJ) || !json_is_array(ratiosJ)) {
-        WARN("parameter json malformed");
-        assert(false);
-        return;
-    }
-    if ((json_array_size(attacksJ) < 16) ||
-        (json_array_size(releasesJ) < 16) ||
-        (json_array_size(thresholdsJ) < 16) ||
-        (json_array_size(makeupsJ) < 16) ||
-        (json_array_size(enabledsJ) < 16) ||
-        (json_array_size(ratiosJ) < 16)) {
-        WARN("parameter json malformed2 %d", json_array_size(attacksJ));
-        assert(false);
-        return;
-    }
-
-    auto params = compressor->getParamHolder();
-    for (int i = 0; i < 15; ++i) {
-        auto value = json_array_get(attacksJ, i);
-        params.setAttack(i, json_real_value(value));
-
-        value = json_array_get(releasesJ, i);
-        params.setRelease(i, json_real_value(value));
-
-        value = json_array_get(thresholdsJ, i);
-        params.setThreshold(i, json_real_value(value));
-
-        value = json_array_get(makeupsJ, i);
-        params.setMakeupGain(i, json_real_value(value));
-
-        value = json_array_get(enabledsJ, i);
-        params.setEnabled(i, json_boolean_value(value));
-
-        value = json_array_get(ratiosJ, i);
-        params.setRatio(i, json_integer_value(value));
-    }
-#endif
+    ser.jsonToParams(rootJ, params);
 }
 
 void Compressor2Module::process(const ProcessArgs& args) {
@@ -263,14 +186,14 @@ struct CompressorWidget2 : ModuleWidget {
     void step() override;
 
     int lastStereo = -1;
+    int lastChannel = -1;
+    int lastLabelMode = -1;
+    //  int lastLabelMode = -1;
     ParamWidget* channelKnob = nullptr;
     Label* channelIndicator = nullptr;
-    int lastChannel = -1;
 
     Label* stereoLabel = nullptr;
-    // int lastStereoType = -1;
     Label* channelTypeLabel = nullptr;
-    int lastChannelType = 01;
 };
 
 void CompressorWidget2::appendContextMenu(Menu* theMenu) {
@@ -278,12 +201,6 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     theMenu->addChild(spacerLabel);
     ManualMenuItem* manual = new ManualMenuItem("F2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/f2.md");
     theMenu->addChild(manual);
-
-#if 0
-    SqMenuItem_BooleanParam2* item = new SqMenuItem_BooleanParam2(module, Comp::STEREO_PARAM);
-    item->text = "Stereo";
-    theMenu->addChild(item);
-#endif
 
     SubMenuParamCtrl::create(theMenu, "stereo/mono", {"mono", "stereo", "linked-stereo"}, module, Comp::STEREO_PARAM);
 
@@ -313,9 +230,9 @@ void CompressorWidget2::step() {
         return;
     }
     const int stereo = int(std::round(::rack::appGet()->engine->getParam(module, Comp::STEREO_PARAM)));
-    if (stereo != lastStereo) {
-        lastStereo = stereo;
+    const int labelMode = int(std::round(::rack::appGet()->engine->getParam(module, Comp::LABELS_PARAM)));
 
+    if (stereo != lastStereo) {
         const int steps = stereo ? 8 : 16;
         channelKnob->paramQuantity->maxValue = steps;
         if (channelKnob->paramQuantity->getValue() > steps) {
@@ -336,20 +253,59 @@ void CompressorWidget2::step() {
         // INFO("set knob max to %d", (int)channelKnob->paramQuantity->maxValue);
     }
 
+    // draw the channel label
     const int channel = int(std::round(::rack::appGet()->engine->getParam(module, Comp::CHANNEL_PARAM)));
-    if (channel != lastChannel) {
-        lastChannel = channel;
+    if ((channel != lastChannel) || (labelMode != lastLabelMode)) {
+        //  SQINFO("on change, stereo = %d channel = %d", stereo, channel);
         SqStream sq;
-        sq.add(channel);
+        switch (labelMode) {
+            case 0:
+                sq.add(channel);
+                break;
+            case 1:
+                sq.add(channel + 8);
+                break;
+            case 2: {
+                switch (channel) {
+                    case 1:
+                        sq.add("G1");
+                        break;
+                    case 2:
+                        sq.add("G2");
+                        break;
+                    case 3:
+                        sq.add("G3");
+                        break;
+                    case 4:
+                        sq.add("G4");
+                        break;
+                    case 5:
+                        sq.add("A1");
+                        break;
+                    case 6:
+                        sq.add("A2");
+                        break;
+                    case 7:
+                        sq.add("A3");
+                        break;
+                    case 8:
+                        sq.add("A4");
+                        break;
+                    default:
+                        FATAL("channel out of range %d", channel);
+                        assert(false);
+                }
+            } break;
+        }
+
         channelIndicator->text = sq.str();
     }
 
     const bool isStereo = stereo > 0;
-    const int labelsCode =  int(std::round(::rack::appGet()->engine->getParam(module, Comp::LABELS_PARAM)));
-    if (labelsCode != lastChannelType) {
-        lastChannelType = labelsCode;
-        switch(labelsCode) {
-          case 0:
+
+    if (labelMode != lastLabelMode) {
+        switch (labelMode) {
+            case 0:
                 channelTypeLabel->text = isStereo ? "Channels: 1-8" : "Channels: 1-16";
                 break;
             case 1:
@@ -358,16 +314,11 @@ void CompressorWidget2::step() {
             case 2:
                 channelTypeLabel->text = "Channels: Group/Aux";
                 break;
-
         }
     }
-
-#if 0
-       Label* stereoLabel = nullptr;
-    int lastStereoType = -1;
-    Label* channelTypeLabel = nullptr;
-    int lastChannelType = 01
-#endif
+    lastStereo = stereo;
+    lastLabelMode = labelMode;
+    lastChannel = channel;
 }
 
 void CompressorWidget2::addVu(Compressor2Module* module) {
@@ -444,8 +395,8 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
     addLabel(Vec(50, 253), "1/0");
 #endif
 
-    stereoLabel = addLabel(Vec(10, 76), "Mode:");
-    channelTypeLabel = addLabel(Vec(10, 90), "Channels:");
+    stereoLabel = addLabel(Vec(4, 76), "Mode:");
+    channelTypeLabel = addLabel(Vec(4, 90), "Channels:");
 
     ToggleButton* tog = SqHelper::createParam<ToggleButton>(
         icomp,
