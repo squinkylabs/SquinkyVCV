@@ -122,8 +122,8 @@ public:
     float getChannelGain(int ch) const;
     CompressorParmHolder& getParamHolder() { return compParams; }
 
-    void ui_paste(CompressorParamChannel* pasteData);
-    void ui_setAllChannelsToCurrent();
+    void ui_paste(CompressorParamChannel* pasteData) { pastePointer = pasteData; }
+    void ui_setAllChannelsToCurrent() { setAllChannelsSameFlag = true; }
 
     Cmprsr& _getComp(int bank);
 
@@ -153,6 +153,7 @@ private:
     void makeAllSettingsStereo();
     void setLinkAllBanks(bool);
     void updateAllChannels();
+    void pollUI();
 
     /**
      * numChannels_m is the total mono channels. So even in
@@ -195,6 +196,9 @@ private:
     int lastChannelCount = -1;
     bool lastNotBypassed = false;
 
+    std::atomic<bool> setAllChannelsSameFlag = {false};
+    std::atomic<CompressorParamChannel*> pastePointer = {nullptr};
+
     std::shared_ptr<IComposite> compDescription = {Compressor2<TBase>::getDescription()};
 };
 
@@ -226,11 +230,9 @@ inline void Compressor2<TBase>::init() {
  */
 template <class TBase>
 inline void Compressor2<TBase>::updateCurrentChannel() {
-
-
     //SQINFO("update current channel called with stereo = %d", currentStereo_m);
-   // SQINFO("update current channel about to set thre to %f curch=%d\n", compParams.getThreshold(currentChannel_m), currentChannel_m);
-    
+    // SQINFO("update current channel about to set thre to %f curch=%d\n", compParams.getThreshold(currentChannel_m), currentChannel_m);
+
     const int sourceParamChannel = currentStereo_m ? (currentChannel_m * 2) : currentChannel_m;
     assert(sourceParamChannel < 16);
     Compressor2<TBase>::params[ATTACK_PARAM].value = compParams.getAttack(sourceParamChannel);
@@ -267,7 +269,7 @@ inline void Compressor2<TBase>::initAllParams() {
 template <class TBase>
 inline void Compressor2<TBase>::updateAllChannels() {
     //SQINFO("updateAllChannels");
-     for (int bank = 0; bank < 4; ++bank) {
+    for (int bank = 0; bank < 4; ++bank) {
         updateAttackAndRelease(bank);
         updateThresholdAndRatio(bank);
         updateWetDry(bank);
@@ -360,7 +362,35 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
 }
 
 template <class TBase>
+inline void Compressor2<TBase>::pollUI() {
+    if (setAllChannelsSameFlag) {
+        setAllChannelsSameFlag.store(false);
+        const int monoChannel = (currentStereo_m > 0) ? currentChannel_m * 2 : currentChannel_m;
+        CompressorParmHolder& holder = getParamHolder();
+        for (int i = 0; i < 16; ++i) {
+            if (i != monoChannel) {
+                holder.copy(i, monoChannel);
+            }
+        }
+    }
+
+    if (pastePointer) {
+        const CompressorParamChannel* ptr = pastePointer;
+        pastePointer = nullptr;
+        SQINFO("pollUI sees paste, cursh = %d (abs)", currentChannel_m);
+        TBase::params[ATTACK_PARAM].value = ptr->attack;
+        TBase::params[RELEASE_PARAM].value = ptr->release;
+        TBase::params[THRESHOLD_PARAM].value = ptr->threshold;
+        TBase::params[RATIO_PARAM].value = ptr->ratio;
+        TBase::params[MAKEUPGAIN_PARAM].value = ptr->makeupGain;
+        TBase::params[NOTBYPASS_PARAM].value = ptr->enabled ? 1.f : 0.f;
+        TBase::params[WETDRY_PARAM].value = ptr->attack;
+    }
+}
+
+template <class TBase>
 inline void Compressor2<TBase>::stepn() {
+    pollUI();
     pollStereo();
 
     SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
@@ -374,7 +404,7 @@ inline void Compressor2<TBase>::stepn() {
     currentChannel_m = -1 + int(std::round(TBase::params[CHANNEL_PARAM].value));
     assert(currentChannel_m >= 0);
     assert(currentChannel_m <= 15);
-    
+
     // if stereo setting makes current channel invalid, fix it
     if ((currentStereo_m > 0) && (currentChannel_m > 7)) {
         currentChannel_m = 7;
@@ -399,7 +429,6 @@ template <class TBase>
 inline void Compressor2<TBase>::pollStereo() {
     const int stereo = int(std::round(Compressor2<TBase>::params[STEREO_PARAM].value));
     if (stereo != currentStereo_m) {
-       
         currentStereo_m = stereo;
         if (currentStereo_m > 0) {
             makeAllSettingsStereo();
@@ -410,7 +439,7 @@ inline void Compressor2<TBase>::pollStereo() {
 
 template <class TBase>
 inline void Compressor2<TBase>::setLinkAllBanks(bool linked) {
-    for (int i=0; i<3; ++i) {
+    for (int i = 0; i < 3; ++i) {
         compressors[i].setLinked(linked);
     }
 }

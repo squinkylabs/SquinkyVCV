@@ -1,6 +1,7 @@
 
 
 #include "C2Json.h"
+#include "Comp2TextUtil.h"
 #include "Compressor2.h"
 #include "CompressorTooltips.h"
 #include "SqStream.h"
@@ -44,8 +45,8 @@ public:
     virtual void dataFromJson(json_t* root) override;
 
     std::shared_ptr<Comp> compressor;
+
 private:
-   
 };
 
 Compressor2Module::Compressor2Module() {
@@ -197,7 +198,7 @@ struct CompressorWidget2 : ModuleWidget {
     Label* channelTypeLabel = nullptr;
 
     Compressor2Module* const cModule;
-     CompressorParamChannel pasteBuffer;
+    CompressorParamChannel pasteBuffer;
 
     void setAllChannelsToCurrent();
     void copy();
@@ -214,7 +215,7 @@ void CompressorWidget2::copy() {
     CompressorParamChannel ch;
     const CompressorParmHolder& params = cModule->compressor->getParamHolder();
     int currentChannel = -1 + int(std::round(::rack::appGet()->engine->getParam(module, Comp::CHANNEL_PARAM)));
-    INFO("paste using cur ch = %d", currentChannel);
+    INFO("copy using cur ch = %d", currentChannel);
     ch.copy(params, currentChannel);
     C2Json json;
     json.copyToClip(ch);
@@ -223,7 +224,7 @@ void CompressorWidget2::copy() {
 void CompressorWidget2::paste() {
     C2Json json;
     bool b = json.getClipAsParamChannel(&pasteBuffer);
-    if (module) {
+    if (b && module) {
         cModule->compressor->ui_paste(&pasteBuffer);
     }
 }
@@ -288,7 +289,17 @@ void CompressorWidget2::step() {
         return;
     }
     const int stereo = int(std::round(::rack::appGet()->engine->getParam(module, Comp::STEREO_PARAM)));
-    const int labelMode = int(std::round(::rack::appGet()->engine->getParam(module, Comp::LABELS_PARAM)));
+    int labelMode = int(std::round(::rack::appGet()->engine->getParam(module, Comp::LABELS_PARAM)));
+  //  SQINFO("in step read params st=%d lastst=%d, lavelMode=%d lastMode %d",
+  //         stereo, lastStereo, labelMode, lastLabelMode);
+
+    if (stereo == 0) {
+        if (labelMode != 0) {
+            ::rack::appGet()->engine->setParam(module, Comp::LABELS_PARAM, 0);
+            labelMode = 0;
+            SQWARN("UI ignoring label mode incompatible with mono stereo=%d mode=%d", stereo, labelMode);
+        }
+    }
 
     if (stereo != lastStereo) {
         const int steps = stereo ? 8 : 16;
@@ -508,7 +519,7 @@ void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<ICom
 
 CompressorWidget2::CompressorWidget2(Compressor2Module* module) : cModule(module) {
     setModule(module);
-    
+
     SqHelper::setPanel(this, "res/compressor2_panel.svg");
 
 #ifdef _LAB

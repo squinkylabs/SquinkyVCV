@@ -16,6 +16,8 @@ public:
     static const unsigned int numChannels = {16};
     static const unsigned int numBanks = {numChannels / 4};
 
+    void copy(unsigned int dest, unsigned int src);
+
     float_4 getAttacks(unsigned int bank) const;
     float getAttack(unsigned int channel) const;
 
@@ -67,10 +69,38 @@ public:
     float wetDryMix=0;
     int ratio=0;
 
+    /** copies data from CompressorParmHolder to us
+     */ 
     void copy( const CompressorParmHolder&, int channel);
 };
 
+inline void CompressorParamChannel::copy( const CompressorParmHolder& h, int channel) {
+    attack = h.getAttack(channel);
+    release = h.getRelease(channel);
+    threshold = h.getThreshold(channel);
+    makeupGain = h.getMakeupGain(channel);
+    enabled = h.getEnabled(channel);
+    wetDryMix = h.getWetDryMix(channel);
+    ratio = h.getRatio(channel);
+}
 
+
+inline void CompressorParmHolder::copy(unsigned int dest, unsigned int src) {
+    assert(dest < numChannels);
+    const unsigned destBank = dest / 4;
+    const unsigned destSubChannel = dest - (destBank * 4);
+
+    const unsigned srcBank = src / 4;
+    const unsigned srcSubChannel = src - (srcBank * 4);
+
+    a[destBank][destSubChannel] = a[srcBank][srcSubChannel];
+    r[destBank][destSubChannel] = r[srcBank][srcSubChannel];
+    t[destBank][destSubChannel] = t[srcBank][srcSubChannel];
+    m[destBank][destSubChannel] = m[srcBank][srcSubChannel];
+    e[destBank][destSubChannel] = e[srcBank][srcSubChannel];
+    w[destBank][destSubChannel] = w[srcBank][srcSubChannel];
+    ratio[destBank][destSubChannel] = a[srcBank][srcSubChannel];
+}
 
 inline float_4 CompressorParmHolder::getAttacks(unsigned int bank) const {
     assert(bank < numBanks);
