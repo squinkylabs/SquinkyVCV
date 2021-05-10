@@ -307,7 +307,8 @@ void CompressorWidget2::step() {
         if (channelKnob->paramQuantity->getValue() > steps) {
             ::rack::appGet()->engine->setParam(module, Comp::CHANNEL_PARAM, steps);
         }
-
+        stereoLabel->text = Comp2TextUtil::stereoModeText(stereo);
+#if 0
         switch (stereo) {
             case 0:
                 stereoLabel->text = "Mode: multi-mono";
@@ -319,6 +320,7 @@ void CompressorWidget2::step() {
                 stereoLabel->text = "Mode: linked-stereo";
                 break;
         }
+    #endif
         // INFO("set knob max to %d", (int)channelKnob->paramQuantity->maxValue);
     }
 
@@ -326,6 +328,7 @@ void CompressorWidget2::step() {
     const int channel = int(std::round(::rack::appGet()->engine->getParam(module, Comp::CHANNEL_PARAM)));
     if ((channel != lastChannel) || (labelMode != lastLabelMode)) {
         //  SQINFO("on change, stereo = %d channel = %d", stereo, channel);
+    #if 0
         SqStream sq;
         switch (labelMode) {
             case 0:
@@ -366,8 +369,10 @@ void CompressorWidget2::step() {
                 }
             } break;
         }
+         channelIndicator->text = sq.str();
+    #endif
 
-        channelIndicator->text = sq.str();
+        channelIndicator->text = Comp2TextUtil::channelLabel(labelMode, channel);
     }
 
     const bool isStereo = stereo > 0;
