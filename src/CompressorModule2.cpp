@@ -190,7 +190,6 @@ struct CompressorWidget2 : ModuleWidget {
     int lastStereo = -1;
     int lastChannel = -1;
     int lastLabelMode = -1;
-    //  int lastLabelMode = -1;
     ParamWidget* channelKnob = nullptr;
     Label* channelIndicator = nullptr;
 
@@ -215,7 +214,6 @@ void CompressorWidget2::copy() {
     CompressorParamChannel ch;
     const CompressorParmHolder& params = cModule->compressor->getParamHolder();
     int currentChannel = -1 + int(std::round(::rack::appGet()->engine->getParam(module, Comp::CHANNEL_PARAM)));
-    INFO("copy using cur ch = %d", currentChannel);
     ch.copy(params, currentChannel);
     C2Json json;
     json.copyToClip(ch);
