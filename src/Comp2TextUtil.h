@@ -1,14 +1,29 @@
 #pragma once
 
 #include <string>
+
 #include "SqStream.h"
 
 class Comp2TextUtil {
 public:
     static std::string stereoModeText(int stereo);
     static std::string channelLabel(int mode, int channel);
-    static std::string channelModeMenuLabel(int mode, int stereo);
+    static std::string channelModeMenuLabel(int mode, bool isStereo);
 };
+
+std::string Comp2TextUtil::channelModeMenuLabel(int mode, bool isStereo) {
+    switch (mode) {
+        case 0:
+            return isStereo ? "Channels: 1-8" : "Channels: 1-16";
+            break;
+        case 1:
+            return isStereo ? "Channels: 9-16" : "Channels: 1-16";
+            break;
+        case 2:
+            return "Channels: Group/Aux";
+            break;
+    }
+}
 
 std::string Comp2TextUtil::stereoModeText(int stereo) {
     switch (stereo) {
@@ -69,5 +84,4 @@ std::string Comp2TextUtil::channelLabel(int mode, int channel) {
         } break;
     }
     return sq.str();
-
 }

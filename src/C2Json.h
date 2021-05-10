@@ -33,6 +33,7 @@ inline bool C2Json::getClipAsParamChannel(CompressorParamChannel* ch) {
         INFO("nothing to paste");
         return false;
     }
+    // INFO("in getClip json=%s", jsonString);
     json_error_t error;
     json_t* obj = json_loads(jsonString, 0, &error);
 	if (!obj) {
@@ -58,9 +59,13 @@ inline bool C2Json::getClipAsParamChannel(CompressorParamChannel* ch) {
     ch->threshold =  json_number_value(thresholdJ);
     ch->makeupGain =  json_number_value(makeupJ);
     ch->wetDryMix =  json_number_value(wetdryJ);
-    ch->enabled =  json_number_value(enabledJ);
-    ch->ratio =  json_number_value(ratioJ);
+    ch->enabled =  json_boolean_value(enabledJ);
+    ch->ratio =  json_integer_value(ratioJ);
 
+    //INFO("getClipAsParamChannel a=%f r=%f t=%f", ch->attack, ch->release, ch->threshold);
+    //INFO("getClipAs mg=%f, wd=%f, enabled=%d rato=%d", ch->makeupGain, ch->wetDryMix, ch->enabled, ch->ratio);
+
+    json_decref(obj);
     return true;
 }
 
@@ -77,6 +82,7 @@ inline void C2Json::copyToClip(const CompressorParamChannel& ch) {
 
     char* clipJson = json_dumps(root, JSON_INDENT(2) | JSON_REAL_PRECISION(9));
 
+   // INFO("putting string on clip: %s", clipJson);
     glfwSetClipboardString(APP->window->win, clipJson);
 
     json_decref(root);  // we don't need this any more

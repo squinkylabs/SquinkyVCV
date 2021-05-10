@@ -308,19 +308,6 @@ void CompressorWidget2::step() {
             ::rack::appGet()->engine->setParam(module, Comp::CHANNEL_PARAM, steps);
         }
         stereoLabel->text = Comp2TextUtil::stereoModeText(stereo);
-#if 0
-        switch (stereo) {
-            case 0:
-                stereoLabel->text = "Mode: multi-mono";
-                break;
-            case 1:
-                stereoLabel->text = "Mode: stereo";
-                break;
-            case 2:
-                stereoLabel->text = "Mode: linked-stereo";
-                break;
-        }
-    #endif
         // INFO("set knob max to %d", (int)channelKnob->paramQuantity->maxValue);
     }
 
@@ -328,67 +315,13 @@ void CompressorWidget2::step() {
     const int channel = int(std::round(::rack::appGet()->engine->getParam(module, Comp::CHANNEL_PARAM)));
     if ((channel != lastChannel) || (labelMode != lastLabelMode)) {
         //  SQINFO("on change, stereo = %d channel = %d", stereo, channel);
-    #if 0
-        SqStream sq;
-        switch (labelMode) {
-            case 0:
-                sq.add(channel);
-                break;
-            case 1:
-                sq.add(channel + 8);
-                break;
-            case 2: {
-                switch (channel) {
-                    case 1:
-                        sq.add("G1");
-                        break;
-                    case 2:
-                        sq.add("G2");
-                        break;
-                    case 3:
-                        sq.add("G3");
-                        break;
-                    case 4:
-                        sq.add("G4");
-                        break;
-                    case 5:
-                        sq.add("A1");
-                        break;
-                    case 6:
-                        sq.add("A2");
-                        break;
-                    case 7:
-                        sq.add("A3");
-                        break;
-                    case 8:
-                        sq.add("A4");
-                        break;
-                    default:
-                        FATAL("channel out of range %d", channel);
-                        assert(false);
-                }
-            } break;
-        }
-         channelIndicator->text = sq.str();
-    #endif
 
         channelIndicator->text = Comp2TextUtil::channelLabel(labelMode, channel);
     }
 
-    const bool isStereo = stereo > 0;
-
     if (labelMode != lastLabelMode) {
-        switch (labelMode) {
-            case 0:
-                channelTypeLabel->text = isStereo ? "Channels: 1-8" : "Channels: 1-16";
-                break;
-            case 1:
-                channelTypeLabel->text = isStereo ? "Channels: 9-16" : "Channels: 1-16";
-                break;
-            case 2:
-                channelTypeLabel->text = "Channels: Group/Aux";
-                break;
-        }
+        //  static std::string channelModeMenuLabel(int mode, int stereo);
+        channelTypeLabel->text = Comp2TextUtil::channelModeMenuLabel(labelMode, stereo > 0);
     }
     lastStereo = stereo;
     lastLabelMode = labelMode;
