@@ -131,12 +131,14 @@ public:
     float_4 _getEn(int bank) const { return enabled[bank]; }
     float_4 _getG(int bank) const { return makeupGain[bank]; }
 
+    void initAllParams();
+    void initCurrentChannelParams();
+
 private:
     CompressorParmHolder compParams;
 
     Cmprsr compressors[4];
     void setupLimiter();
-    void initAllParams();
     void stepn();
     void pollAttackRelease();
     void updateAttackAndRelease(int bank);
@@ -259,9 +261,15 @@ inline void Compressor2<TBase>::initAllParams() {
         compParams.setMakeupGain(i, icomp->getParam(MAKEUPGAIN_PARAM).def);
         compParams.setEnabled(i, bool(std::round(icomp->getParam(NOTBYPASS_PARAM).def)));
         compParams.setWetDry(i, icomp->getParam(WETDRY_PARAM).def);
-        compParams.setEnabled(i, icomp->getParam(NOTBYPASS_PARAM).def);
-        compParams.setMakeupGain(i, icomp->getParam(MAKEUPGAIN_PARAM).def);
     }
+
+    TBase::params[ATTACK_PARAM].value = icomp->getParam(ATTACK_PARAM).def;
+    TBase::params[RELEASE_PARAM].value = icomp->getParam(RELEASE_PARAM).def;
+    TBase::params[RATIO_PARAM].value = icomp->getParam(RATIO_PARAM).def;
+    TBase::params[THRESHOLD_PARAM].value = icomp->getParam(THRESHOLD_PARAM).def;
+    TBase::params[MAKEUPGAIN_PARAM].value =icomp->getParam(MAKEUPGAIN_PARAM).def;
+    TBase::params[NOTBYPASS_PARAM].value =icomp->getParam(NOTBYPASS_PARAM).def;
+    TBase::params[WETDRY_PARAM].value = icomp->getParam(WETDRY_PARAM).def;
 
     updateAllChannels();
 }
@@ -384,17 +392,17 @@ inline void Compressor2<TBase>::pollUI() {
         TBase::params[ATTACK_PARAM].value = ptr->attack;
         TBase::params[RELEASE_PARAM].value = ptr->release;
         TBase::params[THRESHOLD_PARAM].value = ptr->threshold;
-        TBase::params[RATIO_PARAM].value = ptr->ratio;
+        TBase::params[RATIO_PARAM].value = float(ptr->ratio);
         TBase::params[MAKEUPGAIN_PARAM].value = ptr->makeupGain;
         TBase::params[NOTBYPASS_PARAM].value = ptr->enabled ? 1.f : 0.f;
         TBase::params[WETDRY_PARAM].value = ptr->attack;
-    #if 0
+#if 0
         update = true;
         if (currentStereo_m > 0) {
             ptr->copyToHolder(holder, current
            assert(false);
         }
-    #endif
+#endif
     }
 
     if (update) {

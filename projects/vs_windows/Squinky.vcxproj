@@ -102,6 +102,7 @@
     <ClCompile Include="..\..\sqsrc\util\InteropClipboard.cpp" />
     <ClCompile Include="..\..\test\Analyzer.cpp" />
     <ClCompile Include="..\..\test\calQ.cpp" />
+    <ClCompile Include="..\..\test\gc.cpp" />
     <ClCompile Include="..\..\test\initPerf.cpp" />
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\perfTest.cpp" />

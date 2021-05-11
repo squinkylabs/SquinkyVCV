@@ -99,7 +99,7 @@ inline void CompressorParmHolder::copy(unsigned int dest, unsigned int src) {
     m[destBank][destSubChannel] = m[srcBank][srcSubChannel];
     e[destBank][destSubChannel] = e[srcBank][srcSubChannel];
     w[destBank][destSubChannel] = w[srcBank][srcSubChannel];
-    ratio[destBank][destSubChannel] = a[srcBank][srcSubChannel];
+    ratio[destBank][destSubChannel] = ratio[srcBank][srcSubChannel];
 }
 
 inline float_4 CompressorParmHolder::getAttacks(unsigned int bank) const {

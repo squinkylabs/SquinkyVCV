@@ -50,7 +50,7 @@ static void testMB_1() {
     comp.params[Comp2::CHANNEL_PARAM].value = 2.f;
     run(comp);
 
-    auto holder = comp.getParamHolder();
+    const CompressorParmHolder& holder = comp.getParamHolder();
     assertEQ(comp.params[Comp2::THRESHOLD_PARAM].value, 10.f);
 }
 

@@ -8,9 +8,9 @@
 class SubMenuParamCtrl : public ::rack::MenuItem {
 public:
     using RenderFunc = std::function<std::string(int)>;
-    static void create(Menu*, const std::string& label, const std::vector<std::string>& children,
+    static SubMenuParamCtrl* create(Menu*, const std::string& label, const std::vector<std::string>& children,
                        Module*, int param, RenderFunc func);
-    static void create(Menu*, const std::string& label, const std::vector<std::string>& children,
+    static SubMenuParamCtrl* create(Menu*, const std::string& label, const std::vector<std::string>& children,
                        Module*, int param);
     ::rack::ui::Menu* createChildMenu() override;
 
@@ -24,7 +24,7 @@ private:
     RenderFunc const func = nullptr;
 };
 
-inline void SubMenuParamCtrl::create(
+inline SubMenuParamCtrl* SubMenuParamCtrl::create(
     Menu* menu,
     const std::string& label,
     const std::vector<std::string>& children,
@@ -35,9 +35,10 @@ inline void SubMenuParamCtrl::create(
     SubMenuParamCtrl* temporaryThis = new SubMenuParamCtrl(children, module, param, func);
     temporaryThis->text = label;
     menu->addChild(temporaryThis);
+    return temporaryThis;
 }
 
-inline void SubMenuParamCtrl::create(
+inline SubMenuParamCtrl* SubMenuParamCtrl::create(
     Menu* menu,
     const std::string& label,
     const std::vector<std::string>& children,
@@ -47,6 +48,7 @@ inline void SubMenuParamCtrl::create(
     SubMenuParamCtrl* temporaryThis = new SubMenuParamCtrl(children, module, param, nullptr);
     temporaryThis->text = label;
     menu->addChild(temporaryThis);
+    return temporaryThis;
 }
 
 inline SubMenuParamCtrl::SubMenuParamCtrl(const std::vector<std::string>& children, Module* module, int param, RenderFunc fun) :

@@ -123,6 +123,7 @@ extern void testCompressorParamHolder();
 extern void testStreamer();
 extern void testSampComposite();
 extern void testFlac();
+extern void do_gc();
 
 #if 0
 #include <iostream>
@@ -184,6 +185,7 @@ int main(int argc, char** argv) {
             printf("%s is not a valid command line argument\n", arg.c_str());
         }
     }
+    do_gc();
 #ifdef _PERF
     runPerf = true;
 #ifndef NDEBUG

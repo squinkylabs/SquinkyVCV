@@ -32,6 +32,10 @@ public:
      */
     void process(const ProcessArgs& args) override;
     void onSampleRateChange() override;
+    void onReset() override {
+        INFO("Module::onReset");
+        compressor->initAllParams();
+    }
     //   float getGainReductionDb();
 
     int getNumVUChannels() {
@@ -202,7 +206,12 @@ struct CompressorWidget2 : ModuleWidget {
     void setAllChannelsToCurrent();
     void copy();
     void paste();
+    void initializeCurrent();
 };
+
+void CompressorWidget2::initializeCurrent() {
+    WARN("CompressorWidget2::initializeCurrne nimp");
+}
 
 void CompressorWidget2::setAllChannelsToCurrent() {
     if (module) {
@@ -234,11 +243,11 @@ void CompressorWidget2::paste() {
 void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     MenuLabel* spacerLabel = new MenuLabel();
     theMenu->addChild(spacerLabel);
-    ManualMenuItem* manual = new ManualMenuItem("F2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/c2/docs/compressor2.md");
+    ManualMenuItem* manual = new ManualMenuItem("Comp 2 Manual", "https://github.com/squinkylabs/SquinkyVCV/blob/c2/docs/compressor2.md");
     theMenu->addChild(manual);
 
     theMenu->addChild(new SqMenuItem(
-        "copy",
+        "Copy channel",
         []() {
             return false;  // we are never checked
         },
@@ -246,7 +255,7 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
             this->copy();
         }));
     theMenu->addChild(new SqMenuItem(
-        "paste",
+        "Paste channel",
         []() {
             return false;  //TODO: enable when clip
         },
@@ -256,14 +265,23 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     spacerLabel = new MenuLabel();
     theMenu->addChild(spacerLabel);
     theMenu->addChild(new SqMenuItem(
-        "set all channels to current",
+        "Set all channels to current",
         []() {
             return false;  //TODO: enable when clip
         },
         [this]() {
             this->setAllChannelsToCurrent();
         }));
-    SubMenuParamCtrl::create(theMenu, "stereo/mono", {"mono", "stereo", "linked-stereo"}, module, Comp::STEREO_PARAM);
+    theMenu->addChild(new SqMenuItem(
+        "Initialize current channel",
+        []() 
+        {
+            return false;  //TODO: enable when clip
+        },
+        [this]() {
+            this->initializeCurrent();
+        }));
+    SubMenuParamCtrl::create(theMenu, "Stereo/mono", {"Mono", "Stereo", "Linked-stereo"}, module, Comp::STEREO_PARAM);
 
     auto render = [this](int value) {
         const bool isStereo = ::rack::appGet()->engine->getParam(this->module, Comp::STEREO_PARAM) > .5;
@@ -282,7 +300,15 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
         return text;
     };
 
-    SubMenuParamCtrl::create(theMenu, "panel channels", {"1-8", "9-16", "Group/Aux"}, module, Comp::LABELS_PARAM, render);
+    std::vector<std::string> submenuLabels;
+    if (lastStereo > 0) {
+        submenuLabels = {"1-8", "9-16", "Group/Aux"};
+    }
+    
+    auto item = SubMenuParamCtrl::create(theMenu, "Panel channels", submenuLabels, module, Comp::LABELS_PARAM, render);
+    if (lastStereo == 0) {
+        item->disabled = true;
+    }
 }
 
 void CompressorWidget2::step() {
