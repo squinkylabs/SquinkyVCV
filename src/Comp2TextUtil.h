@@ -23,6 +23,8 @@ std::string Comp2TextUtil::channelModeMenuLabel(int mode, bool isStereo) {
             return "Channels: Group/Aux";
             break;
     }
+    assert(false);
+    return "";
 }
 
 std::string Comp2TextUtil::stereoModeText(int stereo) {

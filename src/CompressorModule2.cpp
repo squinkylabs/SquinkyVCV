@@ -214,7 +214,11 @@ void CompressorWidget2::copy() {
     CompressorParamChannel ch;
     const CompressorParmHolder& params = cModule->compressor->getParamHolder();
     int currentChannel = -1 + int(std::round(::rack::appGet()->engine->getParam(module, Comp::CHANNEL_PARAM)));
-    ch.copy(params, currentChannel);
+    if (lastStereo > 1) {
+        currentChannel *= 2;
+    }
+    SQINFO("copy using channel %d", currentChannel);
+    ch.copyFromHolder(params, currentChannel);
     C2Json json;
     json.copyToClip(ch);
 }

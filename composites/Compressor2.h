@@ -363,10 +363,13 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
 
 template <class TBase>
 inline void Compressor2<TBase>::pollUI() {
+    bool update = false;
+    CompressorParmHolder& holder = getParamHolder();
     if (setAllChannelsSameFlag) {
+        update = true;
         setAllChannelsSameFlag.store(false);
         const int monoChannel = (currentStereo_m > 0) ? currentChannel_m * 2 : currentChannel_m;
-        CompressorParmHolder& holder = getParamHolder();
+
         for (int i = 0; i < 16; ++i) {
             if (i != monoChannel) {
                 holder.copy(i, monoChannel);
@@ -385,6 +388,17 @@ inline void Compressor2<TBase>::pollUI() {
         TBase::params[MAKEUPGAIN_PARAM].value = ptr->makeupGain;
         TBase::params[NOTBYPASS_PARAM].value = ptr->enabled ? 1.f : 0.f;
         TBase::params[WETDRY_PARAM].value = ptr->attack;
+    #if 0
+        update = true;
+        if (currentStereo_m > 0) {
+            ptr->copyToHolder(holder, current
+           assert(false);
+        }
+    #endif
+    }
+
+    if (update) {
+        updateAllChannels();
     }
 }
 
