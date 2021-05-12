@@ -49,17 +49,17 @@ class AttackQuantity2 : public rack::engine::ParamQuantity {
 public:
     AttackQuantity2() : func(Compressor2<WidgetComposite>::getSlowAttackFunction()) {
     }
-    
+
     std::string getDisplayValueString() override {
         auto value = getValue();
         auto mappedValue = func(value);
-         if (mappedValue < .1) {
-                mappedValue = 0;
-            }
+        if (mappedValue < .1) {
+            mappedValue = 0;
+        }
         SqStream str;
         str.precision(2);
         str.add(mappedValue);
-       
+
         str.add(" mS");
         return str.str();
     }
@@ -67,7 +67,6 @@ public:
 private:
     std::function<double(double)> const func;
 };
-
 
 class ReleaseQuantity : public LambdaQuantity {
 public:
@@ -81,14 +80,14 @@ class ReleaseQuantity2 : public rack::engine::ParamQuantity {
 public:
     ReleaseQuantity2() : func(Compressor2<WidgetComposite>::getSlowReleaseFunction()) {
     }
-    
+
     std::string getDisplayValueString() override {
         auto value = getValue();
         auto mappedValue = func(value);
         SqStream str;
         str.precision(2);
         str.add(mappedValue);
-       
+
         str.add(" mS");
         return str.str();
     }
@@ -105,22 +104,22 @@ public:
     }
 };
 
-
-class ThresholdQuantity2 :  public rack::engine::ParamQuantity {
+class ThresholdQuantity2 : public rack::engine::ParamQuantity {
 public:
     ThresholdQuantity2() : func(Compressor2<WidgetComposite>::getSlowThresholdFunction()) {
     }
-    
+
     std::string getDisplayValueString() override {
         auto value = getValue();
         auto mappedValue = func(value);
         SqStream str;
         str.precision(2);
         str.add(mappedValue);
-       
+
         str.add(" V");
         return str.str();
     }
+
 private:
     std::function<double(double)> const func;
 };
@@ -137,13 +136,12 @@ public:
 
 class MakeupGainQuantity2 : public rack::engine::ParamQuantity {
 public:
-    
     std::string getDisplayValueString() override {
         auto mappedValue = getValue();
         SqStream str;
         str.precision(2);
         str.add(mappedValue);
-       
+
         str.add(" dB");
         return str.str();
     }
@@ -156,6 +154,20 @@ public:
             return (x + 1) * 50;
         };
         suffix = " % wet";
+    }
+};
+
+class WetdryQuantity2 : public rack::engine::ParamQuantity {
+public:
+    std::string getDisplayValueString() override {
+        auto value = getValue();
+        auto mappedValue = (value + 1) * 50;
+        SqStream str;
+        str.precision(2);
+        str.add(mappedValue);
+
+        str.add(" % wet");
+        return str.str();
     }
 };
 
@@ -176,10 +188,28 @@ protected:
     std::string suffix;
 };
 
+class RatiosQuantity2 : public rack::engine::ParamQuantity {
+public:
+    std::string getDisplayValueString() override {
+        auto value = getValue();
+        int index = int(std::round(value));
+        std::string ratio = Compressor<WidgetComposite>::ratiosLong()[index];
+        return ratio;
+    }
+};
+
 class BypassQuantity : public SqTooltips::SQParamQuantity {
 public:
     BypassQuantity(const ParamQuantity& other) : SqTooltips::SQParamQuantity(other) {
     }
+    std::string getDisplayValueString() override {
+        auto value = getValue();
+        return value < .5 ? "Bypassed" : "Normal";
+    }
+};
+
+class BypassQuantity2 : public rack::engine::ParamQuantity {
+public:
     std::string getDisplayValueString() override {
         auto value = getValue();
         return value < .5 ? "Bypassed" : "Normal";

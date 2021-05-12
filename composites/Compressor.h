@@ -32,7 +32,8 @@ public:
  * 1 cha curve 
  * 16 cha lim:  20
  * 16 ch curve: 124
- * comp2 16: 150
+ * comp2 16: 145
+ * comp2 16 linked : 151
  * 
  * Starting on comp2, here's where we are
  * 1 ch lim: 4.6

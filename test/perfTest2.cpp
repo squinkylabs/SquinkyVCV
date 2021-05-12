@@ -595,7 +595,8 @@ static void testComp2Knee16() {
     comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
     comp.params[Comp::RATIO_PARAM].value = 3;  // 4:1 sort knee
     comp.params[Comp::NOTBYPASS_PARAM].value = 1;
-    printf("setting ratio to 1\n");
+    comp.params[Comp::STEREO_PARAM].value = 0;
+ 
 
     Comp::ProcessArgs args;
     args.sampleTime = 1.f / 44100.f;
@@ -603,6 +604,32 @@ static void testComp2Knee16() {
 
     MeasureTime<float>::run(
         overheadInOut, "Comp2 16 channel 4:1 soft", [&comp, args]() {
+            comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+            comp.process(args);
+            return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
+        },
+        1);
+}
+
+static void testComp2Knee16Linked() {
+    using Comp = Compressor2<TestComposite>;
+    Comp comp;
+
+    comp.init();
+    initComposite(comp);
+
+    comp.inputs[Comp::LAUDIO_INPUT].channels = 16;
+    comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 3;  // 4:1 sort knee
+    comp.params[Comp::NOTBYPASS_PARAM].value = 1;
+    comp.params[Comp::STEREO_PARAM].value = 2;
+ 
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44100;
+
+    MeasureTime<float>::run(
+        overheadInOut, "Comp2 16 channel 4:1 soft linkes-s", [&comp, args]() {
             comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
             comp.process(args);
             return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
@@ -641,6 +668,7 @@ void perfTest2() {
     assert(overheadOutOnly > 0);
 
     testComp2Knee16();
+    testComp2Knee16Linked();
 
     testCompLim1();
     testCompLim16();

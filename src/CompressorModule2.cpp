@@ -95,8 +95,17 @@ void Compressor2Module::addParams() {
             case Comp::MAKEUPGAIN_PARAM:
                 this->configParam<MakeupGainQuantity2>(i, param.min, param.max, param.def, paramName);
                 break;
-             case Comp::THRESHOLD_PARAM:
+            case Comp::THRESHOLD_PARAM:
                 this->configParam<ThresholdQuantity2>(i, param.min, param.max, param.def, paramName);
+                break;
+            case Comp::WETDRY_PARAM:
+                this->configParam<WetdryQuantity2>(i, param.min, param.max, param.def, paramName);
+                break;
+            case Comp::RATIO_PARAM:
+                this->configParam<RatiosQuantity2>(i, param.min, param.max, param.def, paramName);
+                break;
+            case Comp::NOTBYPASS_PARAM:
+                this->configParam<BypassQuantity2>(i, param.min, param.max, param.def, paramName);
                 break;
             default:
 

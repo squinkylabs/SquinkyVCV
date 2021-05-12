@@ -124,7 +124,9 @@ public:
 
     void ui_paste(CompressorParamChannel* pasteData) { pastePointer = pasteData; }
     void ui_setAllChannelsToCurrent() { setAllChannelsSameFlag = true; }
-    void ui_initCurrentChannel() { initCurrentChannelFlag = true; SQINFO("set flag"); }
+    void ui_initCurrentChannel() {
+        initCurrentChannelFlag = true;
+    }
 
     Cmprsr& _getComp(int bank);
 
@@ -408,7 +410,7 @@ inline void Compressor2<TBase>::pollUI() {
 
     if (initCurrentChannelFlag) {
         initCurrentChannelFlag.store(false);
-        
+
         auto icomp = compDescription;
         TBase::params[ATTACK_PARAM].value = icomp->getParam(ATTACK_PARAM).def;
         TBase::params[RELEASE_PARAM].value = icomp->getParam(RELEASE_PARAM).def;
