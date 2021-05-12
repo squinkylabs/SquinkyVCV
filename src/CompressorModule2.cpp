@@ -18,6 +18,7 @@
 #include "engine/Port.hpp"
 
 using Comp = Compressor2<WidgetComposite>;
+#define _NEWTIPS
 
 /**********************************************************
  * 
@@ -51,11 +52,16 @@ public:
     std::shared_ptr<Comp> compressor;
 
 private:
+    void addParams();
 };
 
 Compressor2Module::Compressor2Module() {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     compressor = std::make_shared<Comp>(this);
+
+#ifdef _NEWTIPS
+    addParams();
+#else
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this);
 
@@ -67,9 +73,37 @@ Compressor2Module::Compressor2Module() {
     SqTooltips::changeParamQuantity<RatiosQuantity>(this, Comp::RATIO_PARAM);
     SqTooltips::changeParamQuantity<BypassQuantity>(this, Comp::NOTBYPASS_PARAM);
     SqTooltips::changeParamQuantity<WetdryQuantity>(this, Comp::WETDRY_PARAM);
+#endif
 
     onSampleRateChange();
     compressor->init();
+}
+
+void Compressor2Module::addParams() {
+    std::shared_ptr<IComposite> comp = Comp::getDescription();
+    const int n = comp->getNumParams();
+    for (int i = 0; i < n; ++i) {
+        auto param = comp->getParam(i);
+        std::string paramName(param.name);
+        switch (i) {
+            case Comp::ATTACK_PARAM:
+                this->configParam<AttackQuantity2>(i, param.min, param.max, param.def, paramName);
+                break;
+            case Comp::RELEASE_PARAM:
+                this->configParam<ReleaseQuantity2>(i, param.min, param.max, param.def, paramName);
+                break;
+            case Comp::MAKEUPGAIN_PARAM:
+                this->configParam<MakeupGainQuantity2>(i, param.min, param.max, param.def, paramName);
+                break;
+             case Comp::THRESHOLD_PARAM:
+                this->configParam<ThresholdQuantity2>(i, param.min, param.max, param.def, paramName);
+                break;
+            default:
+
+                // module->params[i].config(param.min, param.max, param.def, paramName);
+                this->configParam(i, param.min, param.max, param.def, paramName);
+        }
+    }
 }
 
 json_t* Compressor2Module::dataToJson() {
@@ -274,8 +308,7 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
         }));
     theMenu->addChild(new SqMenuItem(
         "Initialize current channel",
-        []() 
-        {
+        []() {
             return false;  //TODO: enable when clip
         },
         [this]() {
@@ -304,7 +337,7 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     if (lastStereo > 0) {
         submenuLabels = {"1-8", "9-16", "Group/Aux"};
     }
-    
+
     auto item = SubMenuParamCtrl::create(theMenu, "Panel channels", submenuLabels, module, Comp::LABELS_PARAM, render);
     if (lastStereo == 0) {
         item->disabled = true;
@@ -318,8 +351,8 @@ void CompressorWidget2::step() {
     }
     const int stereo = int(std::round(::rack::appGet()->engine->getParam(module, Comp::STEREO_PARAM)));
     int labelMode = int(std::round(::rack::appGet()->engine->getParam(module, Comp::LABELS_PARAM)));
-  //  SQINFO("in step read params st=%d lastst=%d, lavelMode=%d lastMode %d",
-  //         stereo, lastStereo, labelMode, lastLabelMode);
+    //  SQINFO("in step read params st=%d lastst=%d, lavelMode=%d lastMode %d",
+    //         stereo, lastStereo, labelMode, lastLabelMode);
 
     if (stereo == 0) {
         if (labelMode != 0) {
