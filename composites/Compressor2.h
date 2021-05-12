@@ -124,6 +124,7 @@ public:
 
     void ui_paste(CompressorParamChannel* pasteData) { pastePointer = pasteData; }
     void ui_setAllChannelsToCurrent() { setAllChannelsSameFlag = true; }
+    void ui_initCurrentChannel() { initCurrentChannelFlag = true; SQINFO("set flag"); }
 
     Cmprsr& _getComp(int bank);
 
@@ -199,6 +200,7 @@ private:
     bool lastNotBypassed = false;
 
     std::atomic<bool> setAllChannelsSameFlag = {false};
+    std::atomic<bool> initCurrentChannelFlag = {false};
     std::atomic<CompressorParamChannel*> pastePointer = {nullptr};
 
     std::shared_ptr<IComposite> compDescription = {Compressor2<TBase>::getDescription()};
@@ -267,8 +269,8 @@ inline void Compressor2<TBase>::initAllParams() {
     TBase::params[RELEASE_PARAM].value = icomp->getParam(RELEASE_PARAM).def;
     TBase::params[RATIO_PARAM].value = icomp->getParam(RATIO_PARAM).def;
     TBase::params[THRESHOLD_PARAM].value = icomp->getParam(THRESHOLD_PARAM).def;
-    TBase::params[MAKEUPGAIN_PARAM].value =icomp->getParam(MAKEUPGAIN_PARAM).def;
-    TBase::params[NOTBYPASS_PARAM].value =icomp->getParam(NOTBYPASS_PARAM).def;
+    TBase::params[MAKEUPGAIN_PARAM].value = icomp->getParam(MAKEUPGAIN_PARAM).def;
+    TBase::params[NOTBYPASS_PARAM].value = icomp->getParam(NOTBYPASS_PARAM).def;
     TBase::params[WETDRY_PARAM].value = icomp->getParam(WETDRY_PARAM).def;
 
     updateAllChannels();
@@ -388,7 +390,6 @@ inline void Compressor2<TBase>::pollUI() {
     if (pastePointer) {
         const CompressorParamChannel* ptr = pastePointer;
         pastePointer = nullptr;
-        SQINFO("pollUI sees paste, cursh = %d (abs)", currentChannel_m);
         TBase::params[ATTACK_PARAM].value = ptr->attack;
         TBase::params[RELEASE_PARAM].value = ptr->release;
         TBase::params[THRESHOLD_PARAM].value = ptr->threshold;
@@ -403,6 +404,19 @@ inline void Compressor2<TBase>::pollUI() {
            assert(false);
         }
 #endif
+    }
+
+    if (initCurrentChannelFlag) {
+        initCurrentChannelFlag.store(false);
+        
+        auto icomp = compDescription;
+        TBase::params[ATTACK_PARAM].value = icomp->getParam(ATTACK_PARAM).def;
+        TBase::params[RELEASE_PARAM].value = icomp->getParam(RELEASE_PARAM).def;
+        TBase::params[RATIO_PARAM].value = icomp->getParam(RATIO_PARAM).def;
+        TBase::params[THRESHOLD_PARAM].value = icomp->getParam(THRESHOLD_PARAM).def;
+        TBase::params[MAKEUPGAIN_PARAM].value = icomp->getParam(MAKEUPGAIN_PARAM).def;
+        TBase::params[NOTBYPASS_PARAM].value = icomp->getParam(NOTBYPASS_PARAM).def;
+        TBase::params[WETDRY_PARAM].value = icomp->getParam(WETDRY_PARAM).def;
     }
 
     if (update) {

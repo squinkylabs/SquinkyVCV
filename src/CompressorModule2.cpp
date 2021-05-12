@@ -210,7 +210,7 @@ struct CompressorWidget2 : ModuleWidget {
 };
 
 void CompressorWidget2::initializeCurrent() {
-    WARN("CompressorWidget2::initializeCurrne nimp");
+    cModule->compressor->ui_initCurrentChannel();
 }
 
 void CompressorWidget2::setAllChannelsToCurrent() {
