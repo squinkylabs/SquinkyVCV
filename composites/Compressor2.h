@@ -117,7 +117,9 @@ public:
     }
 
     int getNumVUChannels() const {
-        return currentStereo_m ? numChannels_m / 2 : numChannels_m;
+        const int ch = currentStereo_m ? (numChannels_m+1) / 2 : numChannels_m; 
+        // SQINFO("get num vu will ret %d, st=%d, rawch =%d", ch, currentStereo_m, numChannels_m);
+        return ch;
     }
     float getChannelGain(int ch) const;
     CompressorParmHolder& getParamHolder() { return compParams; }
@@ -353,10 +355,15 @@ template <class TBase>
 inline float Compressor2<TBase>::getChannelGain(int ch) const {
     float gain = 1;
 
-    if (currentStereo_m == 1) {
+    if (currentStereo_m > 0) {
         const int channelLeft = 2 * ch;
+        if (!compParams.getEnabled(channelLeft)) {
+            return 1;       // no reduction
+        }
         const int bank = channelLeft / 4;
         const int subChanL = channelLeft - bank * 4;
+
+
         const float_4 g = compressors[bank].getGain();
         const float gainL = g[subChanL];
         const float gainR = g[subChanL + 1];
@@ -364,6 +371,9 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
         gain = std::min(gainL, gainR);
         //SQINFO("st ch=%d, b=%d chl=%d sub=%d ret=%.2f", ch, bank, channelLeft, subChanL, gain);
     } else {
+         if (!compParams.getEnabled(ch)) {
+            return 1;       // no reduction
+        }
         const int bank = ch / 4;
         const int subChan = ch - bank * 4;
 
@@ -712,7 +722,7 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             ret = {0, 40, 0, "Makeup gain"};
             break;
         case Compressor2<TBase>::NOTBYPASS_PARAM:
-            ret = {0, 1, 1, "Effect bypass"};
+            ret = {0, 1, 0, "Effect bypass"};
             break;
         case Compressor2<TBase>::WETDRY_PARAM:
             ret = {-1, 1, 1, "dry/wet mix"};

@@ -240,8 +240,8 @@ struct CompressorWidget2 : ModuleWidget {
     ParamWidget* channelKnob = nullptr;
     Label* channelIndicator = nullptr;
 
-    Label* stereoLabel = nullptr;
-    Label* channelTypeLabel = nullptr;
+  //  Label* stereoLabel = nullptr;
+  //  Label* channelTypeLabel = nullptr;
 
     Compressor2Module* const cModule;
     CompressorParamChannel pasteBuffer;
@@ -377,7 +377,7 @@ void CompressorWidget2::step() {
         if (channelKnob->paramQuantity->getValue() > steps) {
             ::rack::appGet()->engine->setParam(module, Comp::CHANNEL_PARAM, steps);
         }
-        stereoLabel->text = Comp2TextUtil::stereoModeText(stereo);
+      //  stereoLabel->text = Comp2TextUtil::stereoModeText(stereo);
         // INFO("set knob max to %d", (int)channelKnob->paramQuantity->maxValue);
     }
 
@@ -388,11 +388,12 @@ void CompressorWidget2::step() {
 
         channelIndicator->text = Comp2TextUtil::channelLabel(labelMode, channel);
     }
-
+#if 0
     if (labelMode != lastLabelMode) {
         //  static std::string channelModeMenuLabel(int mode, int stereo);
         channelTypeLabel->text = Comp2TextUtil::channelModeMenuLabel(labelMode, stereo > 0);
     }
+#endif
     lastStereo = stereo;
     lastLabelMode = labelMode;
     lastChannel = channel;
@@ -405,11 +406,13 @@ void CompressorWidget2::addVu(Compressor2Module* module) {
     addChild(vu);
 }
 
+#define TEXTCOLOR SqHelper::COLOR_BLACK
+
 void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
 #ifdef _LAB
     addLabel(
         Vec(1, 200),
-        "Atck");
+        "Atck", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -419,7 +422,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #ifdef _LAB
     addLabel(
         Vec(50, 200),
-        "Rel");
+        "Rel", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -429,7 +432,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #ifdef _LAB
     addLabel(
         Vec(0, 148),
-        "Thrsh");
+        "Thrsh", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -439,19 +442,19 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #ifdef _LAB
     addLabel(
         Vec(40, 38),
-        "Channel");
+        "Channel", TEXTCOLOR);
 #endif
     channelKnob = SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(8, 41),
         module, Comp::CHANNEL_PARAM);
     addParam(channelKnob);
-    channelIndicator = addLabel(Vec(62, 54), "");
+    channelIndicator = addLabel(Vec(62, 54), "", TEXTCOLOR);
 
 #ifdef _LAB
     addLabel(
         Vec(5, 251),
-        "Mix");
+        "Mix", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -461,7 +464,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #ifdef _LAB
     addLabel(
         Vec(49, 148),
-        "Out");
+        "Out", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
@@ -469,11 +472,11 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
         module, Comp::MAKEUPGAIN_PARAM));
 
 #ifdef _LAB
-    addLabel(Vec(50, 253), "1/0");
+    addLabel(Vec(50, 253), "1/0", TEXTCOLOR);
 #endif
 
-    stereoLabel = addLabel(Vec(4, 76), "Mode:");
-    channelTypeLabel = addLabel(Vec(4, 90), "Channels:");
+  //  stereoLabel = addLabel(Vec(4, 76), "Mode:");
+ //   channelTypeLabel = addLabel(Vec(4, 90), "Channels:");
 
     ToggleButton* tog = SqHelper::createParam<ToggleButton>(
         icomp,
@@ -500,7 +503,7 @@ void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<ICom
 #ifdef _LAB
     addLabel(
         Vec(12, 307),
-        "In");
+        "In", TEXTCOLOR);
 #endif
     addInput(createInput<PJ301MPort>(
         //Vec(jackX, jackY),
@@ -511,7 +514,7 @@ void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<ICom
 #ifdef _LAB
     addLabel(
         Vec(86, 307),
-        "Out");
+        "Out", TEXTCOLOR);
 #endif
     addOutput(createOutput<PJ301MPort>(
         Vec(91, 326),
@@ -533,7 +536,7 @@ CompressorWidget2::CompressorWidget2(Compressor2Module* module) : cModule(module
 #ifdef _LAB
     addLabel(
         Vec(20, 15),
-        "Compressor II");
+        "Compressor II", TEXTCOLOR);
 #endif
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
