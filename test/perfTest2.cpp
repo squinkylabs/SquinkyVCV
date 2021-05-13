@@ -1,18 +1,15 @@
+#include "Compressor.h"
+#include "Compressor2.h"
 #include "DrumTrigger.h"
+#include "F2_Poly.h"
 #include "Filt.h"
 #include "LookupTable.h"
+#include "MeasureTime.h"
 #include "Mix4.h"
 #include "Mix8.h"
 #include "MixM.h"
 #include "MixStereo.h"
-#include "TestComposite.h"
-
-#include "Compressor.h"
-#include "Compressor2.h"
-#include "F2_Poly.h"
 #include "MultiLag.h"
-
-#include "MeasureTime.h"
 #include "ObjectCache.h"
 #include "Slew4.h"
 #include "TestComposite.h"
@@ -300,14 +297,13 @@ static void testF2_Poly1() {
         1);
 }
 
-
 static void testF2_Poly16() {
     using Comp = F2_Poly<TestComposite>;
     Comp comp;
 
     comp.init();
 
-  //  comp.params[Comp::CV_UPDATE_FREQ].value = 0;
+    //  comp.params[Comp::CV_UPDATE_FREQ].value = 0;
     comp.params[Comp::TOPOLOGY_PARAM].value = float(Comp::Topology::SERIES);
     comp.inputs[Comp::AUDIO_INPUT].channels = 16;
     for (int i = 0; i < 16; ++i) {
@@ -326,7 +322,6 @@ static void testF2_Poly16() {
         },
         1);
 }
-
 
 static void testF2_12nl() {
     using Comp = F2_Poly<TestComposite>;
@@ -429,7 +424,6 @@ static void testF2_24l4() {
         },
         1);
 }
-
 
 static void testF2_24l_4() {
     using Comp = F2_Poly<TestComposite>;
@@ -583,7 +577,6 @@ static void testCompKnee16() {
         1);
 }
 
-
 static void testComp2Knee16() {
     using Comp = Compressor2<TestComposite>;
     Comp comp;
@@ -596,7 +589,6 @@ static void testComp2Knee16() {
     comp.params[Comp::RATIO_PARAM].value = 3;  // 4:1 sort knee
     comp.params[Comp::NOTBYPASS_PARAM].value = 1;
     comp.params[Comp::STEREO_PARAM].value = 0;
- 
 
     Comp::ProcessArgs args;
     args.sampleTime = 1.f / 44100.f;
@@ -623,13 +615,65 @@ static void testComp2Knee16Linked() {
     comp.params[Comp::RATIO_PARAM].value = 3;  // 4:1 sort knee
     comp.params[Comp::NOTBYPASS_PARAM].value = 1;
     comp.params[Comp::STEREO_PARAM].value = 2;
- 
+
     Comp::ProcessArgs args;
     args.sampleTime = 1.f / 44100.f;
     args.sampleRate = 44100;
 
     MeasureTime<float>::run(
         overheadInOut, "Comp2 16 channel 4:1 soft linkes-s", [&comp, args]() {
+            comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+            comp.process(args);
+            return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
+        },
+        1);
+}
+//using Comp2 = Compressor2<TestComposite>;
+static void run(Compressor2<TestComposite>& comp, int times) {
+    TestComposite::ProcessArgs args;
+    for (int i = 0; i < times; ++i) {
+        comp.process(args);
+    }
+}
+
+static void testComp2Knee16Bypassed() {
+    using Comp = Compressor2<TestComposite>;
+    Comp comp;
+
+    comp.init();
+    initComposite(comp);
+
+    comp.inputs[Comp::LAUDIO_INPUT].channels = 16;
+    comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::RATIO_PARAM].value = 3;  // 4:1 sort knee
+    comp.params[Comp::NOTBYPASS_PARAM].value = 0;
+    SQINFO("wrote 0 in test");
+    comp.params[Comp::STEREO_PARAM].value = 0;
+
+    assert(int(std::round(comp.params[Comp::CHANNEL_PARAM].value)) == 1);
+    assert(bool(std::round(comp.params[Comp::NOTBYPASS_PARAM].value)) == 0);
+
+    run(comp, 40);
+
+    // What's happening is that we see a "new" current channel and that makes us re-init the params.
+    // Is this a bug? Why are we even seeing a change here?
+    //assert(bool(std::round(comp.params[Comp::NOTBYPASS_PARAM].value)) == 0);
+    comp.params[Comp::NOTBYPASS_PARAM].value = 0;
+    run(comp, 40);
+
+    comp.ui_setAllChannelsToCurrent();
+    assert(bool(std::round(comp.params[Comp::NOTBYPASS_PARAM].value)) == 0);
+    run(comp, 40);
+    run(comp, 1);
+
+    assert( bool(std::round(comp.params[Comp::NOTBYPASS_PARAM].value)) == 0);
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44100;
+
+    MeasureTime<float>::run(
+        overheadInOut, "Comp2 16 channel 4:1 soft bypassed", [&comp, args]() {
             comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
             comp.process(args);
             return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
@@ -661,14 +705,14 @@ static void testCompKnee16Hard() {
         1);
 }
 
-
-
 void perfTest2() {
     assert(overheadInOut > 0);
     assert(overheadOutOnly > 0);
 
+    testComp2Knee16Bypassed();
     testComp2Knee16();
     testComp2Knee16Linked();
+ 
 
     testCompLim1();
     testCompLim16();

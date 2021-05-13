@@ -34,6 +34,7 @@ public:
  * 16 ch curve: 124
  * comp2 16: 145
  * comp2 16 linked : 151
+ * comp2 16 bypassed: 148
  * 
  * Starting on comp2, here's where we are
  * 1 ch lim: 4.6

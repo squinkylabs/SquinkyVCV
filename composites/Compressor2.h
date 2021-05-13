@@ -652,15 +652,23 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
         const int baseChannel = bank * 4;
         const float_4 en = compParams.getEnableds(bank);
         simd_assertMask(en);
-        const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
-        const float_4 wetOutput = compressors[bank].stepPoly(input) * makeupGain[bank];
-        const float_4 mixedOutput = wetOutput * wetLevel[bank] + input * dryLevel[bank];
 
-        const float_4 out = SimdBlocks::ifelse(en, mixedOutput, input);
-        //  SQINFO("\nbank=%d input=%s wet=%s", bank, toStr(input).c_str(), toStr(wetOutput).c_str());
-        //  SQINFO("en=%s, true=%s", toStr(en).c_str(), toStr(SimdBlocks::maskTrue()).c_str());
-        //  SQINFO("output=%s", toStr(out).c_str());
-        outPort.setVoltageSimd(out, baseChannel);
+        int32_4 en2 = en;
+        const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
+        //  SQINFO("i = %d en2= %s", bank, toStr(en2).c_str());
+        if (!en2[0] && !en2[1] && !en2[2] && !en2[3]) {
+            outPort.setVoltageSimd(input, baseChannel);
+            // SQINFO("bypassed");
+        } else {
+            const float_4 wetOutput = compressors[bank].stepPoly(input) * makeupGain[bank];
+            const float_4 mixedOutput = wetOutput * wetLevel[bank] + input * dryLevel[bank];
+
+            const float_4 out = SimdBlocks::ifelse(en, mixedOutput, input);
+            //  SQINFO("\nbank=%d input=%s wet=%s", bank, toStr(input).c_str(), toStr(wetOutput).c_str());
+            //  SQINFO("en=%s, true=%s", toStr(en).c_str(), toStr(SimdBlocks::maskTrue()).c_str());
+            //  SQINFO("output=%s", toStr(out).c_str());
+            outPort.setVoltageSimd(out, baseChannel);
+        }
     }
 }
 

@@ -12,7 +12,7 @@
 #include "SqMath.h"
 #include "simd.h"
 
-#define _SQR        // pseudo RMS instead of rectify
+#define _SQR  // pseudo RMS instead of rectify
 //#define _ENV            // output the envelope
 
 class Cmprsr {
@@ -98,6 +98,9 @@ private:
     float_4 stepGeneric(float_4);
     float_4 step1NoDistComp(float_4);
     float_4 step1Comp(float_4);
+
+    float_4 stepPolyMultiMono(float_4);
+    float_4 stepPolyLinked(float_4);
 };
 
 inline float_4 Cmprsr::getGain() const {
@@ -232,7 +235,7 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
     float_4 envelope;
 
 #ifdef _SQR
-   if (reduceDistortion) {
+    if (reduceDistortion) {
         lag.step(rack::simd::abs(input * input));
         attackFilter.step(lag.get());
         envelope = rack::simd::sqrt(attackFilter.get());
@@ -276,8 +279,52 @@ inline float_4 Cmprsr::stepPoly(float_4 input) {
     assert(polySet);
     assert(cvIsPoly);
 
-    float_4 envelope;
+    return isLinked ? stepPolyLinked(input) : stepPolyMultiMono(input);
+}
 
+inline float_4 Cmprsr::stepPolyLinked(float_4 input) {
+    float_4 envelope;
+#ifdef _SQR
+    auto inp = input * input;
+
+    float avg = (inp[0] + inp[1]) * .5f;
+    inp[0] = avg;
+    inp[1] = avg;
+    avg = (inp[2] + inp[3]) * .5f;
+    inp[2] = avg;
+    inp[3] = avg;
+
+    lag.step(inp);
+    attackFilter.step(lag.get());
+    envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
+    envelope = rack::simd::sqrt(envelope);
+#else
+    assert(!isLinked);
+    lag.step(rack::simd::abs(input));
+    attackFilter.step(lag.get());
+    envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
+#endif
+    if (ratio[0] == Ratios::HardLimit) {
+        gain_[0] = (envelope[0] > threshold[0]) ? threshold[0] / envelope[0] : 1.f;
+    } else {
+        CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
+        const float level = envelope[0] * invThreshold[0];
+        gain_[0] = CompCurves::lookup(table, level);
+        gain_[1] = gain_[0];
+    }
+    if (ratio[2] == Ratios::HardLimit) {
+        gain_[2] = (envelope[2] > threshold[2]) ? threshold[2] / envelope[2] : 1.f;
+    } else {
+        CompCurves::LookupPtr table = ratioCurves[ratioIndex[2]];
+        const float level = envelope[2] * invThreshold[2];
+        gain_[2] = CompCurves::lookup(table, level);
+        gain_[3] = gain_[2];
+    }
+    return gain_ * input;
+}
+
+inline float_4 Cmprsr::stepPolyMultiMono(float_4 input) {
+    float_4 envelope;
 #ifdef _SQR
     auto inp = input * input;
     if (isLinked) {
@@ -290,8 +337,8 @@ inline float_4 Cmprsr::stepPoly(float_4 input) {
     }
     lag.step(inp);
     attackFilter.step(lag.get());
-    envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get()); 
-    envelope = rack::simd::sqrt(envelope);  
+    envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
+    envelope = rack::simd::sqrt(envelope);
 #else
     assert(!isLinked);
     lag.step(rack::simd::abs(input));
@@ -321,7 +368,7 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
     const float_4 correction = 2 * M_PI;
     const float_4 releaseHz = 1000.f / (releaseMs * correction);
     //  const float_4 attackHz = 1000.f / (attackMs * correction);
-     const float_4 normRelease = releaseHz * sampleTime;
+    const float_4 normRelease = releaseHz * sampleTime;
 
     // this sets:
     // this->reduce dist
@@ -343,7 +390,7 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
 #endif
 
 #if 1
-   
+
     // for now, just do the scalar code 4 times
     // build these up
     float_4 instantAttack;
@@ -356,13 +403,13 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
             reduceDistortion[i] = SimdBlocks::maskFalse()[0];  // no way to do this at zero attack
             instantAttack[i] = SimdBlocks::maskTrue()[0];
         } else {
-            reduceDistortion[i] = SimdBlocks::maskTrue()[0]; 
+            reduceDistortion[i] = SimdBlocks::maskTrue()[0];
             const float correction = 2 * M_PI;
-            const float attackHz =  1000.f / (attackMs[i] * correction);
+            const float attackHz = 1000.f / (attackMs[i] * correction);
             const float normAttack = attackHz * sampleTime;
             lagAttack[i] = 4 * normAttack;
             filterAttack[i] = normAttack;
-            instantAttack[i] =  SimdBlocks::maskFalse()[0];
+            instantAttack[i] = SimdBlocks::maskFalse()[0];
         }
     }
     lag.setAttackPoly(lagAttack);
@@ -370,9 +417,6 @@ inline void Cmprsr::setTimesPoly(float_4 attackMs, float_4 releaseMs, float samp
     attackFilter.setCutoffPoly(filterAttack);
     lag.setReleasePoly(normRelease);
 #endif
-
-
-
 
 #if 0
     for (int i = 0; i < 4; ++i) {
