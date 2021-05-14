@@ -87,6 +87,8 @@ inline void CompressorParamChannel::copyFromHolder(const CompressorParmHolder& h
 
 inline void CompressorParmHolder::copy(unsigned int dest, unsigned int src) {
     assert(dest < numChannels);
+    assert(dest < 16);
+    assert(src < 16);
     const unsigned destBank = dest / 4;
     const unsigned destSubChannel = dest - (destBank * 4);
 

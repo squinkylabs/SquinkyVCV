@@ -135,6 +135,7 @@ public:
     float_4 _getWet(int bank) const { return wetLevel[bank]; }
     float_4 _getEn(int bank) const { return enabled[bank]; }
     float_4 _getG(int bank) const { return makeupGain[bank]; }
+    void _initParamOnAllChannels(int param, float value);
 
     void initAllParams();
     void initCurrentChannelParams();
@@ -161,6 +162,7 @@ private:
     void setLinkAllBanks(bool);
     void updateAllChannels();
     void pollUI();
+
 
     /**
      * numChannels_m is the total mono channels. So even in
@@ -278,6 +280,26 @@ inline void Compressor2<TBase>::initAllParams() {
     TBase::params[WETDRY_PARAM].value = icomp->getParam(WETDRY_PARAM).def;
 
     updateAllChannels();
+}
+
+template <class TBase>
+inline void Compressor2<TBase>::_initParamOnAllChannels(int param, float value) {
+    TBase::params[param].value = value;
+
+    for (int i = 0; i < 16; ++i) {
+        switch (param) {
+        case NOTBYPASS_PARAM:
+            compParams.setEnabled(i, value);
+            break;
+        case RATIO_PARAM:
+            compParams.setRatio(i, int(std::round(value)));
+            break;
+        default:
+
+            assert(false);
+        }
+    }
+        updateAllChannels();
 }
 
 template <class TBase>

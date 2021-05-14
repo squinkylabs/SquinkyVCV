@@ -27,6 +27,16 @@ public:
 };
 
 /**
+ * first round optimization:
+ *
+ * 1 ch lim: 4.6
+ * 1 cha curve 
+ * 16 cha lim:  20
+ * 16 ch curve: 124
+ * comp2 16: 145
+ * comp2 16 linked : 151
+ * comp2 16 bypassed: 148
+ *  
  * SQ:
  * 1 ch lim: 4.6
  * 1 cha curve 

@@ -155,10 +155,16 @@ static void testCompRatio8() {
 template <class T>
 class TestBothComp {
 public:
+    TestBothComp();
+#if 0
     TestBothComp() {
         comp_ = std::make_shared<T>();
         initComposite(*comp_);
+        //comp_->params[T::NOTBYPASS_PARAM].value = 1;
+        //comp_->_initParam();
+        run(50);
     }
+#endif
 
     void testPoly() {
         // initial run with 1 channel
@@ -209,6 +215,27 @@ private:
     }
 };
 
+template<>
+TestBothComp<Compressor<TestComposite>>::TestBothComp() {
+    comp_ = std::make_shared<Compressor<TestComposite>>();
+    initComposite(*comp_);
+    //comp_->params[T::NOTBYPASS_PARAM].value = 1;
+    //comp_->_initParam();
+    run(50);
+}
+
+template<>
+TestBothComp<Compressor2<TestComposite>>::TestBothComp() {
+    comp_ = std::make_shared<Compressor2<TestComposite>>();
+    initComposite(*comp_);
+    //comp_->params[T::NOTBYPASS_PARAM].value = 1;
+    comp_->_initParamOnAllChannels(Compressor2<TestComposite>::NOTBYPASS_PARAM, 1);
+    run(50);
+}
+
+
+
+#if 1
 static void testCompPoly() {
     TestBothComp<Compressor2<TestComposite>> test2;
     test2.testPoly();
@@ -216,6 +243,7 @@ static void testCompPoly() {
     TestBothComp<Compressor<TestComposite>> test;
     test.testPoly();
 }
+#endif
 
 static void testCompPolyOrig() {
     using Comp = Compressor<TestComposite>;
@@ -634,8 +662,13 @@ static void testPolyStereoWetDry(int stereoChannel) {
 static void testBypass(int channel) {
     Comp2 comp;
     init(comp);
+    comp._initParamOnAllChannels(Comp2::NOTBYPASS_PARAM, 1);
     comp.params[Comp2::STEREO_PARAM].value = 0; // set to multi mono
+   // comp.params[Comp2::NOTBYPASS_PARAM].value = 1;  // set enabled
     run(comp, 40);
+    for (int i = 0; i < 16; ++i) {
+       assert(comp.getParamHolder().getEnabled(i));
+    }
 
     const int bank = channel / 4;
     const int subChannel = channel % 4;
@@ -655,6 +688,9 @@ static void testBypass(int channel) {
     run(comp, 40);
     comp.params[Comp2::NOTBYPASS_PARAM].value = 0.f;
     run(comp, 40);
+  //  for (int i = 0; i < 16; ++i) {
+  //      assert(comp.getParamHolder().getEnabled(i));
+   // }
 
     auto e = comp._getEn(bank);
     float_4 en = SimdBlocks::ifelse(e, float_4(1), float_4(0));
@@ -672,6 +708,7 @@ static void testBypass(int channel) {
 static void testStereoBypass(int stereoChannel) {
     Comp2 comp;
     init(comp);
+    comp._initParamOnAllChannels(Comp2::NOTBYPASS_PARAM, 1);
     run(comp, 40);
 
     const int leftChannel = stereoChannel * 2;
@@ -786,6 +823,8 @@ void testCompressor() {
     testCompRatio8();
 
     // testCompPolyOrig();
+    // 
+    //SQWARN("make testCompPoly work again, for comp2");
     testCompPoly();
     testPolyInit();
     testPolyParams();

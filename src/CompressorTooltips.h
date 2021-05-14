@@ -110,13 +110,14 @@ public:
     }
 
     std::string getDisplayValueString() override {
-        auto value = getValue();
-        auto mappedValue = func(value);
+        const auto value = getValue();
+        const auto mappedValue = func(value);
+        // -20 because VCV 0 dB is 10V, but for AudioMath it's 1V
+        const auto db = -20 + AudioMath::db(mappedValue);
         SqStream str;
         str.precision(2);
-        str.add(mappedValue);
-
-        str.add(" V");
+        str.add(db);
+        str.add(" dB");
         return str.str();
     }
 

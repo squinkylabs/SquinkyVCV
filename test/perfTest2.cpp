@@ -577,6 +577,14 @@ static void testCompKnee16() {
         1);
 }
 
+//using Comp2 = Compressor2<TestComposite>;
+static void run(Compressor2<TestComposite>& comp, int times) {
+    TestComposite::ProcessArgs args;
+    for (int i = 0; i < times; ++i) {
+        comp.process(args);
+    }
+}
+
 static void testComp2Knee16() {
     using Comp = Compressor2<TestComposite>;
     Comp comp;
@@ -586,16 +594,30 @@ static void testComp2Knee16() {
 
     comp.inputs[Comp::LAUDIO_INPUT].channels = 16;
     comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
-    comp.params[Comp::RATIO_PARAM].value = 3;  // 4:1 sort knee
-    comp.params[Comp::NOTBYPASS_PARAM].value = 1;
+  //  comp.params[Comp::RATIO_PARAM].value = 3;  // 4:1 sort knee
+  //  comp.params[Comp::NOTBYPASS_PARAM].value = 1;
     comp.params[Comp::STEREO_PARAM].value = 0;
+    comp._initParamOnAllChannels(Comp::NOTBYPASS_PARAM, 1);
+    comp._initParamOnAllChannels(Comp::RATIO_PARAM, 3);
+    //comp._initParamOnAllChannels(Comp::STEREO_PARAM, 0);
+
+    run(comp, 40);
+    comp.ui_setAllChannelsToCurrent();
+    assert(bool(std::round(comp.params[Comp::NOTBYPASS_PARAM].value)) == 1);
+    for (int i=0; i<16; ++i) {
+        assert(comp.getParamHolder().getEnabled(i));
+        assert(comp.params[Comp::STEREO_PARAM].value == 0);
+    }
+
+    run(comp, 40);
+    run(comp, 1);
 
     Comp::ProcessArgs args;
     args.sampleTime = 1.f / 44100.f;
     args.sampleRate = 44100;
 
     MeasureTime<float>::run(
-        overheadInOut, "Comp2 16 channel 4:1 soft", [&comp, args]() {
+        overheadInOut, "Comp2 16 channel mono 4:1 soft", [&comp, args]() {
             comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
             comp.process(args);
             return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
@@ -621,20 +643,14 @@ static void testComp2Knee16Linked() {
     args.sampleRate = 44100;
 
     MeasureTime<float>::run(
-        overheadInOut, "Comp2 16 channel 4:1 soft linkes-s", [&comp, args]() {
+        overheadInOut, "Comp2 16 channel 4:1 soft linked-s", [&comp, args]() {
             comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
             comp.process(args);
             return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
         },
         1);
 }
-//using Comp2 = Compressor2<TestComposite>;
-static void run(Compressor2<TestComposite>& comp, int times) {
-    TestComposite::ProcessArgs args;
-    for (int i = 0; i < times; ++i) {
-        comp.process(args);
-    }
-}
+
 
 static void testComp2Knee16Bypassed() {
     using Comp = Compressor2<TestComposite>;
@@ -647,7 +663,6 @@ static void testComp2Knee16Bypassed() {
     comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
     comp.params[Comp::RATIO_PARAM].value = 3;  // 4:1 sort knee
     comp.params[Comp::NOTBYPASS_PARAM].value = 0;
-    SQINFO("wrote 0 in test");
     comp.params[Comp::STEREO_PARAM].value = 0;
 
     assert(int(std::round(comp.params[Comp::CHANNEL_PARAM].value)) == 1);
@@ -674,6 +689,50 @@ static void testComp2Knee16Bypassed() {
 
     MeasureTime<float>::run(
         overheadInOut, "Comp2 16 channel 4:1 soft bypassed", [&comp, args]() {
+            comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
+            comp.process(args);
+            return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
+        },
+        1);
+}
+
+
+static void testComp2Knee16LinkedLimit() {
+    using Comp = Compressor2<TestComposite>;
+    Comp comp;
+
+    comp.init();
+    initComposite(comp);
+
+    comp.inputs[Comp::LAUDIO_INPUT].channels = 16;
+    comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
+    comp.params[Comp::STEREO_PARAM].value = 2;
+    comp._initParamOnAllChannels(Comp::NOTBYPASS_PARAM, 1);
+    comp._initParamOnAllChannels(Comp::RATIO_PARAM, 0);
+
+    assert(int(std::round(comp.params[Comp::CHANNEL_PARAM].value)) == 1);
+    
+    run(comp, 40);
+
+    // What's happening is that we see a "new" current channel and that makes us re-init the params.
+    // Is this a bug? Why are we even seeing a change here?
+    //assert(bool(std::round(comp.params[Comp::NOTBYPASS_PARAM].value)) == 0);
+  //  comp.params[Comp::NOTBYPASS_PARAM].value = 0;
+ //   run(comp, 40);
+
+    comp.ui_setAllChannelsToCurrent();
+    assert(bool(std::round(comp.params[Comp::RATIO_PARAM].value)) == 0);
+    run(comp, 40);
+    run(comp, 1);
+
+    assert( bool(std::round(comp.params[Comp::RATIO_PARAM].value)) == 0);
+
+    Comp::ProcessArgs args;
+    args.sampleTime = 1.f / 44100.f;
+    args.sampleRate = 44100;
+
+    MeasureTime<float>::run(
+        overheadInOut, "Comp2 16 channel 4:1 soft linked limited", [&comp, args]() {
             comp.inputs[Comp::LAUDIO_INPUT].setVoltage(TestBuffers<float>::get());
             comp.process(args);
             return comp.outputs[Comp::LAUDIO_OUTPUT].getVoltage(0);
@@ -712,6 +771,7 @@ void perfTest2() {
     testComp2Knee16Bypassed();
     testComp2Knee16();
     testComp2Knee16Linked();
+    testComp2Knee16LinkedLimit();
  
 
     testCompLim1();
