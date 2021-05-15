@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SqLog.h"
 #include <assert.h>
 #include <map>
 
@@ -17,7 +18,25 @@ public:
     {
         return (int) entries.size();
     }
-
+    void _dump() {
+        SQINFO("dump table");
+        SQINFO(" there are %d entries", entries.size());
+        for (auto iter = entries.begin(); iter != entries.end(); ++iter) {
+            SQINFO("  entr x=%f, y=%f, a=%f", iter->second.x, iter->second.y, iter->second.a);
+            auto iter2 = iter;
+            ++iter2;
+            if (iter2 != entries.end()) {
+                SQINFO("dy/dx = %f", (iter2->second.y - iter->second.y) / (iter2->second.x - iter->second.x));
+               
+            }
+        }
+#if 0
+        for (auto entry : entries) {
+            SQINFO("  entr x=%f, y=%f, a=%f", entry.second.x, entry.second.y, entry.second.a);
+        }
+#endif
+        SQINFO("done");
+    }
 private:
 
     class Entry
@@ -31,6 +50,8 @@ private:
     bool isFinalized = false;
     container entries;
 };
+
+
 
 template <typename T>
 class NonUniformLookupTable

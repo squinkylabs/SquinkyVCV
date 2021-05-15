@@ -637,6 +637,8 @@ static void testComp2Knee16Linked() {
     comp.params[Comp::RATIO_PARAM].value = 3;  // 4:1 sort knee
     comp.params[Comp::NOTBYPASS_PARAM].value = 1;
     comp.params[Comp::STEREO_PARAM].value = 2;
+    comp._initParamOnAllChannels(Comp::NOTBYPASS_PARAM, 1);
+    comp._initParamOnAllChannels(Comp::RATIO_PARAM, 3);
 
     Comp::ProcessArgs args;
     args.sampleTime = 1.f / 44100.f;

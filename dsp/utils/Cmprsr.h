@@ -310,16 +310,16 @@ inline float_4 Cmprsr::stepPolyLinked(float_4 input) {
         CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
         const float level = envelope[0] * invThreshold[0];
         gain_[0] = CompCurves::lookup(table, level);
-        gain_[1] = gain_[0];
     }
+    gain_[1] = gain_[0];
     if (ratio[2] == Ratios::HardLimit) {
         gain_[2] = (envelope[2] > threshold[2]) ? threshold[2] / envelope[2] : 1.f;
     } else {
         CompCurves::LookupPtr table = ratioCurves[ratioIndex[2]];
         const float level = envelope[2] * invThreshold[2];
         gain_[2] = CompCurves::lookup(table, level);
-        gain_[3] = gain_[2];
     }
+    gain_[3] = gain_[2];
     return gain_ * input;
 }
 
@@ -505,6 +505,11 @@ inline Cmprsr::Cmprsr() {
                 r.ratio = 4;
                 r.kneeWidth = softKnee;
                 ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#if 0
+                SQINFO("here is 4:1 soft");
+                ratioCurves[i]->_dump();
+                SQINFO("done");
+#endif
             } break;
             case Ratios::_4_1_hard: {
                 CompCurves::Recipe r;
@@ -536,6 +541,8 @@ inline Cmprsr::Cmprsr() {
             default:
                 assert(false);
         }
+        // dump ratios here
+        //ratioCurves[i]->_dump();
     }
     assert(wasInit());
 }

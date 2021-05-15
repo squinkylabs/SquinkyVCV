@@ -84,9 +84,6 @@ public:
         float y = 0;
 
     };
-   // static std::vector<xy> makeCrudeCompGainTable(const Recipe&);
-   // static std::function<float(float)> continuousGainFunction(const CompCurves::Recipe& r);
-
     static xy getGainAtRightInflection(const CompCurves::Recipe& r);
     static xy getGainAtLeftInflection(const CompCurves::Recipe& r);
 
