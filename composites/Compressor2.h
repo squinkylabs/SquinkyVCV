@@ -509,7 +509,7 @@ inline void Compressor2<TBase>::pollStereo() {
 
 template <class TBase>
 inline void Compressor2<TBase>::setLinkAllBanks(bool linked) {
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 4; ++i) {
         compressors[i].setLinked(linked);
     }
 }

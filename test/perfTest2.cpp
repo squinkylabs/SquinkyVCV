@@ -594,12 +594,9 @@ static void testComp2Knee16() {
 
     comp.inputs[Comp::LAUDIO_INPUT].channels = 16;
     comp.inputs[Comp::LAUDIO_INPUT].setVoltage(0, 0);
-  //  comp.params[Comp::RATIO_PARAM].value = 3;  // 4:1 sort knee
-  //  comp.params[Comp::NOTBYPASS_PARAM].value = 1;
     comp.params[Comp::STEREO_PARAM].value = 0;
     comp._initParamOnAllChannels(Comp::NOTBYPASS_PARAM, 1);
     comp._initParamOnAllChannels(Comp::RATIO_PARAM, 3);
-    //comp._initParamOnAllChannels(Comp::STEREO_PARAM, 0);
 
     run(comp, 40);
     comp.ui_setAllChannelsToCurrent();
@@ -713,8 +710,11 @@ static void testComp2Knee16LinkedLimit() {
     comp._initParamOnAllChannels(Comp::RATIO_PARAM, 0);
 
     assert(int(std::round(comp.params[Comp::CHANNEL_PARAM].value)) == 1);
-    
     run(comp, 40);
+    assertEQ(comp.params[Comp::STEREO_PARAM].value, 2);
+   // for (int i=0; i<16; ++i) {
+  //      comp.assert(comp.getParamHolder().getEnabled(i));
+   // }
 
     // What's happening is that we see a "new" current channel and that makes us re-init the params.
     // Is this a bug? Why are we even seeing a change here?
