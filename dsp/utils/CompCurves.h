@@ -87,6 +87,8 @@ public:
     static xy getGainAtRightInflection(const CompCurves::Recipe& r);
     static xy getGainAtLeftInflection(const CompCurves::Recipe& r);
 
+
+    static std::function<float(float)> _getContinuousCurve(const CompCurves::Recipe& r);
 private:
     static xy addLeftSideCurve(LookupPtr, const Recipe& r);
     static void addRightSideCurve(LookupPtr, const Recipe& r, xy lastPt);

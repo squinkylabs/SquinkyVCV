@@ -57,6 +57,7 @@ static void testLookupBelowTheshSoftKnee() {
     testLookupBelowThesh(1, 10);
     testLookupBelowThesh(4, 10);
 }
+
 static void validateCurve(CompCurves::LookupPtr table, CompCurves::Recipe r) {
     bool first = true;
     float last = 0;
@@ -342,6 +343,50 @@ static void testLookupAboveTheshNoKnee2() {
     testLookupAboveTheshNoKnee2(8);
 }
 
+#if 1
+static void testContinuousCurve() {
+    CompCurves::Recipe r;
+    const float softKnee = 12;
+    r.ratio = 4;
+    r.kneeWidth = softKnee;
+    CompCurves::LookupPtr lookup = CompCurves::makeCompGainLookup(r);
+    auto cont = CompCurves::_getContinuousCurve(r);
+    
+   // const int k = 10000;
+    const int k = 1000;
+    for (int i = 0; i < k; ++i) {
+        float x = (float)i / (k / 10);
+        const float yLook = CompCurves::lookup(lookup, x);
+        SQINFO("x=%f yLook=%f", x, yLook);
+        const float y = cont(x);
+        SQINFO("x=%f yCont=%f", x, y);
+        //assert(y == yLook);
+       // assertEQ(y, yLook);
+        assertClosePct(y, yLook, 1.f);
+    }
+    assert(false);
+}
+#else
+static void testContinuousCurve() {
+    CompCurves::Recipe r;
+    const float softKnee = 12;
+    r.ratio = 4;
+    r.kneeWidth = softKnee;
+    CompCurves::LookupPtr lookup = CompCurves::makeCompGainLookup(r);
+    auto cont = CompCurves::_getContinuousCurve(r);
+
+    float x = 0.50001f;
+    // const int k = 10000;
+
+    double yLook = CompCurves::lookup(lookup, x);
+    SQINFO("x=%f yLook=%f", x, yLook);
+    double y = cont(x);
+    SQINFO("x=%f yCont=%f", x, y);
+    assert(y == yLook);
+}
+
+#endif
+
 void testCompCurves() {
     testInflection();
 
@@ -358,4 +403,5 @@ void testCompCurves() {
     //  testCompCurvesKnee2();
     // plot4_1_hard();
     //  plot4_1_soft();
+    testContinuousCurve();
 }
