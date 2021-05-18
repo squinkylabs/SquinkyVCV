@@ -323,6 +323,9 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
         [this]() {
             this->initializeCurrent();
         }));
+    auto itemc = new SqMenuItem_BooleanParam2(module, Comp::SIDECHAIN_ALL_PARAM);
+    itemc->text = "All sidechains from channel 1";
+    theMenu->addChild(itemc);
     SubMenuParamCtrl::create(theMenu, "Stereo/mono", {"Mono", "Stereo", "Linked-stereo"}, module, Comp::STEREO_PARAM);
 
     auto render = [this](int value) {
@@ -497,6 +500,14 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
     p->text = labels[3];
     p->setLabels(labels);
     addParam(p);
+
+    tog = SqHelper::createParam<ToggleButton>(
+        icomp,
+        Vec(90, 92),
+        module, Comp::SIDECHAIN_PARAM);
+    tog->addSvg("res/square-button-01.svg");
+    tog->addSvg("res/square-button-02.svg");
+    addParam(tog);
 }
 
 void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
@@ -510,6 +521,17 @@ void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<ICom
         Vec(11, 326),
         module,
         Comp::LAUDIO_INPUT));
+
+#ifdef _LAB
+    addLabel(
+        Vec(49, 307),
+        "SC", TEXTCOLOR);
+#endif
+    addInput(createInput<PJ301MPort>(
+        //Vec(jackX, jackY),
+        Vec(51, 326),
+        module,
+        Comp::SIDECHAIN_INPUT));
 
 #ifdef _LAB
     addLabel(

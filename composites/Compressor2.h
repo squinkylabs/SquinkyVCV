@@ -68,12 +68,15 @@ public:
         CHANNEL_PARAM,
         STEREO_PARAM,
         LABELS_PARAM,
-        EXPERIMENT_PARAM,
+        SIDECHAIN_PARAM,
+        SIDECHAIN_ALL_PARAM,
+       // EXPERIMENT_PARAM,
         NUM_PARAMS
     };
 
     enum InputIds {
         LAUDIO_INPUT,
+        SIDECHAIN_INPUT,
         // RAUDIO_INPUT,
         NUM_INPUTS
     };
@@ -756,11 +759,19 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             ret = {0, 2, 2, "stereo"};
             break;
         case Compressor2<TBase>::LABELS_PARAM:
-            ret = {0, 2, 0, "lables"};
+            ret = {0, 2, 0, "labels"};
             break;
+        case Compressor2<TBase>::SIDECHAIN_PARAM:
+            ret = { 0, 1, 0, "sidechain enable" };
+            break;
+        case Compressor2<TBase>::SIDECHAIN_ALL_PARAM:
+            ret = { 0, 1, 0, "sidechain all" };
+            break;
+#if 0
         case Compressor2<TBase>::EXPERIMENT_PARAM:
             ret = {0, 2, 0, "experiment"};
             break;
+#endif
         default:
             assert(false);
     }
