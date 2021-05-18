@@ -1,5 +1,6 @@
 #pragma once
 
+#include "LookupTable.h"
 #include "NonUniformLookupTable.h"
 #include <functional>
 #include <memory>
@@ -38,30 +39,30 @@ public:
          */
         float ratio=1;
 
-        // what units are these?
-        // db?
+        // Total knee width, in decibels
         float kneeWidth=0;
-        float yError=.1f;
-
-        /**
-         * Threshold is in volts
-         * 1 is the default, and in fact the only one we use
-         */
-      //  float threshold=1;
-
-        /**
-         * Deprecated
-         * minimum and maximum signal levels we care about.
-         * TBD: we care about levels all the way down to zer
-         */
-        float minX=-50;
-        float maxX=50;
     };
 
+    class CompCurveLookup {
+    public:
+        friend class CompCurves;
+        float lookup(float) const;
+    private:
+        LookupTableParams<float> lowRange;
+        LookupTableParams<float> highRange;
+        float dividingLine = 0;                 // where we switch tables
+        float bottomOfKneeVin = 0;              // below here gain is one
+    };
+
+    using CompCurveLookupPtr = std::shared_ptr<CompCurveLookup>;
+
+    static CompCurveLookupPtr makeCompGainLookup2(const Recipe&);
+
      /**
-     * returns a lookup table that define a gain curve.
-     * gain = Vout / Vin. Not decibels, voltage ratio.
-     */
+      * These for the non-uniform lookups
+      * returns a lookup table that define a gain curve.
+      * gain = Vout / Vin. Not decibels, voltage ratio.
+      */
     using LookupPtr = std::shared_ptr<NonUniformLookupTableParams<float>>; 
     using LookupPtrConst = std::shared_ptr<const NonUniformLookupTableParams<float>>; 
     static LookupPtr makeCompGainLookup(const Recipe&);
@@ -88,7 +89,7 @@ public:
     static xy getGainAtLeftInflection(const CompCurves::Recipe& r);
 
 
-    static std::function<float(float)> _getContinuousCurve(const CompCurves::Recipe& r);
+    static std::function<double(double)> _getContinuousCurve(const CompCurves::Recipe& r);
 private:
     static xy addLeftSideCurve(LookupPtr, const Recipe& r);
     static void addRightSideCurve(LookupPtr, const Recipe& r, xy lastPt);

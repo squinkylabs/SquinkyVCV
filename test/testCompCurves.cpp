@@ -1,4 +1,5 @@
 
+#include "Cmprsr.h"
 #include "CompCurves.h"
 #include "SplineRenderer.h"
 #include "asserts.h"
@@ -20,7 +21,7 @@ static void testSpline() {
         auto x = s.renderPoint(t);
 
         double slope = (x.second - last.second) / (x.first - last.first);
-        printf("p[%d] = %f, %f (t=%f) slope = %f\n", i, x.first, x.second, t, slope);
+        //printf("p[%d] = %f, %f (t=%f) slope = %f\n", i, x.first, x.second, t, slope);
         // last.x = x.first;
         //  last.y = x.second;
         last = x;
@@ -343,7 +344,6 @@ static void testLookupAboveTheshNoKnee2() {
     testLookupAboveTheshNoKnee2(8);
 }
 
-#if 1
 static void testContinuousCurve() {
     CompCurves::Recipe r;
     const float softKnee = 12;
@@ -351,43 +351,42 @@ static void testContinuousCurve() {
     r.kneeWidth = softKnee;
     CompCurves::LookupPtr lookup = CompCurves::makeCompGainLookup(r);
     auto cont = CompCurves::_getContinuousCurve(r);
-    
-   // const int k = 10000;
+
+    // const int k = 10000;
     const int k = 1000;
     for (int i = 0; i < k; ++i) {
         float x = (float)i / (k / 10);
         const float yLook = CompCurves::lookup(lookup, x);
-        SQINFO("x=%f yLook=%f", x, yLook);
-        const float y = cont(x);
-        SQINFO("x=%f yCont=%f", x, y);
-        //assert(y == yLook);
-       // assertEQ(y, yLook);
+        // SQINFO("x=%f yLook=%f", x, yLook);
+        const float y = float(cont(x));
         assertClosePct(y, yLook, 1.f);
     }
-    assert(false);
 }
-#else
-static void testContinuousCurve() {
+
+static void testLookup2() {
     CompCurves::Recipe r;
     const float softKnee = 12;
     r.ratio = 4;
-    r.kneeWidth = softKnee;
-    CompCurves::LookupPtr lookup = CompCurves::makeCompGainLookup(r);
+    CompCurves::CompCurveLookupPtr look = CompCurves::makeCompGainLookup2(r);
+    assert(look);
+    look->lookup(2.1099f);
+
     auto cont = CompCurves::_getContinuousCurve(r);
+    const int k = 1000;
+    for (int i = 0; i < k; ++i) {
+        double x = (double)i / (k / 10);
+        //const float yLook = CompCurves::lookup(lookup, x);
+        const float yLook = look->lookup(float(x));
+        // SQINFO("x=%f yLook=%f", x, yLook);
+        const float y = float(cont(x));
+        assertClosePct(yLook, y, 5.f);
+    }
 
-    float x = 0.50001f;
-    // const int k = 10000;
-
-    double yLook = CompCurves::lookup(lookup, x);
-    SQINFO("x=%f yLook=%f", x, yLook);
-    double y = cont(x);
-    SQINFO("x=%f yCont=%f", x, y);
-    assert(y == yLook);
 }
 
-#endif
-
 void testCompCurves() {
+    Cmprsr::_reset();
+    assertEQ(_numLookupParams, 0);
     testInflection();
 
     // testSpline();
@@ -404,4 +403,6 @@ void testCompCurves() {
     // plot4_1_hard();
     //  plot4_1_soft();
     testContinuousCurve();
+    testLookup2();
+    assertEQ(_numLookupParams, 0);
 }

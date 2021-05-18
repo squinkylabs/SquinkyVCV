@@ -62,32 +62,6 @@ CompCurves::xy CompCurves::addLeftSideCurve(LookupPtr ptr, const Recipe& r) {
     return xy(bottomOfKneeVin, bottomOfKneeVin);
 }
 
-
-
-void CompCurves::addRightSideCurve(LookupPtr table, const Recipe& r, CompCurves::xy init) {
-    assert(r.kneeWidth < 20);  // code below will fail it so
-    // start of left curve
-    const double x0Db = r.kneeWidth / 2;
-    const double dbSlope = 1.0 / r.ratio;
-
-    const double x1Db = AudioMath::db(10);   // let's plot out to +0 db
-    const double x2Db = AudioMath::db(100);  // no, let's have a 40 db range!
-
-    // printf("x0 db = %f, x1Db = %f, x2 = %f\n", x0Db, x1Db, x2Db );
-    double incrementDb = 1;
-    for (double xDb = x0Db; xDb <= x2Db; xDb += incrementDb) {
-        const double yDb = dbSlope * xDb;
-
-        const float x = float(AudioMath::gainFromDb(xDb));
-        const float gain = float(AudioMath::gainFromDb(yDb)) / x;
-        // printf("new R: another right point db=%f,%f v-g=%f,%f\n", xDb, yDb, x, gain);
-        NonUniformLookupTable<float>::addPoint(*table, x, gain);
-
-        // for tons of comp, we can be a little less precise.
-        incrementDb = xDb > x1Db ? 3 : 1;
-    }
-}
-
 void CompCurves::addMiddleCurve(LookupPtr table, const Recipe& r, CompCurves::xy init) {
     assert(r.ratio > 1);
     // where we start curve
@@ -114,41 +88,112 @@ void CompCurves::addMiddleCurve(LookupPtr table, const Recipe& r, CompCurves::xy
     //assert(false);
 }
 
-std::function<float(float)> CompCurves::_getContinuousCurve(const CompCurves::Recipe& r) {
+void CompCurves::addRightSideCurve(LookupPtr table, const Recipe& r, CompCurves::xy init) {
+    assert(r.kneeWidth < 20);  // code below will fail it so
+    // start of left curve
+    const double x0Db = r.kneeWidth / 2;
+    const double dbSlope = 1.0 / r.ratio;
+
+    const double x1Db = AudioMath::db(10);   // let's plot out to +0 db
+    const double x2Db = AudioMath::db(100);  // no, let's have a 40 db range!
+
+    // printf("x0 db = %f, x1Db = %f, x2 = %f\n", x0Db, x1Db, x2Db );
+    double incrementDb = 1;
+    for (double xDb = x0Db; xDb <= x2Db; xDb += incrementDb) {
+        const double yDb = dbSlope * xDb;
+
+        const float x = float(AudioMath::gainFromDb(xDb));
+        const float gain = float(AudioMath::gainFromDb(yDb)) / x;
+        // printf("new R: another right point db=%f,%f v-g=%f,%f\n", xDb, yDb, x, gain);
+        NonUniformLookupTable<float>::addPoint(*table, x, gain);
+
+        // for tons of comp, we can be a little less precise.
+        incrementDb = xDb > x1Db ? 3 : 1;
+    }
+}
+
+std::function<double(double)> CompCurves::_getContinuousCurve(const CompCurves::Recipe& r) {
     // assert(false);
-    return [r](float x) {
-        const float bottomOfKneeDb = -r.kneeWidth / 2;
-        const float bottomOfKneeVin = float(AudioMath::gainFromDb(bottomOfKneeDb));
-        const float topOfKneeDb = r.kneeWidth / 2;
-        const float topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
+    return [r](double x) {
+        const double bottomOfKneeDb = -r.kneeWidth / 2;
+        const double bottomOfKneeVin = float(AudioMath::gainFromDb(bottomOfKneeDb));
+        const double topOfKneeDb = r.kneeWidth / 2;
+        const double topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
 
         if (x < bottomOfKneeVin) {
-            SQINFO("left side");
-            return 1.f;  // constant gain of 1 below thresh
+            // SQINFO("left side");
+            return 1.0;  // constant gain of 1 below thresh
         } else if (x < topOfKneeVin) {
-             const double x0Db = bottomOfKneeDb;
-             double xdb = AudioMath::db(x);
-
-
+            const double x0Db = bottomOfKneeDb;
+            const double xdb = AudioMath::db(x);
             const double squareTerm = (xdb + r.kneeWidth / 2);
             const double rTerm = (1.0 / r.ratio) - 1;
-
             const double yDb = xdb + rTerm * squareTerm * squareTerm / (2 * r.kneeWidth);
-            //const double yDb = xDb + (-1 + (1 / r.ratio)) * squareTerm * squareTerm / (2 * r.kneeWidth);
+            const double x2 = x;
 
-           // const float x2 = float(AudioMath::gainFromDb(x));
-            const float x2 = x;
-
-            const float yV = float(AudioMath::gainFromDb(yDb));
-            const float gain = yV / x2;
+            const double yV = AudioMath::gainFromDb(yDb);
+            const double gain = yV / x2;
             return gain;
-
-
-
         } else {
-            SQINFO("right side. nimp");
-            assert(false);
+            const double xdb = AudioMath::db(x);
+            const double dbSlope = 1.0 / r.ratio;
+
+            //   const double x1Db = AudioMath::db(10);   // let's plot out to +0 db
+            //  const double x2Db = AudioMath::db(100);  // no, let's have a 40 db range!
+
+            const double yDb = dbSlope * xdb;
+
+            const double xTest = AudioMath::gainFromDb(xdb);
+            assertClose(x, xTest, .000001);
+            const double gain = AudioMath::gainFromDb(yDb) / x;
+
+            return gain;
         }
-        return 0.f;
+        return 0.0;
     };
+}
+
+/*
+    class CompCurveLookup {
+    public:
+        float lookup(float x) {
+            return 0;
+        }
+    private:
+        LookupTableParams<float> lowRange;
+        LookupTableParams<float> highange;
+        float dividingLine = 0;                 // where we switch tables
+        float bottomOfKneeVin = 0;              // below here gain is one
+    };
+
+template<typename T>
+inline void LookupTable<T>::init(LookupTableParams<T>& params,
+    int bins, T x0In, T x1In, std::function<double(double)> f)
+{
+*/
+CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookup2(const Recipe& r) {
+    CompCurveLookupPtr ret = std::make_shared<CompCurveLookup>();
+
+    const float bottomOfKneeDb = -r.kneeWidth / 2;
+    ret->bottomOfKneeVin = float(AudioMath::gainFromDb(bottomOfKneeDb));
+    
+    const float topOfKneeDb = r.kneeWidth / 2;
+    const float topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
+    ret->dividingLine = 2;
+
+    auto func = _getContinuousCurve(r);
+
+    LookupTable<float>::init(ret->lowRange, 100, ret->bottomOfKneeVin, ret->dividingLine, func);
+    LookupTable<float>::init(ret->highRange, 100, ret->dividingLine, 100, func);
+    return ret;
+}
+
+float CompCurves::CompCurveLookup::lookup(float x) const {
+    if (x <= bottomOfKneeVin) {
+        return 1;
+    }
+    if (x < dividingLine) {
+        return LookupTable<float>::lookup(lowRange, x, false);
+    }
+    return LookupTable<float>::lookup(highRange, x, true);
 }

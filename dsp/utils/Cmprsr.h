@@ -12,6 +12,7 @@
 #include "SqMath.h"
 #include "simd.h"
 
+#define _FASTLOOK
 #define _SQR  // pseudo RMS instead of rectify
 //#define _ENV            // output the envelope
 
@@ -64,6 +65,8 @@ public:
     float_4 _getTh() const { return threshold; }
     const Ratios* _getRatio() const { return ratio; }
 
+    static void _reset();
+
 private:
     MultiLag2 lag;
     MultiLPF2 attackFilter;
@@ -90,6 +93,7 @@ private:
 #endif
 
     static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
+    static CompCurves::CompCurveLookupPtr ratioCurves2[int(Ratios::NUM_RATIOS)];
 
     using processFunction = float_4 (Cmprsr::*)(float_4 input);
     processFunction procFun = &Cmprsr::stepGeneric;
@@ -307,17 +311,27 @@ inline float_4 Cmprsr::stepPolyLinked(float_4 input) {
     if (ratio[0] == Ratios::HardLimit) {
         gain_[0] = (envelope[0] > threshold[0]) ? threshold[0] / envelope[0] : 1.f;
     } else {
-        CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
         const float level = envelope[0] * invThreshold[0];
+    #ifdef _FASTLOOK
+        CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[0]];
+        gain_[0] =table->lookup(level);
+    #else
+        CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
         gain_[0] = CompCurves::lookup(table, level);
+    #endif
     }
     gain_[1] = gain_[0];
     if (ratio[2] == Ratios::HardLimit) {
         gain_[2] = (envelope[2] > threshold[2]) ? threshold[2] / envelope[2] : 1.f;
     } else {
-        CompCurves::LookupPtr table = ratioCurves[ratioIndex[2]];
         const float level = envelope[2] * invThreshold[2];
+#ifdef _FASTLOOK
+        CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[2]];
+        gain_[2] = table->lookup(level);
+#else
+        CompCurves::LookupPtr table = ratioCurves[ratioIndex[2]];
         gain_[2] = CompCurves::lookup(table, level);
+#endif
     }
     gain_[3] = gain_[2];
     return gain_ * input;
@@ -487,6 +501,7 @@ inline Cmprsr::Cmprsr() {
             case Ratios::HardLimit:
                 // just need to have something here
                 ratioCurves[i] = ratioCurves[int(Ratios::_4_1_hard)];
+                ratioCurves2[i] = ratioCurves2[int(Ratios::_4_1_hard)];
                 assert(wasInit());
                 break;
             case Ratios::_2_1_soft: {
@@ -494,55 +509,56 @@ inline Cmprsr::Cmprsr() {
                 r.ratio = 2;
                 r.kneeWidth = softKnee;
                 ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
             } break;
             case Ratios::_2_1_hard: {
                 CompCurves::Recipe r;
                 r.ratio = 2;
                 ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
             } break;
             case Ratios::_4_1_soft: {
                 CompCurves::Recipe r;
                 r.ratio = 4;
                 r.kneeWidth = softKnee;
                 ratioCurves[i] = CompCurves::makeCompGainLookup(r);
-#if 0
-                SQINFO("here is 4:1 soft");
-                ratioCurves[i]->_dump();
-                SQINFO("done");
-#endif
+                ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
             } break;
             case Ratios::_4_1_hard: {
                 CompCurves::Recipe r;
                 r.ratio = 4;
                 ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
             } break;
             case Ratios::_8_1_soft: {
                 CompCurves::Recipe r;
                 r.ratio = 8;
                 r.kneeWidth = softKnee;
                 ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
             } break;
             case Ratios::_8_1_hard: {
                 CompCurves::Recipe r;
                 r.ratio = 8;
                 ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
             } break;
             case Ratios::_20_1_soft: {
                 CompCurves::Recipe r;
                 r.ratio = 20;
                 r.kneeWidth = softKnee;
                 ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
             } break;
             case Ratios::_20_1_hard: {
                 CompCurves::Recipe r;
                 r.ratio = 20;
                 ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+                ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
             } break;
             default:
                 assert(false);
         }
-        // dump ratios here
-        //ratioCurves[i]->_dump();
     }
     assert(wasInit());
 }
