@@ -714,6 +714,7 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
 
     SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
+    SqInput& scPort =  TBase::inputs[SIDECHAIN_INPUT];
 
     // TODO: bypassed per channel - need to completely re-do
     for (int bank = 0; bank < numBanks_m; ++bank) {
@@ -728,7 +729,9 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
             outPort.setVoltageSimd(input, baseChannel);
             // SQINFO("bypassed");
         } else {
-            const float_4 detectorInput = input;
+            const float_4 scIn = scPort.getPolyVoltageSimd<float_4>(baseChannel);
+            const float_4 scEnabled = compParams.getSidechainEnableds(bank);
+            const float_4 detectorInput = SimdBlocks::ifelse(scEnabled, scIn, input);
             const float_4 wetOutput = compressors[bank].stepPoly(input, detectorInput) * makeupGain[bank];
             const float_4 mixedOutput = wetOutput * wetLevel[bank] + input * dryLevel[bank];
 

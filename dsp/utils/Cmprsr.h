@@ -289,19 +289,21 @@ inline float_4 Cmprsr::stepPoly(float_4 input, float_4 detectorInput) {
 inline float_4 Cmprsr::stepPolyLinked(float_4 input, float_4 detectorInput) {
     float_4 envelope;
 
-    auto inp = input * input;
+    {
+        auto inp = detectorInput * detectorInput;
 
-    float avg = (inp[0] + inp[1]) * .5f;
-    inp[0] = avg;
-    inp[1] = avg;
-    avg = (inp[2] + inp[3]) * .5f;
-    inp[2] = avg;
-    inp[3] = avg;
+        float avg = (inp[0] + inp[1]) * .5f;
+        inp[0] = avg;
+        inp[1] = avg;
+        avg = (inp[2] + inp[3]) * .5f;
+        inp[2] = avg;
+        inp[3] = avg;
 
-    lag.step(inp);
-    attackFilter.step(lag.get());
-    envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
-    envelope = rack::simd::sqrt(envelope);
+        lag.step(inp);
+        attackFilter.step(lag.get());
+        envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
+        envelope = rack::simd::sqrt(envelope);
+    }
 
     if (ratio[0] == Ratios::HardLimit) {
         gain_[0] = (envelope[0] > threshold[0]) ? threshold[0] / envelope[0] : 1.f;
@@ -334,12 +336,14 @@ inline float_4 Cmprsr::stepPolyLinked(float_4 input, float_4 detectorInput) {
 
 inline float_4 Cmprsr::stepPolyMultiMono(float_4 input, float_4 detectorInput) {
     float_4 envelope;
-    auto inp = input * input;
+    {
+        auto inp = detectorInput * detectorInput;
 
-    lag.step(inp);
-    attackFilter.step(lag.get());
-    envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
-    envelope = rack::simd::sqrt(envelope);
+        lag.step(inp);
+        attackFilter.step(lag.get());
+        envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
+        envelope = rack::simd::sqrt(envelope);
+    }
 
     // have to do the rest non-simd - in case the curves are all different.
     // TODO: optimized case for all curves the same
@@ -351,7 +355,7 @@ inline float_4 Cmprsr::stepPolyMultiMono(float_4 input, float_4 detectorInput) {
             const float level = envelope[iChan] * invThreshold[iChan];
 #ifdef _FASTLOOK
             CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[iChan]];
-             gain_[iChan] = table->lookup(level);
+            gain_[iChan] = table->lookup(level);
 #else
             CompCurves::LookupPtr table = ratioCurves[ratioIndex[iChan]];
             gain_[iChan] = CompCurves::lookup(table, level);

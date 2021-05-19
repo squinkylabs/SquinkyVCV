@@ -27,6 +27,13 @@ public:
 };
 
 /**
+ * new lookup tables, etc..
+ * 
+ * 16 channel bypassed:         4.4
+ * 16 channel mono 4:1 soft     90.4
+ * 16 channel linked 4:1 soft   64
+ * 16 channel linked limited    27.1
+ * 
  * first round optimization:
  *
  * 1 ch lim: 4.6
