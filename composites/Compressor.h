@@ -27,6 +27,13 @@ public:
 };
 
 /**
+ * sidechain:
+ * 
+ * 16 channel bypassed:         4.4
+ * 16 channel mono 4:1 soft     90.7
+ * 16 channel linked 4:1 soft   64.3
+ * 16 channel linked limited    28.2
+ *  
  * new lookup tables, etc..
  * 
  * 16 channel bypassed:         4.4

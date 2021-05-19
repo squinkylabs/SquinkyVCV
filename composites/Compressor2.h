@@ -723,7 +723,8 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
         simd_assertMask(en);
 
         int32_4 en2 = en;
-        const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
+        //  const float_4 input = inPort.getPolyVoltageSimd<float_4>(baseChannel);
+        const float_4 input = inPort.getVoltageSimd<float_4>(baseChannel);
         //  SQINFO("i = %d en2= %s", bank, toStr(en2).c_str());
         if (!en2[0] && !en2[1] && !en2[2] && !en2[3]) {
             outPort.setVoltageSimd(input, baseChannel);
