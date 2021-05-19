@@ -124,7 +124,7 @@ std::function<double(double)> CompCurves::_getContinuousCurve(const CompCurves::
             // SQINFO("left side");
             return 1.0;  // constant gain of 1 below thresh
         } else if (x < topOfKneeVin) {
-            const double x0Db = bottomOfKneeDb;
+           // const double x0Db = bottomOfKneeDb;
             const double xdb = AudioMath::db(x);
             const double squareTerm = (xdb + r.kneeWidth / 2);
             const double rTerm = (1.0 / r.ratio) - 1;
@@ -153,38 +153,23 @@ std::function<double(double)> CompCurves::_getContinuousCurve(const CompCurves::
     };
 }
 
-/*
-    class CompCurveLookup {
-    public:
-        float lookup(float x) {
-            return 0;
-        }
-    private:
-        LookupTableParams<float> lowRange;
-        LookupTableParams<float> highange;
-        float dividingLine = 0;                 // where we switch tables
-        float bottomOfKneeVin = 0;              // below here gain is one
-    };
-
-template<typename T>
-inline void LookupTable<T>::init(LookupTableParams<T>& params,
-    int bins, T x0In, T x1In, std::function<double(double)> f)
-{
-*/
+// at 10, distortion jumps at the changes
+// 100 it does a little bit? but 1000 is too high...
+const int tableSize = 100;
 CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookup2(const Recipe& r) {
     CompCurveLookupPtr ret = std::make_shared<CompCurveLookup>();
 
     const float bottomOfKneeDb = -r.kneeWidth / 2;
     ret->bottomOfKneeVin = float(AudioMath::gainFromDb(bottomOfKneeDb));
     
-    const float topOfKneeDb = r.kneeWidth / 2;
-    const float topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
+   // const float topOfKneeDb = r.kneeWidth / 2;
+  //  const float topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
     ret->dividingLine = 2;
 
     auto func = _getContinuousCurve(r);
 
-    LookupTable<float>::init(ret->lowRange, 100, ret->bottomOfKneeVin, ret->dividingLine, func);
-    LookupTable<float>::init(ret->highRange, 100, ret->dividingLine, 100, func);
+    LookupTable<float>::init(ret->lowRange, tableSize, ret->bottomOfKneeVin, ret->dividingLine, func);
+    LookupTable<float>::init(ret->highRange, tableSize, ret->dividingLine, 100, func);
     return ret;
 }
 

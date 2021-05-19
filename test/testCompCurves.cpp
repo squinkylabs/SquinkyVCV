@@ -381,7 +381,50 @@ static void testLookup2() {
         const float y = float(cont(x));
         assertClosePct(yLook, y, 5.f);
     }
+}
 
+double getBiggestJump(double maxX, int divisions, std::function<double(double)> func) {
+    //SQINFO("--- get biggest jump");
+    double ret = 0;
+    double lastValue = 1;
+    double scaler = maxX / divisions;
+    for (int i = 0; i < divisions; ++i) {
+        //SQINFO("i = %d", i);
+        double x = i * scaler;
+        double y = func(x);
+        double dif = std::abs(y - lastValue);
+
+        if (dif > ret) {
+           // SQINFO("new max %f at x = %f", dif, x);
+            ret = dif;
+        }
+        lastValue = y;
+    }
+    return ret;
+}
+
+static void testBiggestJump() {
+    const int div = 100003;
+    CompCurves::Recipe r;
+    const float softKnee = 12;
+    r.ratio = 4;
+    auto ref = CompCurves::_getContinuousCurve(r);
+    double dRef = getBiggestJump(100, div, [ref](double x) {
+        return ref(x);
+    });
+
+    auto oldCurve = CompCurves::makeCompGainLookup(r);
+    double dRefOld = getBiggestJump(100, div, [oldCurve](double x) {
+        return  CompCurves::lookup(oldCurve, float(x));
+    });
+
+    auto newCurve = CompCurves::makeCompGainLookup2(r);
+    double dRefNew = getBiggestJump(100, div, [newCurve](double x) {
+        return  newCurve->lookup(float(x));
+        });
+
+    assertClosePct(dRefOld, dRef, 10.0);
+    assertClosePct(dRefNew, dRef, 10.0);
 }
 
 void testCompCurves() {
@@ -404,5 +447,6 @@ void testCompCurves() {
     //  plot4_1_soft();
     testContinuousCurve();
     testLookup2();
+    testBiggestJump();
     assertEQ(_numLookupParams, 0);
 }

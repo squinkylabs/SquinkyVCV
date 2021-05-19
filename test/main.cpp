@@ -213,6 +213,8 @@ int main(int argc, char** argv) {
         perfTest();
         return 0;
     }
+    
+    testCompCurves();
 
     // mode these up where while we work...
     testMultiLag2();
