@@ -33,7 +33,7 @@ public:
     };
 
     float_4 step(float_4);
-    float_4 stepPoly(float_4);
+    float_4 stepPoly(float_4, float_4);
     void setTimes(float attackMs, float releaseMs, float sampleTime);
     void setThreshold(float th);
     void setCurve(Ratios);
@@ -103,8 +103,8 @@ private:
     float_4 step1NoDistComp(float_4);
     float_4 step1Comp(float_4);
 
-    float_4 stepPolyMultiMono(float_4);
-    float_4 stepPolyLinked(float_4);
+    float_4 stepPolyMultiMono(float_4, float_4);
+    float_4 stepPolyLinked(float_4, float_4);
 };
 
 inline float_4 Cmprsr::getGain() const {
@@ -277,18 +277,18 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
     }
 }
 
-inline float_4 Cmprsr::stepPoly(float_4 input) {
+inline float_4 Cmprsr::stepPoly(float_4 input, float_4 detectorInput) {
     assert(wasInit());
     simd_assertMask(reduceDistortionPoly);
     assert(polySet);
     assert(cvIsPoly);
 
-    return isLinked ? stepPolyLinked(input) : stepPolyMultiMono(input);
+    return isLinked ? stepPolyLinked(input, detectorInput) : stepPolyMultiMono(input, detectorInput);
 }
 
-inline float_4 Cmprsr::stepPolyLinked(float_4 input) {
+inline float_4 Cmprsr::stepPolyLinked(float_4 input, float_4 detectorInput) {
     float_4 envelope;
-#ifdef _SQR
+
     auto inp = input * input;
 
     float avg = (inp[0] + inp[1]) * .5f;
@@ -302,23 +302,18 @@ inline float_4 Cmprsr::stepPolyLinked(float_4 input) {
     attackFilter.step(lag.get());
     envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
     envelope = rack::simd::sqrt(envelope);
-#else
-    assert(!isLinked);
-    lag.step(rack::simd::abs(input));
-    attackFilter.step(lag.get());
-    envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
-#endif
+
     if (ratio[0] == Ratios::HardLimit) {
         gain_[0] = (envelope[0] > threshold[0]) ? threshold[0] / envelope[0] : 1.f;
     } else {
         const float level = envelope[0] * invThreshold[0];
-    #ifdef _FASTLOOK
+#ifdef _FASTLOOK
         CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[0]];
-        gain_[0] =table->lookup(level);
-    #else
+        gain_[0] = table->lookup(level);
+#else
         CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
         gain_[0] = CompCurves::lookup(table, level);
-    #endif
+#endif
     }
     gain_[1] = gain_[0];
     if (ratio[2] == Ratios::HardLimit) {
@@ -337,28 +332,14 @@ inline float_4 Cmprsr::stepPolyLinked(float_4 input) {
     return gain_ * input;
 }
 
-inline float_4 Cmprsr::stepPolyMultiMono(float_4 input) {
+inline float_4 Cmprsr::stepPolyMultiMono(float_4 input, float_4 detectorInput) {
     float_4 envelope;
-#ifdef _SQR
     auto inp = input * input;
-    if (isLinked) {
-        float avg = (inp[0] + inp[1]) * .5f;
-        inp[0] = avg;
-        inp[1] = avg;
-        avg = (inp[2] + inp[3]) * .5f;
-        inp[2] = avg;
-        inp[3] = avg;
-    }
+
     lag.step(inp);
     attackFilter.step(lag.get());
     envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
     envelope = rack::simd::sqrt(envelope);
-#else
-    assert(!isLinked);
-    lag.step(rack::simd::abs(input));
-    attackFilter.step(lag.get());
-    envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
-#endif
 
     // have to do the rest non-simd - in case the curves are all different.
     // TODO: optimized case for all curves the same
@@ -367,9 +348,14 @@ inline float_4 Cmprsr::stepPolyMultiMono(float_4 input) {
             // const float reductionGain = threshold[iChan] / envelope[iChan];
             gain_[iChan] = (envelope[iChan] > threshold[iChan]) ? threshold[iChan] / envelope[iChan] : 1.f;
         } else {
-            CompCurves::LookupPtr table = ratioCurves[ratioIndex[iChan]];
             const float level = envelope[iChan] * invThreshold[iChan];
+#ifdef _FASTLOOK
+            CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[iChan]];
+             gain_[iChan] = table->lookup(level);
+#else
+            CompCurves::LookupPtr table = ratioCurves[ratioIndex[iChan]];
             gain_[iChan] = CompCurves::lookup(table, level);
+#endif
         }
     }
     return gain_ * input;

@@ -70,7 +70,7 @@ public:
         LABELS_PARAM,
         SIDECHAIN_PARAM,
         SIDECHAIN_ALL_PARAM,
-       // EXPERIMENT_PARAM,
+        // EXPERIMENT_PARAM,
         NUM_PARAMS
     };
 
@@ -120,12 +120,12 @@ public:
     }
 
     int getNumVUChannels() const {
-        const int ch = currentStereo_m ? (numChannels_m+1) / 2 : numChannels_m; 
+        const int ch = currentStereo_m ? (numChannels_m + 1) / 2 : numChannels_m;
         // SQINFO("get num vu will ret %d, st=%d, rawch =%d", ch, currentStereo_m, numChannels_m);
         return ch;
     }
     float getChannelGain(int ch) const;
-    CompressorParmHolder& getParamHolder() { return compParams; }
+    CompressorParamHolder& getParamHolder() { return compParams; }
 
     void ui_paste(CompressorParamChannel* pasteData) { pastePointer = pasteData; }
     void ui_setAllChannelsToCurrent() { setAllChannelsSameFlag = true; }
@@ -144,7 +144,7 @@ public:
     void initCurrentChannelParams();
 
 private:
-    CompressorParmHolder compParams;
+    CompressorParamHolder compParams;
 
     Cmprsr compressors[4];
     void setupLimiter();
@@ -156,7 +156,9 @@ private:
     void pollWetDry();
     void updateWetDry(int bank);
     void pollBypassed();
+    void pollSidechainEnabled();
     void updateBypassed(int bank);
+    //void updateSidechainEnabled(int bank);
     void pollMakeupGain();
     void updateMakeupGain(int bank);
     void updateCurrentChannel();
@@ -165,7 +167,6 @@ private:
     void setLinkAllBanks(bool);
     void updateAllChannels();
     void pollUI();
-
 
     /**
      * numChannels_m is the total mono channels. So even in
@@ -207,6 +208,7 @@ private:
     float lastRawRatio = -1;
     int lastChannelCount = -1;
     bool lastNotBypassed = false;
+    bool lastSidechainEnabled = false;
 
     std::atomic<bool> setAllChannelsSameFlag = {false};
     std::atomic<bool> initCurrentChannelFlag = {false};
@@ -255,6 +257,8 @@ inline void Compressor2<TBase>::updateCurrentChannel() {
     Compressor2<TBase>::params[MAKEUPGAIN_PARAM].value = compParams.getMakeupGain(sourceParamChannel);
     Compressor2<TBase>::params[NOTBYPASS_PARAM].value = compParams.getEnabled(sourceParamChannel);
     Compressor2<TBase>::params[WETDRY_PARAM].value = compParams.getWetDryMix(sourceParamChannel);
+    Compressor2<TBase>::params[SIDECHAIN_PARAM].value = compParams.getSidechainEnabled(sourceParamChannel);
+    assert(getParamHolder().getNumParams() == 8);
 }
 
 /**
@@ -272,6 +276,8 @@ inline void Compressor2<TBase>::initAllParams() {
         compParams.setMakeupGain(i, icomp->getParam(MAKEUPGAIN_PARAM).def);
         compParams.setEnabled(i, bool(std::round(icomp->getParam(NOTBYPASS_PARAM).def)));
         compParams.setWetDry(i, icomp->getParam(WETDRY_PARAM).def);
+        compParams.setSidechainEnabled(i, bool(std::round(icomp->getParam(SIDECHAIN_PARAM).def)));
+        assert(getParamHolder().getNumParams() == 8);
     }
 
     TBase::params[ATTACK_PARAM].value = icomp->getParam(ATTACK_PARAM).def;
@@ -281,6 +287,8 @@ inline void Compressor2<TBase>::initAllParams() {
     TBase::params[MAKEUPGAIN_PARAM].value = icomp->getParam(MAKEUPGAIN_PARAM).def;
     TBase::params[NOTBYPASS_PARAM].value = icomp->getParam(NOTBYPASS_PARAM).def;
     TBase::params[WETDRY_PARAM].value = icomp->getParam(WETDRY_PARAM).def;
+    TBase::params[SIDECHAIN_PARAM].value = icomp->getParam(SIDECHAIN_PARAM).def;
+    assert(getParamHolder().getNumParams() == 8);
 
     updateAllChannels();
 }
@@ -291,18 +299,18 @@ inline void Compressor2<TBase>::_initParamOnAllChannels(int param, float value) 
 
     for (int i = 0; i < 16; ++i) {
         switch (param) {
-        case NOTBYPASS_PARAM:
-            compParams.setEnabled(i, value);
-            break;
-        case RATIO_PARAM:
-            compParams.setRatio(i, int(std::round(value)));
-            break;
-        default:
+            case NOTBYPASS_PARAM:
+                compParams.setEnabled(i, value);
+                break;
+            case RATIO_PARAM:
+                compParams.setRatio(i, int(std::round(value)));
+                break;
+            default:
 
-            assert(false);
+                assert(false);
         }
     }
-        updateAllChannels();
+    updateAllChannels();
 }
 
 template <class TBase>
@@ -314,6 +322,7 @@ inline void Compressor2<TBase>::updateAllChannels() {
         updateWetDry(bank);
         updateMakeupGain(bank);
         updateBypassed(bank);
+        // updateSidechainEnabled(bank);
         updateMakeupGain(bank);
         // TODO: put all the update here
     }
@@ -355,10 +364,15 @@ inline void Compressor2<TBase>::makeAllSettingsStereo() {
             compParams.setEnabled(right, b);
         }
         {
+            const bool b = compParams.getSidechainEnabled(left);
+            compParams.setSidechainEnabled(right, b);
+        }
+        {
             const float w = .5f * (compParams.getWetDryMix(left) + compParams.getWetDryMix(right));
             compParams.setWetDry(left, w);
             compParams.setWetDry(right, w);
         }
+        assert(getParamHolder().getNumParams() == 8);
     }
 
     // I'm not sure this is needed here?
@@ -383,11 +397,10 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
     if (currentStereo_m > 0) {
         const int channelLeft = 2 * ch;
         if (!compParams.getEnabled(channelLeft)) {
-            return 1;       // no reduction
+            return 1;  // no reduction
         }
         const int bank = channelLeft / 4;
         const int subChanL = channelLeft - bank * 4;
-
 
         const float_4 g = compressors[bank].getGain();
         const float gainL = g[subChanL];
@@ -396,8 +409,8 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
         gain = std::min(gainL, gainR);
         //SQINFO("st ch=%d, b=%d chl=%d sub=%d ret=%.2f", ch, bank, channelLeft, subChanL, gain);
     } else {
-         if (!compParams.getEnabled(ch)) {
-            return 1;       // no reduction
+        if (!compParams.getEnabled(ch)) {
+            return 1;  // no reduction
         }
         const int bank = ch / 4;
         const int subChan = ch - bank * 4;
@@ -411,7 +424,7 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
 template <class TBase>
 inline void Compressor2<TBase>::pollUI() {
     bool update = false;
-    CompressorParmHolder& holder = getParamHolder();
+    CompressorParamHolder& holder = getParamHolder();
     if (setAllChannelsSameFlag) {
         update = true;
         setAllChannelsSameFlag.store(false);
@@ -433,7 +446,9 @@ inline void Compressor2<TBase>::pollUI() {
         TBase::params[RATIO_PARAM].value = float(ptr->ratio);
         TBase::params[MAKEUPGAIN_PARAM].value = ptr->makeupGain;
         TBase::params[NOTBYPASS_PARAM].value = ptr->enabled ? 1.f : 0.f;
+        TBase::params[SIDECHAIN_PARAM].value = ptr->sidechainEnabled ? 1.f : 0.f;
         TBase::params[WETDRY_PARAM].value = ptr->attack;
+        assert(getParamHolder().getNumParams() == 8);
 #if 0
         update = true;
         if (currentStereo_m > 0) {
@@ -453,7 +468,9 @@ inline void Compressor2<TBase>::pollUI() {
         TBase::params[THRESHOLD_PARAM].value = icomp->getParam(THRESHOLD_PARAM).def;
         TBase::params[MAKEUPGAIN_PARAM].value = icomp->getParam(MAKEUPGAIN_PARAM).def;
         TBase::params[NOTBYPASS_PARAM].value = icomp->getParam(NOTBYPASS_PARAM).def;
+        TBase::params[SIDECHAIN_PARAM].value = icomp->getParam(SIDECHAIN_PARAM).def;
         TBase::params[WETDRY_PARAM].value = icomp->getParam(WETDRY_PARAM).def;
+        assert(getParamHolder().getNumParams() == 8);
     }
 
     if (update) {
@@ -496,6 +513,7 @@ inline void Compressor2<TBase>::stepn() {
     pollMakeupGain();
     pollThresholdAndRatio();
     pollBypassed();
+    pollSidechainEnabled();
 }
 
 template <class TBase>
@@ -554,6 +572,21 @@ inline void Compressor2<TBase>::pollBypassed() {
             compParams.setEnabled(2 * currentChannel_m + 1, notByp);
         }
         updateBypassed(currentBank_m);
+    }
+}
+
+template <class TBase>
+inline void Compressor2<TBase>::pollSidechainEnabled() {
+    const bool sc = bool(std::round(Compressor2<TBase>::params[SIDECHAIN_PARAM].value));
+    if (sc != lastSidechainEnabled) {
+        lastSidechainEnabled = sc;
+        if (!currentStereo_m) {
+            compParams.setSidechainEnabled(currentChannel_m, sc);
+        } else {
+            compParams.setSidechainEnabled(2 * currentChannel_m, sc);
+            compParams.setSidechainEnabled(2 * currentChannel_m + 1, sc);
+        }
+        // updateSidechainEnabled(currentBank_m);
     }
 }
 
@@ -695,7 +728,8 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
             outPort.setVoltageSimd(input, baseChannel);
             // SQINFO("bypassed");
         } else {
-            const float_4 wetOutput = compressors[bank].stepPoly(input) * makeupGain[bank];
+            const float_4 detectorInput = input;
+            const float_4 wetOutput = compressors[bank].stepPoly(input, detectorInput) * makeupGain[bank];
             const float_4 mixedOutput = wetOutput * wetLevel[bank] + input * dryLevel[bank];
 
             const float_4 out = SimdBlocks::ifelse(en, mixedOutput, input);
@@ -762,10 +796,10 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             ret = {0, 2, 0, "labels"};
             break;
         case Compressor2<TBase>::SIDECHAIN_PARAM:
-            ret = { 0, 1, 0, "sidechain enable" };
+            ret = {0, 1, 0, "sidechain enable"};
             break;
         case Compressor2<TBase>::SIDECHAIN_ALL_PARAM:
-            ret = { 0, 1, 0, "sidechain all" };
+            ret = {0, 1, 0, "sidechain all"};
             break;
 #if 0
         case Compressor2<TBase>::EXPERIMENT_PARAM:

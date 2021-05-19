@@ -50,7 +50,7 @@ static void testMB_1() {
     comp.params[Comp2::CHANNEL_PARAM].value = 2.f;
     run(comp);
 
-    const CompressorParmHolder& holder = comp.getParamHolder();
+    const CompressorParamHolder& holder = comp.getParamHolder();
     assertEQ(comp.params[Comp2::THRESHOLD_PARAM].value, 10.f);
 }
 
@@ -66,7 +66,7 @@ static void testUnLinked() {
     float_4 input(1, 2, 3, 4);
     float_4 x;
     for (int i = 0; i < 10; ++i) {
-        x = cmp.stepPoly(input);
+        x = cmp.stepPoly(input, input);
     }
     assertClosePct(x[0], x[1], 20);
 }
@@ -84,9 +84,9 @@ static void testLinked() {
     float_4 input(1, 2, 3, 4);
     float_4 x;
     for (int i = 0; i < 10; ++i) {
-        x = cmp.stepPoly(input);
+        x = cmp.stepPoly(input, input);
     }
-    x = cmp.stepPoly(input);
+    x = cmp.stepPoly(input, input);
     // assertClosePct(x[0], x[1], 20);
     const float in1_ratio = input[1] / input[0];
     const float in2_ratio = input[3] / input[2];

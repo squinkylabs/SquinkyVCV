@@ -116,13 +116,13 @@ void Compressor2Module::addParams() {
 }
 
 json_t* Compressor2Module::dataToJson() {
-    const CompressorParmHolder& params = compressor->getParamHolder();
+    const CompressorParamHolder& params = compressor->getParamHolder();
     C2Json ser;
     return ser.paramsToJson(params);
 }
 
 void Compressor2Module::dataFromJson(json_t* rootJ) {
-    CompressorParmHolder* params = &compressor->getParamHolder();
+    CompressorParamHolder* params = &compressor->getParamHolder();
     C2Json ser;
     ser.jsonToParams(rootJ, params);
 }
@@ -264,7 +264,7 @@ void CompressorWidget2::setAllChannelsToCurrent() {
 
 void CompressorWidget2::copy() {
     CompressorParamChannel ch;
-    const CompressorParmHolder& params = cModule->compressor->getParamHolder();
+    const CompressorParamHolder& params = cModule->compressor->getParamHolder();
     int currentChannel = -1 + int(std::round(::rack::appGet()->engine->getParam(module, Comp::CHANNEL_PARAM)));
     if (lastStereo > 1) {
         currentChannel *= 2;

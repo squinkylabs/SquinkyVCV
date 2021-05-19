@@ -307,7 +307,7 @@ static void testPolyInit() {
     init(comp);
 
     {
-        const CompressorParmHolder& holder = comp.getParamHolder();
+        const CompressorParamHolder& holder = comp.getParamHolder();
         auto def = getDefaultParamValues<Comp2>();
         for (int i = 0; i < def.size(); ++i) {
             assertEQ(comp.params[i].value, def[i]);

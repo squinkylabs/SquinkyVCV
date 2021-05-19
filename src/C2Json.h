@@ -9,24 +9,26 @@
  */
 class C2Json {
 public:
-    json_t* paramsToJson(const CompressorParmHolder& params);
-    void jsonToParamsOrig(json_t* json, CompressorParmHolder* outParams);
-    void jsonToParams(json_t* json, CompressorParmHolder* outParams);
-    bool jsonToParamsNew(json_t* json, CompressorParmHolder* outParams);
+    json_t* paramsToJson(const CompressorParamHolder& params);
+    void jsonToParamsOrig(json_t* json, CompressorParamHolder* outParams);
+    void jsonToParams(json_t* json, CompressorParamHolder* outParams);
+    bool jsonToParamsNew(json_t* json, CompressorParamHolder* outParams);
 
     void copyToClip(const CompressorParamChannel&);
     bool getClipAsParamChannel(CompressorParamChannel*);
+
 private:
     const char* attack_ = "attack";
     const char* release_ = "release";
     const char* threshold_ = "threshold";
     const char* makeup_ = "makeup";
     const char* enabled_ = "enabled";
+    const char* enabledSC_ = "enabledSC";
     const char* wetdry_ = "wetdry";
     const char* ratio_ = "ratio";
 
-    json_t* paramsToJsonOneChannel(const CompressorParmHolder& params, int channel);
-    bool jsonToParamOneChannel(json_t* obj, CompressorParmHolder* outParams, int channel);
+    json_t* paramsToJsonOneChannel(const CompressorParamHolder& params, int channel);
+    bool jsonToParamOneChannel(json_t* obj, CompressorParamHolder* outParams, int channel);
 };
 
 inline bool C2Json::getClipAsParamChannel(CompressorParamChannel* ch) {
@@ -38,11 +40,12 @@ inline bool C2Json::getClipAsParamChannel(CompressorParamChannel* ch) {
 
     json_error_t error;
     json_t* obj = json_loads(jsonString, 0, &error);
-	if (!obj) {
+    if (!obj) {
         INFO("data on clip not for us");
         return false;
     }
 
+    assert(CompressorParamHolder::getNumParams() == 8);
     json_t* attackJ = json_object_get(obj, attack_);
     json_t* releaseJ = json_object_get(obj, release_);
     json_t* thresholdJ = json_object_get(obj, threshold_);
@@ -50,19 +53,21 @@ inline bool C2Json::getClipAsParamChannel(CompressorParamChannel* ch) {
     json_t* enabledJ = json_object_get(obj, enabled_);
     json_t* wetdryJ = json_object_get(obj, wetdry_);
     json_t* ratioJ = json_object_get(obj, ratio_);
-    if (!attackJ || !releaseJ || !thresholdJ || !makeupJ || !enabledJ || !ratioJ || !wetdryJ) {
+    json_t* enabledSCJ = json_object_get(obj, enabledSC_);
+    if (!attackJ || !releaseJ || !thresholdJ || !makeupJ || !enabledJ || !ratioJ || !wetdryJ || !enabledSCJ) {
         json_decref(obj);
         WARN("json schema no match");
         return false;
     }
 
-    ch->attack =  json_number_value(attackJ);
-    ch->release =  json_number_value(releaseJ);
-    ch->threshold =  json_number_value(thresholdJ);
-    ch->makeupGain =  json_number_value(makeupJ);
-    ch->wetDryMix =  json_number_value(wetdryJ);
-    ch->enabled =  json_boolean_value(enabledJ);
-    ch->ratio =  json_integer_value(ratioJ);
+    ch->attack = json_number_value(attackJ);
+    ch->release = json_number_value(releaseJ);
+    ch->threshold = json_number_value(thresholdJ);
+    ch->makeupGain = json_number_value(makeupJ);
+    ch->wetDryMix = json_number_value(wetdryJ);
+    ch->enabled = json_boolean_value(enabledJ);
+    ch->sidechainEnabled = json_boolean_value(enabledSCJ);
+    ch->ratio = json_integer_value(ratioJ);
 
     //INFO("getClipAsParamChannel a=%f r=%f t=%f", ch->attack, ch->release, ch->threshold);
     //INFO("getClipAs mg=%f, wd=%f, enabled=%d rato=%d", ch->makeupGain, ch->wetDryMix, ch->enabled, ch->ratio);
@@ -74,24 +79,26 @@ inline bool C2Json::getClipAsParamChannel(CompressorParamChannel* ch) {
 inline void C2Json::copyToClip(const CompressorParamChannel& ch) {
     json_t* root = json_object();
 
+    assert(CompressorParamHolder::getNumParams() == 8);
     json_object_set_new(root, attack_, json_real(ch.attack));
     json_object_set_new(root, release_, json_real(ch.release));
     json_object_set_new(root, threshold_, json_real(ch.threshold));
     json_object_set_new(root, makeup_, json_real(ch.makeupGain));
     json_object_set_new(root, wetdry_, json_real(ch.wetDryMix));
     json_object_set_new(root, enabled_, json_boolean(ch.enabled));
+    json_object_set_new(root, enabledSC_, json_boolean(ch.sidechainEnabled));
     json_object_set_new(root, ratio_, json_integer(ch.ratio));
 
     char* clipJson = json_dumps(root, JSON_INDENT(2) | JSON_REAL_PRECISION(9));
 
-   // INFO("putting string on clip: %s", clipJson);
+    // INFO("putting string on clip: %s", clipJson);
     glfwSetClipboardString(APP->window->win, clipJson);
 
     json_decref(root);  // we don't need this any more
     free(clipJson);
 }
 
-inline json_t* C2Json::paramsToJson(const CompressorParmHolder& params) {
+inline json_t* C2Json::paramsToJson(const CompressorParamHolder& params) {
     json_t* arrayJ = json_array();
     for (int i = 0; i < 16; ++i) {
         json_array_append_new(arrayJ, paramsToJsonOneChannel(params, i));
@@ -99,26 +106,28 @@ inline json_t* C2Json::paramsToJson(const CompressorParmHolder& params) {
     return arrayJ;
 }
 
-inline json_t* C2Json::paramsToJsonOneChannel(const CompressorParmHolder& params, int channel) {
+inline json_t* C2Json::paramsToJsonOneChannel(const CompressorParamHolder& params, int channel) {
     json_t* objJ = json_object();
+    assert(CompressorParamHolder::getNumParams() == 8);
     json_object_set_new(objJ, attack_, json_real(params.getAttack(channel)));
     json_object_set_new(objJ, release_, json_real(params.getRelease(channel)));
     json_object_set_new(objJ, threshold_, json_real(params.getThreshold(channel)));
     json_object_set_new(objJ, makeup_, json_real(params.getMakeupGain(channel)));
     json_object_set_new(objJ, wetdry_, json_real(params.getRelease(channel)));
     json_object_set_new(objJ, enabled_, json_boolean(params.getEnabled(channel)));
+    json_object_set_new(objJ, enabledSC_, json_boolean(params.getSidechainEnabled(channel)));
     json_object_set_new(objJ, ratio_, json_integer(params.getRatio(channel)));
     return objJ;
 }
 
-inline void C2Json::jsonToParams(json_t* json, CompressorParmHolder* outParams) {
+inline void C2Json::jsonToParams(json_t* json, CompressorParamHolder* outParams) {
     bool b = jsonToParamsNew(json, outParams);
     if (!b) {
         jsonToParamsOrig(json, outParams);
     }
 }
 
-inline bool C2Json::jsonToParamsNew(json_t* json, CompressorParmHolder* outParams) {
+inline bool C2Json::jsonToParamsNew(json_t* json, CompressorParamHolder* outParams) {
     if (!json_is_array(json)) {
         WARN("JSON not array, can't be cur");
         return false;
@@ -137,17 +146,19 @@ inline bool C2Json::jsonToParamsNew(json_t* json, CompressorParmHolder* outParam
     return true;
 }
 
-inline bool C2Json::jsonToParamOneChannel(json_t* obj, CompressorParmHolder* outParams, int channel) {
+inline bool C2Json::jsonToParamOneChannel(json_t* obj, CompressorParamHolder* outParams, int channel) {
     assert(channel >= 0 && channel <= 15);
 
+    
     json_t* wetdryJ = json_object_get(obj, wetdry_);
     json_t* attackJ = json_object_get(obj, attack_);
     json_t* releaseJ = json_object_get(obj, release_);
     json_t* thresholdJ = json_object_get(obj, threshold_);
     json_t* makeupJ = json_object_get(obj, makeup_);
     json_t* enabledJ = json_object_get(obj, enabled_);
+    json_t* enabledSCJ = json_object_get(obj, enabledSC_);
     json_t* ratioJ = json_object_get(obj, ratio_);
-    if (!attackJ || !releaseJ || !thresholdJ || !makeupJ || !enabledJ || !ratioJ || !wetdryJ) {
+    if (!attackJ || !releaseJ || !thresholdJ || !makeupJ || !enabledJ || !ratioJ || !wetdryJ || !enabledSCJ) {
         WARN("new channel deserialize failed");
         return false;
     }
@@ -156,12 +167,13 @@ inline bool C2Json::jsonToParamOneChannel(json_t* obj, CompressorParmHolder* out
     outParams->setThreshold(channel, json_number_value(thresholdJ));
     outParams->setMakeupGain(channel, json_number_value(makeupJ));
     outParams->setEnabled(channel, json_boolean_value(enabledJ));
+    outParams->setSidechainEnabled(channel, json_boolean_value(enabledSCJ));
     outParams->setRatio(channel, json_integer_value(ratioJ));
     outParams->setWetDry(channel, json_number_value(wetdryJ));
     return true;
 }
 
-inline void C2Json::jsonToParamsOrig(json_t* rootJ, CompressorParmHolder* params) {
+inline void C2Json::jsonToParamsOrig(json_t* rootJ, CompressorParamHolder* params) {
     json_t* attacksJ = json_object_get(rootJ, "attacks");
     json_t* releasesJ = json_object_get(rootJ, "releases");
     json_t* thresholdsJ = json_object_get(rootJ, "thresholds");
@@ -169,6 +181,7 @@ inline void C2Json::jsonToParamsOrig(json_t* rootJ, CompressorParmHolder* params
     json_t* enabledsJ = json_object_get(rootJ, "enableds");
     json_t* ratiosJ = json_object_get(rootJ, "ratios");
     json_t* wetdryJ = json_object_get(rootJ, "wetdrys");
+
 
     if (!json_is_array(attacksJ) || !json_is_array(releasesJ) || !json_is_array(thresholdsJ) ||
         !json_is_array(makeupsJ) || !json_is_array(enabledsJ) || !json_is_array(ratiosJ)) {
@@ -206,5 +219,9 @@ inline void C2Json::jsonToParamsOrig(json_t* rootJ, CompressorParmHolder* params
 
         value = json_array_get(wetdryJ, i);
         params->setWetDry(i, json_number_value(value));
+
+        params->setSidechainEnabled(i, false);
+
+        assert(CompressorParamHolder::getNumParams() == 8);
     }
 }

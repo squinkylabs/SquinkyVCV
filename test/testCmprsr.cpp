@@ -115,13 +115,13 @@ static void testCompZeroAttackPoly(int numChan) {
 
     // try some voltages before thresh
     float_4 in(1.34f);
-    auto out = comp.stepPoly(in);
+    auto out = comp.stepPoly(in, in);
     simd_assertEQ(out, in);
 
     // slam above limit - should settle immediately
     // somewhere above thresh
     in = float_4(10);
-    out = comp.stepPoly(in);
+    out = comp.stepPoly(in, in);
 
     if (numChan == 4) {
         simd_assertClose(out, float_4(5.9f), 1);
@@ -132,13 +132,13 @@ static void testCompZeroAttackPoly(int numChan) {
     // no more rise after that
     const auto firstOut = out;
     for (int i = 0; i < 10; ++i) {
-        out = comp.stepPoly(in);
+        out = comp.stepPoly(in, in);
         simd_assertEQ(out, firstOut);
     }
 
     // way below threshold. gain will still be reduced, but then go up
     in = float_4(1);
-    out = comp.stepPoly(in);
+    out = comp.stepPoly(in, in);
     if (numChan == 4) {
         simd_assertClose(out, float_4(.59f), .1f);
     } else {
@@ -148,7 +148,7 @@ static void testCompZeroAttackPoly(int numChan) {
     // This used to work at 1000
     // TODO: test release time constant for real
     for (int i = 0; i < 100000; ++i) {
-        out = comp.stepPoly(in);
+        out = comp.stepPoly(in, in);
     }
     simd_assertClose(out, in, .001);
 }
@@ -173,7 +173,7 @@ static void testCompZeroAttack(bool poly) {
 static float_4 run(Cmprsr& cmp, int times, float_4 input) {
     float_4 ret;
     for (int i = 0; i < times; ++i) {
-        ret = cmp.stepPoly(input);
+        ret = cmp.stepPoly(input, input);
     }
     return ret;
 }
