@@ -323,9 +323,12 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
         [this]() {
             this->initializeCurrent();
         }));
+#if 0
     auto itemc = new SqMenuItem_BooleanParam2(module, Comp::SIDECHAIN_ALL_PARAM);
     itemc->text = "All sidechains from channel 1";
     theMenu->addChild(itemc);
+#endif
+
     SubMenuParamCtrl::create(theMenu, "Stereo/mono", {"Mono", "Stereo", "Linked-stereo"}, module, Comp::STEREO_PARAM);
 
     auto render = [this](int value) {
