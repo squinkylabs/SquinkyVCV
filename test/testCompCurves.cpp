@@ -10,11 +10,9 @@ static void testSplineSub(HermiteSpline::point p0,
                           HermiteSpline::point p1,
                           HermiteSpline::point m0,
                           HermiteSpline::point m1) {
-    
     // try to generate a section of limiter
     // the non-compress part is slope 1, and we try to carry that through
     HermiteSpline s(p0, p1, m0, m1);
-  
 
     HermiteSpline::point last(0, 0);
     for (int i = 0; i < 11; ++i) {
@@ -37,34 +35,77 @@ static void testSplineSub(HermiteSpline::point p0,
 static void testSplineSub2(float ratio) {
     double y2 = 1.0 + 1.0 / ratio;
     testSplineSub(
-        HermiteSpline::point(.5, .5),   // p0
-        HermiteSpline::point(2, y2),  // p1
-        HermiteSpline::point(1.5, 1.5),   // m0 (p0 out)
-      //  HermiteSpline::point(2, y2 - 1));  // m1 (p1 in)
-        HermiteSpline::point(2, 1));  // m1 (p1 in)
+        HermiteSpline::point(.5, .5),    // p0
+        HermiteSpline::point(2, y2),     // p1
+        HermiteSpline::point(1.5, 1.5),  // m0 (p0 out)
+                                         //  HermiteSpline::point(2, y2 - 1));  // m1 (p1 in)
+        HermiteSpline::point(2, 1));     // m1 (p1 in)
+}
+
+static void characterizeSpline(float ratio, float deltaY) {
+    double y2 = 1.0 + 1.0 / ratio;
+    HermiteSpline h = {
+        HermiteSpline::point(.5, .5),
+        HermiteSpline::point(2, y2),
+        HermiteSpline::point(1.5, 1.5),
+        HermiteSpline::point(2, 2 + deltaY)
+            };
+
+    auto p0 = h.renderPoint(0);
+    auto p1 = h.renderPoint(1);
+    auto p = h.renderPoint(.99);
+    SQINFO("\nfor ratio=%f, delta=%f:", ratio, deltaY);
+    SQINFO("p0=%f,%f, p1=%f, %f", p0.first, p0.second, p1.first, p1.second);
+    SQINFO("final slope = %f desired = %f", (p1.second - p.second) / (p1.first - p.first), 1.0 / ratio);
+
 }
 
 static void testSpline() {
+    characterizeSpline(1000, -2);       // infinite ratio
+
+    // -2 gives .015 I want 1.0
+    // -1 gives .5
+    // 0 gives 1
+    characterizeSpline(1, 0);          // no ratio
+
+    // want slope of .5 0
+    characterizeSpline(2, -1);          // 2:1
+
+    // want slope of .25 0 gives .9
+    // -2 gives .003
+    /// -1 give .49
+    // -1.5 gives .25
+    characterizeSpline(4, -1.5);          // 4:1
+
+    // wans slope = .125
+    // -1.75 perfect
+    characterizeSpline(8, -1.75);          // 8:1
+
+    // want slope .05
+    // -1.25 gives .247
+    // -1.9 is good
+    characterizeSpline(20, -1.9);          // 8:1
+
+
+
+#if 0
     SQINFO("spline ration 1000");
     testSplineSub2(1000);
     SQINFO("spline ration 2");
     testSplineSub2(2);
+#endif
 
-    assert(false);
+   
 #if 0
     testSplineSub(  
         HermiteSpline::point(0, 0),   // p0
         HermiteSpline::point(2, 1),  // p1
         HermiteSpline::point(1, 1),   // m0 (p0 out)
         HermiteSpline::point(3, 0));  // m1 (p1 in)
-    assert(false);
+   
 #endif
+    assert(false);
 }
-
-
-
-
-
 
 #if 0
 static void testSpline() {
