@@ -5,6 +5,68 @@
 #include "asserts.h"
 
 // At the moment, this doesn't test, just prints
+
+static void testSplineSub(HermiteSpline::point p0,
+                          HermiteSpline::point p1,
+                          HermiteSpline::point m0,
+                          HermiteSpline::point m1) {
+    
+    // try to generate a section of limiter
+    // the non-compress part is slope 1, and we try to carry that through
+    HermiteSpline s(p0, p1, m0, m1);
+  
+
+    HermiteSpline::point last(0, 0);
+    for (int i = 0; i < 11; ++i) {
+        double t = i / 10.0;
+        auto x = s.renderPoint(t);
+
+        double slope = (x.second - last.second) / (x.first - last.first);
+        printf("p[%d] = %f, %f (t=%f) slope = %f\n", i, x.first, x.second, t, slope);
+        // last.x = x.first;
+        //  last.y = x.second;
+        last = x;
+    }
+    //  abort();
+}
+
+// generates a soft knee curve.
+// no gain reduction below .5
+// straight ratio above 2
+
+static void testSplineSub2(float ratio) {
+    double y2 = 1.0 + 1.0 / ratio;
+    testSplineSub(
+        HermiteSpline::point(.5, .5),   // p0
+        HermiteSpline::point(2, y2),  // p1
+        HermiteSpline::point(1.5, 1.5),   // m0 (p0 out)
+      //  HermiteSpline::point(2, y2 - 1));  // m1 (p1 in)
+        HermiteSpline::point(2, 1));  // m1 (p1 in)
+}
+
+static void testSpline() {
+    SQINFO("spline ration 1000");
+    testSplineSub2(1000);
+    SQINFO("spline ration 2");
+    testSplineSub2(2);
+
+    assert(false);
+#if 0
+    testSplineSub(  
+        HermiteSpline::point(0, 0),   // p0
+        HermiteSpline::point(2, 1),  // p1
+        HermiteSpline::point(1, 1),   // m0 (p0 out)
+        HermiteSpline::point(3, 0));  // m1 (p1 in)
+    assert(false);
+#endif
+}
+
+
+
+
+
+
+#if 0
 static void testSpline() {
     // try to generate a section of limiter
     // the non-compress part is slope 1, and we try to carry that through
@@ -28,6 +90,7 @@ static void testSpline() {
     }
     //  abort();
 }
+#endif
 
 static void testLookupBelowThesh(float ratio, float kneeWidth) {
     // Should be unity gain up to where it starts to bend
@@ -392,10 +455,11 @@ double getBiggestJump(double maxX, int divisions, std::function<double(double)> 
         //SQINFO("i = %d", i);
         double x = i * scaler;
         double y = func(x);
+        assert(y <= 1);
         double dif = std::abs(y - lastValue);
 
         if (dif > ret) {
-           // SQINFO("new max %f at x = %f", dif, x);
+            // SQINFO("new max %f at x = %f", dif, x);
             ret = dif;
         }
         lastValue = y;
@@ -403,11 +467,53 @@ double getBiggestJump(double maxX, int divisions, std::function<double(double)> 
     return ret;
 }
 
+double getBiggestSlopeJump(double maxX, int divisions, std::function<double(double)> func) {
+    //SQINFO("--- get biggest jump");
+    double ret = 0;
+    double lastValue = 1;
+    double lastSlope = 0;
+    //  double lastSlopeDelta = 0;
+    double scaler = maxX / divisions;
+    for (int i = 0; i < divisions; ++i) {
+        //SQINFO("i = %d", i);
+
+        double x = i * scaler;
+        double y = func(x);
+        assert(y <= 1);
+        // double slope = (y - lastValue) / scaler;
+        double slope = 1;
+        if (i > 0) {
+            slope = (y - lastValue) / scaler;
+        }
+        if (i > 2) {
+            double slope = (y - lastValue) / scaler;
+            double slopeDelta = slope - lastSlope;
+
+            // gain is always getting more and more reduced
+            assert(slope <= 0);
+
+            // It would be nice it slope were strictly reducing, but it isn't true with our lame quadratic knee.
+            // assert(slope <= lastSlope);
+
+            double dif = std::abs(slopeDelta - ret);
+            // SQINFO("at x=%f y=%f slope=%f jump=%f", x, y, slope, dif);
+
+            if (dif > ret) {
+                SQINFO("new max slope change of %f at %f slope=%f was%f delta=%f", dif, x, slope, lastSlope, slopeDelta);
+                ret = dif;
+            }
+        }
+        lastValue = y;
+        lastSlope = slope;
+    }
+    return ret;
+}
 static void testBiggestJump() {
     const int div = 100003;
     CompCurves::Recipe r;
     const float softKnee = 12;
     r.ratio = 4;
+    r.kneeWidth = softKnee;
     auto ref = CompCurves::_getContinuousCurve(r);
     double dRef = getBiggestJump(100, div, [ref](double x) {
         return ref(x);
@@ -415,16 +521,30 @@ static void testBiggestJump() {
 
     auto oldCurve = CompCurves::makeCompGainLookup(r);
     double dRefOld = getBiggestJump(100, div, [oldCurve](double x) {
-        return  CompCurves::lookup(oldCurve, float(x));
+        return CompCurves::lookup(oldCurve, float(x));
     });
 
     auto newCurve = CompCurves::makeCompGainLookup2(r);
     double dRefNew = getBiggestJump(100, div, [newCurve](double x) {
-        return  newCurve->lookup(float(x));
-        });
+        return newCurve->lookup(float(x));
+    });
 
     assertClosePct(dRefOld, dRef, 10.0);
     assertClosePct(dRefNew, dRef, 10.0);
+}
+
+static void testBiggestSlopeJump() {
+    SQINFO("---- slope jump");
+    const int div = 10000;
+    CompCurves::Recipe r;
+    const float softKnee = 12;
+    r.ratio = 4;
+    r.kneeWidth = softKnee;
+    auto ref = CompCurves::_getContinuousCurve(r);
+    double dRef = getBiggestSlopeJump(100, div, [ref](double x) {
+        return ref(x);
+    });
+    assert(false);
 }
 
 void testCompCurves() {
@@ -432,7 +552,7 @@ void testCompCurves() {
     assertEQ(_numLookupParams, 0);
     testInflection();
 
-    // testSpline();
+    testSpline();
     testLookupBelowTheshNoKnee();
     testLookupBelowTheshSoftKnee();
 
@@ -448,5 +568,6 @@ void testCompCurves() {
     testContinuousCurve();
     testLookup2();
     testBiggestJump();
+    testBiggestSlopeJump();
     assertEQ(_numLookupParams, 0);
 }
