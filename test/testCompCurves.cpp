@@ -700,6 +700,43 @@ static void testEndSlopeSoftKnee(int ratio) {
     assertClosePct(slopeH, 1.f / float(ratio), 5);
 }
 
+
+static void testKneeSlope(int ratio) {
+    CompCurves::Recipe r;
+    r.kneeWidth = 12;
+    r.ratio = float(ratio);
+
+    // use the classic lookup from Comp (1)
+    CompCurves::LookupPtr lookup = CompCurves::makeCompGainLookup(r);
+
+    const float delta = .05f;
+    const float xLow2 = .5f;
+    const float xLow1 = .5f + delta;
+
+    const float xHigh1 = 2.f - delta;
+    const float xHigh2 = 2.f + ratio;
+
+    // lookup the gains at the sample points
+    const float yGainLow1 = CompCurves::lookup(lookup, xLow1);
+    const float yGainLow2 = CompCurves::lookup(lookup, xLow2);
+    const float yGainHigh1 = CompCurves::lookup(lookup, xHigh1);
+    const float yGainHigh2 = CompCurves::lookup(lookup, xHigh2);
+
+    // convert gains to output levels
+    const float yLow1 = yGainLow1 * xLow1;
+    const float yLow2 = yGainLow2 * xLow2;
+
+    const float yHigh1 = yGainHigh1 * xHigh1;
+    const float yHigh2 = yGainHigh2 * xHigh2;
+
+    // compressor ratio is slope of output / input in db
+    const double slopeL = slopeDB(xLow1, yLow1, xLow2, yLow2);
+    const double slopeH = slopeDB(xHigh1, yHigh1, xHigh2, yHigh2);
+
+    assertClosePct(slopeL, .97f, 5);
+    assertClosePct(slopeH, 1.f / float(ratio), 5);
+}
+
 static void testEndSlopeHardKnee() {
     testEndSlopeHardKnee(4);
     testEndSlopeHardKnee(8);
@@ -710,6 +747,12 @@ static void testEndSlopeSoftKnee() {
     testEndSlopeSoftKnee(4);
     testEndSlopeSoftKnee(8);
     testEndSlopeSoftKnee(20);
+}
+
+static void testKneeSlope() {
+    testKneeSlope(4);
+    testKneeSlope(8);
+    testKneeSlope(20);
 }
 
 void testCompCurves() {
@@ -737,6 +780,7 @@ void testCompCurves() {
 
     testEndSlopeHardKnee();
     testEndSlopeSoftKnee();
+    testKneeSlope();
    // testSplineVSOld();
     assertEQ(_numLookupParams, 0);
 }
