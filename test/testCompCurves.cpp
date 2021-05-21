@@ -763,19 +763,24 @@ static void testKneeSlope() {
     testKneeSlope(20, true);
 }
 
-static void testKneeSpline0() {
+static void testKneeSpline0(int ratio) {
     CompCurves::Recipe r;
     r.kneeWidth = 12;
-    r.ratio = 4;
+    r.ratio = float(ratio);
     std::shared_ptr<NonUniformLookupTableParams<double>> splineLookup = CompCurves::makeSplineMiddle(r); 
 
     const float y0 = (float) NonUniformLookupTable<double>::lookup(*splineLookup, .5);
     const float y1 = (float) NonUniformLookupTable<double>::lookup(*splineLookup, 2);
 
-
     const float expectedFinalY = 1.0f + 1.0f / r.ratio;
     assertClose(y0, .5f, .001);
     assertClose(y1, expectedFinalY, .001);
+}
+
+static void testKneeSpline0() {
+    testKneeSpline0(4);
+    testKneeSpline0(8);
+    testKneeSpline0(20);
 }
 
 static void testBasicSplineImp() {
@@ -793,7 +798,7 @@ static void testBasicSplineImp() {
         float y = (float) NonUniformLookupTable<double>::lookup(*splineLookup, x);
         SQINFO("x=%f y=%f", x, y);
     }
-    assert(false);
+  //  assert(false);
 }
 
 void testCompCurves() {
