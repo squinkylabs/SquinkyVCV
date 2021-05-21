@@ -89,10 +89,16 @@ public:
     static xy getGainAtLeftInflection(const CompCurves::Recipe& r);
 
 
-    static std::function<double(double)> _getContinuousCurve(const CompCurves::Recipe& r);
+    static std::function<double(double)> _getContinuousCurve(const CompCurves::Recipe& r, bool useSpline);
 private:
     static xy addLeftSideCurve(LookupPtr, const Recipe& r);
     static void addRightSideCurve(LookupPtr, const Recipe& r, xy lastPt);
     static void addMiddleCurve(LookupPtr, const Recipe& r, xy lastPt);
+
+   // static LookupPtr makeSplineMiddle(const Recipe&);
+  
+   
+    //static CompCurvePtr makeCompCurveMiddle(const Recipe& r);
+    static std::shared_ptr<NonUniformLookupTableParams<double>> makeSplineMiddle(const Recipe&);
 
 };

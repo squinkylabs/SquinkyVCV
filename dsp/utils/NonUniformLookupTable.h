@@ -3,6 +3,7 @@
 #include "SqLog.h"
 #include <assert.h>
 #include <map>
+#include <memory>
 
 template <typename T> class NonUniformLookupTable;
 
@@ -50,7 +51,6 @@ private:
     bool isFinalized = false;
     container entries;
 };
-
 
 
 template <typename T>

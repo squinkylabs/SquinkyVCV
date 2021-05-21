@@ -4,6 +4,7 @@
 
 #include <functional>
 
+#include "SplineRenderer.h"
 #include "asserts.h"
 
 CompCurves::xy CompCurves::getGainAtRightInflection(const CompCurves::Recipe& r) {
@@ -112,9 +113,13 @@ void CompCurves::addRightSideCurve(LookupPtr table, const Recipe& r, CompCurves:
     }
 }
 
-std::function<double(double)> CompCurves::_getContinuousCurve(const CompCurves::Recipe& r) {
-    // assert(false);
-    return [r](double x) {
+std::function<double(double)> CompCurves::_getContinuousCurve(const CompCurves::Recipe& r, bool bUseSplines) {
+    //  assert(!bUseSplines);
+    std::shared_ptr<NonUniformLookupTableParams<double>> splineLookup;
+    if (bUseSplines) {
+        splineLookup = makeSplineMiddle(r);
+    }
+    return [r, bUseSplines, splineLookup](double x) {
         const double bottomOfKneeDb = -r.kneeWidth / 2;
         const double bottomOfKneeVin = float(AudioMath::gainFromDb(bottomOfKneeDb));
         const double topOfKneeDb = r.kneeWidth / 2;
@@ -124,16 +129,22 @@ std::function<double(double)> CompCurves::_getContinuousCurve(const CompCurves::
             // SQINFO("left side");
             return 1.0;  // constant gain of 1 below thresh
         } else if (x < topOfKneeVin) {
-           // const double x0Db = bottomOfKneeDb;
-            const double xdb = AudioMath::db(x);
-            const double squareTerm = (xdb + r.kneeWidth / 2);
-            const double rTerm = (1.0 / r.ratio) - 1;
-            const double yDb = xdb + rTerm * squareTerm * squareTerm / (2 * r.kneeWidth);
-            const double x2 = x;
+            // const double x0Db = bottomOfKneeDb;
+            if (!bUseSplines) {
+                const double xdb = AudioMath::db(x);
+                const double squareTerm = (xdb + r.kneeWidth / 2);
+                const double rTerm = (1.0 / r.ratio) - 1;
+                const double yDb = xdb + rTerm * squareTerm * squareTerm / (2 * r.kneeWidth);
+                const double x2 = x;
 
-            const double yV = AudioMath::gainFromDb(yDb);
-            const double gain = yV / x2;
-            return gain;
+                const double yV = AudioMath::gainFromDb(yDb);
+                const double gain = yV / x2;
+                return gain;
+            } else {
+                assert(splineLookup);
+                return NonUniformLookupTable<double>::lookup(*splineLookup, x);
+                // return double(CompCurves::lookup(splineLookup, float(x)));
+            }
         } else {
             const double xdb = AudioMath::db(x);
             const double dbSlope = 1.0 / r.ratio;
@@ -161,12 +172,13 @@ CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookup2(const Recipe& r) 
 
     const float bottomOfKneeDb = -r.kneeWidth / 2;
     ret->bottomOfKneeVin = float(AudioMath::gainFromDb(bottomOfKneeDb));
-    
-   // const float topOfKneeDb = r.kneeWidth / 2;
-  //  const float topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
+
+    // const float topOfKneeDb = r.kneeWidth / 2;
+    //  const float topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
     ret->dividingLine = 2;
 
-    auto func = _getContinuousCurve(r);
+    SQWARN("using old method for makeCompGainLookup2");
+    auto func = _getContinuousCurve(r, false);
 
     LookupTable<float>::init(ret->lowRange, tableSize, ret->bottomOfKneeVin, ret->dividingLine, func);
     LookupTable<float>::init(ret->highRange, tableSize, ret->dividingLine, 100, func);
@@ -181,4 +193,24 @@ float CompCurves::CompCurveLookup::lookup(float x) const {
         return LookupTable<float>::lookup(lowRange, x, false);
     }
     return LookupTable<float>::lookup(highRange, x, true);
+}
+
+std::shared_ptr<NonUniformLookupTableParams<double>>
+CompCurves::makeSplineMiddle(const Recipe& r) {
+    auto spline = HermiteSpline::make(int(std::round(r.ratio)), int(std::round(r.kneeWidth)));
+    if (!spline) {
+        return nullptr;
+    }
+
+    // First make a non-uniform for
+    std::shared_ptr <NonUniformLookupTableParams<double>> firstTableParam = std::make_shared<NonUniformLookupTableParams<double>>();
+    int iNum = 1024;
+    for (int i = 0; i < 1024; ++i) {
+        double t = double(i) / double(iNum);
+        auto pt = spline->renderPoint(t);
+        NonUniformLookupTable<double>::addPoint(*firstTableParam, pt.first, pt.second);
+    }
+    NonUniformLookupTable<double>::finalize(*firstTableParam);
+
+    return firstTableParam;
 }

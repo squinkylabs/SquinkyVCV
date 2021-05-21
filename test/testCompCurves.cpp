@@ -53,14 +53,21 @@ static void characterizeSpline(float ratio, float deltaY) {
 
     auto p0 = h.renderPoint(0);
     auto p1 = h.renderPoint(1);
-    auto p = h.renderPoint(.99);
+
+    auto p9 = h.renderPoint(.9);
+    auto p99 = h.renderPoint(.99);
+    auto p999 = h.renderPoint(.999);
     SQINFO("\nfor ratio=%f, delta=%f:", ratio, deltaY);
     SQINFO("p0=%f,%f, p1=%f, %f", p0.first, p0.second, p1.first, p1.second);
-    SQINFO("final slope = %f desired = %f", (p1.second - p.second) / (p1.first - p.first), 1.0 / ratio);
+    SQINFO("final slope99 = %f desired = %f", (p1.second - p99.second) / (p1.first - p99.first), 1.0 / ratio);
+    SQINFO("slope 9 = %f, 999=%f\n", 
+         (p1.second - p9.second) / (p1.first - p9.first),
+         (p1.second - p999.second) / (p1.first - p999.first));
 
 }
 
 static void testSpline() {
+    // -2 gives .000002
     characterizeSpline(1000, -2);       // infinite ratio
 
     // -2 gives .015 I want 1.0
@@ -69,6 +76,7 @@ static void testSpline() {
     characterizeSpline(1, 0);          // no ratio
 
     // want slope of .5 0
+    // -1 is perfect
     characterizeSpline(2, -1);          // 2:1
 
     // want slope of .25 0 gives .9
@@ -83,8 +91,8 @@ static void testSpline() {
 
     // want slope .05
     // -1.25 gives .247
-    // -1.9 is good
-    characterizeSpline(20, -1.9);          // 8:1
+    // -1.9 is perfect
+    characterizeSpline(20, -1.9f);          // 8:1
 
 
 
@@ -104,7 +112,7 @@ static void testSpline() {
         HermiteSpline::point(3, 0));  // m1 (p1 in)
    
 #endif
-    assert(false);
+  //  assert(false);
 }
 
 #if 0
@@ -448,13 +456,13 @@ static void testLookupAboveTheshNoKnee2() {
     testLookupAboveTheshNoKnee2(8);
 }
 
-static void testContinuousCurve() {
+static void testContinuousCurveOld() {
     CompCurves::Recipe r;
     const float softKnee = 12;
     r.ratio = 4;
     r.kneeWidth = softKnee;
     CompCurves::LookupPtr lookup = CompCurves::makeCompGainLookup(r);
-    auto cont = CompCurves::_getContinuousCurve(r);
+    auto cont = CompCurves::_getContinuousCurve(r, false);
 
     // const int k = 10000;
     const int k = 1000;
@@ -467,7 +475,7 @@ static void testContinuousCurve() {
     }
 }
 
-static void testLookup2() {
+static void testLookup2Old() {
     CompCurves::Recipe r;
     const float softKnee = 12;
     r.ratio = 4;
@@ -475,7 +483,7 @@ static void testLookup2() {
     assert(look);
     look->lookup(2.1099f);
 
-    auto cont = CompCurves::_getContinuousCurve(r);
+    auto cont = CompCurves::_getContinuousCurve(r, false);
     const int k = 1000;
     for (int i = 0; i < k; ++i) {
         double x = (double)i / (k / 10);
@@ -549,13 +557,14 @@ double getBiggestSlopeJump(double maxX, int divisions, std::function<double(doub
     }
     return ret;
 }
-static void testBiggestJump() {
+
+static void testBiggestJumpOld() {
     const int div = 100003;
     CompCurves::Recipe r;
     const float softKnee = 12;
     r.ratio = 4;
     r.kneeWidth = softKnee;
-    auto ref = CompCurves::_getContinuousCurve(r);
+    auto ref = CompCurves::_getContinuousCurve(r, false);
     double dRef = getBiggestJump(100, div, [ref](double x) {
         return ref(x);
     });
@@ -570,22 +579,93 @@ static void testBiggestJump() {
         return newCurve->lookup(float(x));
     });
 
-    assertClosePct(dRefOld, dRef, 10.0);
-    assertClosePct(dRefNew, dRef, 10.0);
+    assertClosePct(float(dRefOld), float(dRef), 10.0f);
+    assertClosePct(float(dRefNew), float(dRef), 10.0f);
 }
 
-static void testBiggestSlopeJump() {
+static void testBiggestSlopeJumpOld() {
     SQINFO("---- slope jump");
     const int div = 10000;
     CompCurves::Recipe r;
     const float softKnee = 12;
     r.ratio = 4;
     r.kneeWidth = softKnee;
-    auto ref = CompCurves::_getContinuousCurve(r);
+    auto ref = CompCurves::_getContinuousCurve(r, false);
     double dRef = getBiggestSlopeJump(100, div, [ref](double x) {
         return ref(x);
     });
-    assert(false);
+   // assert(false);
+}
+
+static void testSplineVSOld() {
+    CompCurves::Recipe r;
+   // const float softKnee = 12;
+    r.ratio = 4;
+    r.kneeWidth = 12;
+    auto old = CompCurves::_getContinuousCurve(r, false);
+    auto spline = CompCurves::_getContinuousCurve(r, true);
+    for (int i = 0; i < 10000; ++i) {
+        double x = (double)i / 100.0;
+        float yOld = float(old(x));
+        float ySpline = float(spline(x));
+        assertClosePct(ySpline, yOld, 5);
+    }
+}
+
+#if 0
+static double slope(double x1, double y1, double x2, double y2) {
+    return (y2 - y1) / (x2 - x1);
+}
+#endif
+
+static double slopeDB(double _x1, double _y1, double _x2, double _y2) {
+    const double x1 = AudioMath::db(_x1);
+    const double x2 = AudioMath::db(_x2);
+    const double y1 = AudioMath::db(_y1);
+    const double y2 = AudioMath::db(_y2);
+
+
+    return (y2 - y1) / (x2 - x1);
+}
+static void testEndSlopeHardKnee(int ratio) {
+    CompCurves::Recipe r;
+    r.ratio = float(ratio);
+
+    // use the classic lookup from Comp (1)
+    CompCurves::LookupPtr lookup = CompCurves::makeCompGainLookup(r);
+
+    const float xLow = .5f;
+    const float xHigh = 1.01f;
+    const float xHigh2 = float(1 + ratio);
+
+    // lookup the gains at the sample points
+    const float yGainLow = CompCurves::lookup(lookup, xLow);
+    const float yGain1 = CompCurves::lookup(lookup, 1);
+    const float yGainHigh = CompCurves::lookup(lookup, xHigh);
+    const float yGainHigh2 = CompCurves::lookup(lookup, xHigh2);
+
+    // convert gains to output levels
+    const float y1 = yGain1 * 1;
+    const float yLow = yGainLow * xLow;
+    const float yHigh = yGainHigh * xHigh;
+    const float yHigh2 = yGainHigh2 * xHigh2;
+
+
+    // compressor ratio is slope of output / input in db
+    const double slopeL = slopeDB(xLow, yLow, 1, y1);
+    const double slopeH = slopeDB(1, y1, xHigh, yHigh);
+    const double slopeH2 = slopeDB(1, y1, xHigh2, yHigh2);
+
+    assertEQ(y1, 1);
+    assertEQ(slopeL, 1);
+    assertClosePct(slopeH2, 1.f / float(ratio), 15);
+
+}
+
+static void testEndSlopeHardKnee() {
+    testEndSlopeHardKnee(4);
+    testEndSlopeHardKnee(8);
+    testEndSlopeHardKnee(20);
 }
 
 void testCompCurves() {
@@ -606,9 +686,12 @@ void testCompCurves() {
     //  testCompCurvesKnee2();
     // plot4_1_hard();
     //  plot4_1_soft();
-    testContinuousCurve();
-    testLookup2();
-    testBiggestJump();
-    testBiggestSlopeJump();
+    testContinuousCurveOld();
+    testLookup2Old();
+    testBiggestJumpOld();
+    testBiggestSlopeJumpOld();
+
+    testEndSlopeHardKnee();
+   // testSplineVSOld();
     assertEQ(_numLookupParams, 0);
 }
