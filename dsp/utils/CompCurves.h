@@ -19,9 +19,12 @@ Plot soft knee in excel.
 
 */
 
+
 class CompCurves
 {
 public:
+    friend void testKneeSlope(int ratio, bool newCurve);
+
     CompCurves() = delete;
 
     #define normalizedThreshold 1.f

@@ -48,8 +48,7 @@ static void characterizeSpline(float ratio, float deltaY) {
         HermiteSpline::point(.5, .5),
         HermiteSpline::point(2, y2),
         HermiteSpline::point(1.5, 1.5),
-        HermiteSpline::point(2, 2 + deltaY)
-            };
+        HermiteSpline::point(2, 2 + deltaY)};
 
     auto p0 = h.renderPoint(0);
     auto p1 = h.renderPoint(1);
@@ -60,41 +59,38 @@ static void characterizeSpline(float ratio, float deltaY) {
     SQINFO("\nfor ratio=%f, delta=%f:", ratio, deltaY);
     SQINFO("p0=%f,%f, p1=%f, %f", p0.first, p0.second, p1.first, p1.second);
     SQINFO("final slope99 = %f desired = %f", (p1.second - p99.second) / (p1.first - p99.first), 1.0 / ratio);
-    SQINFO("slope 9 = %f, 999=%f\n", 
-         (p1.second - p9.second) / (p1.first - p9.first),
-         (p1.second - p999.second) / (p1.first - p999.first));
-
+    SQINFO("slope 9 = %f, 999=%f\n",
+           (p1.second - p9.second) / (p1.first - p9.first),
+           (p1.second - p999.second) / (p1.first - p999.first));
 }
 
 static void testSpline() {
     // -2 gives .000002
-    characterizeSpline(1000, -2);       // infinite ratio
+    characterizeSpline(1000, -2);  // infinite ratio
 
     // -2 gives .015 I want 1.0
     // -1 gives .5
     // 0 gives 1
-    characterizeSpline(1, 0);          // no ratio
+    characterizeSpline(1, 0);  // no ratio
 
     // want slope of .5 0
     // -1 is perfect
-    characterizeSpline(2, -1);          // 2:1
+    characterizeSpline(2, -1);  // 2:1
 
     // want slope of .25 0 gives .9
     // -2 gives .003
     /// -1 give .49
     // -1.5 gives .25
-    characterizeSpline(4, -1.5);          // 4:1
+    characterizeSpline(4, -1.5);  // 4:1
 
     // wans slope = .125
     // -1.75 perfect
-    characterizeSpline(8, -1.75);          // 8:1
+    characterizeSpline(8, -1.75);  // 8:1
 
     // want slope .05
     // -1.25 gives .247
     // -1.9 is perfect
-    characterizeSpline(20, -1.9f);          // 8:1
-
-
+    characterizeSpline(20, -1.9f);  // 8:1
 
 #if 0
     SQINFO("spline ration 1000");
@@ -103,16 +99,15 @@ static void testSpline() {
     testSplineSub2(2);
 #endif
 
-   
 #if 0
     testSplineSub(  
         HermiteSpline::point(0, 0),   // p0
         HermiteSpline::point(2, 1),  // p1
         HermiteSpline::point(1, 1),   // m0 (p0 out)
         HermiteSpline::point(3, 0));  // m1 (p1 in)
-   
+
 #endif
-  //  assert(false);
+    //  assert(false);
 }
 
 #if 0
@@ -594,12 +589,12 @@ static void testBiggestSlopeJumpOld() {
     double dRef = getBiggestSlopeJump(100, div, [ref](double x) {
         return ref(x);
     });
-   // assert(false);
+    // assert(false);
 }
 
 static void testSplineVSOld() {
     CompCurves::Recipe r;
-   // const float softKnee = 12;
+    // const float softKnee = 12;
     r.ratio = 4;
     r.kneeWidth = 12;
     auto old = CompCurves::_getContinuousCurve(r, false);
@@ -623,7 +618,6 @@ static double slopeDB(double _x1, double _y1, double _x2, double _y2) {
     const double x2 = AudioMath::db(_x2);
     const double y1 = AudioMath::db(_y1);
     const double y2 = AudioMath::db(_y2);
-
 
     return (y2 - y1) / (x2 - x1);
 }
@@ -651,7 +645,6 @@ static void testEndSlopeHardKnee(int ratio) {
     const float yHigh = yGainHigh * xHigh;
     const float yHigh2 = yGainHigh2 * xHigh2;
 
-
     // compressor ratio is slope of output / input in db
     const double slopeL = slopeDB(xLow, yLow, 1, y1);
     const double slopeH = slopeDB(1, y1, xHigh, yHigh);
@@ -660,7 +653,6 @@ static void testEndSlopeHardKnee(int ratio) {
     assertEQ(y1, 1);
     assertEQ(slopeL, 1);
     assertClosePct(slopeH2, 1.f / float(ratio), 15);
-
 }
 
 static void testEndSlopeSoftKnee(int ratio) {
@@ -693,21 +685,22 @@ static void testEndSlopeSoftKnee(int ratio) {
     // compressor ratio is slope of output / input in db
     const double slopeL = slopeDB(xLow1, yLow1, xLow2, yLow2);
     const double slopeH = slopeDB(xHigh1, yHigh1, xHigh2, yHigh2);
-   // const double slopeH2 = slopeDB(1, y1, xHigh2, yHigh2);
+    // const double slopeH2 = slopeDB(1, y1, xHigh2, yHigh2);
 
-  //  assertEQ(y1, 1.f);
+    //  assertEQ(y1, 1.f);
     assertEQ(slopeL, 1);
     assertClosePct(slopeH, 1.f / float(ratio), 5);
 }
 
-
-static void testKneeSlope(int ratio) {
+static void testKneeSlope(int ratio, bool newCurve) {
     CompCurves::Recipe r;
     r.kneeWidth = 12;
     r.ratio = float(ratio);
 
     // use the classic lookup from Comp (1)
     CompCurves::LookupPtr lookup = CompCurves::makeCompGainLookup(r);
+    std::shared_ptr<NonUniformLookupTableParams<double>> splineLookup =  CompCurves::makeSplineMiddle(r);
+
 
     const float delta = .05f;
     const float xLow2 = .5f;
@@ -717,10 +710,22 @@ static void testKneeSlope(int ratio) {
     const float xHigh2 = 2.f + ratio;
 
     // lookup the gains at the sample points
-    const float yGainLow1 = CompCurves::lookup(lookup, xLow1);
-    const float yGainLow2 = CompCurves::lookup(lookup, xLow2);
-    const float yGainHigh1 = CompCurves::lookup(lookup, xHigh1);
-    const float yGainHigh2 = CompCurves::lookup(lookup, xHigh2);
+    float yGainLow1;
+    float yGainLow2;
+    float yGainHigh1;
+    float yGainHigh2;
+    if (!newCurve) {
+        yGainLow1 = CompCurves::lookup(lookup, xLow1);
+        yGainLow2 = CompCurves::lookup(lookup, xLow2);
+        yGainHigh1 = CompCurves::lookup(lookup, xHigh1);
+        yGainHigh2 = CompCurves::lookup(lookup, xHigh2);
+    } else {
+        yGainLow1 = (float) NonUniformLookupTable<double>::lookup(*splineLookup, xLow1);
+        yGainLow2 = (float)NonUniformLookupTable<double>::lookup(*splineLookup, xLow2);
+        yGainHigh1 = (float)NonUniformLookupTable<double>::lookup(*splineLookup, xHigh1);
+        yGainHigh2 = (float)NonUniformLookupTable<double>::lookup(*splineLookup, xHigh2);
+       
+    }
 
     // convert gains to output levels
     const float yLow1 = yGainLow1 * xLow1;
@@ -750,9 +755,12 @@ static void testEndSlopeSoftKnee() {
 }
 
 static void testKneeSlope() {
-    testKneeSlope(4);
-    testKneeSlope(8);
-    testKneeSlope(20);
+    testKneeSlope(4, false);
+    testKneeSlope(8, false);
+    testKneeSlope(20, false);
+    testKneeSlope(4, true);
+    testKneeSlope(8, true);
+    testKneeSlope(20, true);
 }
 
 void testCompCurves() {
@@ -781,6 +789,6 @@ void testCompCurves() {
     testEndSlopeHardKnee();
     testEndSlopeSoftKnee();
     testKneeSlope();
-   // testSplineVSOld();
+    // testSplineVSOld();
     assertEQ(_numLookupParams, 0);
 }
