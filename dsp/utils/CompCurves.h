@@ -54,7 +54,21 @@ public:
 
     using CompCurveLookupPtr = std::shared_ptr<CompCurveLookup>;
 
+    /**
+     * makes two linear lookups, aka "fast"
+     * still uses the old parabolic knee
+     */
     static CompCurveLookupPtr makeCompGainLookup2(const Recipe&);
+
+      /**
+     * makes two linear lookups, aka "fast"
+     * uses the new spline knee
+     */
+    static CompCurveLookupPtr makeCompGainLookup3(const Recipe&);
+
+    static CompCurveLookupPtr makeCompGainLookupEither(const Recipe&, bool bUseSpline);
+
+    
 
     /**
       * These for the non-uniform lookups
@@ -63,6 +77,11 @@ public:
       */
     using LookupPtr = std::shared_ptr<NonUniformLookupTableParams<float>>;
     using LookupPtrConst = std::shared_ptr<const NonUniformLookupTableParams<float>>;
+
+    /** 
+     * make a single non-uniform lookup, the "old" way
+     * (i.e. parabolic knee)
+     */
     static LookupPtr makeCompGainLookup(const Recipe&);
 
     static float lookup(LookupPtrConst table, float x) {

@@ -853,6 +853,14 @@ static void testBasicSplineImp() {
   //  assert(false);
 }
 
+
+
+
+static void testMake3() {
+    CompCurves::Recipe r;
+    CompCurves::makeCompGainLookup3(r) ;
+}
+
 void testCompCurves() {
     Cmprsr::_reset();
     assertEQ(_numLookupParams, 0);
@@ -883,5 +891,6 @@ void testCompCurves() {
     testEndSlopeSoftKnee();
     testKneeSlope();
     // testSplineVSOld();
+    testMake3();
     assertEQ(_numLookupParams, 0);
 }

@@ -12,7 +12,8 @@
 #include "SqMath.h"
 #include "simd.h"
 
-//#define _GLOOK            // just do gain look
+#define _USESPLINE
+#define _GLOOK            // just do gain look
 #define _FASTLOOK       // new uniform lookups
 #define _SQR  // pseudo RMS instead of rectify
 //#define _ENV            // output the envelope
@@ -166,9 +167,14 @@ inline void Cmprsr::setCurvePoly(const Ratios* r) {
 }
 
 inline float_4 Cmprsr::step(float_4 input) {
+#ifdef _GLOOK
+    assert(false);
+    return 0;
+#else
     assert(polySet);
     assert(!cvIsPoly);
     return (this->*procFun)(input);
+#endif
 }
 
 // only non poly
@@ -281,14 +287,39 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
 #ifdef _GLOOK
 inline float_4 Cmprsr::stepPoly(float_4 input, float_4 detectorInput) {
     for (int i=0; i<4; ++i) {
-        float in = detectorInput[i] * 2;
-#ifdef _FASTLOOK
+       // float in = detectorInput[i] * 2;
+       // float in = 2 + detectorInput[i] * .5;
+
+#if 1
+        float in = std::abs(detectorInput[i]);
+
+#else
+        float in = detectorInput[i];        // -5 .. 5
+        in += 5;                            // 0 ..10
+        in *= ( 1.7f / 10.f);               // 0 .. 1.7
+        in += .4f;                          // .45 .. 2.1
+#endif
+        //if (in < 0) in = 0;
+        if (i == 1) {
+            gain_[i] = in;
+        } else if (i == 2) {
+            gain_[i] = (in > 1.f) ? 5.f : 0.f;
+        } else if (i == 0) {
+#if defined(_USESPLINE) 
+        // super hack using static
+        CompCurves::Recipe r;
+        r.ratio = 2;
+        r.kneeWidth = 12;
+        static CompCurves::CompCurveLookupPtr stable = CompCurves::makeCompGainLookup3(r);
+        gain_[i] =  stable->lookup(in);
+#elif defined( _FASTLOOK)
         CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[i]];
         gain_[i] =  table->lookup(in);
 #else
         CompCurves::LookupPtr table = ratioCurves[ratioIndex[i]];
-        gain_[2] = CompCurves::lookup(table, in);
+        gain_[i] = CompCurves::lookup(table, in);
 #endif
+        }
     }
     return gain_;
 }

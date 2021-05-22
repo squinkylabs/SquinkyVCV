@@ -164,10 +164,21 @@ std::function<double(double)> CompCurves::_getContinuousCurve(const CompCurves::
     };
 }
 
+
+CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookup2(const Recipe& r) {
+    return makeCompGainLookupEither(r, false);
+}
+
+
+CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookup3(const Recipe& r) {
+    return makeCompGainLookupEither(r, true);
+}
+
 // at 10, distortion jumps at the changes
 // 100 it does a little bit? but 1000 is too high...
 const int tableSize = 100;
-CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookup2(const Recipe& r) {
+CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookupEither(const Recipe& r, bool bUseSpline) {
+ //   assert(!bUseSpline);
     CompCurveLookupPtr ret = std::make_shared<CompCurveLookup>();
 
     const float bottomOfKneeDb = -r.kneeWidth / 2;
@@ -177,8 +188,7 @@ CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookup2(const Recipe& r) 
     //  const float topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
     ret->dividingLine = 2;
 
-    SQWARN("using old method for makeCompGainLookup2");
-    auto func = _getContinuousCurve(r, false);
+    auto func = _getContinuousCurve(r, bUseSpline);
 
     LookupTable<float>::init(ret->lowRange, tableSize, ret->bottomOfKneeVin, ret->dividingLine, func);
     LookupTable<float>::init(ret->highRange, tableSize, ret->dividingLine, 100, func);
