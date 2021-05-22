@@ -12,7 +12,8 @@
 #include "SqMath.h"
 #include "simd.h"
 
-#define _FASTLOOK
+//#define _GLOOK            // just do gain look
+#define _FASTLOOK       // new uniform lookups
 #define _SQR  // pseudo RMS instead of rectify
 //#define _ENV            // output the envelope
 
@@ -277,6 +278,21 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
     }
 }
 
+#ifdef _GLOOK
+inline float_4 Cmprsr::stepPoly(float_4 input, float_4 detectorInput) {
+    for (int i=0; i<4; ++i) {
+        float in = detectorInput[i] * 2;
+#ifdef _FASTLOOK
+        CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[i]];
+        gain_[i] =  table->lookup(in);
+#else
+        CompCurves::LookupPtr table = ratioCurves[ratioIndex[i]];
+        gain_[2] = CompCurves::lookup(table, in);
+#endif
+    }
+    return gain_;
+}
+#else
 inline float_4 Cmprsr::stepPoly(float_4 input, float_4 detectorInput) {
     assert(wasInit());
     simd_assertMask(reduceDistortionPoly);
@@ -285,6 +301,7 @@ inline float_4 Cmprsr::stepPoly(float_4 input, float_4 detectorInput) {
 
     return isLinked ? stepPolyLinked(input, detectorInput) : stepPolyMultiMono(input, detectorInput);
 }
+#endif
 
 inline float_4 Cmprsr::stepPolyLinked(float_4 input, float_4 detectorInput) {
     float_4 envelope;

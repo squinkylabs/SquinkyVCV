@@ -161,7 +161,6 @@ static void testLimiterZeroAttack() {
 static void testCompZeroAttack(bool poly) {
     if (!poly) {
         testCompZeroAttack2(4);
-       // testCompZeroAttack2(4);
         testCompZeroAttack2(1);
     } else {
         testCompZeroAttackPoly(4);

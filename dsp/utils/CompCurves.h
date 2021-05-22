@@ -87,6 +87,13 @@ public:
     static std::function<double(double)> _getContinuousCurve(const CompCurves::Recipe& r, bool useSpline);
     static std::shared_ptr<NonUniformLookupTableParams<double>> makeSplineMiddle(const Recipe&);
 
+    enum class Type {
+        ClassicNU,      // from Comp - non uniform
+        ClassicLin     // sped up version of classic using uniform
+    };
+
+    static std::function<float(float)> getLambda(const Recipe&, Type);
+
 private:
     static xy addLeftSideCurve(LookupPtr, const Recipe& r);
     static void addRightSideCurve(LookupPtr, const Recipe& r, xy lastPt);

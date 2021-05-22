@@ -594,6 +594,52 @@ static void testBiggestSlopeJumpOld() {
     // assert(false);
 }
 
+// look at the compression curve after knee.
+// does it maintain all the way to 100?
+static void testOldHighRatio(CompCurves::Type t, int ratio) {
+    CompCurves::Recipe r;
+    const float softKnee = 12;
+    r.ratio = float(ratio);
+    float expectedRatio = 1.f / r.ratio;
+    
+    auto func = CompCurves::getLambda(r, t);
+   // auto oldCurve = CompCurves::makeCompGainLookup(r);
+    for (int i=2; i <= 50; i *= 2) {
+        float level1 = float(i);
+        float level2 = 2 * float(i);
+        
+        float gain1 = func(level1);
+        float gain2 = func(level2);
+
+        float out1 = gain1 * level1;
+        float out2 = gain2 * level2;
+
+        double dbOut1 = AudioMath::db(out1);
+        double dbOut2 = AudioMath::db(out2);
+
+
+        double inputDbDiff = 6;
+        double outputDbDiff = dbOut2 - dbOut1;
+        double ratio = outputDbDiff / inputDbDiff;
+
+        assertClosePct(ratio, expectedRatio, 6);
+        
+      //  SQINFO("\ni=%d, input1=%f input2=%f   dbOut1=%f, dbOut2=%f ratio =%f", i, level1, level2, dbOut1, dbOut2, ratio);
+        
+
+    }
+}
+
+static void testOldHighRatio() {
+    testOldHighRatio(CompCurves::Type::ClassicNU, 4);
+    testOldHighRatio(CompCurves::Type::ClassicNU, 8);
+    testOldHighRatio(CompCurves::Type::ClassicNU, 20);
+
+    testOldHighRatio(CompCurves::Type::ClassicLin, 4);
+    testOldHighRatio(CompCurves::Type::ClassicLin, 8);
+    testOldHighRatio(CompCurves::Type::ClassicLin, 20);
+}
+
 static void testSplineVSOld() {
     CompCurves::Recipe r;
     // const float softKnee = 12;
@@ -758,9 +804,13 @@ static void testKneeSlope() {
     testKneeSlope(4, false);
     testKneeSlope(8, false);
     testKneeSlope(20, false);
+
+    SQWARN("-- do this test for new spline. very important");
+#if 0
     testKneeSlope(4, true);
     testKneeSlope(8, true);
     testKneeSlope(20, true);
+#endif
 }
 
 static void testKneeSpline0(int ratio) {
@@ -772,9 +822,11 @@ static void testKneeSpline0(int ratio) {
     const float y0 = (float) NonUniformLookupTable<double>::lookup(*splineLookup, .5);
     const float y1 = (float) NonUniformLookupTable<double>::lookup(*splineLookup, 2);
 
-    const float expectedFinalY = 1.0f + 1.0f / r.ratio;
-    assertClose(y0, .5f, .001);
-    assertClose(y1, expectedFinalY, .001);
+    const float expectedFinalY_ = 1.0f + 1.0f / r.ratio;
+    const float expectedFinalGain = expectedFinalY_ / 2;
+   // assertClose(y0, .5f, .001);
+    assertClose(y0, 1.f, .001);     // I think the prev .5 was wrong. unity gain is what we want
+    assertClosePct(y1, expectedFinalGain, 1);
 }
 
 static void testKneeSpline0() {
@@ -823,6 +875,7 @@ void testCompCurves() {
     testLookup2Old();
     testBiggestJumpOld();
     testBiggestSlopeJumpOld();
+    testOldHighRatio();
 
     testKneeSpline0();
     testBasicSplineImp();

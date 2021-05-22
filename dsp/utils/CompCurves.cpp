@@ -195,7 +195,94 @@ float CompCurves::CompCurveLookup::lookup(float x) const {
     return LookupTable<float>::lookup(highRange, x, true);
 }
 
-#if 1  // seoncd try
+std::function<float(float)> CompCurves::getLambda(const Recipe& r, Type t) {
+    std::function<float(float)> ret;
+   
+    switch (t) {
+    case Type::ClassicNU:
+    {
+        CompCurves::LookupPtr classicNUPtr = CompCurves::makeCompGainLookup(r);
+        ret = [classicNUPtr](float x) {
+            return CompCurves::lookup(classicNUPtr, x);
+        };
+    }
+    break;
+    case Type::ClassicLin:
+    {
+        CompCurves::CompCurveLookupPtr classicLinPtr = CompCurves::makeCompGainLookup2(r);
+        ret = [classicLinPtr](float x) {
+            return classicLinPtr->lookup(x);
+        };
+    }
+    break;
+    default:
+        assert(false);
+
+    }
+    return ret;
+}
+
+#if 1  // third try
+std::shared_ptr<NonUniformLookupTableParams<double>>
+CompCurves::makeSplineMiddle(const Recipe& r) {
+    std::shared_ptr<NonUniformLookupTableParams<double>> firstTableParam = std::make_shared<NonUniformLookupTableParams<double>>();
+    {
+        // Make a hermite spline from the Recipe
+        auto spline = HermiteSpline::make(int(std::round(r.ratio)), int(std::round(r.kneeWidth)));
+        if (!spline) {
+            return nullptr;
+        }
+
+        // First make a non-uniform for mapping that hermite with linear axis (wrong)
+        //std::shared_ptr<NonUniformLookupTableParams<double>> firstTableParam = std::make_shared<NonUniformLookupTableParams<double>>();
+        int iNum = 1024;
+        for (int i = 0; i < 1024; ++i) {
+            double t = double(i) / double(iNum);
+            auto pt = spline->renderPoint(t);
+            NonUniformLookupTable<double>::addPoint(*firstTableParam, pt.first, pt.second);
+        }
+        NonUniformLookupTable<double>::finalize(*firstTableParam);
+    }
+
+    // next, make a new table using db warping on the x axit
+
+    // Render the spline into a non-uniform lookup table so we can do cartesian mapping.
+    std::shared_ptr<NonUniformLookupTableParams<double>> params = std::make_shared<NonUniformLookupTableParams<double>>();
+    int iNum2 = 1024;
+    //int iNum2 = 12;
+    for (int i = 0; i <= iNum2; ++i) {
+        // Put x into DB, bu scale it back to fit in .5 .. 2
+        double x = double(i) / double(iNum2);  // 0..1
+        x += 1;                                // 1..2
+
+        double xDb = AudioMath::db(x);  // 0 ... 6
+        xDb /= 6;                       // now 0..1
+        xDb *= 1.5;                     // now 0..1.5
+        xDb += .5;                      // now .5..2
+
+        // derive an x that goes from .5 to 2, linearly
+        double xLin_ = double(i) / double(iNum2);  // 0..1
+        xLin_ *= 1.5;                               // 0.. 1.5
+        xLin_ += .5;                                // .5 .. 2
+
+        // now: final table x = dDb  y = f(xLin)
+        double y = NonUniformLookupTable<double>::lookup(*firstTableParam, xDb);
+        double gain = y / xDb;
+
+        // should we add gain or y value??? I don't know
+        NonUniformLookupTable<double>::addPoint(*params, xDb, gain);
+
+        //SQINFO("i=%d  xLin=%f xDb =%f y=%f gain=%f", i, xLin_, xDb, y, gain);
+    }
+
+    //assert(false);
+    NonUniformLookupTable<double>::finalize(*params);
+
+    return params;
+}
+#endif
+
+#if 0  // second try
 std::shared_ptr<NonUniformLookupTableParams<double>>
 CompCurves::makeSplineMiddle(const Recipe& r) {
     std::shared_ptr<NonUniformLookupTableParams<double>> firstTableParam = std::make_shared<NonUniformLookupTableParams<double>>();
@@ -265,6 +352,7 @@ CompCurves::makeSplineMiddle(const Recipe& r) {
         // NonUniformLookupTable<double>::addPoint(*params, pt.first, pt.second);
     }
 
+    assert(false);
     NonUniformLookupTable<double>::finalize(*params);
 
     return params;

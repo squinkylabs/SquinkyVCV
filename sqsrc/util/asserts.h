@@ -84,8 +84,9 @@ inline bool isMask(float_4 m)
 
 #define assertClosePct(actual, expected, pct) { float diff = expected * pct / 100; \
     if (!AudioMath::closeTo(actual, expected, diff)) { \
-    std::cout << "assertClosePct failed actual value =" << \
-    actual << " expected=" << expected << " allowable diff = " << diff << std::endl << std::flush; \
+    std::cout << "assertClosePct failed actual value =" << actual << \
+    " actual diff =" << (actual - expected)  << \
+    " expected=" << expected << " allowable diff = " << diff << std::endl << std::flush; \
     assert(false); }}
 
 #define assertNotClosePct(actual, expected, pct) { float diff = expected * pct / 100; \
