@@ -38,6 +38,58 @@ inline HermiteSplinePtr HermiteSpline::make(int ratio, int width) {
     //  float ratio;
     //  float deltaY;
 
+
+    if (width == 0) {
+        return nullptr;
+    }
+    assert(width == 12);
+
+    /**
+     *  location of the first tangent point. The farther to the right we go, the
+     *  more curve we get in the knee. This is the biggest value that still preservers
+     *  the monotonic slope values.
+     */
+    const double secondX = 18;
+    const double desiredEndSlope = -1.0 + 1.0 / ratio;
+    const double desiredEndValue = 6 * desiredEndSlope;
+
+   // const double y2 = 6 * (-1.0 + 1.0 / ratio);
+
+
+    double ty = 0;
+    switch (ratio) {
+    case 2:
+        ty = -3;
+        break;
+    case 4:
+        ty = -4.5f;
+        break;
+    case 8:
+        ty = -5.25f;
+        break;
+    case 20:
+        ty = -5.75f;
+        break;
+    default:
+        assert(false);
+    }
+
+    HermiteSplinePtr ret = std::make_shared<HermiteSpline>(
+        HermiteSpline::point(-6, 0),
+        HermiteSpline::point(6, desiredEndValue),
+        HermiteSpline::point(secondX, 0),
+        HermiteSpline::point(6, ty));
+
+    return ret;
+}
+
+
+#if 0 // old version (.5 2)
+inline HermiteSplinePtr HermiteSpline::make(int ratio, int width) {
+    //  float ratio;
+    //  float deltaY;
+    assert(false);  // this is for old curve
+
     if (width == 0) {
         return nullptr;
     }
@@ -71,3 +123,5 @@ inline HermiteSplinePtr HermiteSpline::make(int ratio, int width) {
 
     return ret;
 }
+#endif
+

@@ -164,11 +164,9 @@ std::function<double(double)> CompCurves::_getContinuousCurve(const CompCurves::
     };
 }
 
-
 CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookup2(const Recipe& r) {
     return makeCompGainLookupEither(r, false);
 }
-
 
 CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookup3(const Recipe& r) {
     return makeCompGainLookupEither(r, true);
@@ -178,7 +176,7 @@ CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookup3(const Recipe& r) 
 // 100 it does a little bit? but 1000 is too high...
 const int tableSize = 100;
 CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookupEither(const Recipe& r, bool bUseSpline) {
- //   assert(!bUseSpline);
+    //   assert(!bUseSpline);
     CompCurveLookupPtr ret = std::make_shared<CompCurveLookup>();
 
     const float bottomOfKneeDb = -r.kneeWidth / 2;
@@ -207,32 +205,81 @@ float CompCurves::CompCurveLookup::lookup(float x) const {
 
 std::function<float(float)> CompCurves::getLambda(const Recipe& r, Type t) {
     std::function<float(float)> ret;
-   
-    switch (t) {
-    case Type::ClassicNU:
-    {
-        CompCurves::LookupPtr classicNUPtr = CompCurves::makeCompGainLookup(r);
-        ret = [classicNUPtr](float x) {
-            return CompCurves::lookup(classicNUPtr, x);
-        };
-    }
-    break;
-    case Type::ClassicLin:
-    {
-        CompCurves::CompCurveLookupPtr classicLinPtr = CompCurves::makeCompGainLookup2(r);
-        ret = [classicLinPtr](float x) {
-            return classicLinPtr->lookup(x);
-        };
-    }
-    break;
-    default:
-        assert(false);
 
+    switch (t) {
+        case Type::ClassicNU: {
+            CompCurves::LookupPtr classicNUPtr = CompCurves::makeCompGainLookup(r);
+            ret = [classicNUPtr](float x) {
+                return CompCurves::lookup(classicNUPtr, x);
+            };
+        } break;
+        case Type::ClassicLin: {
+            CompCurves::CompCurveLookupPtr classicLinPtr = CompCurves::makeCompGainLookup2(r);
+            ret = [classicLinPtr](float x) {
+                return classicLinPtr->lookup(x);
+            };
+        } break;
+        default:
+            assert(false);
     }
     return ret;
 }
 
-#if 1  // third try
+std::shared_ptr<NonUniformLookupTableParams<double>>
+CompCurves::makeSplineMiddle(const Recipe& r) {
+    std::shared_ptr<NonUniformLookupTableParams<double>> firstTableParam = std::make_shared<NonUniformLookupTableParams<double>>();
+    {
+        // Make a hermite spline from the Recipe
+        auto spline = HermiteSpline::make(int(std::round(r.ratio)), int(std::round(r.kneeWidth)));
+        if (!spline) {
+            return nullptr;
+        }
+
+        // First make a non-uniform for mapping that hermite with linear axis (wrong)
+        //std::shared_ptr<NonUniformLookupTableParams<double>> firstTableParam = std::make_shared<NonUniformLookupTableParams<double>>();
+        int iNum = 1024;
+        for (int i = 0; i < 1024; ++i) {
+            double t = double(i) / double(iNum);
+            auto pt = spline->renderPoint(t);
+            NonUniformLookupTable<double>::addPoint(*firstTableParam, pt.first, pt.second);
+        }
+        NonUniformLookupTable<double>::finalize(*firstTableParam);
+    }
+
+    // Render the warped spline into a non-uniform lookup table so we can do cartesian mapping (later)
+    // (for now we are only doing non-uniform. Until it works right).
+    std::shared_ptr<NonUniformLookupTableParams<double>> params = std::make_shared<NonUniformLookupTableParams<double>>();
+    int iNum2 = 1024;
+    //int iNum2 = 12;
+    for (int i = 0; i <= iNum2; ++i) {
+        // assert false - this is all old ATM
+        //
+        // map i continusously into .5 ... 2 (the knee input level in volts)
+        double vInVolts = double(i) / double(iNum2);  // 0..1
+        vInVolts *= 1.5;                              // 0..1.5
+        vInVolts += .5;                               // .5..2. That's that the curve was designed for
+
+        double vInDb = AudioMath::db(vInVolts);  // -6 ... 6
+      
+
+        // our spline lookup give the gain in DB for an input in DB, -6..+6 in
+        double yGainDb = NonUniformLookupTable<double>::lookup(*firstTableParam, vInDb);
+        double yGainVolts = AudioMath::gainFromDb(yGainDb);
+
+        double yOutDebug = yGainVolts * vInVolts;
+      
+        NonUniformLookupTable<double>::addPoint(*params, vInVolts, yGainVolts);
+
+       // SQINFO("i=%d  vInVolts=%f vInDb =%f", i, vInVolts, vInDb);
+       // SQINFO("yGainDb=%f yg=%f debug=%f\n", yGainDb, yGainVolts, yOutDebug);
+    }
+
+    //assert(false);
+    NonUniformLookupTable<double>::finalize(*params);
+    return params;
+}
+
+#if 0  // third try (final with old alg)
 std::shared_ptr<NonUniformLookupTableParams<double>>
 CompCurves::makeSplineMiddle(const Recipe& r) {
     std::shared_ptr<NonUniformLookupTableParams<double>> firstTableParam = std::make_shared<NonUniformLookupTableParams<double>>();

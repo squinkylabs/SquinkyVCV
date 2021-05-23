@@ -28,19 +28,95 @@ static void testSplineSub(HermiteSpline::point p0,
     //  abort();
 }
 
+
+/*
+     point p0,
+        point p1,
+        point tangent0,
+        point tangent1);
+        */
+
+static void characterizeSpline(float ratio, float t2y) {
+
+    // final value and final slope?
+    //double y2 = 6 * (-1.0 + 1.0 / ratio);
+    const double desiredEndSlope = -1.0 + 1.0 / ratio;
+    const double desiredEndValue = 6 * desiredEndSlope;
+    
+    const double secondX = 18;
+    HermiteSpline h = {
+        HermiteSpline::point(-6, 0),            // we know we start flat at zero
+        HermiteSpline::point(6, desiredEndValue),            // and we leave where the hard curve would
+        HermiteSpline::point(secondX, 0),             // tangent for start doesn't matter, as long is y values are the same
+        HermiteSpline::point(6, t2y) };
+
+    auto p0 = h.renderPoint(0);
+    auto p1 = h.renderPoint(1);
+
+    auto p9 = h.renderPoint(.9);
+    auto p99 = h.renderPoint(.99);
+    auto p999 = h.renderPoint(.999);
+
+
+    SQINFO("\n\nfor ratio=%f, t2y=%f", ratio, t2y);
+ //   SQINFO("y2 = %f lastV=%f", y2, y2 + 6 * deltaY);
+    SQINFO("desired end value = %f, des slope=%f", desiredEndValue, desiredEndSlope);
+    SQINFO("p0=%f,%f, p1=%f, %f", p0.first, p0.second, p1.first, p1.second);
+    SQINFO("final slope99 = %f", (p1.second - p99.second) / (p1.first - p99.first));
+    SQINFO("slope 9 = %f, 999=%f\n",
+        (p1.second - p9.second) / (p1.first - p9.first),
+        (p1.second - p999.second) / (p1.first - p999.first));
+  
+#if 0
+    for (int i=0; i <= 10; ++i) {
+        double t = double(i) / 10;
+        auto p = h.renderPoint(t);
+        SQINFO("i=%d x=%f, y=%f", i, p.first, p.second);
+    }
+#endif
+    auto ptl = h.renderPoint(0);
+    double lastSlope = 100;
+    for (int i = 1; i <= 1000; ++i) {
+        double t = double(i) / 1000;
+        auto p = h.renderPoint(t);
+
+        const double slope = (p.second - ptl.second) / (p.first - ptl.first);
+        assert(slope <= lastSlope);
+        ptl = p;
+        lastSlope = slope;
+        //SQINFO("i=%d x=%f, y=%f", i, p.first, p.second);
+    }
+
+}
+static void testSpline() {
+
+    // For second x=6 want value = -3 slope= -.5
+    // -3 -> -.499
+    characterizeSpline(2, -3.f);
+
+    // For second x=6 want end = -4.5, slope = -.75
+    // -4.5 -> -.748
+    // For second x=12 
+    // -4.5 -> -.749 ok
+     // For second x=24 
+    characterizeSpline(4, -4.5);  // 4:1
+
+
+    // For second x=6 want value = -5.35, slope = -.875
+    // -5.25 -> -.873 ok
+    characterizeSpline(8, -5.25f);  // 8:1
+
+    // wFor second x=6 want value = -5.7, slope = -.95
+    // -5.75 -> -.956 ok
+    characterizeSpline(20, -5.75f);  // 20:1
+
+}
+
+#if 0 // for old spline
 // generates a soft knee curve.
 // no gain reduction below .5
 // straight ratio above 2
 
-static void testSplineSub2(float ratio) {
-    double y2 = 1.0 + 1.0 / ratio;
-    testSplineSub(
-        HermiteSpline::point(.5, .5),    // p0
-        HermiteSpline::point(2, y2),     // p1
-        HermiteSpline::point(1.5, 1.5),  // m0 (p0 out)
-                                         //  HermiteSpline::point(2, y2 - 1));  // m1 (p1 in)
-        HermiteSpline::point(2, 1));     // m1 (p1 in)
-}
 
 static void characterizeSpline(float ratio, float deltaY) {
     double y2 = 1.0 + 1.0 / ratio;
@@ -63,6 +139,17 @@ static void characterizeSpline(float ratio, float deltaY) {
            (p1.second - p9.second) / (p1.first - p9.first),
            (p1.second - p999.second) / (p1.first - p999.first));
 }
+
+static void testSplineSub2(float ratio) {
+    double y2 = 1.0 + 1.0 / ratio;
+    testSplineSub(
+        HermiteSpline::point(.5, .5),    // p0
+        HermiteSpline::point(2, y2),     // p1
+        HermiteSpline::point(1.5, 1.5),  // m0 (p0 out)
+                                         //  HermiteSpline::point(2, y2 - 1));  // m1 (p1 in)
+        HermiteSpline::point(2, 1));     // m1 (p1 in)
+}
+
 
 static void testSpline() {
     // -2 gives .000002
@@ -92,49 +179,6 @@ static void testSpline() {
     // -1.9 is perfect
     characterizeSpline(20, -1.9f);  // 8:1
 
-
-
-#if 0
-    SQINFO("spline ration 1000");
-    testSplineSub2(1000);
-    SQINFO("spline ration 2");
-    testSplineSub2(2);
-#endif
-
-#if 0
-    testSplineSub(  
-        HermiteSpline::point(0, 0),   // p0
-        HermiteSpline::point(2, 1),  // p1
-        HermiteSpline::point(1, 1),   // m0 (p0 out)
-        HermiteSpline::point(3, 0));  // m1 (p1 in)
-
-#endif
-    //  assert(false);
-}
-
-#if 0
-static void testSpline() {
-    // try to generate a section of limiter
-    // the non-compress part is slope 1, and we try to carry that through
-    HermiteSpline s(
-        HermiteSpline::point(0, 0),   // p0
-        HermiteSpline::point(1, .5),  // p1
-        HermiteSpline::point(1, 1),   // m0 (p0 out)
-        HermiteSpline::point(0, .5)   // m1 (p1 in)
-    );
-
-    HermiteSpline::point last(0, 0);
-    for (int i = 0; i < 11; ++i) {
-        double t = i / 10.0;
-        auto x = s.renderPoint(t);
-
-        double slope = (x.second - last.second) / (x.first - last.first);
-        //printf("p[%d] = %f, %f (t=%f) slope = %f\n", i, x.first, x.second, t, slope);
-        // last.x = x.first;
-        //  last.y = x.second;
-        last = x;
-    }
-    //  abort();
 }
 #endif
 
@@ -640,6 +684,21 @@ static void testOldHighRatio() {
     testOldHighRatio(CompCurves::Type::ClassicLin, 20);
 }
 
+// trival test of knee cureve. It should always reduce gain,
+// and more reduciton the more input.
+static void testSplineDecreasing() {
+    auto h = HermiteSpline::make(4, 12);
+    double lastGain = 5;
+    for (int i=0; i<=10; ++i) {
+        double t = double(i) / 10.0;
+        auto pt = h->renderPoint(t);
+        double gainDb = pt.second;
+        assertLE(gainDb, 0);
+        assertLT(gainDb, lastGain);
+        lastGain = gainDb;
+    }
+}
+
 static void testSplineVSOld() {
     CompCurves::Recipe r;
     // const float softKnee = 12;
@@ -819,14 +878,23 @@ static void testKneeSpline0(int ratio) {
     r.ratio = float(ratio);
     std::shared_ptr<NonUniformLookupTableParams<double>> splineLookup = CompCurves::makeSplineMiddle(r); 
 
+    // the soft knee needs to match up with the hard knee,
+    // so this simple formula works
+    const double desiredEndSlopeDb = -1.0 + 1.0 / ratio;
+    const double desiredEndValueDb = 6 * desiredEndSlopeDb;
+
+    // now take out of Db space and convert to linear gain
+    const float desiredEndGainVolts = (float) AudioMath::gainFromDb(desiredEndValueDb);
+
     const float y0 = (float) NonUniformLookupTable<double>::lookup(*splineLookup, .5);
     const float y1 = (float) NonUniformLookupTable<double>::lookup(*splineLookup, 2);
+    //const float kneeEndGainDb = (float) AudioMath::db(y1);
 
     const float expectedFinalY_ = 1.0f + 1.0f / r.ratio;
-    const float expectedFinalGain = expectedFinalY_ / 2;
+    //const float expectedFinalGain = expectedFinalY_ / 2;
    // assertClose(y0, .5f, .001);
     assertClose(y0, 1.f, .001);     // I think the prev .5 was wrong. unity gain is what we want
-    assertClosePct(y1, expectedFinalGain, 1);
+    assertClosePct(y1, desiredEndGainVolts, 1);
 }
 
 static void testKneeSpline0() {
@@ -885,6 +953,7 @@ void testCompCurves() {
     testBiggestSlopeJumpOld();
     testOldHighRatio();
 
+    testSplineDecreasing();
     testKneeSpline0();
     testBasicSplineImp();
     testEndSlopeHardKnee();
