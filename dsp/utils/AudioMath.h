@@ -18,6 +18,7 @@ public:
 
     static bool closeTo(double x, double y, double tolerance)
     {
+        const double dd = std::abs(x - y);
         const bool ret = std::abs(x - y) < tolerance;
         return ret;
     }

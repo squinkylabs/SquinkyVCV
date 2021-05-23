@@ -77,7 +77,8 @@ inline bool isMask(float_4 m)
 
 #define assertCloseEx(actual, expected, diff, msg) if (!AudioMath::closeTo(actual, expected, diff)) { \
     std::cout << "assertClose failed " << msg << " actual value =" << \
-    actual << " expected=" << expected << std::endl << std::flush; \
+    actual << " expected=" << expected << " diff=" << std::abs(actual - expected) << \
+    std::endl << std::flush; \
     assert(false); }
 
 #define assertClose(actual, expected, diff) assertCloseEx(actual, expected, diff, "")

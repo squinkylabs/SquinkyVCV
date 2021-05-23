@@ -110,60 +110,70 @@ static void testLookupBelowThesh(float ratio, float kneeWidth, std::function<flo
     float gainVatKneeBottom = 1;
     float inputLevelAtBottom = .5;  // 6 db below is where we kick int
 
-    // Comp ratio 1 is unity gain everywhere.
-    CompCurves::Recipe r;
-    r.ratio = ratio;
-
     assertEQ(lookup(0), 1);
     assertEQ(lookup(inputLevelAtBottom), 1);
- 
 }
 
 static std::vector<int> ratios = { 2, 4, 8, 20 };
+static std::vector<CompCurves::Recipe> all = {
+    {2, 0},
+    {4, 0},
+    {8, 0},
+    {20, 0},
+    {2, 12},
+    {4, 12},
+    {8, 12},
+    {20, 12}
+};
 
-static void testLookupBelowTheshNoKnee() {
-    CompCurves::Recipe r;
-    r.kneeWidth = 0;
-
-    r.ratio = 2;
-    testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::ClassicLin));
-    testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::ClassicNU));
-    testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::SplineLin));
-
-    for (int x : ratios) {
-        r.ratio = float(x);
-        testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::ClassicLin));
-        testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::ClassicNU));
-        testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::SplineLin));
+static void testLookupBelowThesh() {
+   
+    for (auto x : all) {
+        testLookupBelowThesh(x.ratio, x.kneeWidth, CompCurves::getLambda(x, CompCurves::Type::ClassicLin));
+        testLookupBelowThesh(x.ratio, x.kneeWidth, CompCurves::getLambda(x, CompCurves::Type::ClassicNU));
+        testLookupBelowThesh(x.ratio, x.kneeWidth, CompCurves::getLambda(x, CompCurves::Type::SplineLin));
     }
 }
 
-static void testLookupBelowTheshSoftKnee() {
-    assert(false);
-  //  testLookupBelowThesh(1, 12, CompCurves::getLambda(CompCurves::Type::ClassicLin));
-   // testLookupBelowThesh(4, 12, CompCurves::getLambda(CompCurves::Type::ClassicLin));
+static void testLookupAboveThesh(const CompCurves::Recipe& r, std::function<float(float)> lookup, double acceptedError) {
+
+    // SQINFO("in test ratio=%f knee=%f", r.ratio, r.kneeWidth);
+    const float topOfKneeDb = r.kneeWidth / 2;
+    const float topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
+
+    const float dbChangeInInput = 20;  // arbitrary, let's pick 20 db
+    const float voltChangeInInput = (float)AudioMath::gainFromDb(dbChangeInInput);
+
+
+    const float vIn1 = 2;   //gain of 2 and we are over threshold, just barely
+    const float vIn2 = vIn1 * voltChangeInInput;
+
+    const float gain1 = lookup(vIn1);
+    const float gain2 = lookup(vIn2);
+
+    const float vOut1 = vIn1 * gain1;
+    const float vOut2 = vIn2 * gain2;
+
+    const double inputDbChange = AudioMath::db(vIn2) - AudioMath::db(vIn1);
+    const double gainDbChange = AudioMath::db(gain2) - AudioMath::db(gain1);
+    const double outputDbChange = AudioMath::db(vOut2) - AudioMath::db(vOut1);
+    const double x = outputDbChange * r.ratio;
+    assertClose(x, inputDbChange, acceptedError);
 }
 
-static void validateCurve(CompCurves::LookupPtr table, CompCurves::Recipe r) {
-    bool first = true;
-    float last = 0;
-    for (float x = .01f; x < 10; x += .01f) {
-        const float y = CompCurves::lookup(table, x);
-        assert(y <= 1);
+static void testLookupAboveThesh() {
 
-        if (x < normalizedThreshold) {
-            assert(r.kneeWidth == 0);  // don't know how to do this yet
-            assertEQ(y, 1);            // unity gain below thresh
-        }
-        if (first) {
-            first = false;
-        } else {
-            assert(y <= last);
-        }
-        last = y;
+    for (auto x : all) {
+        testLookupAboveThesh(x, CompCurves::getLambda(x, CompCurves::Type::ClassicLin), .1);
+
+        // don't care how bad classicNU is, althought we should stop using if for old comp
+        testLookupAboveThesh(x, CompCurves::getLambda(x, CompCurves::Type::ClassicNU), 10.);
+        testLookupAboveThesh(x, CompCurves::getLambda(x, CompCurves::Type::SplineLin), .1);
     }
 }
 
+
+#if 0
 static void testLookupAboveTheshNoKnee(float ratioToTest) {
     // comp ratio of 1 is a straight line - two points
     CompCurves::Recipe r;
@@ -245,6 +255,7 @@ static void testLookupAboveTheshKnee() {
 
     assert(false);
 }
+#endif
 
 static std::vector<float> generateGainVsInpuVoltageCurve(CompCurves::LookupPtr table, float x0, float x1, int numEntries) {
     std::vector<float> v;
@@ -864,12 +875,12 @@ void testCompCurves() {
     testInflection();
 
     testSpline();
-    testLookupBelowTheshNoKnee();
-    testLookupBelowTheshSoftKnee();
+    testLookupBelowThesh();
 
-    testLookupAboveTheshNoKneeNoComp();
-    testLookupAboveTheshNoKnee();
-    testLookupAboveTheshNoKnee2();
+    testLookupAboveThesh();
+  //  testLookupAboveTheshNoKneeNoComp();
+  //  testLookupAboveTheshNoKnee();
+  //  testLookupAboveTheshNoKnee2();
 
     // TODO: make these test work
     //  testLookupAboveTheshKnee();
