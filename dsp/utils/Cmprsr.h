@@ -13,7 +13,7 @@
 #include "simd.h"
 
 #define _USESPLINE
-#define _GLOOK            // just do gain look
+//#define _GLOOK            // just do gain look
 #define _FASTLOOK       // new uniform lookups
 #define _SQR  // pseudo RMS instead of rectify
 //#define _ENV            // output the envelope

@@ -888,11 +888,8 @@ static void testKneeSpline0(int ratio) {
 
     const float y0 = (float) NonUniformLookupTable<double>::lookup(*splineLookup, .5);
     const float y1 = (float) NonUniformLookupTable<double>::lookup(*splineLookup, 2);
-    //const float kneeEndGainDb = (float) AudioMath::db(y1);
 
     const float expectedFinalY_ = 1.0f + 1.0f / r.ratio;
-    //const float expectedFinalGain = expectedFinalY_ / 2;
-   // assertClose(y0, .5f, .001);
     assertClose(y0, 1.f, .001);     // I think the prev .5 was wrong. unity gain is what we want
     assertClosePct(y1, desiredEndGainVolts, 1);
 }
