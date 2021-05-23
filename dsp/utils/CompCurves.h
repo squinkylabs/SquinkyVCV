@@ -108,7 +108,8 @@ public:
 
     enum class Type {
         ClassicNU,      // from Comp - non uniform
-        ClassicLin     // sped up version of classic using uniform
+        ClassicLin,     // sped up version of classic using uniform
+        SplineLin,      // spline for knee, fast lookup
     };
 
     static std::function<float(float)> getLambda(const Recipe&, Type);

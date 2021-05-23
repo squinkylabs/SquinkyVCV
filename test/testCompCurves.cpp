@@ -5,7 +5,7 @@
 #include "asserts.h"
 
 // At the moment, this doesn't test, just prints
-
+#if 0
 static void testSplineSub(HermiteSpline::point p0,
                           HermiteSpline::point p1,
                           HermiteSpline::point m0,
@@ -25,16 +25,8 @@ static void testSplineSub(HermiteSpline::point p0,
         //  last.y = x.second;
         last = x;
     }
-    //  abort();
 }
-
-
-/*
-     point p0,
-        point p1,
-        point tangent0,
-        point tangent1);
-        */
+#endif
 
 static void characterizeSpline(float ratio, float t2y) {
 
@@ -86,8 +78,10 @@ static void characterizeSpline(float ratio, float t2y) {
         lastSlope = slope;
         //SQINFO("i=%d x=%f, y=%f", i, p.first, p.second);
     }
-
 }
+
+// Not really a tests - used this to design the curves
+// can probably turn it off?
 static void testSpline() {
 
     // For second x=6 want value = -3 slope= -.5
@@ -109,107 +103,45 @@ static void testSpline() {
     // wFor second x=6 want value = -5.7, slope = -.95
     // -5.75 -> -.956 ok
     characterizeSpline(20, -5.75f);  // 20:1
-
 }
 
-#if 0 // for old spline
-// generates a soft knee curve.
-// no gain reduction below .5
-// straight ratio above 2
-
-
-static void characterizeSpline(float ratio, float deltaY) {
-    double y2 = 1.0 + 1.0 / ratio;
-    HermiteSpline h = {
-        HermiteSpline::point(.5, .5),
-        HermiteSpline::point(2, y2),
-        HermiteSpline::point(1.5, 1.5),
-        HermiteSpline::point(2, 2 + deltaY)};
-
-    auto p0 = h.renderPoint(0);
-    auto p1 = h.renderPoint(1);
-
-    auto p9 = h.renderPoint(.9);
-    auto p99 = h.renderPoint(.99);
-    auto p999 = h.renderPoint(.999);
-    SQINFO("\n\nfor ratio=%f, delta=%f:", ratio, deltaY);
-    SQINFO("p0=%f,%f, p1=%f, %f", p0.first, p0.second, p1.first, p1.second);
-    SQINFO("final slope99 = %f desired = %f", (p1.second - p99.second) / (p1.first - p99.first), 1.0 / ratio);
-    SQINFO("slope 9 = %f, 999=%f\n",
-           (p1.second - p9.second) / (p1.first - p9.first),
-           (p1.second - p999.second) / (p1.first - p999.first));
-}
-
-static void testSplineSub2(float ratio) {
-    double y2 = 1.0 + 1.0 / ratio;
-    testSplineSub(
-        HermiteSpline::point(.5, .5),    // p0
-        HermiteSpline::point(2, y2),     // p1
-        HermiteSpline::point(1.5, 1.5),  // m0 (p0 out)
-                                         //  HermiteSpline::point(2, y2 - 1));  // m1 (p1 in)
-        HermiteSpline::point(2, 1));     // m1 (p1 in)
-}
-
-
-static void testSpline() {
-    // -2 gives .000002
-    characterizeSpline(1000, -2);  // infinite ratio
-
-    // -2 gives .015 I want 1.0
-    // -1 gives .5
-    // 0 gives 1
-    characterizeSpline(1, 0);  // no ratio
-
-    // want slope of .5 0
-    // -1 is perfect
-    characterizeSpline(2, -1);  // 2:1
-
-    // want slope of .25 0 gives .9
-    // -2 gives .003
-    /// -1 give .49
-    // -1.5 gives .25
-    characterizeSpline(4, -1.5);  // 4:1
-
-    // wans slope = .125
-    // -1.75 perfect
-    characterizeSpline(8, -1.75);  // 8:1
-
-    // want slope .05
-    // -1.25 gives .247
-    // -1.9 is perfect
-    characterizeSpline(20, -1.9f);  // 8:1
-
-}
-#endif
-
-static void testLookupBelowThesh(float ratio, float kneeWidth) {
+static void testLookupBelowThesh(float ratio, float kneeWidth, std::function<float(float)> lookup) {
     // Should be unity gain up to where it starts to bend
+    float gainVatKneeBottom = 1;
+    float inputLevelAtBottom = .5;  // 6 db below is where we kick int
 
-    float lowCornerDb = float(AudioMath::db(1)) - kneeWidth / 2;
-    float lowKneeCornerVolts = float(AudioMath::gainFromDb(lowCornerDb));
-
-    // float lowKneeCorner = normalizedThreshold - (kneeWidth / 2);
     // Comp ratio 1 is unity gain everywhere.
     CompCurves::Recipe r;
     r.ratio = ratio;
 
-    auto table = CompCurves::makeCompGainLookup(r);
-    assertGT(table->size(), 0);
-    float y = CompCurves::lookup(table, 0);
-    assertEQ(y, 1);
-
-    y = CompCurves::lookup(table, lowKneeCornerVolts);
-    assertEQ(y, 1);
+    assertEQ(lookup(0), 1);
+    assertEQ(lookup(inputLevelAtBottom), 1);
+ 
 }
 
+static std::vector<int> ratios = { 2, 4, 8, 20 };
+
 static void testLookupBelowTheshNoKnee() {
-    testLookupBelowThesh(1, 0);
-    testLookupBelowThesh(4, 0);
+    CompCurves::Recipe r;
+    r.kneeWidth = 0;
+
+    r.ratio = 2;
+    testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::ClassicLin));
+    testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::ClassicNU));
+    testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::SplineLin));
+
+    for (int x : ratios) {
+        r.ratio = float(x);
+        testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::ClassicLin));
+        testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::ClassicNU));
+        testLookupBelowThesh(r.ratio, 0, CompCurves::getLambda(r, CompCurves::Type::SplineLin));
+    }
 }
 
 static void testLookupBelowTheshSoftKnee() {
-    testLookupBelowThesh(1, 10);
-    testLookupBelowThesh(4, 10);
+    assert(false);
+  //  testLookupBelowThesh(1, 12, CompCurves::getLambda(CompCurves::Type::ClassicLin));
+   // testLookupBelowThesh(4, 12, CompCurves::getLambda(CompCurves::Type::ClassicLin));
 }
 
 static void validateCurve(CompCurves::LookupPtr table, CompCurves::Recipe r) {
