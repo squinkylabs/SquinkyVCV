@@ -29,18 +29,17 @@ static void testSplineSub(HermiteSpline::point p0,
 #endif
 
 static void characterizeSpline(float ratio, float t2y) {
-
     // final value and final slope?
     //double y2 = 6 * (-1.0 + 1.0 / ratio);
     const double desiredEndSlope = -1.0 + 1.0 / ratio;
     const double desiredEndValue = 6 * desiredEndSlope;
-    
+
     const double secondX = 18;
     HermiteSpline h = {
-        HermiteSpline::point(-6, 0),            // we know we start flat at zero
-        HermiteSpline::point(6, desiredEndValue),            // and we leave where the hard curve would
-        HermiteSpline::point(secondX, 0),             // tangent for start doesn't matter, as long is y values are the same
-        HermiteSpline::point(6, t2y) };
+        HermiteSpline::point(-6, 0),               // we know we start flat at zero
+        HermiteSpline::point(6, desiredEndValue),  // and we leave where the hard curve would
+        HermiteSpline::point(secondX, 0),          // tangent for start doesn't matter, as long is y values are the same
+        HermiteSpline::point(6, t2y)};
 
     auto p0 = h.renderPoint(0);
     auto p1 = h.renderPoint(1);
@@ -49,16 +48,15 @@ static void characterizeSpline(float ratio, float t2y) {
     auto p99 = h.renderPoint(.99);
     auto p999 = h.renderPoint(.999);
 
-
     SQINFO("\n\nfor ratio=%f, t2y=%f", ratio, t2y);
- //   SQINFO("y2 = %f lastV=%f", y2, y2 + 6 * deltaY);
+    //   SQINFO("y2 = %f lastV=%f", y2, y2 + 6 * deltaY);
     SQINFO("desired end value = %f, des slope=%f", desiredEndValue, desiredEndSlope);
     SQINFO("p0=%f,%f, p1=%f, %f", p0.first, p0.second, p1.first, p1.second);
     SQINFO("final slope99 = %f", (p1.second - p99.second) / (p1.first - p99.first));
     SQINFO("slope 9 = %f, 999=%f\n",
-        (p1.second - p9.second) / (p1.first - p9.first),
-        (p1.second - p999.second) / (p1.first - p999.first));
-  
+           (p1.second - p9.second) / (p1.first - p9.first),
+           (p1.second - p999.second) / (p1.first - p999.first));
+
 #if 0
     for (int i=0; i <= 10; ++i) {
         double t = double(i) / 10;
@@ -83,18 +81,16 @@ static void characterizeSpline(float ratio, float t2y) {
 // Not really a tests - used this to design the curves
 // can probably turn it off?
 static void testSpline() {
-
     // For second x=6 want value = -3 slope= -.5
     // -3 -> -.499
     characterizeSpline(2, -3.f);
 
     // For second x=6 want end = -4.5, slope = -.75
     // -4.5 -> -.748
-    // For second x=12 
+    // For second x=12
     // -4.5 -> -.749 ok
-     // For second x=24 
+    // For second x=24
     characterizeSpline(4, -4.5);  // 4:1
-
 
     // For second x=6 want value = -5.35, slope = -.875
     // -5.25 -> -.873 ok
@@ -114,7 +110,7 @@ static void testLookupBelowThesh(float ratio, float kneeWidth, std::function<flo
     assertEQ(lookup(inputLevelAtBottom), 1);
 }
 
-static std::vector<int> ratios = { 2, 4, 8, 20 };
+static std::vector<int> ratios = {2, 4, 8, 20};
 static std::vector<CompCurves::Recipe> all = {
     {2, 0},
     {4, 0},
@@ -123,11 +119,9 @@ static std::vector<CompCurves::Recipe> all = {
     {2, 12},
     {4, 12},
     {8, 12},
-    {20, 12}
-};
+    {20, 12}};
 
 static void testLookupBelowThesh() {
-   
     for (auto x : all) {
         testLookupBelowThesh(x.ratio, x.kneeWidth, CompCurves::getLambda(x, CompCurves::Type::ClassicLin));
         testLookupBelowThesh(x.ratio, x.kneeWidth, CompCurves::getLambda(x, CompCurves::Type::ClassicNU));
@@ -136,7 +130,6 @@ static void testLookupBelowThesh() {
 }
 
 static void testLookupAboveThesh(const CompCurves::Recipe& r, std::function<float(float)> lookup, double acceptedError) {
-
     // SQINFO("in test ratio=%f knee=%f", r.ratio, r.kneeWidth);
     const float topOfKneeDb = r.kneeWidth / 2;
     const float topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
@@ -144,8 +137,7 @@ static void testLookupAboveThesh(const CompCurves::Recipe& r, std::function<floa
     const float dbChangeInInput = 20;  // arbitrary, let's pick 20 db
     const float voltChangeInInput = (float)AudioMath::gainFromDb(dbChangeInInput);
 
-
-    const float vIn1 = 2;   //gain of 2 and we are over threshold, just barely
+    const float vIn1 = 2;  //gain of 2 and we are over threshold, just barely
     const float vIn2 = vIn1 * voltChangeInInput;
 
     const float gain1 = lookup(vIn1);
@@ -162,7 +154,6 @@ static void testLookupAboveThesh(const CompCurves::Recipe& r, std::function<floa
 }
 
 static void testLookupAboveThesh() {
-
     for (auto x : all) {
         testLookupAboveThesh(x, CompCurves::getLambda(x, CompCurves::Type::ClassicLin), .1);
 
@@ -416,9 +407,10 @@ double getBiggestJump(double maxX, int divisions, std::function<double(double)> 
     return ret;
 }
 
-double getBiggestSlopeJump(double maxX, int divisions, std::function<double(double)> func) {
+double getBiggestSlopeJump(double maxX, int divisions, bool strictlyReducing, std::function<double(double)> func) {
     //SQINFO("--- get biggest jump");
-    double ret = 0;
+    // double ret = 0;
+    double sizeOfBiggestJump = 0;
     double lastValue = 1;
     double lastSlope = 0;
     //  double lastSlopeDelta = 0;
@@ -442,22 +434,44 @@ double getBiggestSlopeJump(double maxX, int divisions, std::function<double(doub
             assert(slope <= 0);
 
             // It would be nice it slope were strictly reducing, but it isn't true with our lame quadratic knee.
-            // assert(slope <= lastSlope);
+            if (strictlyReducing)
+                assert(slope <= lastSlope);
 
-            double dif = std::abs(slopeDelta - ret);
-            // SQINFO("at x=%f y=%f slope=%f jump=%f", x, y, slope, dif);
+            if (std::abs(slopeDelta) > sizeOfBiggestJump) {
+                sizeOfBiggestJump = std::abs(slopeDelta);
+                //SQINFO("capture new jump %f atx=%f", sizeOfBiggestJump, x);
+            }
 
-            if (dif > ret) {
-                SQINFO("new max slope change of %f at %f slope=%f was%f delta=%f", dif, x, slope, lastSlope, slopeDelta);
-                ret = dif;
+            if (sizeOfBiggestJump > .4) {
+                //SQINFO("new max slope change of %f at %f slope=%f was%f delta=%f", sizeOfBiggestJump, x, slope, lastSlope, slopeDelta);
             }
         }
         lastValue = y;
         lastSlope = slope;
     }
-    return ret;
+    return sizeOfBiggestJump;
 }
 
+static void testBiggestJumpNew(CompCurves::Type type, const CompCurves::Recipe& r, double allowableJump) {
+    const int div = 2 * 100003;
+    auto lambda = CompCurves::getLambda(r, type);
+    double biggest = getBiggestJump(100, div, [lambda](double x) {
+        return lambda(float(x));
+    });
+
+    assertClose(biggest, 0, allowableJump);
+}
+
+static void testBiggestJumpNew() {
+    for (auto x : all) {
+        testBiggestJumpNew(CompCurves::Type::ClassicLin, x, .0005);
+        testBiggestJumpNew(CompCurves::Type::ClassicNU, x, .0005);
+        testBiggestJumpNew(CompCurves::Type::SplineLin, x, .0005);
+    }
+}
+
+// This validates that lookup to doesn't jump much more than the old one.
+// big deal - lets make a new one
 static void testBiggestJumpOld() {
     const int div = 100003;
     CompCurves::Recipe r;
@@ -483,15 +497,36 @@ static void testBiggestJumpOld() {
     assertClosePct(float(dRefNew), float(dRef), 10.0f);
 }
 
+static void testBiggestSlopeJumpNew(CompCurves::Type type, const CompCurves::Recipe& r, double allowableJump, bool strictlyReducing) {
+    const int div = 10000;
+    auto lambda = CompCurves::getLambda(r, type);
+    double dRef = getBiggestSlopeJump(100, div, false, [lambda](double x) {
+        return lambda(float(x));
+    });
+    assertGT(dRef, 0);
+    assertGT(allowableJump, 0);
+    assertLT(dRef, allowableJump);
+}
+
+static void testBiggestSlopeJumpNew() {
+    for (auto x : all) {
+        // only look at soft knee
+        if (x.kneeWidth > 1) {
+            testBiggestSlopeJumpNew(CompCurves::Type::ClassicLin, x, .1, false);
+            testBiggestSlopeJumpNew(CompCurves::Type::ClassicNU, x, .1, false);
+            testBiggestSlopeJumpNew(CompCurves::Type::SplineLin, x, .1, true);
+        }
+    }
+}
+
 static void testBiggestSlopeJumpOld() {
-    SQINFO("---- slope jump");
     const int div = 10000;
     CompCurves::Recipe r;
     const float softKnee = 12;
     r.ratio = 4;
     r.kneeWidth = softKnee;
     auto ref = CompCurves::_getContinuousCurve(r, false);
-    double dRef = getBiggestSlopeJump(100, div, [ref](double x) {
+    double dRef = getBiggestSlopeJump(100, div, false, [ref](double x) {
         return ref(x);
     });
     // assert(false);
@@ -504,13 +539,13 @@ static void testOldHighRatio(CompCurves::Type t, int ratio) {
     const float softKnee = 12;
     r.ratio = float(ratio);
     float expectedRatio = 1.f / r.ratio;
-    
+
     auto func = CompCurves::getLambda(r, t);
-   // auto oldCurve = CompCurves::makeCompGainLookup(r);
-    for (int i=2; i <= 50; i *= 2) {
+    // auto oldCurve = CompCurves::makeCompGainLookup(r);
+    for (int i = 2; i <= 50; i *= 2) {
         float level1 = float(i);
         float level2 = 2 * float(i);
-        
+
         float gain1 = func(level1);
         float gain2 = func(level2);
 
@@ -520,16 +555,13 @@ static void testOldHighRatio(CompCurves::Type t, int ratio) {
         double dbOut1 = AudioMath::db(out1);
         double dbOut2 = AudioMath::db(out2);
 
-
         double inputDbDiff = 6;
         double outputDbDiff = dbOut2 - dbOut1;
         double ratio = outputDbDiff / inputDbDiff;
 
         assertClosePct(ratio, expectedRatio, 6);
-        
-      //  SQINFO("\ni=%d, input1=%f input2=%f   dbOut1=%f, dbOut2=%f ratio =%f", i, level1, level2, dbOut1, dbOut2, ratio);
-        
 
+        //  SQINFO("\ni=%d, input1=%f input2=%f   dbOut1=%f, dbOut2=%f ratio =%f", i, level1, level2, dbOut1, dbOut2, ratio);
     }
 }
 
@@ -548,7 +580,7 @@ static void testOldHighRatio() {
 static void testSplineDecreasing() {
     auto h = HermiteSpline::make(4, 12);
     double lastGain = 5;
-    for (int i=0; i<=10; ++i) {
+    for (int i = 0; i <= 10; ++i) {
         double t = double(i) / 10.0;
         auto pt = h->renderPoint(t);
         double gainDb = pt.second;
@@ -735,7 +767,7 @@ static void testKneeSpline0(int ratio) {
     CompCurves::Recipe r;
     r.kneeWidth = 12;
     r.ratio = float(ratio);
-    std::shared_ptr<NonUniformLookupTableParams<double>> splineLookup = CompCurves::makeSplineMiddle(r); 
+    std::shared_ptr<NonUniformLookupTableParams<double>> splineLookup = CompCurves::makeSplineMiddle(r);
 
     // the soft knee needs to match up with the hard knee,
     // so this simple formula works
@@ -743,13 +775,13 @@ static void testKneeSpline0(int ratio) {
     const double desiredEndValueDb = 6 * desiredEndSlopeDb;
 
     // now take out of Db space and convert to linear gain
-    const float desiredEndGainVolts = (float) AudioMath::gainFromDb(desiredEndValueDb);
+    const float desiredEndGainVolts = (float)AudioMath::gainFromDb(desiredEndValueDb);
 
-    const float y0 = (float) NonUniformLookupTable<double>::lookup(*splineLookup, .5);
-    const float y1 = (float) NonUniformLookupTable<double>::lookup(*splineLookup, 2);
+    const float y0 = (float)NonUniformLookupTable<double>::lookup(*splineLookup, .5);
+    const float y1 = (float)NonUniformLookupTable<double>::lookup(*splineLookup, 2);
 
     const float expectedFinalY_ = 1.0f + 1.0f / r.ratio;
-    assertClose(y0, 1.f, .001);     // I think the prev .5 was wrong. unity gain is what we want
+    assertClose(y0, 1.f, .001);  // I think the prev .5 was wrong. unity gain is what we want
     assertClosePct(y1, desiredEndGainVolts, 1);
 }
 
@@ -771,18 +803,15 @@ static void testBasicSplineImp() {
     for (int i = 0; i <= div; ++i) {
         float x = .5f + 1.5f * float(i) / div;
 
-        float y = (float) NonUniformLookupTable<double>::lookup(*splineLookup, x);
+        float y = (float)NonUniformLookupTable<double>::lookup(*splineLookup, x);
         SQINFO("x=%f y=%f", x, y);
     }
-  //  assert(false);
+    //  assert(false);
 }
-
-
-
 
 static void testMake3() {
     CompCurves::Recipe r;
-    CompCurves::makeCompGainLookup3(r) ;
+    CompCurves::makeCompGainLookup3(r);
 }
 
 void testCompCurves() {
@@ -794,9 +823,9 @@ void testCompCurves() {
     testLookupBelowThesh();
 
     testLookupAboveThesh();
-  //  testLookupAboveTheshNoKneeNoComp();
-  //  testLookupAboveTheshNoKnee();
-  //  testLookupAboveTheshNoKnee2();
+    //  testLookupAboveTheshNoKneeNoComp();
+    //  testLookupAboveTheshNoKnee();
+    //  testLookupAboveTheshNoKnee2();
 
     // TODO: make these test work
     //  testLookupAboveTheshKnee();
@@ -808,6 +837,9 @@ void testCompCurves() {
     testBiggestJumpOld();
     testBiggestSlopeJumpOld();
     testOldHighRatio();
+
+    testBiggestJumpNew();
+    testBiggestSlopeJumpNew();
 
     testSplineDecreasing();
     testKneeSpline0();
