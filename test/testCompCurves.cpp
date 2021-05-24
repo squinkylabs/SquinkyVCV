@@ -166,96 +166,11 @@ static void testLookupAboveThesh() {
     for (auto x : all) {
         testLookupAboveThesh(x, CompCurves::getLambda(x, CompCurves::Type::ClassicLin), .1);
 
-        // don't care how bad classicNU is, althought we should stop using if for old comp
+        // don't care how bad classicNU is, although we should stop using if for old comp
         testLookupAboveThesh(x, CompCurves::getLambda(x, CompCurves::Type::ClassicNU), 10.);
         testLookupAboveThesh(x, CompCurves::getLambda(x, CompCurves::Type::SplineLin), .1);
     }
 }
-
-
-#if 0
-static void testLookupAboveTheshNoKnee(float ratioToTest) {
-    // comp ratio of 1 is a straight line - two points
-    CompCurves::Recipe r;
-    r.ratio = ratioToTest;
-
-    auto table = CompCurves::makeCompGainLookup(r);
-
-    assertGT(table->size(), 0);
-    float y = CompCurves::lookup(table, normalizedThreshold);
-    assertEQ(y, normalizedThreshold);
-
-    const float dbChangeInInput = 20;  // arbitrary, let's pick 20 db
-    const float voltChangeInInput = (float)AudioMath::gainFromDb(dbChangeInInput);
-
-    const float expectedDbOutputAtMax = 20 / ratioToTest;
-
-    const float expectedDbReductionAtMax = expectedDbOutputAtMax - dbChangeInInput;
-    ;
-
-    // if the thrshold is 1, then we expect unity gain at 1
-    // at 10 we are 20 louder
-    assert(r.kneeWidth == 0);
-    const float gain_y0 = CompCurves::lookup(table, normalizedThreshold);
-    const float gain_y1 = CompCurves::lookup(table, normalizedThreshold * 10);
-    assertEQ(gain_y0, normalizedThreshold);
-
-    const double y1Db = AudioMath::db(gain_y1);
-    const float observedDbReduction = float(y1Db);
-
-    assertEQ(observedDbReduction, expectedDbReductionAtMax);
-
-    validateCurve(table, r);
-}
-
-static void testLookupAboveTheshNoKneeNoComp() {
-    testLookupAboveTheshNoKnee(1);
-}
-
-static void testLookupAboveTheshNoKnee() {
-    testLookupAboveTheshNoKnee(2);
-    testLookupAboveTheshNoKnee(4);
-}
-
-static void testLookupAboveTheshKnee() {
-    CompCurves::Recipe r;
-    r.ratio = 4;
-    r.kneeWidth = 6;  // make 6 db wide soft knee
-
-    auto table = CompCurves::makeCompGainLookup(r);
-
-    const float topOfKneeDb = r.kneeWidth / 2;
-    const float topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
-
-    assertGT(table->size(), 0);
-    float y = CompCurves::lookup(table, normalizedThreshold);
-    assertEQ(y, normalizedThreshold);
-
-    const float dbChangeInInput = 20;  // arbitrary, let's pick 20 db
-    const float voltChangeInInput = (float)AudioMath::gainFromDb(dbChangeInInput);
-
-    const float expectedDbOutputAtMax = 20 / r.ratio;
-
-    const float expectedDbReductionAtMax = expectedDbOutputAtMax - dbChangeInInput;
-    ;
-
-    // if the thrshold is 1, then we expect unity gain at 1
-    // at 10 we are 20 louder
-    assert(r.kneeWidth == 0);
-    const float gain_y0 = CompCurves::lookup(table, normalizedThreshold);
-    const float gain_y1 = CompCurves::lookup(table, normalizedThreshold * 10);
-    assertEQ(gain_y0, normalizedThreshold);
-
-    const double y1Db = AudioMath::db(gain_y1);
-    const float observedDbReduction = float(y1Db);
-
-    assertEQ(observedDbReduction, expectedDbReductionAtMax);
-
-    validateCurve(table, r);
-
-    assert(false);
-}
-#endif
 
 static std::vector<float> generateGainVsInpuVoltageCurve(CompCurves::LookupPtr table, float x0, float x1, int numEntries) {
     std::vector<float> v;
@@ -440,6 +355,7 @@ static void testLookupAboveTheshNoKnee2() {
     testLookupAboveTheshNoKnee2(8);
 }
 
+// this, too, is a bit obsolete, so it's ok we don't have a new equiv
 static void testContinuousCurveOld() {
     CompCurves::Recipe r;
     const float softKnee = 12;
