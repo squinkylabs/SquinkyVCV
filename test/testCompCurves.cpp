@@ -575,13 +575,14 @@ static void testOldHighRatio() {
     testOldHighRatio(CompCurves::Type::ClassicLin, 20);
 }
 
-// trival test of knee cureve. It should always reduce gain,
-// and more reduciton the more input.
+// trivial test of knee curve. It should always reduce gain,
+// and more reduction the more input.
+// the slope test now gets more.
 static void testSplineDecreasing() {
     auto h = HermiteSpline::make(4, 12);
     double lastGain = 5;
-    for (int i = 0; i <= 10; ++i) {
-        double t = double(i) / 10.0;
+    for (int i = 0; i <= 5438; ++i) {
+        double t = double(i) / 4538.0;
         auto pt = h->renderPoint(t);
         double gainDb = pt.second;
         assertLE(gainDb, 0);

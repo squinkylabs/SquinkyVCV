@@ -119,12 +119,14 @@ public:
         return AudioMath::makeFunc_Exp(0, 10, .1, 10);
     }
 
-    int getNumVUChannels() const {
-        const int ch = currentStereo_m ? (numChannels_m + 1) / 2 : numChannels_m;
+    int ui_getNumVUChannels() const {
+       // const int ch = currentStereo_m ? (numChannels_m + 1) / 2 : numChannels_m;
         // SQINFO("get num vu will ret %d, st=%d, rawch =%d", ch, currentStereo_m, numChannels_m);
-        return ch;
+       // return ch;
+        return currentStereo_m ? 8 : 16;            // always same number
     }
-    float getChannelGain(int ch) const;
+
+    float ui_getChannelGain(int ch) const;
     CompressorParamHolder& getParamHolder() { return compParams; }
 
     void ui_paste(CompressorParamChannel* pasteData) { pastePointer = pasteData; }
@@ -391,13 +393,16 @@ inline Cmprsr& Compressor2<TBase>::_getComp(int bank) {
  *      Cmprsr::gain
  */
 template <class TBase>
-inline float Compressor2<TBase>::getChannelGain(int ch) const {
+inline float Compressor2<TBase>::ui_getChannelGain(int ch) const {
     float gain = 1;
 
     if (currentStereo_m > 0) {
         const int channelLeft = 2 * ch;
         if (!compParams.getEnabled(channelLeft)) {
             return 1;  // no reduction
+        }
+        if (channelLeft >= numChannels_m) {
+            return 1;
         }
         const int bank = channelLeft / 4;
         const int subChanL = channelLeft - bank * 4;
@@ -411,6 +416,9 @@ inline float Compressor2<TBase>::getChannelGain(int ch) const {
     } else {
         if (!compParams.getEnabled(ch)) {
             return 1;  // no reduction
+        }
+        if (ch >= numChannels_m) {
+            return 1;
         }
         const int bank = ch / 4;
         const int subChan = ch - bank * 4;
@@ -788,19 +796,19 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             ret = {0, 1, 0, "Effect bypass"};
             break;
         case Compressor2<TBase>::WETDRY_PARAM:
-            ret = {-1, 1, 1, "dry/wet mix"};
+            ret = {-1, 1, 1, "Dry/wet mix"};
             break;
         case Compressor2<TBase>::CHANNEL_PARAM:
-            ret = {1, 16, 1, "edit channel"};
+            ret = {1, 16, 1, "Edit channel"};
             break;
         case Compressor2<TBase>::STEREO_PARAM:
-            ret = {0, 2, 2, "stereo"};
+            ret = {0, 2, 2, "Wtereo"};
             break;
         case Compressor2<TBase>::LABELS_PARAM:
-            ret = {0, 2, 0, "labels"};
+            ret = {0, 2, 0, "Labels"};
             break;
         case Compressor2<TBase>::SIDECHAIN_PARAM:
-            ret = {0, 1, 0, "sidechain enable"};
+            ret = {0, 1, 0, "Sidechain enable"};
             break;
         case Compressor2<TBase>::SIDECHAIN_ALL_PARAM:
             ret = {0, 1, 0, "sidechain all"};

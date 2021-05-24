@@ -40,10 +40,10 @@ public:
     //   float getGainReductionDb();
 
     int getNumVUChannels() {
-        return compressor->getNumVUChannels();
+        return compressor->ui_getNumVUChannels();
     }
     float getChannelGain(int channel) {
-        return compressor->getChannelGain(channel);
+        return compressor->ui_getChannelGain(channel);
     }
 
     virtual json_t* dataToJson() override;
@@ -150,7 +150,7 @@ public:
     Compressor2Module* module;
 
     VCA_1VUKnob() {
-        box.size = mm2px(Vec(10, 46));
+        box.size = Vec(125, 89);
     }
 
     void draw(const DrawArgs& args) override {
@@ -219,7 +219,7 @@ struct CompressorWidget2 : ModuleWidget {
     void appendContextMenu(Menu* menu) override;
 
 #ifdef _LAB
-    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_BLACK) {
+    Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_WHITE) {
         Label* label = new Label();
         label->box.pos = v;
         label->text = str;
@@ -407,78 +407,78 @@ void CompressorWidget2::step() {
 
 void CompressorWidget2::addVu(Compressor2Module* module) {
     auto vu = new VCA_1VUKnob();
-    vu->box.pos = Vec(92, 160);
+    vu->box.pos = Vec(5, 67);
     vu->module = module;
     addChild(vu);
 }
 
-#define TEXTCOLOR SqHelper::COLOR_BLACK
+#define TEXTCOLOR SqHelper::COLOR_WHITE
 
 void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
 #ifdef _LAB
     addLabel(
-        Vec(1, 200),
-        "Atck", TEXTCOLOR);
+        Vec(52, 193),
+        "Att", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(5, 218),
+        Vec(53, 211),
         module, Comp::ATTACK_PARAM));
 
 #ifdef _LAB
     addLabel(
-        Vec(50, 200),
+        Vec(95, 193),
         "Rel", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(52, 218),
+        Vec(97, 211),
         module, Comp::RELEASE_PARAM));
 
 #ifdef _LAB
     addLabel(
-        Vec(0, 148),
+        Vec(1, 193),            // raise 2
         "Thrsh", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(8, 165),
+        Vec(9, 211),
         module, Comp::THRESHOLD_PARAM));
 
 #ifdef _LAB
     addLabel(
-        Vec(40, 38),
-        "Channel", TEXTCOLOR);
+        Vec(54, 35),
+        "Channel:", TEXTCOLOR);
 #endif
     channelKnob = SqHelper::createParam<Blue30SnapKnob>(
         icomp,
-        Vec(8, 41),
+        Vec(17, 27),
         module, Comp::CHANNEL_PARAM);
     addParam(channelKnob);
-    channelIndicator = addLabel(Vec(62, 54), "", TEXTCOLOR);
+    channelIndicator = addLabel(Vec(110, 35), "", TEXTCOLOR);
 
 #ifdef _LAB
     addLabel(
-        Vec(5, 251),
+        Vec(6, 250),
         "Mix", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(8, 269),
+        Vec(9, 268),
         module, Comp::WETDRY_PARAM));
 
 #ifdef _LAB
     addLabel(
-        Vec(49, 148),
+        Vec(93, 250),
         "Out", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(52, 165),
+        Vec(97, 268),
         module, Comp::MAKEUPGAIN_PARAM));
 
 #ifdef _LAB
-    addLabel(Vec(50, 253), "1/0", TEXTCOLOR);
+    addLabel(Vec(50, 250), "1/0", TEXTCOLOR);
 #endif
 
   //  stereoLabel = addLabel(Vec(4, 76), "Mode:");
@@ -486,7 +486,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
     ToggleButton* tog = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(56, 273),
+        Vec(56, 271),
         module, Comp::NOTBYPASS_PARAM);
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
@@ -495,7 +495,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(8, 115),
+        Vec(8, 163),
         module,
         Comp::RATIO_PARAM);
     p->box.size.x = 73;  // width
@@ -506,7 +506,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
     tog = SqHelper::createParam<ToggleButton>(
         icomp,
-        Vec(90, 92),
+        Vec(56, 304),
         module, Comp::SIDECHAIN_PARAM);
     tog->addSvg("res/square-button-01.svg");
     tog->addSvg("res/square-button-02.svg");
@@ -516,33 +516,33 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
 #ifdef _LAB
     addLabel(
-        Vec(12, 307),
+        Vec(11, 308),
         "In", TEXTCOLOR);
 #endif
     addInput(createInput<PJ301MPort>(
         //Vec(jackX, jackY),
-        Vec(11, 326),
+        Vec(12, 326),
         module,
         Comp::LAUDIO_INPUT));
 
 #ifdef _LAB
     addLabel(
-        Vec(49, 307),
+        Vec(55, 289),
         "SC", TEXTCOLOR);
 #endif
     addInput(createInput<PJ301MPort>(
         //Vec(jackX, jackY),
-        Vec(51, 326),
+        Vec(56, 326),
         module,
         Comp::SIDECHAIN_INPUT));
 
 #ifdef _LAB
     addLabel(
-        Vec(86, 307),
+        Vec(94, 308),
         "Out", TEXTCOLOR);
 #endif
     addOutput(createOutput<PJ301MPort>(
-        Vec(91, 326),
+        Vec(100, 326),
         module,
         Comp::LAUDIO_OUTPUT));
 }
@@ -560,8 +560,8 @@ CompressorWidget2::CompressorWidget2(Compressor2Module* module) : cModule(module
 
 #ifdef _LAB
     addLabel(
-        Vec(20, 15),
-        "Compressor II", TEXTCOLOR);
+        Vec(41, 2),
+        "Comp II", TEXTCOLOR);
 #endif
 
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
@@ -570,10 +570,12 @@ CompressorWidget2::CompressorWidget2(Compressor2Module* module) : cModule(module
     addVu(module);
 
     // screws
+#if 0
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+#endif
 }
 
 Model* modelCompressor2Module = createModel<Compressor2Module, CompressorWidget2>("squinkylabs-comp2");
