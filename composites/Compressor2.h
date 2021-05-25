@@ -793,7 +793,7 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             ret = {0, 40, 0, "Makeup gain"};
             break;
         case Compressor2<TBase>::NOTBYPASS_PARAM:
-            ret = {0, 1, 0, "Effect bypass"};
+            ret = {0, 1, 0, "Effect enabled"};
             break;
         case Compressor2<TBase>::WETDRY_PARAM:
             ret = {-1, 1, 1, "Dry/wet mix"};

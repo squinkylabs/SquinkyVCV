@@ -430,7 +430,7 @@ void CompressorWidget2::step() {
 
 void CompressorWidget2::addVu(Compressor2Module* module) {
     auto vu = new VCA_1VUKnob();
-    vu->box.pos = Vec(5, 71);
+    vu->box.pos = Vec(5, 73);
     vu->module = module;
     addChild(vu);
 }
@@ -441,7 +441,7 @@ class SqBlueButton : public ToggleButton
 public:
     SqBlueButton()
     {
-        addSvg("res/oval-button-up.svg");
+        addSvg("res/oval-button-up-grey.svg");
         addSvg("res/oval-button-down.svg");
     }
 };
@@ -489,11 +489,11 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
         Vec(17, 27),
         module, Comp::CHANNEL_PARAM);
     addParam(channelKnob);
-    channelIndicator = addLabel(Vec(110, 35), "", TEXTCOLOR);
+    channelIndicator = addLabel(Vec(104, 35), "", TEXTCOLOR);
 
 #ifdef _LAB
     addLabel(
-        Vec(3, 250),
+        Vec(4, 250),
         "Mix", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -503,7 +503,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(95, 250),
+        Vec(93, 250),
         "Out", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -512,7 +512,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
         module, Comp::MAKEUPGAIN_PARAM));
 
 #ifdef _LAB
-    addLabel(Vec(50, 250), "1/0", TEXTCOLOR);
+    addLabel(Vec(49, 250), "Ena", TEXTCOLOR);
 #endif
 
   //  stereoLabel = addLabel(Vec(4, 76), "Mode:");
@@ -520,19 +520,20 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
     SqBlueButton* tog = SqHelper::createParam<SqBlueButton>(
         icomp,
-        Vec(52, 271),
+        Vec(52, 268),
         module, Comp::NOTBYPASS_PARAM);
   //  tog->addSvg("res/square-button-01.svg");
   //  tog->addSvg("res/square-button-02.svg");
     addParam(tog);
 
+    // x = 32 too much
     std::vector<std::string> labels = Comp::ratios();
     PopupMenuParamWidget* p = SqHelper::createParam<PopupMenuParamWidget>(
         icomp,
-        Vec(8, 163),
+        Vec(27, 163),
         module,
         Comp::RATIO_PARAM);
-    p->box.size.x = 73;  // width
+    p->box.size.x = 80;  // width
     p->box.size.y = 22;
     p->text = labels[3];
     p->setLabels(labels);
@@ -540,7 +541,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
     tog = SqHelper::createParam<SqBlueButton>(
         icomp,
-        Vec(52, 305),
+        Vec(52, 307),
         module, Comp::SIDECHAIN_PARAM);
   //  tog->addSvg("res/square-button-01.svg");
   // tog->addSvg("res/square-button-02.svg");
