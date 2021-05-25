@@ -150,7 +150,7 @@ public:
     Compressor2Module* module;
 
     VCA_1VUKnob() {
-        box.size = Vec(125, 89);
+        box.size = Vec(125, 85);
     }
 
     void draw(const DrawArgs& args) override {
@@ -160,7 +160,7 @@ public:
         nvgFillColor(args.vg, nvgRGB(0, 0, 0));
         nvgFill(args.vg);
 
-        const Vec margin = Vec(3, 3);
+        const Vec margin = Vec(1, 1);
         const Rect r = box.zeroPos().grow(margin.neg());
         const int channels = module ? module->getNumVUChannels() : 1;
 
@@ -232,6 +232,7 @@ struct CompressorWidget2 : ModuleWidget {
     void addJacks(Compressor2Module* module, std::shared_ptr<IComposite> icomp);
     void addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp);
     void addVu(Compressor2Module* module);
+    void addNumbers();
     void step() override;
 
     int lastStereo = -1;
@@ -239,6 +240,8 @@ struct CompressorWidget2 : ModuleWidget {
     int lastLabelMode = -1;
     ParamWidget* channelKnob = nullptr;
     Label* channelIndicator = nullptr;
+
+    Label* numbers[8];
 
   //  Label* stereoLabel = nullptr;
   //  Label* channelTypeLabel = nullptr;
@@ -252,6 +255,26 @@ struct CompressorWidget2 : ModuleWidget {
     void initializeCurrent();
 };
 
+#define TEXTCOLOR SqHelper::COLOR_WHITE
+
+void CompressorWidget2::addNumbers() {
+    const NVGcolor color = nvgRGB(0x70, 0x70, 0x70);
+    float y = 56;
+    float x0 = -14;
+    float dx = 15.5;      // 16 too much
+    for (int i=1; i < 9; ++i) {
+        assert (i < 20);
+
+        float x= x0 + i * dx;
+        SqStream sq;
+        sq.add(i);
+        std::string s = sq.str();
+        Label* label = addLabel(
+            Vec(x, y),       
+            s.c_str(), color);
+         numbers[i-1] = label;
+    }
+}
 void CompressorWidget2::initializeCurrent() {
     cModule->compressor->ui_initCurrentChannel();
 }
@@ -407,12 +430,23 @@ void CompressorWidget2::step() {
 
 void CompressorWidget2::addVu(Compressor2Module* module) {
     auto vu = new VCA_1VUKnob();
-    vu->box.pos = Vec(5, 67);
+    vu->box.pos = Vec(5, 71);
     vu->module = module;
     addChild(vu);
 }
 
-#define TEXTCOLOR SqHelper::COLOR_WHITE
+// from kitchen sink
+class SqBlueButton : public ToggleButton 
+{
+public:
+    SqBlueButton()
+    {
+        addSvg("res/oval-button-up.svg");
+        addSvg("res/oval-button-down.svg");
+    }
+};
+
+
 
 void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
 #ifdef _LAB
@@ -422,17 +456,17 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(53, 211),
+        Vec(52, 211),
         module, Comp::ATTACK_PARAM));
 
 #ifdef _LAB
     addLabel(
-        Vec(95, 193),
+        Vec(96, 193),
         "Rel", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(97, 211),
+        Vec(98, 211),
         module, Comp::RELEASE_PARAM));
 
 #ifdef _LAB
@@ -459,17 +493,17 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(6, 250),
+        Vec(3, 250),
         "Mix", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(9, 268),
+        Vec(6, 268),
         module, Comp::WETDRY_PARAM));
 
 #ifdef _LAB
     addLabel(
-        Vec(93, 250),
+        Vec(95, 250),
         "Out", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -484,12 +518,12 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
   //  stereoLabel = addLabel(Vec(4, 76), "Mode:");
  //   channelTypeLabel = addLabel(Vec(4, 90), "Channels:");
 
-    ToggleButton* tog = SqHelper::createParam<ToggleButton>(
+    SqBlueButton* tog = SqHelper::createParam<SqBlueButton>(
         icomp,
-        Vec(56, 271),
+        Vec(52, 271),
         module, Comp::NOTBYPASS_PARAM);
-    tog->addSvg("res/square-button-01.svg");
-    tog->addSvg("res/square-button-02.svg");
+  //  tog->addSvg("res/square-button-01.svg");
+  //  tog->addSvg("res/square-button-02.svg");
     addParam(tog);
 
     std::vector<std::string> labels = Comp::ratios();
@@ -504,45 +538,45 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
     p->setLabels(labels);
     addParam(p);
 
-    tog = SqHelper::createParam<ToggleButton>(
+    tog = SqHelper::createParam<SqBlueButton>(
         icomp,
-        Vec(56, 304),
+        Vec(52, 305),
         module, Comp::SIDECHAIN_PARAM);
-    tog->addSvg("res/square-button-01.svg");
-    tog->addSvg("res/square-button-02.svg");
+  //  tog->addSvg("res/square-button-01.svg");
+  // tog->addSvg("res/square-button-02.svg");
     addParam(tog);
 }
 
 void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
 #ifdef _LAB
     addLabel(
-        Vec(11, 308),
+        Vec(8, 308),
         "In", TEXTCOLOR);
 #endif
     addInput(createInput<PJ301MPort>(
         //Vec(jackX, jackY),
-        Vec(12, 326),
+        Vec(9, 326),
         module,
         Comp::LAUDIO_INPUT));
 
 #ifdef _LAB
     addLabel(
-        Vec(55, 289),
+        Vec(52, 289),
         "SC", TEXTCOLOR);
 #endif
     addInput(createInput<PJ301MPort>(
         //Vec(jackX, jackY),
-        Vec(56, 326),
+        Vec(55, 326),
         module,
         Comp::SIDECHAIN_INPUT));
 
 #ifdef _LAB
     addLabel(
-        Vec(94, 308),
+        Vec(95, 308),
         "Out", TEXTCOLOR);
 #endif
     addOutput(createOutput<PJ301MPort>(
-        Vec(100, 326),
+        Vec(101, 326),
         module,
         Comp::LAUDIO_OUTPUT));
 }
@@ -568,6 +602,7 @@ CompressorWidget2::CompressorWidget2(Compressor2Module* module) : cModule(module
     addControls(module, icomp);
     addJacks(module, icomp);
     addVu(module);
+    addNumbers();
 
     // screws
 #if 0
