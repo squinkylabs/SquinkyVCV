@@ -59,21 +59,7 @@ Compressor2Module::Compressor2Module() {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     compressor = std::make_shared<Comp>(this);
 
-#ifdef _NEWTIPS
     addParams();
-#else
-    std::shared_ptr<IComposite> icomp = Comp::getDescription();
-    SqHelper::setupParams(icomp, this);
-
-    // customize tooltips for some params.
-    SqTooltips::changeParamQuantity<AttackQuantity>(this, Comp::ATTACK_PARAM);
-    SqTooltips::changeParamQuantity<ReleaseQuantity>(this, Comp::RELEASE_PARAM);
-    SqTooltips::changeParamQuantity<ThresholdQuantity>(this, Comp::THRESHOLD_PARAM);
-    SqTooltips::changeParamQuantity<MakeupGainQuantity>(this, Comp::MAKEUPGAIN_PARAM);
-    SqTooltips::changeParamQuantity<RatiosQuantity>(this, Comp::RATIO_PARAM);
-    SqTooltips::changeParamQuantity<BypassQuantity>(this, Comp::NOTBYPASS_PARAM);
-    SqTooltips::changeParamQuantity<WetdryQuantity>(this, Comp::WETDRY_PARAM);
-#endif
 
     onSampleRateChange();
     compressor->init();

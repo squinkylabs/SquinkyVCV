@@ -101,7 +101,6 @@ public:
     /**
      * Main processing entry point. Called every sample
      */
-    //void step() override;
     void process(const typename TBase::ProcessArgs& args) override;
 
     void onSampleRateChange() override;
@@ -111,19 +110,26 @@ public:
     static std::function<double(double)> getSlowAttackFunction() {
         return AudioMath::makeFunc_Exp(0, 1, .05, 30);
     }
+    static std::function<double(double)> getSlowAntiAttackFunction() {
+        return AudioMath::makeFunc_InverseExp(0, 1, .05, 30);
+    }
 
     static std::function<double(double)> getSlowReleaseFunction() {
         return AudioMath::makeFunc_Exp(0, 1, 100, 1600);
     }
+    static std::function<double(double)> getSlowAntiReleaseFunction() {
+        return AudioMath::makeFunc_InverseExp(0, 1, 100, 1600);
+    }
+
     static std::function<double(double)> getSlowThresholdFunction() {
         return AudioMath::makeFunc_Exp(0, 10, .1, 10);
     }
+    static std::function<double(double)> getSlowAntiThresholdFunction() {
+        return AudioMath::makeFunc_InverseExp(0, 10, .1, 10);
+    }
 
     int ui_getNumVUChannels() const {
-       // const int ch = currentStereo_m ? (numChannels_m + 1) / 2 : numChannels_m;
-        // SQINFO("get num vu will ret %d, st=%d, rawch =%d", ch, currentStereo_m, numChannels_m);
-       // return ch;
-        return currentStereo_m ? 8 : 16;            // always same number
+        return currentStereo_m ? 8 : 16;  // always same number
     }
 
     float ui_getChannelGain(int ch) const;
@@ -191,7 +197,6 @@ private:
     float_4 enabled[4] = {0};
     float_4 makeupGain[4] = {1};
 
-    // float_4 makeupGain_m = 1;
     Divider divn;
 
     // we could unify this stuff with the ui stuff, above.
@@ -308,7 +313,6 @@ inline void Compressor2<TBase>::_initParamOnAllChannels(int param, float value) 
                 compParams.setRatio(i, int(std::round(value)));
                 break;
             default:
-
                 assert(false);
         }
     }
@@ -722,7 +726,7 @@ inline void Compressor2<TBase>::process(const typename TBase::ProcessArgs& args)
 
     SqInput& inPort = TBase::inputs[LAUDIO_INPUT];
     SqOutput& outPort = TBase::outputs[LAUDIO_OUTPUT];
-    SqInput& scPort =  TBase::inputs[SIDECHAIN_INPUT];
+    SqInput& scPort = TBase::inputs[SIDECHAIN_INPUT];
 
     // TODO: bypassed per channel - need to completely re-do
     for (int bank = 0; bank < numBanks_m; ++bank) {
