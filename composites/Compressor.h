@@ -11,6 +11,7 @@
 #include "LookupTableFactory.h"
 #include "ObjectCache.h"
 #include "SqPort.h"
+#include "engine/Port.hpp"
 
 namespace rack {
 namespace engine {

@@ -170,6 +170,15 @@ public:
         str.add(" % wet");
         return str.str();
     }
+
+    void setDisplayValueString(std::string s) override {
+        float val = ::atof(s.c_str());
+        if (val >= 0 && val <=100) {
+            val = val / 50.f;           //0..2
+            val -= 1;
+            ParamQuantity::setValue(val);
+        }
+    }
 };
 
 class RatiosQuantity : public SqTooltips::SQParamQuantity {
@@ -193,6 +202,7 @@ class RatiosQuantity2 : public rack::engine::ParamQuantity {
 public:
     std::string getDisplayValueString() override {
         auto value = getValue();
+
         int index = int(std::round(value));
         std::string ratio = Compressor<WidgetComposite>::ratiosLong()[index];
         return ratio;
