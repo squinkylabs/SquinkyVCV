@@ -30,6 +30,8 @@ public:
      */
     class Recipe {
     public:
+        Recipe(float r, float k) : ratio(r), kneeWidth(k) {}
+        Recipe() = default;
         /**
          * 2 means 2:1 compression ratio.
          * ratio is in decibels.
@@ -44,7 +46,7 @@ public:
     public:
         friend class CompCurves;
         float lookup(float) const;
-
+        void _dump() const;
     private:
         LookupTableParams<float> lowRange;
         LookupTableParams<float> highRange;

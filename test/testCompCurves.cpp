@@ -506,9 +506,13 @@ static void testBiggestSlopeJumpNew(CompCurves::Type type, const CompCurves::Rec
     assertGT(dRef, 0);
     assertGT(allowableJump, 0);
     assertLT(dRef, allowableJump);
+
+    // SQINFO("dRef = %f, type=%d spline =%d r=%f", dRef, int(type), int(CompCurves::Type::SplineLin), r.ratio);
+    // SQINFO("div = %d", div);
 }
 
 static void testBiggestSlopeJumpNew() {
+    //SQINFO("get biggest slope jump new");
     for (auto x : all) {
         // only look at soft knee
         if (x.kneeWidth > 1) {
@@ -810,16 +814,12 @@ static void testBasicSplineImp() {
     //  assert(false);
 }
 
-static void testMake3() {
-    CompCurves::Recipe r;
-    CompCurves::makeCompGainLookup3(r);
-}
-
 void testCompCurves() {
     Cmprsr::_reset();
     assertEQ(_numLookupParams, 0);
     testInflection();
 
+    ;
     testSpline();
     testLookupBelowThesh();
 
@@ -833,10 +833,12 @@ void testCompCurves() {
     //  testCompCurvesKnee2();
     // plot4_1_hard();
     //  plot4_1_soft();
+
     testContinuousCurveOld();
     testLookup2Old();
     testBiggestJumpOld();
     testBiggestSlopeJumpOld();
+
     testOldHighRatio();
 
     testBiggestJumpNew();
@@ -849,6 +851,5 @@ void testCompCurves() {
     testEndSlopeSoftKnee();
     testKneeSlope();
     // testSplineVSOld();
-    testMake3();
     assertEQ(_numLookupParams, 0);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AudioMath.h"
+#include "SqLog.h"
 
 #include <algorithm>
 #include <assert.h>
@@ -236,6 +237,13 @@ public:
         numBins_i = bins;
         a = 0;
         b = 0;
+    }
+
+    void _dump() const {
+        SQINFO("_dump lookup");
+        for(int i = 0; i < numBins_i; ++i) {
+            SQINFO("i=%d a=%f b=%f", i, entries[i*2], entries[i*2 + 1]);
+        }
     }
 
 };

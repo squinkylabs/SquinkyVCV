@@ -28,6 +28,14 @@ public:
 };
 
 /**
+ * new splines - rebase
+ *
+ * 16 channel bypassed:         4.06    
+ * 16 channel mono 4:1 soft     90.2    
+ * 16 channel linked 4:1 soft   64.1 
+ * 16 channel linked limited    27.8  
+ * 
+ * 
  * sidechain:
  * 
  * 16 channel bypassed:         4.4

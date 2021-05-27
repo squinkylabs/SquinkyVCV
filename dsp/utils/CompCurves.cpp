@@ -165,9 +165,7 @@ CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookupEither(const Recipe
 
     const float bottomOfKneeDb = -r.kneeWidth / 2;
     ret->bottomOfKneeVin = float(AudioMath::gainFromDb(bottomOfKneeDb));
-
     ret->dividingLine = 2;
-
     auto func = _getContinuousCurve(r, bUseSpline);
 
     LookupTable<float>::init(ret->lowRange, tableSize, ret->bottomOfKneeVin, ret->dividingLine, func);
@@ -262,4 +260,13 @@ CompCurves::makeSplineMiddle(const Recipe& r) {
     //assert(false);
     NonUniformLookupTable<double>::finalize(*params);
     return params;
+}
+
+
+void CompCurves::CompCurveLookup::_dump() const {
+    SQINFO("dumping curve low");
+    lowRange._dump();
+    SQINFO("dumping curve high");
+    highRange._dump();
+    SQINFO("done dumping curve");
 }
