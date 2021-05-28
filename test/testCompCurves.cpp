@@ -34,11 +34,12 @@ static void characterizeSpline(float ratio, float t2y) {
     const double desiredEndSlope = -1.0 + 1.0 / ratio;
     const double desiredEndValue = 6 * desiredEndSlope;
 
-    const double secondX = 18;
+    const double secondX = 17;          // was 18
+    const double secondY = 0;           // was 0
     HermiteSpline h = {
         HermiteSpline::point(-6, 0),               // we know we start flat at zero
         HermiteSpline::point(6, desiredEndValue),  // and we leave where the hard curve would
-        HermiteSpline::point(secondX, 0),          // tangent for start doesn't matter, as long is y values are the same
+        HermiteSpline::point(secondX, secondY),          // tangent for start doesn't matter, as long is y values are the same
         HermiteSpline::point(6, t2y)};
 
     auto p0 = h.renderPoint(0);
@@ -66,16 +67,28 @@ static void characterizeSpline(float ratio, float t2y) {
 #endif
     auto ptl = h.renderPoint(0);
     double lastSlope = 100;
-    for (int i = 1; i <= 1000; ++i) {
-        double t = double(i) / 1000;
+    int divs = 2001;
+    double biggestJump = 0;
+    for (int i = 1; i <= divs; ++i) {
+        double t = double(i) / divs;
         auto p = h.renderPoint(t);
 
         const double slope = (p.second - ptl.second) / (p.first - ptl.first);
         assert(slope <= lastSlope);
+        const double jump = lastSlope - slope;
         ptl = p;
         lastSlope = slope;
+
+        
+        if (jump < 10) {
+            if (jump > biggestJump) {
+                biggestJump = jump;
+               // SQINFO("new biggest %e at i=%d", biggestJump, i);
+            }
+        }
         //SQINFO("i=%d x=%f, y=%f", i, p.first, p.second);
     }
+    // SQINFO("biggest jump was %e", biggestJump);
 }
 
 // Not really a tests - used this to design the curves
@@ -439,7 +452,7 @@ double getBiggestSlopeJump(double maxX, int divisions, bool strictlyReducing, st
 
             if (std::abs(slopeDelta) > sizeOfBiggestJump) {
                 sizeOfBiggestJump = std::abs(slopeDelta);
-                //SQINFO("capture new jump %f atx=%f", sizeOfBiggestJump, x);
+                // SQINFO("capture new jump %f atx=%f", sizeOfBiggestJump, x);
             }
 
             if (sizeOfBiggestJump > .4) {
@@ -498,7 +511,7 @@ static void testBiggestJumpOld() {
 }
 
 static void testBiggestSlopeJumpNew(CompCurves::Type type, const CompCurves::Recipe& r, double allowableJump, bool strictlyReducing) {
-    const int div = 10000;
+    const int div = 10003;
     auto lambda = CompCurves::getLambda(r, type);
     double dRef = getBiggestSlopeJump(100, div, false, [lambda](double x) {
         return lambda(float(x));
@@ -516,9 +529,17 @@ static void testBiggestSlopeJumpNew() {
     for (auto x : all) {
         // only look at soft knee
         if (x.kneeWidth > 1) {
-            testBiggestSlopeJumpNew(CompCurves::Type::ClassicLin, x, .1, false);
-            testBiggestSlopeJumpNew(CompCurves::Type::ClassicNU, x, .1, false);
+            // .1 is normal
+            const double allowable = .1;
+            testBiggestSlopeJumpNew(CompCurves::Type::ClassicLin, x, allowable, false);
+            testBiggestSlopeJumpNew(CompCurves::Type::ClassicNU, x, allowable, false);
+            //SQINFO("here is spline:");
+
+            // passed with .1, not with .05
+            // now with less severe spline .05 ok
+            // .025 ngt
             testBiggestSlopeJumpNew(CompCurves::Type::SplineLin, x, .1, true);
+            //SQINFO("done with spline:");
         }
     }
 }
@@ -796,6 +817,7 @@ static void testKneeSpline0() {
     testKneeSpline0(20);
 }
 
+
 static void testBasicSplineImp() {
     CompCurves::Recipe r;
     r.kneeWidth = 12;
@@ -803,24 +825,45 @@ static void testBasicSplineImp() {
     std::shared_ptr<NonUniformLookupTableParams<double>> splineLookup = CompCurves::makeSplineMiddle(r);
 
     const float expectedY2 = 1.0f + 1.0f / r.ratio;
-    SQINFO("expecting y=%f at 2\n", expectedY2);
+
+   //  SQINFO("expecting y=%f at 2\n", expectedY2);
     const float div = 20;
+    
+    auto interp = CompCurves::getKneeInterpolator(r);
     for (int i = 0; i <= div; ++i) {
-        float x = .5f + 1.5f * float(i) / div;
+        double x = interp( double(i) / double(div) );
+        assert(x > 0);
 
         float y = (float)NonUniformLookupTable<double>::lookup(*splineLookup, x);
-        SQINFO("x=%f y=%f", x, y);
+        // SQINFO("x=%f y=%f", x, y);
     }
-    //  assert(false);
 }
+
+static void justPrintSpline() {
+    CompCurves::Recipe r;
+    r.kneeWidth = 12;
+    r.ratio = 4;
+    std::function<float(float)> curve = CompCurves::getLambda(r, CompCurves::Type::SplineLin);
+
+    //SQINFO("here is normal spline");
+     for (float q = .3f; q < 5;  q += .07f) {
+         float y = curve(q);
+        //SQINFO("x=%f, y=%f", q, y);
+    }
+    assert(false)
+;}
 
 void testCompCurves() {
     Cmprsr::_reset();
     assertEQ(_numLookupParams, 0);
+
+  //  justPrintSpline();
+    testSpline();
+    testBiggestSlopeJumpNew();
     testInflection();
 
-    ;
-    testSpline();
+
+   
     testLookupBelowThesh();
 
     testLookupAboveThesh();
@@ -833,7 +876,7 @@ void testCompCurves() {
     //  testCompCurvesKnee2();
     // plot4_1_hard();
     //  plot4_1_soft();
-
+    testBasicSplineImp();
     testContinuousCurveOld();
     testLookup2Old();
     testBiggestJumpOld();
@@ -842,11 +885,11 @@ void testCompCurves() {
     testOldHighRatio();
 
     testBiggestJumpNew();
-    testBiggestSlopeJumpNew();
+  
 
     testSplineDecreasing();
     testKneeSpline0();
-    testBasicSplineImp();
+   
     testEndSlopeHardKnee();
     testEndSlopeSoftKnee();
     testKneeSlope();

@@ -42,14 +42,15 @@ public:
         float kneeWidth = 0;
     };
 
+    using T = float;
     class CompCurveLookup {
     public:
         friend class CompCurves;
         float lookup(float) const;
         void _dump() const;
     private:
-        LookupTableParams<float> lowRange;
-        LookupTableParams<float> highRange;
+        LookupTableParams<T> lowRange;
+        LookupTableParams<T> highRange;
         float dividingLine = 0;     // where we switch tables
         float bottomOfKneeVin = 0;  // below here gain is one
     };
@@ -62,15 +63,13 @@ public:
      */
     static CompCurveLookupPtr makeCompGainLookup2(const Recipe&);
 
-      /**
+    /**
      * makes two linear lookups, aka "fast"
      * uses the new spline knee
      */
     static CompCurveLookupPtr makeCompGainLookup3(const Recipe&);
 
     static CompCurveLookupPtr makeCompGainLookupEither(const Recipe&, bool bUseSpline);
-
-    
 
     /**
       * These for the non-uniform lookups
@@ -116,8 +115,34 @@ public:
 
     static std::function<float(float)> getLambda(const Recipe&, Type);
 
+    static double bottomOfKneeVin(const Recipe& r) {
+        const double bottomOfKneeDb = -r.kneeWidth / 2;
+        const double bottomOfKneeVin_ = float(AudioMath::gainFromDb(bottomOfKneeDb));
+        return bottomOfKneeVin_;
+    }
+    static double topOfKneeVin(const Recipe& r) {
+        const double topOfKneeDb = r.kneeWidth / 2;
+        const double topOfKneeVin_ = float(AudioMath::gainFromDb(topOfKneeDb));
+        return topOfKneeVin_;
+    }
+
+    static std::function<double(double)> getKneeInterpolator(const Recipe& r) {
+        double x0 = 0;
+        double x1 = 1;
+        double y0 = bottomOfKneeVin(r);
+        double y1 = topOfKneeVin(r);
+
+        double a = (y1 - y0) / (x1 - x0);
+        double b = y0; 
+        return [a, b](double x) {
+            return a * x + b;
+        };
+    }
+
 private:
     static xy addLeftSideCurve(LookupPtr, const Recipe& r);
     static void addRightSideCurve(LookupPtr, const Recipe& r, xy lastPt);
     static void addMiddleCurve(LookupPtr, const Recipe& r, xy lastPt);
+
+ 
 };

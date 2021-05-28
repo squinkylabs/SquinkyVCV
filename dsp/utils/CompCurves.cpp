@@ -109,16 +109,9 @@ std::function<double(double)> CompCurves::_getContinuousCurve(const CompCurves::
         splineLookup = makeSplineMiddle(r);
     }
     return [r, bUseSplines, splineLookup](double x) {
-        const double bottomOfKneeDb = -r.kneeWidth / 2;
-        const double bottomOfKneeVin = float(AudioMath::gainFromDb(bottomOfKneeDb));
-        const double topOfKneeDb = r.kneeWidth / 2;
-        const double topOfKneeVin = float(AudioMath::gainFromDb(topOfKneeDb));
-
-        if (x < bottomOfKneeVin) {
-            // SQINFO("left side");
+        if (x < bottomOfKneeVin(r)) {
             return 1.0;  // constant gain of 1 below thresh
-        } else if (x < topOfKneeVin) {
-            // const double x0Db = bottomOfKneeDb;
+        } else if (x < topOfKneeVin(r)) {
             if (!bUseSplines) {
                 const double xdb = AudioMath::db(x);
                 const double squareTerm = (xdb + r.kneeWidth / 2);
@@ -165,11 +158,12 @@ CompCurves::CompCurveLookupPtr CompCurves::makeCompGainLookupEither(const Recipe
 
     const float bottomOfKneeDb = -r.kneeWidth / 2;
     ret->bottomOfKneeVin = float(AudioMath::gainFromDb(bottomOfKneeDb));
-    ret->dividingLine = 2;
+    ret->dividingLine = 2;      // should this really be gain @6db? don't know...
     auto func = _getContinuousCurve(r, bUseSpline);
 
-    LookupTable<float>::init(ret->lowRange, tableSize, ret->bottomOfKneeVin, ret->dividingLine, func);
-    LookupTable<float>::init(ret->highRange, tableSize, ret->dividingLine, 100, func);
+    LookupTable<T>::init(ret->lowRange, tableSize, ret->bottomOfKneeVin, ret->dividingLine, func);
+    const float delta = 0;          // 1 was whack
+    LookupTable<T>::init(ret->highRange, tableSize, ret->dividingLine - delta, 100, func);
     return ret;
 }
 
@@ -178,9 +172,9 @@ float CompCurves::CompCurveLookup::lookup(float x) const {
         return 1;
     }
     if (x < dividingLine) {
-        return LookupTable<float>::lookup(lowRange, x, false);
+        return LookupTable<T>::lookup(lowRange, x, false);
     }
-    return LookupTable<float>::lookup(highRange, x, true);
+    return LookupTable<T>::lookup(highRange, x, true);
 }
 
 std::function<float(float)> CompCurves::getLambda(const Recipe& r, Type t) {
@@ -223,7 +217,7 @@ CompCurves::makeSplineMiddle(const Recipe& r) {
 
         // First make a non-uniform for mapping that hermite with linear axis (wrong)
         int iNum = 1024;
-        for (int i = 0; i < 1024; ++i) {
+        for (int i = 0; i < iNum; ++i) {
             double t = double(i) / double(iNum);
             auto pt = spline->renderPoint(t);
             NonUniformLookupTable<double>::addPoint(*firstTableParam, pt.first, pt.second);
@@ -233,6 +227,7 @@ CompCurves::makeSplineMiddle(const Recipe& r) {
 
     // Render the warped spline into a non-uniform lookup table so we can do cartesian mapping (later)
     // (for now we are only doing non-uniform. Until it works right).
+    auto interp = CompCurves::getKneeInterpolator(r);
     std::shared_ptr<NonUniformLookupTableParams<double>> params = std::make_shared<NonUniformLookupTableParams<double>>();
     int iNum2 = 1024;
     //int iNum2 = 12;
@@ -240,8 +235,7 @@ CompCurves::makeSplineMiddle(const Recipe& r) {
 
         // map i continuously into .5 ... 2 (the knee input level in volts)
         double vInVolts = double(i) / double(iNum2);  // 0..1
-        vInVolts *= 1.5;                              // 0..1.5
-        vInVolts += .5;                               // .5..2. That's that the curve was designed for
+        vInVolts = interp(vInVolts);
 
         double vInDb = AudioMath::db(vInVolts);  // -6 ... 6
       
