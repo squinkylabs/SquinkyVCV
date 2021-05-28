@@ -125,83 +125,9 @@ void Compressor2Module::onSampleRateChange() {
 
 ******************************************************************************/
 
+#include "MultiVUMeter.h"       // need to include this after module definition
+
 #define _LAB
-
-// this control adapted from Fundamental VCA 16 channel level meter
-// widget::TransparentWidget
-class VCA_1VUKnob : public widget::TransparentWidget {
-private:
-    int* const isStereo_;
-    int* const labelMode_;
-
-public:
-    Compressor2Module* module;
-    VCA_1VUKnob() = delete;
-    VCA_1VUKnob(int* stereo, int* labelMode) : isStereo_(stereo), labelMode_(labelMode) {
-        box.size = Vec(125, 85);
-    }
-
-    void draw(const DrawArgs& args) override {
-        const int numberOfSegments = 25;
-        nvgBeginPath(args.vg);
-        nvgRoundedRect(args.vg, 0, 0, box.size.x, box.size.y, 2.0);
-        nvgFillColor(args.vg, nvgRGB(0, 0, 0));
-        nvgFill(args.vg);
-
-        const Vec margin = Vec(1, 1);
-        const Rect r = box.zeroPos().grow(margin.neg());
-        const int channels = module ? module->getNumVUChannels() : 1;
-
-        // Segment value
-        const float value = 1;
-        nvgBeginPath(args.vg);
-        nvgRect(args.vg,
-                r.pos.x,
-                r.pos.y + r.size.y * (1 - value),
-                r.size.x,
-                r.size.y * value);
-        nvgFillColor(args.vg, color::mult(color::WHITE, 0.33));
-        nvgFill(args.vg);
-
-        // Segment gain
-        nvgBeginPath(args.vg);
-        for (int c = 0; c < channels; c++) {
-            // gain == 1...0
-            const float gain = module ? module->getChannelGain(c) : 1.f;
-            // db = 0.... -infi
-
-            // let's do 1 db per segment
-            const double dbMaxReduction = -numberOfSegments;
-            const double db = std::max(AudioMath::db(gain), dbMaxReduction);
-            const double y0 = r.pos.y;
-            const double h = db * r.size.y / dbMaxReduction;
-
-            if (h >= 0.005f) {
-                nvgRect(args.vg,
-                        r.pos.x + r.size.x * c / channels,
-                        y0,
-                        r.size.x / channels,
-                        h);
-            }
-        }
-        const NVGcolor blue = nvgRGB(48, 125, 238);
-        nvgFillColor(args.vg, blue);
-        nvgFill(args.vg);
-
-        // Invisible separators
-        nvgBeginPath(args.vg);
-        for (int i = 1; i <= numberOfSegments; i++) {
-            nvgRect(args.vg,
-                    r.pos.x - 1.0,
-                    r.pos.y + r.size.y * i / float(numberOfSegments),
-                    r.size.x + 2.0,
-                    1.0);
-        }
-        nvgFillColor(args.vg, color::BLACK);
-        nvgFill(args.vg);
-    }
-};
-
 struct CompressorWidget2 : ModuleWidget {
     CompressorWidget2(Compressor2Module*);
     void appendContextMenu(Menu* menu) override;
@@ -220,7 +146,7 @@ struct CompressorWidget2 : ModuleWidget {
     void addJacks(Compressor2Module* module, std::shared_ptr<IComposite> icomp);
     void addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp);
     void addVu(Compressor2Module* module);
-    void addNumbers();
+   // void addNumbers();
     void step() override;
 
     int lastStereo = -1;
@@ -229,7 +155,7 @@ struct CompressorWidget2 : ModuleWidget {
     ParamWidget* channelKnob = nullptr;
     Label* channelIndicator = nullptr;
 
-    Label* numbers[8];
+  //  Label* numbers[8];
 
     Compressor2Module* const cModule;
     CompressorParamChannel pasteBuffer;
@@ -238,11 +164,12 @@ struct CompressorWidget2 : ModuleWidget {
     void copy();
     void paste();
     void initializeCurrent();
-    void updateVULabels(int stereo, int labelMode);
+    // void updateVULabels(int stereo, int labelMode);
 };
 
 #define TEXTCOLOR SqHelper::COLOR_WHITE
 
+#if 0
 void CompressorWidget2::addNumbers() {
     const NVGcolor color = nvgRGB(0x70, 0x70, 0x70);
     float y = 56;
@@ -277,6 +204,7 @@ void CompressorWidget2::updateVULabels(int stereo, int labelMode) {
        
     }
 }
+#endif
 
 void CompressorWidget2::initializeCurrent() {
     cModule->compressor->ui_initCurrentChannel();
@@ -411,21 +339,25 @@ void CompressorWidget2::step() {
     if ((channel != lastChannel) || (labelMode != lastLabelMode)) {
         channelIndicator->text = Comp2TextUtil::channelLabel(labelMode, channel);
     }
-
+#if 0
     if (labelMode != lastLabelMode || lastStereo != stereo) {
         updateVULabels(stereo, labelMode);
     }
-
+#endif
     lastStereo = stereo;
     lastLabelMode = labelMode;
     lastChannel = channel;
 }
 
 void CompressorWidget2::addVu(Compressor2Module* module) {
-    auto vu = new VCA_1VUKnob(&lastStereo, &lastLabelMode);
-    vu->box.pos = Vec(5, 73);
+    auto vu = new MultiVUMeter(&lastStereo, &lastLabelMode);
+    vu->box.pos = Vec(5, 83);
     vu->module = module;
     addChild(vu);
+
+    auto lab = new VULabels(&lastStereo, &lastLabelMode);
+    lab->box.pos = Vec(5, 73);
+    addChild(lab);
 }
 
 // from kitchen sink
@@ -592,7 +524,7 @@ CompressorWidget2::CompressorWidget2(Compressor2Module* module) : cModule(module
     addControls(module, icomp);
     addJacks(module, icomp);
     addVu(module);
-    addNumbers();
+   // addNumbers();
 
     // screws
 #if 0
