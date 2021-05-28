@@ -94,8 +94,6 @@ void Compressor2Module::addParams() {
                 this->configParam<BypassQuantity2>(i, param.min, param.max, param.def, paramName);
                 break;
             default:
-
-                // module->params[i].config(param.min, param.max, param.def, paramName);
                 this->configParam(i, param.min, param.max, param.def, paramName);
         }
     }
@@ -132,10 +130,14 @@ void Compressor2Module::onSampleRateChange() {
 // this control adapted from Fundamental VCA 16 channel level meter
 // widget::TransparentWidget
 class VCA_1VUKnob : public widget::TransparentWidget {
+private:
+    int* const isStereo_;
+    int* const labelMode_;
+
 public:
     Compressor2Module* module;
-
-    VCA_1VUKnob() {
+    VCA_1VUKnob() = delete;
+    VCA_1VUKnob(int* stereo, int* labelMode) : isStereo_(stereo), labelMode_(labelMode) {
         box.size = Vec(125, 85);
     }
 
@@ -229,9 +231,6 @@ struct CompressorWidget2 : ModuleWidget {
 
     Label* numbers[8];
 
-  //  Label* stereoLabel = nullptr;
-  //  Label* channelTypeLabel = nullptr;
-
     Compressor2Module* const cModule;
     CompressorParamChannel pasteBuffer;
 
@@ -239,6 +238,7 @@ struct CompressorWidget2 : ModuleWidget {
     void copy();
     void paste();
     void initializeCurrent();
+    void updateVULabels(int stereo, int labelMode);
 };
 
 #define TEXTCOLOR SqHelper::COLOR_WHITE
@@ -247,20 +247,37 @@ void CompressorWidget2::addNumbers() {
     const NVGcolor color = nvgRGB(0x70, 0x70, 0x70);
     float y = 56;
     float x0 = -14;
-    float dx = 15.5;      // 16 too much
-    for (int i=1; i < 9; ++i) {
-        assert (i < 20);
+    float dx = 15.5;  // 16 too much
 
-        float x= x0 + i * dx;
+    for (int i = 1; i < 9; ++i) {
+        assert(i < 20);
+
+        float x = x0 + i * dx;
         SqStream sq;
         sq.add(i);
         std::string s = sq.str();
         Label* label = addLabel(
-            Vec(x, y),       
+            Vec(x, y),
             s.c_str(), color);
-         numbers[i-1] = label;
+        numbers[i - 1] = label;
+        label->setSize(Vec(25, 10));
+        label->alignment = Label::CENTER_ALIGNMENT;
     }
 }
+
+void CompressorWidget2::updateVULabels(int stereo, int labelMode) {
+    float fontSize = (stereo && (labelMode == 0)) ? 14 : 9;
+    INFO("font size = %f", fontSize);
+    for (int i = 1; i < 9; ++i) {
+        std::string text = Comp2TextUtil::channelLabel(labelMode, i);
+        // 30 too big 25 not enough
+        numbers[i - 1]->setSize(Vec(27, 10));
+        numbers[i - 1]->text = text;
+        numbers[i - 1]->fontSize = fontSize;
+       
+    }
+}
+
 void CompressorWidget2::initializeCurrent() {
     cModule->compressor->ui_initCurrentChannel();
 }
@@ -278,7 +295,7 @@ void CompressorWidget2::copy() {
     if (lastStereo > 1) {
         currentChannel *= 2;
     }
-    SQINFO("copy using channel %d", currentChannel);
+    //SQINFO("copy using channel %d", currentChannel);
     ch.copyFromHolder(params, currentChannel);
     C2Json json;
     json.copyToClip(ch);
@@ -332,11 +349,6 @@ void CompressorWidget2::appendContextMenu(Menu* theMenu) {
         [this]() {
             this->initializeCurrent();
         }));
-#if 0
-    auto itemc = new SqMenuItem_BooleanParam2(module, Comp::SIDECHAIN_ALL_PARAM);
-    itemc->text = "All sidechains from channel 1";
-    theMenu->addChild(itemc);
-#endif
 
     SubMenuParamCtrl::create(theMenu, "Stereo/mono", {"Mono", "Stereo", "Linked-stereo"}, module, Comp::STEREO_PARAM);
 
@@ -392,47 +404,38 @@ void CompressorWidget2::step() {
         if (channelKnob->paramQuantity->getValue() > steps) {
             ::rack::appGet()->engine->setParam(module, Comp::CHANNEL_PARAM, steps);
         }
-      //  stereoLabel->text = Comp2TextUtil::stereoModeText(stereo);
-        // INFO("set knob max to %d", (int)channelKnob->paramQuantity->maxValue);
     }
 
     // draw the channel label
     const int channel = int(std::round(::rack::appGet()->engine->getParam(module, Comp::CHANNEL_PARAM)));
     if ((channel != lastChannel) || (labelMode != lastLabelMode)) {
-        //  SQINFO("on change, stereo = %d channel = %d", stereo, channel);
-
         channelIndicator->text = Comp2TextUtil::channelLabel(labelMode, channel);
     }
-#if 0
-    if (labelMode != lastLabelMode) {
-        //  static std::string channelModeMenuLabel(int mode, int stereo);
-        channelTypeLabel->text = Comp2TextUtil::channelModeMenuLabel(labelMode, stereo > 0);
+
+    if (labelMode != lastLabelMode || lastStereo != stereo) {
+        updateVULabels(stereo, labelMode);
     }
-#endif
+
     lastStereo = stereo;
     lastLabelMode = labelMode;
     lastChannel = channel;
 }
 
 void CompressorWidget2::addVu(Compressor2Module* module) {
-    auto vu = new VCA_1VUKnob();
+    auto vu = new VCA_1VUKnob(&lastStereo, &lastLabelMode);
     vu->box.pos = Vec(5, 73);
     vu->module = module;
     addChild(vu);
 }
 
 // from kitchen sink
-class SqBlueButton : public ToggleButton 
-{
+class SqBlueButton : public ToggleButton {
 public:
-    SqBlueButton()
-    {
+    SqBlueButton() {
         addSvg("res/oval-button-up-grey.svg");
         addSvg("res/oval-button-down.svg");
     }
 };
-
-
 
 void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
 #ifdef _LAB
@@ -457,7 +460,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(1, 193),            // raise 2
+        Vec(1, 193),  // raise 2
         "Thrsh", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -501,15 +504,15 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
     addLabel(Vec(49, 250), "Ena", TEXTCOLOR);
 #endif
 
-  //  stereoLabel = addLabel(Vec(4, 76), "Mode:");
- //   channelTypeLabel = addLabel(Vec(4, 90), "Channels:");
+    //  stereoLabel = addLabel(Vec(4, 76), "Mode:");
+    //   channelTypeLabel = addLabel(Vec(4, 90), "Channels:");
 
     SqBlueButton* tog = SqHelper::createParam<SqBlueButton>(
         icomp,
         Vec(52, 268),
         module, Comp::NOTBYPASS_PARAM);
-  //  tog->addSvg("res/square-button-01.svg");
-  //  tog->addSvg("res/square-button-02.svg");
+    //  tog->addSvg("res/square-button-01.svg");
+    //  tog->addSvg("res/square-button-02.svg");
     addParam(tog);
 
     // x = 32 too much
@@ -529,8 +532,8 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
         icomp,
         Vec(52, 307),
         module, Comp::SIDECHAIN_PARAM);
-  //  tog->addSvg("res/square-button-01.svg");
-  // tog->addSvg("res/square-button-02.svg");
+    //  tog->addSvg("res/square-button-01.svg");
+    // tog->addSvg("res/square-button-02.svg");
     addParam(tog);
 }
 
