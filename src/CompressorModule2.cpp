@@ -350,7 +350,7 @@ void CompressorWidget2::step() {
 }
 
 void CompressorWidget2::addVu(Compressor2Module* module) {
-    auto vu = new MultiVUMeter(&lastStereo, &lastLabelMode);
+    auto vu = new MultiVUMeter(&lastStereo, &lastLabelMode, &lastChannel);
     vu->box.pos = Vec(5, 83);
     vu->module = module;
     addChild(vu);
