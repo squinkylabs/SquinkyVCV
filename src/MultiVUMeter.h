@@ -28,15 +28,15 @@ private:
 
 inline void VULabels::updateLabels() {
     if ((*isStereo_ < 0) || (*labelMode_ < 0)) {
-          INFO("short 1");
+        INFO("short 1");
         return;
     }
     if ((*isStereo_ == lastStereo) && (lastLabelMode == *labelMode_)) {
-         //  INFO("short 2 %d,%d  %d,%d", *isStereo_, lastStereo, lastLabelMode, *labelMode_);
+        //  INFO("short 2 %d,%d  %d,%d", *isStereo_, lastStereo, lastLabelMode, *labelMode_);
         return;
     }
 
-    INFO("came thru %d, %d, %d", *isStereo_, *labelMode_, *channel_);
+    // INFO("came thru %d, %d, %d", *isStereo_, *labelMode_, *channel_);
 
     if (*isStereo_ > 0) {
         for (int i = 0; i < 8; ++i) {
@@ -68,26 +68,41 @@ inline void VULabels::draw(const DrawArgs& args) {
     nvgFontFaceId(vg, f);
 
     if (lastStereo > 0) {
+        // ---------- Stereo -------------
         float y = 5;
-        nvgFontSize(vg, 14);
-        const float dx = 15.5;  // 16 too much
+        float fontSize = (lastLabelMode == 2) ? 11 : 12;
+        nvgFontSize(vg, fontSize);
+        const float dx = 15.5;  // 15.6 slightly too much
         for (int i = 0; i < 8; ++i) {
-            float x = 4 + i * dx;
+            bool twoDigits = ((lastLabelMode == 1) && (i > 0));
+            float x = 5 + i * dx;
+            if (twoDigits) {
+               // INFO("two digits");
+                x -= 3;    // 6  to0 much
+            }
+            if (lastLabelMode == 2) { // for funny label mode
+               // INFO("funny label");
+                x -= 3;
+            }
             nvgFillColor(vg, (*channel_ == (i + 1)) ? textHighlighColor : textColor);
             nvgText(vg, x, y, labels[i].c_str(), nullptr);
         }
     } else {
+        // ------------ Mono -----------
         float y = 2.5;
-        nvgFontSize(vg, 9);
-        const float dx = 7.4;  //  7.5 too much 7.4 too little
+        nvgFontSize(vg, 11);
+        const float dx = 7.65;         // 9 way too big 7.5 slightly low
         for (int i = 0; i < 16; ++i) {
             switch (i) {
                 case 0:
                 case 4:
                 case 8:
                 case 12: {
-                    float x = 4 + i * dx;
-                    if (i > 7) x -= 1;
+                    float x = 2 + i * dx;
+                    const bool twoDigits = (i > 8);
+                    if (twoDigits) {
+                        x -= 2;  // move two digits to center
+                    }
                     nvgFillColor(vg, (*channel_ == (i + 1)) ? textHighlighColor : textColor);
                     nvgText(vg, x, y, labels[i].c_str(), nullptr);
                 } break;
@@ -130,15 +145,9 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
     const double y0 = r.pos.y;
 
     const float barMargin = .5;
-    static bool f = true;
+
     const float barWidth = (r.size.x / channels) - 2 * barMargin;
-    {
-        if (f) {
-            INFO("size=%f,w=%f, final=%f", r.size.x, r.size.x / channels, barWidth);
-            f = false;
-        }
-    }
-  //  INFO("channels = %d", channels);
+    //  INFO("channels = %d", channels);
     nvgBeginPath(args.vg);
     for (int c = 0; c < channels; c++) {
         // gain == 1...0
@@ -153,9 +162,6 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
             //INFO("got level at c=%d", c);
             float x = r.pos.x + r.size.x * c / channels;
             x += barMargin;
-            if (f) {
-                INFO("farw %d at %f", c, x);
-            }
             nvgRect(args.vg,
                     x,
                     y0,
