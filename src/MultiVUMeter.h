@@ -150,7 +150,7 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
         const double h = db * r.size.y / dbMaxReduction;
 
         if (h >= 0.005f) {
-            INFO("got level at c=%d", c);
+            //INFO("got level at c=%d", c);
             float x = r.pos.x + r.size.x * c / channels;
             x += barMargin;
             if (f) {
