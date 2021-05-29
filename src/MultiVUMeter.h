@@ -28,20 +28,30 @@ private:
 
 inline void VULabels::updateLabels() {
     if ((*isStereo_ < 0) || (*labelMode_ < 0)) {
-      //  INFO("short 1");
+        //  INFO("short 1");
         return;
     }
     if ((*isStereo_ == lastStereo) && (lastLabelMode == *labelMode_)) {
-      //   INFO("short 2 %d,%d  %d,%d", *isStereo_, lastStereo, lastLabelMode, *labelMode_);
+        //   INFO("short 2 %d,%d  %d,%d", *isStereo_, lastStereo, lastLabelMode, *labelMode_);
         return;
     }
 
-    for (int i = 0; i < 8; ++i) {
-        SqStream sq;
-        sq.add(i + 1);
-        std::string s = sq.str();
-        labels[i] = s;
-        INFO("set all text");
+    if (*isStereo_ > 0) {
+        for (int i = 0; i < 8; ++i) {
+            SqStream sq;
+            std::string s = Comp2TextUtil::channelLabel(*labelMode_, i + 1);
+            // INFO("set label[%d] to %s", i, s.c_str());
+            labels[i] = s;
+            //  INFO("set all text");
+        }
+    } else {
+        for (int i = 0; i < 16; ++i) {
+            SqStream sq;
+            sq.add(i + 1);
+            std::string s = sq.str();
+            labels[i] = s;
+            //INFO("set mlabel[%d] to %s", i, s.c_str());
+        }
     }
 
     lastStereo = *isStereo_;
@@ -54,15 +64,31 @@ inline void VULabels::draw(const DrawArgs& args) {
     NVGcontext* vg = args.vg;
 
     nvgFontFaceId(vg, f);
-    nvgFontSize(vg, 14);
-    float y = 5;
 
     if (lastStereo > 0) {
+        float y = 5;
+        nvgFontSize(vg, 14);
         const float dx = 15.5;  // 16 too much
         for (int i = 0; i < 8; ++i) {
             float x = 4 + i * dx;
-            nvgFillColor(vg, (*channel_ == (i+1)) ? textHighlighColor : textColor);
+            nvgFillColor(vg, (*channel_ == (i + 1)) ? textHighlighColor : textColor);
             nvgText(vg, x, y, labels[i].c_str(), nullptr);
+        }
+    } else {
+        float y = 3;
+        nvgFontSize(vg, 9);
+        const float dx = 8;  // 16 too much
+        for (int i = 0; i < 16; ++i) {
+            switch (i) {
+                case 0:
+                case 3:
+                case 7:
+                case 11: {
+                    float x = 4 + i * dx;
+                    nvgFillColor(vg, (*channel_ == (i + 1)) ? textHighlighColor : textColor);
+                    nvgText(vg, x, y, labels[i].c_str(), nullptr);
+                } break;
+            }
         }
     }
 }
@@ -94,17 +120,6 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
     const Rect r = box.zeroPos().grow(margin.neg());
     const int channels = module ? module->getNumVUChannels() : 1;
 
-    // Segment value
-    const float value = 1;
-    nvgBeginPath(args.vg);
-    nvgRect(args.vg,
-            r.pos.x,
-            r.pos.y + r.size.y * (1 - value),
-            r.size.x,
-            r.size.y * value);
-    nvgFillColor(args.vg, color::mult(color::WHITE, 0.33));
-    nvgFill(args.vg);
-
     // Segment gain
     nvgBeginPath(args.vg);
     for (int c = 0; c < channels; c++) {
@@ -126,19 +141,10 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
                     h);
         }
     }
+
+ //    const auto color = (atten >= attenThisSegment) ? UIPrefs::VU_ACTIVE_COLOR : UIPrefs::VU_INACTIVE_COLOR;
     const NVGcolor blue = nvgRGB(48, 125, 238);
     nvgFillColor(args.vg, blue);
     nvgFill(args.vg);
 
-    // Invisible separators
-    nvgBeginPath(args.vg);
-    for (int i = 1; i <= numberOfSegments; i++) {
-        nvgRect(args.vg,
-                r.pos.x - 1.0,
-                r.pos.y + r.size.y * i / float(numberOfSegments),
-                r.size.x + 2.0,
-                1.0);
-    }
-    nvgFillColor(args.vg, color::BLACK);
-    nvgFill(args.vg);
 }
