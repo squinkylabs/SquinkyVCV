@@ -336,11 +336,11 @@ inline void Compressor<TBase>::stepn() {
     const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, Compressor<TBase>::params[THRESHOLD_PARAM].value);
     const float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
     if (lastThreshold != threshold ||
-     lastRatio != rawRatio || 
-     lastNumChannelsL != numChannelsL_m || 
-     lastNumChannelsR != numChannelsR_m
-     
-     ) {
+        lastRatio != rawRatio ||
+        lastNumChannelsL != numChannelsL_m ||
+        lastNumChannelsR != numChannelsR_m
+
+    ) {
         lastThreshold = threshold;
         lastRatio = rawRatio;
         lastNumChannelsL = numChannelsL_m;

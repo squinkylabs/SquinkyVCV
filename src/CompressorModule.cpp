@@ -36,22 +36,7 @@ private:
 CompressorModule::CompressorModule() {
     config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
     compressor = std::make_shared<Comp>(this);
-    std::shared_ptr<IComposite> icomp = Comp::getDescription();
-
     addParams();
-#if 0
-    SqHelper::setupParams(icomp, this); 
-
-    // customize tooltips for some params.
-    SqTooltips::changeParamQuantity<AttackQuantity>(this, Comp::ATTACK_PARAM);
-    SqTooltips::changeParamQuantity<ReleaseQuantity>(this, Comp::RELEASE_PARAM);
-    SqTooltips::changeParamQuantity<ThresholdQuantity>(this, Comp::THRESHOLD_PARAM);
-    SqTooltips::changeParamQuantity<MakeupGainQuantity>(this, Comp::MAKEUPGAIN_PARAM);
-    SqTooltips::changeParamQuantity<RatiosQuantity>(this, Comp::RATIO_PARAM);
-    SqTooltips::changeParamQuantity<BypassQuantity>(this, Comp::NOTBYPASS_PARAM);
-    SqTooltips::changeParamQuantity<WetdryQuantity>(this, Comp::WETDRY_PARAM);
-#endif
-
     onSampleRateChange();
     compressor->init();
 }
@@ -85,8 +70,6 @@ void CompressorModule::addParams() {
                 this->configParam<BypassQuantity2>(i, param.min, param.max, param.def, paramName);
                 break;
             default:
-
-                // module->params[i].config(param.min, param.max, param.def, paramName);
                 this->configParam(i, param.min, param.max, param.def, paramName);
         }
     }

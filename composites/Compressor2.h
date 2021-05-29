@@ -36,17 +36,17 @@ template <class TBase>
 class Compressor2 : public TBase {
 public:
     Compressor2(Module* module) : TBase(module) {
-        compressors[0].setIsPolyCV(true);
-        compressors[1].setIsPolyCV(true);
-        compressors[2].setIsPolyCV(true);
-        compressors[3].setIsPolyCV(true);
+        for (int i = 0; i < 4; ++i) {
+            compressors[i].setIsPolyCV(true);
+            compressors[i]._id = i;
+        }
     }
 
     Compressor2() : TBase() {
-        compressors[0].setIsPolyCV(true);
-        compressors[1].setIsPolyCV(true);
-        compressors[2].setIsPolyCV(true);
-        compressors[3].setIsPolyCV(true);
+        for (int i = 0; i < 4; ++i) {
+            compressors[i].setIsPolyCV(true);
+            compressors[i]._id = i;
+        }
     }
 
     /**
@@ -151,6 +151,7 @@ public:
     void initAllParams();
     void initCurrentChannelParams();
 
+    void updateAllChannels();
 private:
     CompressorParamHolder compParams;
 
@@ -173,7 +174,7 @@ private:
     void pollStereo();
     void makeAllSettingsStereo();
     void setLinkAllBanks(bool);
-    void updateAllChannels();
+   
     void pollUI();
 
     /**
@@ -321,7 +322,6 @@ inline void Compressor2<TBase>::_initParamOnAllChannels(int param, float value) 
 
 template <class TBase>
 inline void Compressor2<TBase>::updateAllChannels() {
-    //SQINFO("updateAllChannels");
     for (int bank = 0; bank < 4; ++bank) {
         updateAttackAndRelease(bank);
         updateThresholdAndRatio(bank);

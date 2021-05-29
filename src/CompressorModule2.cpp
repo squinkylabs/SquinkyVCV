@@ -34,7 +34,6 @@ public:
     void process(const ProcessArgs& args) override;
     void onSampleRateChange() override;
     void onReset() override {
-        INFO("Module::onReset");
         compressor->initAllParams();
     }
     //   float getGainReductionDb();
@@ -109,6 +108,7 @@ void Compressor2Module::dataFromJson(json_t* rootJ) {
     CompressorParamHolder* params = &compressor->getParamHolder();
     C2Json ser;
     ser.jsonToParams(rootJ, params);
+    compressor->updateAllChannels();
 }
 
 void Compressor2Module::process(const ProcessArgs& args) {
@@ -168,43 +168,6 @@ struct CompressorWidget2 : ModuleWidget {
 };
 
 #define TEXTCOLOR SqHelper::COLOR_WHITE
-
-#if 0
-void CompressorWidget2::addNumbers() {
-    const NVGcolor color = nvgRGB(0x70, 0x70, 0x70);
-    float y = 56;
-    float x0 = -14;
-    float dx = 15.5;  // 16 too much
-
-    for (int i = 1; i < 9; ++i) {
-        assert(i < 20);
-
-        float x = x0 + i * dx;
-        SqStream sq;
-        sq.add(i);
-        std::string s = sq.str();
-        Label* label = addLabel(
-            Vec(x, y),
-            s.c_str(), color);
-        numbers[i - 1] = label;
-        label->setSize(Vec(25, 10));
-        label->alignment = Label::CENTER_ALIGNMENT;
-    }
-}
-
-void CompressorWidget2::updateVULabels(int stereo, int labelMode) {
-    float fontSize = (stereo && (labelMode == 0)) ? 14 : 9;
-    INFO("font size = %f", fontSize);
-    for (int i = 1; i < 9; ++i) {
-        std::string text = Comp2TextUtil::channelLabel(labelMode, i);
-        // 30 too big 25 not enough
-        numbers[i - 1]->setSize(Vec(27, 10));
-        numbers[i - 1]->text = text;
-        numbers[i - 1]->fontSize = fontSize;
-       
-    }
-}
-#endif
 
 void CompressorWidget2::initializeCurrent() {
     cModule->compressor->ui_initCurrentChannel();

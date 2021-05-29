@@ -68,7 +68,7 @@ public:
     const Ratios* _getRatio() const { return ratio; }
 
     static void _reset();
-
+    int _id = 0;            // just for debugging
 private:
     MultiLag2 lag;
     MultiLPF2 attackFilter;
@@ -107,6 +107,7 @@ private:
 
     float_4 stepPolyMultiMono(float_4, float_4);
     float_4 stepPolyLinked(float_4, float_4);
+    void setThresholdPolySub(float_4 th);
 };
 
 inline float_4 Cmprsr::getGain() const {
@@ -336,7 +337,6 @@ inline float_4 Cmprsr::stepPoly(float_4 input, float_4 detectorInput) {
 
 inline float_4 Cmprsr::stepPolyLinked(float_4 input, float_4 detectorInput) {
     float_4 envelope;
-
     {
         auto inp = detectorInput * detectorInput;
 
@@ -386,6 +386,7 @@ inline float_4 Cmprsr::stepPolyLinked(float_4 input, float_4 detectorInput) {
 
 inline float_4 Cmprsr::stepPolyMultiMono(float_4 input, float_4 detectorInput) {
     float_4 envelope;
+   
     {
         auto inp = detectorInput * detectorInput;
 
@@ -620,10 +621,19 @@ inline const MultiLag2& Cmprsr::_lag() const {
 }
 
 inline void Cmprsr::setThreshold(float th) {
-    setThresholdPoly(float_4(th));
+    assert(polySet);
+    assert(!cvIsPoly);
+    threshold = th;
+    setThresholdPolySub(float_4(th));
 }
 
 inline void Cmprsr::setThresholdPoly(float_4 th) {
+    assert(polySet);
+    assert(cvIsPoly);
+    setThresholdPolySub(th);
+}
+
+inline void Cmprsr::setThresholdPolySub(float_4 th) {
     threshold = th;
     invThreshold = 1.f / threshold;
 }
