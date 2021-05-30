@@ -130,7 +130,7 @@ public:
 };
 
 inline void MultiVUMeter::draw(const DrawArgs& args) {
-    const int numberOfSegments = 25;
+  //  const int numberOfSegments = 25;
     nvgBeginPath(args.vg);
     nvgRoundedRect(args.vg, 0, 0, box.size.x, box.size.y, 2.0);
     nvgFillColor(args.vg, nvgRGB(0, 0, 0));
@@ -141,7 +141,8 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
     const int channels = module ? module->getNumVUChannels() : 1;
 
     // Segment gain
-    const double dbMaxReduction = -numberOfSegments;
+   // const double dbMaxReduction = -numberOfSegments;
+    const double dbMaxReduction = -18;
     const double y0 = r.pos.y;
 
     const float barMargin = .5;
