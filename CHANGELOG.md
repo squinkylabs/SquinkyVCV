@@ -1,5 +1,19 @@
 # Change log for Squinky Labs modules
 
+## 10.0.19
+
+New module: Comp 2.
+
+Tooltips for compressor threshold now displayed in dB, for both compressors.
+
+Compressor level detector now has less IM distortion (re-design).
+
+Compressor soft-knee now has smoother shape - sounds better (re-design).
+
+User may now type into tooltips on Comp (bug fix).
+
+SFZ Player: now understands absolute path.
+
 ## 10.0.18
 
 New module: F2

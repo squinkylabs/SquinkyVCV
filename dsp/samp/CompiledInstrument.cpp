@@ -274,7 +274,7 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath
         assert(!path.empty());
         FilePath relativePath(path);
         if (relativePath.isAbsolute()) {
-            SQINFO("found an absolute %s", relativePath.toString().c_str());
+            // SQINFO("found an absolute %s", relativePath.toString().c_str());
             loader->addNextSample(relativePath);
         } else {
             FilePath fullPath(rootPath);
