@@ -14,8 +14,8 @@
 
 #define _USESPLINE
 //#define _GLOOK            // just do gain look
-#define _FASTLOOK       // new uniform lookups
-#define _SQR  // pseudo RMS instead of rectify
+#define _FASTLOOK  // new uniform lookups
+#define _SQR       // pseudo RMS instead of rectify
 //#define _ENV            // output the envelope
 
 class Cmprsr {
@@ -59,7 +59,11 @@ public:
     void setLinked(bool bLinked) { isLinked = bLinked; }
 
     static bool wasInit() {
+#ifdef _USESPLINE
+        return !!ratioCurves2[0];
+#else
         return !!ratioCurves[0];
+#endif
     }
 
     const MultiLag2& _getLag() const { return lag; };
@@ -68,7 +72,7 @@ public:
     const Ratios* _getRatio() const { return ratio; }
 
     static void _reset();
-    int _id = 0;            // just for debugging
+    int _id = 0;  // just for debugging
 private:
     MultiLag2 lag;
     MultiLPF2 attackFilter;
@@ -94,8 +98,11 @@ private:
     float_4 gain_;
 #endif
 
-    static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
+#ifdef _USESPLINE
     static CompCurves::CompCurveLookupPtr ratioCurves2[int(Ratios::NUM_RATIOS)];
+#else
+    static CompCurves::LookupPtr ratioCurves[int(Ratios::NUM_RATIOS)];
+#endif
 
     using processFunction = float_4 (Cmprsr::*)(float_4 input);
     processFunction procFun = &Cmprsr::stepGeneric;
@@ -195,13 +202,17 @@ inline float_4 Cmprsr::step1Comp(float_4 input) {
 #ifdef _ENV
     return envelope;
 #else
-    //  SQINFO("step1comp");
 
-    CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
     const float_4 level = envelope * invThreshold;
-
     float_4 t = gain_;
+#ifdef _USESPLINE
+    CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[0]];
+    t[0] = table->lookup(level[0]);
+#else
+    CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
     t[0] = CompCurves::lookup(table, level[0]);
+#endif
+
     gain_ = t;
     return gain_ * input;
 #endif
@@ -224,18 +235,18 @@ inline float_4 Cmprsr::step1NoDistComp(float_4 input) {
     float_4 envelope = attackFilter.get();
 #endif
 
-#ifdef _ENV
-    return envelope;
+    const float_4 level = envelope * invThreshold;
+    float_4 t = gain_;
+#ifdef _USESPLINE
+    CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[0]];
+    t[0] = table->lookup(level[0]);
 #else
     CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
-
-    const float_4 level = envelope * invThreshold;
-
-    float_4 t = gain_;
     t[0] = CompCurves::lookup(table, level[0]);
+#endif
+
     gain_ = t;
     return gain_ * input;
-#endif
 }
 
 // only non-poly
@@ -271,13 +282,21 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
         gain_ = SimdBlocks::ifelse(envelope > threshold, reductionGain, 1);
         return gain_ * input;
     } else {
+#ifdef _USESPLINE
+        CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[0]];
+#else
         CompCurves::LookupPtr table = ratioCurves[ratioIndex[0]];
+#endif
         const float_4 level = envelope * invThreshold;
 
         float_4 t = gain_;
         for (int i = 0; i < 4; ++i) {
             if (i <= maxChannel) {
+#ifdef _USESPLINE
+                t[i] = table->lookup(level[i]);
+#else
                 t[i] = CompCurves::lookup(table, level[i]);
+#endif
             }
         }
         gain_ = t;
@@ -287,18 +306,18 @@ inline float_4 Cmprsr::stepGeneric(float_4 input) {
 
 #ifdef _GLOOK
 inline float_4 Cmprsr::stepPoly(float_4 input, float_4 detectorInput) {
-    for (int i=0; i<4; ++i) {
-       // float in = detectorInput[i] * 2;
-       // float in = 2 + detectorInput[i] * .5;
+    for (int i = 0; i < 4; ++i) {
+        // float in = detectorInput[i] * 2;
+        // float in = 2 + detectorInput[i] * .5;
 
 #if 1
         float in = std::abs(detectorInput[i]);
 
 #else
-        float in = detectorInput[i];        // -5 .. 5
-        in += 5;                            // 0 ..10
-        in *= ( 1.7f / 10.f);               // 0 .. 1.7
-        in += .4f;                          // .45 .. 2.1
+        float in = detectorInput[i];  // -5 .. 5
+        in += 5;                      // 0 ..10
+        in *= (1.7f / 10.f);          // 0 .. 1.7
+        in += .4f;                    // .45 .. 2.1
 #endif
         //if (in < 0) in = 0;
         if (i == 1) {
@@ -306,19 +325,19 @@ inline float_4 Cmprsr::stepPoly(float_4 input, float_4 detectorInput) {
         } else if (i == 2) {
             gain_[i] = (in > 1.f) ? 5.f : 0.f;
         } else if (i == 0) {
-#if defined(_USESPLINE) 
-        // super hack using static
-        CompCurves::Recipe r;
-        r.ratio = 2;
-        r.kneeWidth = 12;
-        static CompCurves::CompCurveLookupPtr stable = CompCurves::makeCompGainLookup3(r);
-        gain_[i] =  stable->lookup(in);
-#elif defined( _FASTLOOK)
-        CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[i]];
-        gain_[i] =  table->lookup(in);
+#if defined(_USESPLINE)
+            // super hack using static
+            CompCurves::Recipe r;
+            r.ratio = 2;
+            r.kneeWidth = 12;
+            static CompCurves::CompCurveLookupPtr stable = CompCurves::makeCompGainLookup3(r);
+            gain_[i] = stable->lookup(in);
+#elif defined(_FASTLOOK)
+            CompCurves::CompCurveLookupPtr table = ratioCurves2[ratioIndex[i]];
+            gain_[i] = table->lookup(in);
 #else
-        CompCurves::LookupPtr table = ratioCurves[ratioIndex[i]];
-        gain_[i] = CompCurves::lookup(table, in);
+            CompCurves::LookupPtr table = ratioCurves[ratioIndex[i]];
+            gain_[i] = CompCurves::lookup(table, in);
 #endif
         }
     }
@@ -348,7 +367,6 @@ inline float_4 Cmprsr::stepPolyLinked(float_4 input, float_4 detectorInput) {
         inp[2] = avg;
         inp[3] = avg;
 
-      
         lag.step(inp);
         attackFilter.step(lag.get());
         envelope = SimdBlocks::ifelse(reduceDistortionPoly, attackFilter.get(), lag.get());
@@ -386,7 +404,7 @@ inline float_4 Cmprsr::stepPolyLinked(float_4 input, float_4 detectorInput) {
 
 inline float_4 Cmprsr::stepPolyMultiMono(float_4 input, float_4 detectorInput) {
     float_4 envelope;
-   
+
     {
         auto inp = detectorInput * detectorInput;
 
@@ -541,61 +559,91 @@ inline Cmprsr::Cmprsr() {
         switch (ratio) {
             case Ratios::HardLimit:
                 // just need to have something here
-                ratioCurves[i] = ratioCurves[int(Ratios::_4_1_hard)];
+#ifdef _USESPLINE
                 ratioCurves2[i] = ratioCurves2[int(Ratios::_4_1_hard)];
+#else
+                ratioCurves[i] = ratioCurves[int(Ratios::_4_1_hard)];
+#endif
                 assert(wasInit());
                 break;
             case Ratios::_2_1_soft: {
                 CompCurves::Recipe r;
                 r.ratio = 2;
                 r.kneeWidth = softKnee;
-                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#ifdef _USESPLINE
                 ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
+#else
+                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#endif
+
             } break;
             case Ratios::_2_1_hard: {
                 CompCurves::Recipe r;
                 r.ratio = 2;
-                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#ifdef _USESPLINE
                 ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
+#else
+                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#endif
+
             } break;
             case Ratios::_4_1_soft: {
                 CompCurves::Recipe r;
                 r.ratio = 4;
                 r.kneeWidth = softKnee;
-                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#ifdef _USESPLINE
                 ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
+#else
+                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#endif
             } break;
             case Ratios::_4_1_hard: {
                 CompCurves::Recipe r;
                 r.ratio = 4;
-                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#ifdef _USESPLINE
                 ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
+#else
+                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#endif
             } break;
             case Ratios::_8_1_soft: {
                 CompCurves::Recipe r;
                 r.ratio = 8;
                 r.kneeWidth = softKnee;
-                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#ifdef _USESPLINE
                 ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
+#else
+                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#endif
             } break;
             case Ratios::_8_1_hard: {
                 CompCurves::Recipe r;
                 r.ratio = 8;
-                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#ifdef _USESPLINE
                 ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
+#else
+                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#endif
             } break;
             case Ratios::_20_1_soft: {
                 CompCurves::Recipe r;
                 r.ratio = 20;
                 r.kneeWidth = softKnee;
-                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#ifdef _USESPLINE
                 ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
+#else
+                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#endif
             } break;
             case Ratios::_20_1_hard: {
                 CompCurves::Recipe r;
                 r.ratio = 20;
-                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#ifdef _USESPLINE
                 ratioCurves2[i] = CompCurves::makeCompGainLookup2(r);
+#else
+                ratioCurves[i] = CompCurves::makeCompGainLookup(r);
+#endif
+
             } break;
             default:
                 assert(false);

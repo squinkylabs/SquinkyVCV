@@ -69,7 +69,7 @@ public:
         STEREO_PARAM,
         LABELS_PARAM,
         SIDECHAIN_PARAM,
-        SIDECHAIN_ALL_PARAM,
+     //   SIDECHAIN_ALL_PARAM,
         // EXPERIMENT_PARAM,
         NUM_PARAMS
     };
@@ -459,7 +459,7 @@ inline void Compressor2<TBase>::pollUI() {
         TBase::params[MAKEUPGAIN_PARAM].value = ptr->makeupGain;
         TBase::params[NOTBYPASS_PARAM].value = ptr->enabled ? 1.f : 0.f;
         TBase::params[SIDECHAIN_PARAM].value = ptr->sidechainEnabled ? 1.f : 0.f;
-        TBase::params[WETDRY_PARAM].value = ptr->attack;
+        TBase::params[WETDRY_PARAM].value = ptr->wetDryMix;
         assert(getParamHolder().getNumParams() == 8);
 #if 0
         update = true;
@@ -814,10 +814,11 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
         case Compressor2<TBase>::SIDECHAIN_PARAM:
             ret = {0, 1, 0, "Sidechain enable"};
             break;
+#if 0
         case Compressor2<TBase>::SIDECHAIN_ALL_PARAM:
             ret = {0, 1, 0, "sidechain all"};
             break;
-#if 0
+
         case Compressor2<TBase>::EXPERIMENT_PARAM:
             ret = {0, 2, 0, "experiment"};
             break;
