@@ -2,11 +2,11 @@
 
 ![Comp Panel](./comp.png)
 
-## About Comp 2
+## About Comp II
 
-Comp2 is a 16 channel compressor designed to work with Mind Meld mixers, and other mixers that can send and receive effects on polyphonic cables.
+Comp II is a 16 channel compressor designed to work with Mind Meld mixers, and other mixers that can send and receive effects on polyphonic cables.
 
-CompII (and like it, Comp) is a conventional, if highly refined, compressor / limiter. Most of the controls should be very familiar if you have used other compressors. It is a feed-forward compressor, designed for minimum coloration and distortion.
+Comp II (and like it, Comp) is a conventional, if highly refined, compressor / limiter. Most of the controls should be very familiar if you have used other compressors. It is a feed-forward compressor, designed for minimum coloration and distortion.
 
 It is fully polyphonic, and unlike Comp, each channel may have different settings.
 
@@ -16,7 +16,7 @@ Comp II has fixed (preset) selection of compression ratios and knee width. Using
 
 Comp II also has a wet/dry mix to allow "parallel compression", which is very stylish right now.
 
-The compression functionality is identical to our previous compressor, Comp. had find [its manual here](./compressor.md).
+The compression functionality is identical to our previous compressor, Comp. Find [its manual here](./compressor.md).
 
 Most of the controls for Comp II are on the panel, but there are some important functions in the context menu, too.
 
@@ -24,7 +24,7 @@ It can be a little tricky at first to learn how to use a compressor. But there a
 
 ## Stereo / Mono / Linked stereo
 
-From the context menu, you may pick any of these modes. The affect all channels. TL;DR for use in the send loop of a Mind Meld mixer, "Linked Stereo" is the most conventional choice.
+From the context menu, you may pick any of these modes. They affect all channels. TL;DR for use in the send loop of a Mind Meld mixer, "Linked Stereo" is the most conventional choice.
 
 ### Mono
 
@@ -50,11 +50,11 @@ There are, however, some features that can speed editing. The context menu has "
 
 ## The context menu
 
-* **Comp 2 nanual** takes you directly to the manual for Comp 2. All of our module have a link the their manual.
+* **Comp II manual** takes you directly to the manual for Comp II. All of our module have a link directly to their manual.
 
 * **Copy channel** copies all the settings from the current channel to the clipboard.
 
-* **Past channel** pastes the contents of the clipboard into the current channel.
+* **Paste channel** pastes the contents of the clipboard into the current channel.
 
 * **Set all channels to current** copies the current channel settings, and pastes them to all the other channels.
 
@@ -68,7 +68,7 @@ There are, however, some features that can speed editing. The context menu has "
 
 * **Compression Ratio**: how much compression, for inputs that are over the threshold. The higher the ratio, the more compression. Soft-knee gives a more gradual range between compressed and not compressed.
 
-* **Gain reduction meter**: Show how much the compressor is compressing. Each section of the meter represents two decibels, so if they are all lit there will be at least 16 dB of compression.
+* **Gain reduction meter**: Show how much each compressor is compressing. See below for more information.
 
 * **Threshold** Signals above the threshold will be compressed, below threshold they will not. So the lower the threshold, the more compression you will get.
 
@@ -86,4 +86,4 @@ There are, however, some features that can speed editing. The context menu has "
 
 ## The gain reduction meter
 
-Actually 8 or 16 individual meters. Shows the gain reduction for each channel (or pair of channels) in Comp 2. The vertical rage is 18 decibels. Like most compressors, the meters expand from top to bottom.
+Actually 8 or 16 individual meters. Shows the gain reduction for each channel (or pair of channels) in Comp II. The vertical rage is 18 decibels. Like most compressors, the meters expand from top to bottom. There are horizontal lines on the meter to indicate 6 dB of gain reduction and 12 dB of reduction.

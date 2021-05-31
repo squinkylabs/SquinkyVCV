@@ -10,8 +10,8 @@
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
-#include "ctrl/SqTooltips.h"
-#include "ctrl/SqVuMeter.h"
+//#include "ctrl/SqTooltips.h"
+//#include "ctrl/SqVuMeter.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SubMenuParamCtrl.h"
 #include "ctrl/ToggleButton.h"
@@ -154,9 +154,6 @@ struct CompressorWidget2 : ModuleWidget {
     int lastLabelMode = -1;
     ParamWidget* channelKnob = nullptr;
     Label* channelIndicator = nullptr;
-
-  //  Label* numbers[8];
-
     Compressor2Module* const cModule;
     CompressorParamChannel pasteBuffer;
 
@@ -203,7 +200,7 @@ void CompressorWidget2::paste() {
 void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     MenuLabel* spacerLabel = new MenuLabel();
     theMenu->addChild(spacerLabel);
-    ManualMenuItem* manual = new ManualMenuItem("Comp 2 nanual", "https://github.com/squinkylabs/SquinkyVCV/blob/c2/docs/compressor2.md");
+    ManualMenuItem* manual = new ManualMenuItem("Comp II manual", "https://github.com/squinkylabs/SquinkyVCV/blob/c2/docs/compressor2.md");
     theMenu->addChild(manual);
 
     theMenu->addChild(new SqMenuItem(
@@ -278,8 +275,6 @@ void CompressorWidget2::step() {
     }
     const int stereo = int(std::round(::rack::appGet()->engine->getParam(module, Comp::STEREO_PARAM)));
     int labelMode = int(std::round(::rack::appGet()->engine->getParam(module, Comp::LABELS_PARAM)));
-    //  SQINFO("in step read params st=%d lastst=%d, lavelMode=%d lastMode %d",
-    //         stereo, lastStereo, labelMode, lastLabelMode);
 
     if (stereo == 0) {
         if (labelMode != 0) {
@@ -302,11 +297,6 @@ void CompressorWidget2::step() {
     if ((channel != lastChannel) || (labelMode != lastLabelMode)) {
         channelIndicator->text = Comp2TextUtil::channelLabel(labelMode, channel);
     }
-#if 0
-    if (labelMode != lastLabelMode || lastStereo != stereo) {
-        updateVULabels(stereo, labelMode);
-    }
-#endif
     lastStereo = stereo;
     lastLabelMode = labelMode;
     lastChannel = channel;
@@ -355,7 +345,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
 #ifdef _LAB
     addLabel(
-        Vec(1, 193),  // raise 2
+        Vec(2, 193),
         "Thrsh", TEXTCOLOR);
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
@@ -398,16 +388,10 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #ifdef _LAB
     addLabel(Vec(49, 250), "Ena", TEXTCOLOR);
 #endif
-
-    //  stereoLabel = addLabel(Vec(4, 76), "Mode:");
-    //   channelTypeLabel = addLabel(Vec(4, 90), "Channels:");
-
     SqBlueButton* tog = SqHelper::createParam<SqBlueButton>(
         icomp,
         Vec(52, 268),
         module, Comp::NOTBYPASS_PARAM);
-    //  tog->addSvg("res/square-button-01.svg");
-    //  tog->addSvg("res/square-button-02.svg");
     addParam(tog);
 
     // x = 32 too much
@@ -427,8 +411,6 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
         icomp,
         Vec(52, 307),
         module, Comp::SIDECHAIN_PARAM);
-    //  tog->addSvg("res/square-button-01.svg");
-    // tog->addSvg("res/square-button-02.svg");
     addParam(tog);
 }
 
@@ -446,7 +428,7 @@ void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<ICom
 
 #ifdef _LAB
     addLabel(
-        Vec(52, 289),
+        Vec(51, 289),
         "SC", TEXTCOLOR);
 #endif
     addInput(createInput<PJ301MPort>(
@@ -487,15 +469,6 @@ CompressorWidget2::CompressorWidget2(Compressor2Module* module) : cModule(module
     addControls(module, icomp);
     addJacks(module, icomp);
     addVu(module);
-   // addNumbers();
-
-    // screws
-#if 0
-    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-#endif
 }
 
 Model* modelCompressor2Module = createModel<Compressor2Module, CompressorWidget2>("squinkylabs-comp2");

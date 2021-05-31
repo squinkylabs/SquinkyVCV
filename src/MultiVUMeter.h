@@ -32,7 +32,6 @@ inline void VULabels::updateLabels() {
         return;
     }
     if ((*isStereo_ == lastStereo) && (lastLabelMode == *labelMode_)) {
-        //  INFO("short 2 %d,%d  %d,%d", *isStereo_, lastStereo, lastLabelMode, *labelMode_);
         return;
     }
 
@@ -42,9 +41,7 @@ inline void VULabels::updateLabels() {
         for (int i = 0; i < 8; ++i) {
             SqStream sq;
             std::string s = Comp2TextUtil::channelLabel(*labelMode_, i + 1);
-            // INFO("set label[%d] to %s", i, s.c_str());
             labels[i] = s;
-            //  INFO("set all text");
         }
     } else {
         for (int i = 0; i < 16; ++i) {
@@ -52,7 +49,6 @@ inline void VULabels::updateLabels() {
             sq.add(i + 1);
             std::string s = sq.str();
             labels[i] = s;
-            //INFO("set mlabel[%d] to %s", i, s.c_str());
         }
     }
 
@@ -77,11 +73,11 @@ inline void VULabels::draw(const DrawArgs& args) {
             bool twoDigits = ((lastLabelMode == 1) && (i > 0));
             float x = 5 + i * dx;
             if (twoDigits) {
-               // INFO("two digits");
-                x -= 3;    // 6  to0 much
+                // INFO("two digits");
+                x -= 3;  // 6  to0 much
             }
-            if (lastLabelMode == 2) { // for funny label mode
-               // INFO("funny label");
+            if (lastLabelMode == 2) {  // for funny label mode
+                                       // INFO("funny label");
                 x -= 3;
             }
             nvgFillColor(vg, (*channel_ == (i + 1)) ? textHighlighColor : textColor);
@@ -91,7 +87,7 @@ inline void VULabels::draw(const DrawArgs& args) {
         // ------------ Mono -----------
         float y = 2.5;
         nvgFontSize(vg, 11);
-        const float dx = 7.65;         // 9 way too big 7.5 slightly low
+        const float dx = 7.65;  // 9 way too big 7.5 slightly low
         for (int i = 0; i < 16; ++i) {
             switch (i) {
                 case 0:
@@ -114,11 +110,13 @@ inline void VULabels::draw(const DrawArgs& args) {
 //*******************************************************************************************************
 // this control adapted from Fundamental VCA 16 channel level meter
 // widget::TransparentWidget
+
 class MultiVUMeter : public widget::TransparentWidget {
 private:
     int* const isStereo_;
     int* const labelMode_;
     int* const channel_;
+    const NVGcolor lineColor = nvgRGB(0x40, 0x40, 0x40);
 
 public:
     Compressor2Module* module;
@@ -130,7 +128,6 @@ public:
 };
 
 inline void MultiVUMeter::draw(const DrawArgs& args) {
-  //  const int numberOfSegments = 25;
     nvgBeginPath(args.vg);
     nvgRoundedRect(args.vg, 0, 0, box.size.x, box.size.y, 2.0);
     nvgFillColor(args.vg, nvgRGB(0, 0, 0));
@@ -139,16 +136,35 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
     const Vec margin = Vec(1, 1);
     const Rect r = box.zeroPos().grow(margin.neg());
     const int channels = module ? module->getNumVUChannels() : 1;
-
-    // Segment gain
-   // const double dbMaxReduction = -numberOfSegments;
     const double dbMaxReduction = -18;
     const double y0 = r.pos.y;
-
     const float barMargin = .5;
-
     const float barWidth = (r.size.x / channels) - 2 * barMargin;
-    //  INFO("channels = %d", channels);
+
+    // draw the scale lines ---------------------------------------------------------
+    {
+        const int f = ::rack::appGet()->window->uiFont->handle;
+        nvgFontFaceId(args.vg, f);
+        nvgFontSize(args.vg, 11);
+        nvgBeginPath(args.vg);
+         nvgFillColor(args.vg, this->lineColor);
+
+        const float y6 = y0 + r.size.y / 3;
+        const float y12 = y0 + 2 * r.size.y / 3;
+        const float x0 = r.pos.x;
+        const float w = r.size.x;
+        const float xLabel = x0 + (r.size.x / 2) - 10;
+
+
+        nvgRect(args.vg, x0, y6, w, 1);
+      //  nvgText(args.vg, xLabel, y6,"-6 dB.", nullptr);
+
+        nvgRect(args.vg, x0, y12,w, 1);
+ 
+        nvgFill(args.vg);
+    }
+
+    //  draw the bars themselves
     nvgBeginPath(args.vg);
     for (int c = 0; c < channels; c++) {
         // gain == 1...0
@@ -171,12 +187,11 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
         }
     }
 
-    //    const auto color = (atten >= attenThisSegment) ? UIPrefs::VU_ACTIVE_COLOR : UIPrefs::VU_INACTIVE_COLOR;
     const NVGcolor blue = nvgRGB(48, 125, 238);
     nvgFillColor(args.vg, blue);
     nvgFill(args.vg);
 
-    // now the active channel
+    // Re-draw the active channel in a different color so we see it. ----------
     {
         nvgBeginPath(args.vg);
         const NVGcolor ltBlue = nvgRGB(48 + 50, 125 + 50, 255);
