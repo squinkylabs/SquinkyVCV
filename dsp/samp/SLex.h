@@ -156,4 +156,5 @@ private:
     int currentLine = 0;
 
     static void validateName(const std::string&);
+    static SLexPtr goCommon(SLex* lx, const std::string& sContent);
 };

@@ -79,6 +79,13 @@ static void testxKVP2() {
     assertEQ(pid->idName, "0.6");
 }
 
+static void testLexTrivialComment() {
+    SLexPtr lex = SLex::go("//");
+    assert(lex);
+    lex->validate();
+    assertEQ(lex->items.size(), 0);
+}
+
 static void testLexComment() {
     SLexPtr lex = SLex::go("// comment\n<global>");
     assert(lex);
@@ -771,6 +778,7 @@ void testx() {
     testxKVP();
     testxKVP2();
 
+    testLexTrivialComment();
     testLexComment();
     testLexComment2();
     testLexMultiLine1();

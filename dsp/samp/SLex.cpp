@@ -17,30 +17,20 @@ SLex::SLex(std::string* errorText, int includeDepth, const FilePath* filePath) :
 }
 
 SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includeDepth, const FilePath* yourFilePath) {
-    int count = 0;
     // song and dance to work around MS bug.
     SLex* lx = new SLex(errorText, includeDepth, yourFilePath);
-    SLexPtr result(lx);
-
-    for (const char& c : sContent) {
-        if (c == '\n') {
-            ++result->currentLine;
-        }
-        bool ret = result->procNextChar(c);
-        if (!ret) {
-            // SQWARN("leaving lex early on false");
-            return nullptr;
-        }
-        ++count;
-    }
-    bool ret = result->procEnd();
-    return ret ? result : nullptr;
+    return goCommon(lx, sContent);
 }
 
 SLexPtr SLex::goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth) {
     int count = 0;
     // song and dance to work around MS bug.
     SLex* lx = new SLex(errorText, includeDepth, rootFilePath);
+    return goCommon(lx, sContent);
+}
+
+SLexPtr SLex::goCommon(SLex* lx, const std::string& sContent) {
+    int count = 0;
     SLexPtr result(lx);
 
     for (size_t i=0; i< sContent.size(); ++i) {
@@ -52,7 +42,6 @@ SLexPtr SLex::goRecurse(const FilePath* rootFilePath, const std::string& sConten
       
         bool ret = result->procNextChar(c, nextC);
         if (!ret) {
-            // SQWARN("leaving lex early on false");
             return nullptr;
         }
         ++count;
@@ -60,6 +49,7 @@ SLexPtr SLex::goRecurse(const FilePath* rootFilePath, const std::string& sConten
     bool ret = result->procEnd();
     return ret ? result : nullptr;
 }
+
 
 void SLex::validateName(const std::string& name) {
 // TODO: now that file names can have spaces, we can't do this.
