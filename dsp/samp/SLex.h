@@ -1,11 +1,11 @@
 #pragma once
 
-#include "SamplerSchema.h"
-#include "SqLog.h"
-
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "SamplerSchema.h"
+#include "SqLog.h"
 
 class FilePath;
 class SLex;
@@ -47,18 +47,30 @@ using SLexItemPtr = std::shared_ptr<SLexItem>;
 class SLex {
 public:
     /**
+     * This factory should only be called to make the top level Lexer. It should not be used
+     * internally to recurse into a new file.
+     * 
      * @param sContent is the input data to analyze (typically the contents of an SFZ file).
      * @param errorTest is in out parameter for returning lexing errors.
      * @param includeDepth is passed when lexing recursively for #include resolution.
+     * @param yourFilePath is the full path to the file that sContentCame from.
+     * 
+     * These optional params should be passed for "real" code, but they are not required for a lot of unit test code.
+     * 
      * @returns lexer full of tokens, or null if error
      */
-  
     static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
-    SLex(std::string* errorText, int includeDepth, const FilePath* yourFilePath);
+
+    /**
+     * This is the factory for "child" lexers while processing includes
+     */
+    static SLexPtr goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth);
+
     std::vector<SLexItemPtr> items;
     SLexItemPtr next() {
         return currentIndex < int(items.size()) ? items[currentIndex] : nullptr;
     }
+
     void consume() {
         currentIndex++;
         // printf("after lex::consume, index = %d\n", currentIndex);
@@ -69,8 +81,12 @@ public:
     }
     void validate() const;
 
+    SLex(const SLex&) = delete;
+    const SLex& operator=(const SLex&) = delete;
+
 private:
-   
+    SLex(std::string* errorText, int includeDepth, const FilePath* rootFilePath);
+
     // return true if no error
     bool procNextChar(char c);
     bool procFreshChar(char c);
@@ -82,8 +98,6 @@ private:
     bool procEqualsSignInIdentifier();
     bool procStateNextDefineChar(char c);
     bool procStateNextHashChar(char c);
-
-
 
     bool error(const std::string&);
     bool handleIncludeFile(const std::string&);
@@ -124,19 +138,20 @@ private:
     DefineSubState defineSubState = DefineSubState::MatchingOpcode;
 
     int spaceCount = 0;
-    
+
     std::string curItem;
     bool lastIdentifierIsString = false;
     bool lastCharWasForwardSlash = false;
     std::string* const outErrorStringPtr;
-    const FilePath* const myFilePath;
     const int includeRecursionDepth;
+
+    //const FilePath* const myFilePath;
+    const FilePath* const rootFilePath;
 
     int currentIndex = 0;
 
     // internally it's zero based, but we make it one based for things we expose.
     int currentLine = 0;
-
 
     static void validateName(const std::string&);
 };

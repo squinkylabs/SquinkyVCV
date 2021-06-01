@@ -10,12 +10,17 @@
 #include "SqLog.h"
 #include "SqStream.h"
 
-SLex::SLex(std::string* errorText, int includeDepth, const FilePath* filePath) : outErrorStringPtr(errorText), includeRecursionDepth(includeDepth), myFilePath(filePath) {
+SLex::SLex(std::string* errorText, int includeDepth, const FilePath* filePath) : outErrorStringPtr(errorText), includeRecursionDepth(includeDepth), rootFilePath(filePath) {
+    if (rootFilePath) {
+        SQINFO("SLex::SLex myFilePath=%s", rootFilePath->toString().c_str());
+    }
 }
 
 SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includeDepth, const FilePath* yourFilePath) {
     int count = 0;
-    SLexPtr result = std::make_shared<SLex>(errorText, includeDepth, yourFilePath);
+    // song and dance to work around MS bug.
+    SLex* lx = new SLex(errorText, includeDepth, yourFilePath);
+    SLexPtr result(lx);
 
     for (const char& c : sContent) {
         if (c == '\n') {
@@ -29,7 +34,27 @@ SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includ
         ++count;
     }
     bool ret = result->procEnd();
-    // SQINFO("leaving at end");
+    return ret ? result : nullptr;
+}
+
+SLexPtr SLex::goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth) {
+    int count = 0;
+    // song and dance to work around MS bug.
+    SLex* lx = new SLex(errorText, includeDepth, rootFilePath);
+    SLexPtr result(lx);
+
+    for (const char& c : sContent) {
+        if (c == '\n') {
+            ++result->currentLine;
+        }
+        bool ret = result->procNextChar(c);
+        if (!ret) {
+            // SQWARN("leaving lex early on false");
+            return nullptr;
+        }
+        ++count;
+    }
+    bool ret = result->procEnd();
     return ret ? result : nullptr;
 }
 
@@ -351,9 +376,9 @@ bool SLex::procNextIdentifierChar(char c) {
             }
             // remove trailing space
             while (!curItem.empty() && isspace(curItem.back())) {
-                 curItem.pop_back();
+                curItem.pop_back();
             }
-           
+
             addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
             state = State::InComment;
             return true;
@@ -446,6 +471,7 @@ std::string SLexItem::lineNumberAsString() const {
 }
 
 bool SLex::handleIncludeFile(const std::string& fileName) {
+    SQINFO("SLex::handleIncludeFile %s", fileName.c_str());
     assert(!fileName.empty());
     if (includeRecursionDepth > 10) {
         return error("include nesting too deep");
@@ -455,19 +481,21 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
         return error("Include filename not quoted");
     }
     std::string rawFilename = fileName.substr(1, fileName.length() - 2);
-    if (!myFilePath) {
+    if (!rootFilePath) {
         return error("Can't resolve include with no context");
     }
-    FilePath origPath(*myFilePath);
+    FilePath origPath(*rootFilePath);
     FilePath origFolder = origPath.getPathPart();
     FilePath namePart(rawFilename);
     FilePath fullPath = origFolder;
     fullPath.concat(namePart);
+    SQINFO("make full include path: %s", fullPath.toString().c_str());
 
     std::ifstream t(fullPath.toString());
     if (!t.good()) {
         //  printf("can't open file\n");
         // return "can't open source file: " + sPath;
+        SQWARN("can't open include");
 
         SqStream s;
         s.add("Can't open ");
@@ -486,7 +514,7 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
     // we must:
     // 1) lex it.
     //    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
-    auto includeLexer = SLex::go(str, outErrorStringPtr, includeRecursionDepth + 1, &fullPath);
+    auto includeLexer = SLex::goRecurse(rootFilePath, str, outErrorStringPtr, includeRecursionDepth + 1);
     if (!includeLexer) {
         return false;  // error should already be in outErrorStringPtr
     }
