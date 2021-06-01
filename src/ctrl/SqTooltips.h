@@ -1,5 +1,9 @@
 
 #pragma once
+
+#include "engine/ParamQuantity.hpp"
+#include "engine/Module.hpp"
+
 namespace SqTooltips
 {
 
@@ -8,7 +12,7 @@ namespace SqTooltips
  *      overrides display string
  *      same size as ParamQuantity, so they can be switched at runtime
  */
-class SQParamQuantity : public ParamQuantity {
+class SQParamQuantity : public rack::engine::ParamQuantity {
 public:
     /**
      * @param other is the ParamQuantity we are going to take over

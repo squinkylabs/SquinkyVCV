@@ -15,6 +15,7 @@ static void process(Comp& comp, int times) {
 static void testMod(int channelToTest, float trimValue, float cvValue, float expectedTranspose) {
     Comp comp;
     initComposite(comp);
+    comp.suppressErrors();
 
    // assert(channelToTest == 0);
 

@@ -18,7 +18,7 @@ It’s fully polyphonic.
 
 ## A pedantic note about FM vs. PM
 
-Most modules and synthesizers that claim to do "FM" really use phase modulation. Even the FX-7 used PM. The advantages of phase modulation of frequency modulation are:
+Most modules and synthesizers that claim to do "FM" really use phase modulation. Even the DX-7 used PM. The advantages of phase modulation of frequency modulation are:
 
 * PM Timbres stay the same as pitch is changed, whereas FM doesn't.
 * FM can easily go out of tune when heavy amounts of FM are applied. PM doesn't have this problem.

@@ -348,6 +348,7 @@ static void testSampBuilds() {
     using Comp = Samp<TestComposite>;
     Comp::ProcessArgs arg;
     std::shared_ptr<Comp> pcomp = std::make_shared<Comp>();
+    pcomp->suppressErrors();
     pcomp->init();
     pcomp->process(arg);
 }

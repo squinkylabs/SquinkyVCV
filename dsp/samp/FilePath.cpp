@@ -7,10 +7,27 @@
 
 FilePath::FilePath(const char* s) : data(s) {
     fixSeparators();
+    initAbs();
 }
 
 FilePath::FilePath(const std::string& s) : data(s) {
     fixSeparators();
+    initAbs();
+}
+
+void FilePath::initAbs() {
+    if (data.empty()) {
+        return;
+    }
+    if (data.size() >= 2 && data[1] == ':') {
+        abs= true;
+    }
+    if (data[0] ==  '\\') {
+        abs = true;
+    }
+    if (data[0] == '/') {
+        abs = true;
+    }
 }
 
 std::string FilePath::toString() const {

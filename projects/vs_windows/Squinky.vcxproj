@@ -103,6 +103,7 @@
     <ClCompile Include="..\..\sqsrc\util\InteropClipboard.cpp" />
     <ClCompile Include="..\..\test\Analyzer.cpp" />
     <ClCompile Include="..\..\test\calQ.cpp" />
+    <ClCompile Include="..\..\test\gc.cpp" />
     <ClCompile Include="..\..\test\initPerf.cpp" />
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\perfTest.cpp" />
@@ -115,6 +116,7 @@
     <ClCompile Include="..\..\test\testADSRSampler.cpp" />
     <ClCompile Include="..\..\test\testCmprsr.cpp" />
     <ClCompile Include="..\..\test\testCompressor.cpp" />
+    <ClCompile Include="..\..\test\testCompressorII.cpp" />
     <ClCompile Include="..\..\test\testCompressorParamHolder.cpp" />
     <ClCompile Include="..\..\test\testFlac.cpp" />
     <ClCompile Include="..\..\test\testHeadingTracker.cpp" />

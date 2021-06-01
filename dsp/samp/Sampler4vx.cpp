@@ -82,7 +82,9 @@ void Sampler4vx::updatePitch() {
 
 bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
     if (!patch || !waves) {
-        SQDEBUG("4vx not intit");
+        if (printErrors) {
+            SQDEBUG("4vx not intit");
+        }
         return false;
     }
     if (patch->isInError()) {

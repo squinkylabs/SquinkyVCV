@@ -88,8 +88,10 @@ private:
     SLex(std::string* errorText, int includeDepth, const FilePath* rootFilePath);
 
     // return true if no error
-    bool procNextChar(char c);
-    bool procFreshChar(char c);
+    // the functions that take a second argument expect it to either be
+    // the next character, or -1 for "none" or "not known"
+    bool procNextChar(char c, char nextC = -1);
+    bool procFreshChar(char c, char nextC = -1);
     bool procNextTagChar(char c);
     bool procNextCommentChar(char c);
     bool procNextIncludeChar(char c);

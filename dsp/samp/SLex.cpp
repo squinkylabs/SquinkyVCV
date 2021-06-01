@@ -43,11 +43,14 @@ SLexPtr SLex::goRecurse(const FilePath* rootFilePath, const std::string& sConten
     SLex* lx = new SLex(errorText, includeDepth, rootFilePath);
     SLexPtr result(lx);
 
-    for (const char& c : sContent) {
+    for (size_t i=0; i< sContent.size(); ++i) {
+        const char c = sContent[i];
+        const char nextC = (i >= (sContent.size() - 1)) ? -1 : sContent[i + 1];
         if (c == '\n') {
             ++result->currentLine;
         }
-        bool ret = result->procNextChar(c);
+      
+        bool ret = result->procNextChar(c, nextC);
         if (!ret) {
             // SQWARN("leaving lex early on false");
             return nullptr;
@@ -112,11 +115,11 @@ void SLex::_dump() const {
     fflush(stdout);
 }
 
-bool SLex::procNextChar(char c) {
+bool SLex::procNextChar(char c, char nextC) {
     //SQINFO("proc next: %c", c);
     switch (state) {
         case State::Ready:
-            return procFreshChar(c);
+            return procFreshChar(c, nextC);
         case State::InTag:
             return procNextTagChar(c);
         case State::InComment:
@@ -295,8 +298,7 @@ bool SLex::procNextCommentChar(char c) {
     return true;
 }
 
-bool SLex::procFreshChar(char c) {
-    // SQINFO("proc fresh char>%c< line %d\n", c, currentLine);
+bool SLex::procFreshChar(char c, char nextC) {
     if (isspace(c)) {
         return true;  // eat whitespace
     }
@@ -305,8 +307,11 @@ bool SLex::procFreshChar(char c) {
             state = State::InTag;
             return true;
         case '/':
-            state = State::InComment;
-            return true;
+            if (nextC == '/') {
+                state = State::InComment;
+                return true;
+            }
+            break;          
         case '=':
             addCompletedItem(std::make_shared<SLexEqual>(currentLine), false);
             return true;
