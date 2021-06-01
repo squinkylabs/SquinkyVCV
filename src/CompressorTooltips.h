@@ -1,113 +1,152 @@
 
 #pragma once
 
-#include "ctrl/SqTooltips.h"
 #include "Compressor.h"
+#include "Compressor2.h"
+#include "SqStream.h"
+#include "WidgetComposite.h"
 
-class LambdaQuantity : public SqTooltips::SQParamQuantity {
+class AttackQuantity2 : public rack::engine::ParamQuantity {
 public:
-    LambdaQuantity(const ParamQuantity& other) : 
-        SqTooltips::SQParamQuantity(other) 
-    {
+    AttackQuantity2() : func(Compressor2<WidgetComposite>::getSlowAttackFunction()),
+                        antiFunc(Compressor2<WidgetComposite>::getSlowAntiAttackFunction()) {
     }
-    
+
     std::string getDisplayValueString() override {
         auto value = getValue();
-        auto expValue = expFunction(value);
+        auto mappedValue = func(value);
+        if (mappedValue < .1) {
+            mappedValue = 0;
+        }
         SqStream str;
         str.precision(2);
-        str.add(expValue);
-        if (!suffix.empty()) {
-            str.add(suffix);
-        }
+        str.add(mappedValue);
+
+        str.add(" mS");
         return str.str();
     }
-protected:
-    std::function<double(double)> expFunction;
-    std::string suffix;
+    void setDisplayValueString(std::string s) override {
+
+        float val = ::atof(s.c_str());
+        if (val >= 0 && val <= 200) {
+            val = antiFunc(val);
+            ParamQuantity::setValue(val);
+        }
+    }
+
+private:
+    std::function<double(double)> const func;
+    std::function<double(double)> const antiFunc;
 };
 
-class AttackQuantity : public LambdaQuantity {
+class ReleaseQuantity2 : public rack::engine::ParamQuantity {
 public:
-    AttackQuantity(const ParamQuantity& other) : LambdaQuantity(other)
-    {
-       // expFunction = Comp::getSlowAttackFunction();
-        auto func = Compressor<WidgetComposite>::getSlowAttackFunction();
-        expFunction = [func](double x) {
-            auto y = func(x);
-            if (y < .1) {
-                y = 0;
-            }
-            return y;
-        };
-        suffix = " mS";
+    ReleaseQuantity2() : func(Compressor2<WidgetComposite>::getSlowReleaseFunction()),
+                         antiFunc(Compressor2<WidgetComposite>::getSlowAntiReleaseFunction()) {
     }
-};
 
-class ReleaseQuantity : public LambdaQuantity {
-public:
-    ReleaseQuantity(const ParamQuantity& other) : LambdaQuantity(other)
-    {
-        expFunction = Compressor<WidgetComposite>::getSlowReleaseFunction();
-        suffix = " mS";
-    }
-};
-
-class ThresholdQuantity : public LambdaQuantity {
-public:
-    ThresholdQuantity(const ParamQuantity& other) : LambdaQuantity(other)
-    {
-        expFunction = Compressor<WidgetComposite>::getSlowThresholdFunction();
-        suffix = " V";
-    }
-};
-
-class MakeupGainQuantity : public LambdaQuantity {
-public:
-    MakeupGainQuantity(const ParamQuantity& other) : LambdaQuantity(other)
-    {
-        expFunction = [](double x) {
-            return x;
-        };
-        suffix = " dB";
-    }
-};
-
-class WetdryQuantity : public LambdaQuantity {
-public:
-    WetdryQuantity(const ParamQuantity& other) : LambdaQuantity(other)
-    {
-        expFunction = [](double x) {
-            return (x + 1) * 50;
-        };
-        suffix = " % wet";
-    }
-};
-
-class RatiosQuantity : public SqTooltips::SQParamQuantity {
-public:
-    RatiosQuantity(const ParamQuantity& other) : 
-        SqTooltips::SQParamQuantity(other) 
-    {
-    }
-    
     std::string getDisplayValueString() override {
         auto value = getValue();
-        int index = value;
+        auto mappedValue = func(value);
+        SqStream str;
+        str.precision(2);
+        str.add(mappedValue);
+
+        str.add(" mS");
+        return str.str();
+    }
+    void setDisplayValueString(std::string s) override {
+        float val = ::atof(s.c_str());
+        if (val >= 0 && val <= 2000) {
+            auto mappedValue = antiFunc(val);
+            ParamQuantity::setValue(mappedValue);
+        }
+    }
+
+private:
+    std::function<double(double)> const func;
+    std::function<double(double)> const antiFunc;
+};
+
+class ThresholdQuantity2 : public rack::engine::ParamQuantity {
+public:
+    ThresholdQuantity2() : func(Compressor2<WidgetComposite>::getSlowThresholdFunction()),
+                           antiFunc(Compressor2<WidgetComposite>::getSlowAntiThresholdFunction()) {
+    }
+
+    std::string getDisplayValueString() override {
+        const auto value = getValue();
+        const auto mappedValue = func(value);
+        // -20 because VCV 0 dB is 10V, but for AudioMath it's 1V
+        const auto db = -20 + AudioMath::db(mappedValue);
+        SqStream str;
+        str.precision(2);
+        str.add(db);
+        str.add(" dB");
+        return str.str();
+    }
+    void setDisplayValueString(std::string s) override {
+        float val = ::atof(s.c_str());
+        if (val <= 0 && val > -200) {
+            val += 20;
+            val = AudioMath::gainFromDb(val);
+            val = antiFunc(val);
+            ParamQuantity::setValue(val);
+        }
+    }
+
+private:
+    std::function<double(double)> const func;
+    std::function<double(double)> const antiFunc;
+};
+
+class MakeupGainQuantity2 : public rack::engine::ParamQuantity {
+public:
+    std::string getDisplayValueString() override {
+        auto mappedValue = getValue();
+        SqStream str;
+        str.precision(2);
+        str.add(mappedValue);
+        str.add(" dB");
+        return str.str();
+    }
+};
+
+class WetdryQuantity2 : public rack::engine::ParamQuantity {
+public:
+    std::string getDisplayValueString() override {
+        auto value = getValue();
+        auto mappedValue = (value + 1) * 50;
+        SqStream str;
+        str.precision(2);
+        str.add(mappedValue);
+        str.add(" % wet");
+        return str.str();
+    }
+
+    void setDisplayValueString(std::string s) override {
+        float val = ::atof(s.c_str());
+        if (val >= 0 && val <= 100) {
+            val = val / 50.f;  //0..2
+            val -= 1;
+            ParamQuantity::setValue(val);
+        }
+    }
+};
+
+class RatiosQuantity2 : public rack::engine::ParamQuantity {
+public:
+    std::string getDisplayValueString() override {
+        auto value = getValue();
+
+        int index = int(std::round(value));
         std::string ratio = Compressor<WidgetComposite>::ratiosLong()[index];
         return ratio;
     }
-protected:
-    std::function<double(double)> expFunction;
-    std::string suffix;
 };
 
-class BypassQuantity :  public SqTooltips::SQParamQuantity {
+class BypassQuantity2 : public rack::engine::ParamQuantity {
 public:
-    BypassQuantity(const ParamQuantity& other) : 
-        SqTooltips::SQParamQuantity(other) 
-    {
-    }
     std::string getDisplayValueString() override {
         auto value = getValue();
         return value < .5 ? "Bypassed" : "Normal";

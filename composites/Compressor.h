@@ -11,6 +11,7 @@
 #include "LookupTableFactory.h"
 #include "ObjectCache.h"
 #include "SqPort.h"
+#include "engine/Port.hpp"
 
 namespace rack {
 namespace engine {
@@ -27,6 +28,54 @@ public:
 };
 
 /**
+ * new splines - rebase
+ *
+ * 16 channel bypassed:         4.06    
+ * 16 channel mono 4:1 soft     90.2    
+ * 16 channel linked 4:1 soft   64.1 
+ * 16 channel linked limited    27.8  
+ * 
+ * 
+ * sidechain:
+ * 
+ * 16 channel bypassed:         4.4
+ * 16 channel mono 4:1 soft     90.7
+ * 16 channel linked 4:1 soft   64.3
+ * 16 channel linked limited    28.2
+ *  
+ * new lookup tables, etc..
+ * 
+ * 16 channel bypassed:         4.4
+ * 16 channel mono 4:1 soft     90.4
+ * 16 channel linked 4:1 soft   64
+ * 16 channel linked limited    27.1
+ * 
+ * first round optimization:
+ *
+ * 1 ch lim: 4.6
+ * 1 cha curve 
+ * 16 cha lim:  20
+ * 16 ch curve: 124
+ * comp2 16: 145
+ * comp2 16 linked : 151
+ * comp2 16 bypassed: 148
+ *  
+ * SQ:
+ * 1 ch lim: 4.6
+ * 1 cha curve 
+ * 16 cha lim:  20
+ * 16 ch curve: 124
+ * comp2 16: 145
+ * comp2 16 linked : 151
+ * comp2 16 bypassed: 148
+ * 
+ * Starting on comp2, here's where we are
+ * 1 ch lim: 4.6
+ * 1 cha curve 
+ * 16 cha lim:  15.9
+ * 16 ch curve: 121
+ * comp2 16: 149
+ * 
  * expand range to 40db
  * 1 ch lim: 5
  * 1 cha curve 12.8
@@ -86,8 +135,25 @@ template <class TBase>
 class Compressor : public TBase {
 public:
     Compressor(Module* module) : TBase(module) {
+        compressorsL[0].setIsPolyCV(false);
+        compressorsL[1].setIsPolyCV(false);
+        compressorsL[2].setIsPolyCV(false);
+        compressorsL[3].setIsPolyCV(false);
+        compressorsR[0].setIsPolyCV(false);
+        compressorsR[1].setIsPolyCV(false);
+        compressorsR[2].setIsPolyCV(false);
+        compressorsR[3].setIsPolyCV(false);
     }
+
     Compressor() : TBase() {
+        compressorsL[0].setIsPolyCV(false);
+        compressorsL[1].setIsPolyCV(false);
+        compressorsL[2].setIsPolyCV(false);
+        compressorsL[3].setIsPolyCV(false);
+        compressorsR[0].setIsPolyCV(false);
+        compressorsR[1].setIsPolyCV(false);
+        compressorsR[2].setIsPolyCV(false);
+        compressorsR[3].setIsPolyCV(false);
     }
 
     /**
@@ -104,7 +170,6 @@ public:
         THRESHOLD_PARAM,
         RATIO_PARAM,
         MAKEUPGAIN_PARAM,
-        //  REDUCEDISTORTION_PARAM,
         NOTBYPASS_PARAM,
         WETDRY_PARAM,
         NUM_PARAMS
@@ -271,11 +336,11 @@ inline void Compressor<TBase>::stepn() {
     const float threshold = LookupTable<float>::lookup(thresholdFunctionParams, Compressor<TBase>::params[THRESHOLD_PARAM].value);
     const float rawRatio = Compressor<TBase>::params[RATIO_PARAM].value;
     if (lastThreshold != threshold ||
-     lastRatio != rawRatio || 
-     lastNumChannelsL != numChannelsL_m || 
-     lastNumChannelsR != numChannelsR_m
-     
-     ) {
+        lastRatio != rawRatio ||
+        lastNumChannelsL != numChannelsL_m ||
+        lastNumChannelsR != numChannelsR_m
+
+    ) {
         lastThreshold = threshold;
         lastRatio = rawRatio;
         lastNumChannelsL = numChannelsL_m;
@@ -308,7 +373,6 @@ template <class TBase>
 inline void Compressor<TBase>::pollAttackRelease() {
     const float rawAttack = Compressor<TBase>::params[ATTACK_PARAM].value;
     const float rawRelease = Compressor<TBase>::params[RELEASE_PARAM].value;
-    const bool reduceDistortion = true;
 
     if (rawAttack != lastRawA || rawRelease != lastRawR) {
         lastRawA = rawAttack;
@@ -318,8 +382,8 @@ inline void Compressor<TBase>::pollAttackRelease() {
         const float release = LookupTable<float>::lookup(releaseFunctionParams, rawRelease);
 
         for (int i = 0; i < 4; ++i) {
-            compressorsL[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
-            compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime(), reduceDistortion);
+            compressorsL[i].setTimes(attack, release, TBase::engineGetSampleTime());
+            compressorsR[i].setTimes(attack, release, TBase::engineGetSampleTime());
         }
     }
 }
@@ -369,8 +433,8 @@ inline void Compressor<TBase>::process(const typename TBase::ProcessArgs& args) 
 template <class TBase>
 inline void Compressor<TBase>::setupLimiter() {
     for (int i = 0; i < 4; ++i) {
-        compressorsL[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
-        compressorsR[i].setTimes(1, 100, TBase::engineGetSampleTime(), false);
+        compressorsL[i].setTimes(1, 100, TBase::engineGetSampleTime());
+        compressorsR[i].setTimes(1, 100, TBase::engineGetSampleTime());
     }
 }
 

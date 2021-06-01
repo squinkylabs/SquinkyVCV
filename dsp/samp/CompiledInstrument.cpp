@@ -250,7 +250,7 @@ bool CompiledInstrument::playTestMode(VoicePlayInfo& info, const VoicePlayParame
 #else
     info.transposeAmt = 1;
 #endif
-    return false;       // don't care about KS for tests.
+    return false;  // don't care about KS for tests.
 }
 
 void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath) {
@@ -272,10 +272,16 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath
 
     for (auto path : tempPaths) {
         assert(!path.empty());
-        FilePath fullPath(rootPath);
         FilePath relativePath(path);
-        fullPath.concat(relativePath);
-        loader->addNextSample(fullPath);
+        if (relativePath.isAbsolute()) {
+            // SQINFO("found an absolute %s", relativePath.toString().c_str());
+            loader->addNextSample(relativePath);
+        } else {
+            FilePath fullPath(rootPath);
+
+            fullPath.concat(relativePath);
+            loader->addNextSample(fullPath);
+        }
     }
 }
 

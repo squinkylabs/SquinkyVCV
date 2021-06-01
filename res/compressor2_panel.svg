@@ -13,7 +13,7 @@
     <g id="panel">
       <rect width="135" height="380" style="fill: #fff"/>
       <g id="background_fill" data-name="background fill">
-        <rect width="135" height="380" style="fill: #e6e6e6"/>
+        <rect width="135" height="380" style="fill: #353535"/>
         <rect x="0.5" y="0.5" width="134" height="379" style="fill: none;stroke: #707070"/>
       </g>
     </g>

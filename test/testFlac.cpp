@@ -14,11 +14,11 @@ static void testWithFlac(const FilePath& f) {
     r.read(f);
     assert(r.ok());
 
-    SQINFO("file: %s", f.toString().c_str());
+  //  SQINFO("file: %s", f.toString().c_str());
 
     for (int i = 0; i < 10; ++i) {
         const float s = r.getSamples()[i];
-        SQINFO("sample[%d] =%f", i, s);
+        //SQINFO("sample[%d] =%f", i, s);
     }
 
     float x = -100;
@@ -28,7 +28,7 @@ static void testWithFlac(const FilePath& f) {
         x = std::max(x, d);
         y = std::min(y, d);
     }
-    SQINFO("min = %f, max = %f", y, x);
+    //SQINFO("min = %f, max = %f", y, x);
     assertClose(x, 1, .0001);
     assertClose(y, -1, .0001);
     assertEQ(r.getSampleRate(), 44100);

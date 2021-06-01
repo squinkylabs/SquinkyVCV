@@ -756,6 +756,12 @@
     <ClCompile Include="..\..\dsp\samp\WaveLoaders.cpp">
       <Filter>Source Files\dsp\samp</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testCompressorII.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\test\gc.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

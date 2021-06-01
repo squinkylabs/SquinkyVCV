@@ -65,8 +65,6 @@ static void testF2Fc_Poly() {
 
 //--------------------------------------------------------------------------------
 static void testF2Q_Poly(float qParam, float qcv, float expectedQGain, float expectedQGainWithCV, int channel) {
-    // SQINFO("\n---- testF2Q_Poly ch=%d %f, %f, %f, %f", channel, qParam, qcv, expectedQGain, expectedQGainWithCV);
-
     auto setup1 = [qParam, qcv, channel](Comp2_Poly& comp) {
         comp.params[Comp2_Poly::Q_PARAM].value = qParam;
         comp.inputs[Comp2_Poly::Q_INPUT].setVoltage(qcv, channel);
@@ -90,7 +88,6 @@ static void testF2Q_Poly(float qParam, float qcv, float expectedQGain, float exp
         for (int i = 0; i < 16; ++i) {
             const int bank = i / 4;
             const int subChannel = i % 4;
-            // SQINFO("in validate, q gain = %f sub=%d i=%d", comp._params1(bank)._qGain()[subChannel], subChannel, i);
             if (i == channel || qcv < .01) {
                 assertClosePct(comp._params1(bank)._qGain()[subChannel], expectedQGainWithCV, 10);
             } else {
@@ -223,7 +220,6 @@ static void clearRandQandLimiterAndFc(Comp2_Poly& comp) {
 }
 
 static void testPolyFc(int chan) {
-    SQINFO("---------------- test poly fc ----------");
     auto setup1 = [chan](Comp2_Poly& comp) {
         // full poly, 10V input on test
         comp.inputs[Comp2_Poly::AUDIO_INPUT].channels = 16;
@@ -246,8 +242,6 @@ static void testPolyFc(int chan) {
         //  assertClosePct(comp._params1()._fcGain(), expectedFcGain, 10);
         const float v1 = comp1.outputs[Comp2_Poly::AUDIO_OUTPUT].getVoltage(chan);
         const float v2 = comp2.outputs[Comp2_Poly::AUDIO_OUTPUT].getVoltage(chan);
-
-        SQINFO("comp outputs = %f, %f", comp1.outputs[Comp2_Poly::AUDIO_OUTPUT].getVoltage(chan), comp2.outputs[Comp2_Poly::AUDIO_OUTPUT].getVoltage(chan));
         assertGT(v2, v1 + 5);  // the one fully open should pass more
         if (chan > 0) assertEQ(comp1.outputs[Comp2_Poly::AUDIO_OUTPUT].getVoltage(chan - 1), 0);
         if (chan < 15) assertEQ(comp1.outputs[Comp2_Poly::AUDIO_OUTPUT].getVoltage(chan + 1), 0);
@@ -270,7 +264,6 @@ static void testGain(bool two) {
             auto y = Comp2_Poly::computeGain_slow(two, qb, rb);
 
             simd_assertClosePct(x, y, 10);
-            //SQINFO("q=%f r=%f g=%f", q, r, x);
         }
     }
 }
@@ -286,7 +279,7 @@ static void testComputeR() {
 
         auto x = Comp2_Poly::processR_slow(rb);
         auto y = Comp2_Poly::processR_fast(rb);
-         simd_assertClosePct(x, y, 10);
+        simd_assertClosePct(x, y, 10);
     }
 }
 

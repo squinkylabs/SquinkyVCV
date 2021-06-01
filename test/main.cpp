@@ -118,10 +118,12 @@ extern void testWavThread();
 extern void testACDetector();
 extern void testCmprsr();
 extern void testCompressor();
+extern void testCompressorII();
 extern void testCompressorParamHolder();
 extern void testStreamer();
 extern void testSampComposite();
 extern void testFlac();
+extern void do_gc();
 
 #if 0
 #include <iostream>
@@ -183,6 +185,7 @@ int main(int argc, char** argv) {
             printf("%s is not a valid command line argument\n", arg.c_str());
         }
     }
+   // do_gc();
 #ifdef _PERF
     runPerf = true;
 #ifndef NDEBUG
@@ -207,10 +210,19 @@ int main(int argc, char** argv) {
         initPerf();
         perfTest2();
         perfTest3();
-    
         perfTest();
         return 0;
     }
+    
+    testCompCurves();
+
+    // mode these up where while we work...
+    testMultiLag2();
+    testCmprsr();
+    testCompressorII();
+    testCompressorParamHolder();
+    testCompressor();
+   
 
     testSimpleQuantizer();
     testFilterComposites();
@@ -230,7 +242,7 @@ int main(int argc, char** argv) {
     testSampComposite();
 
     testADSR();
-    testCompressorParamHolder();
+
     testWavThread();
     testIComposite();
     testClockRecovery();
@@ -257,9 +269,8 @@ int main(int argc, char** argv) {
     testSub();
     simd_testBiquad();
     testWVCO();
-    testMultiLag2();
-    testCmprsr();
-    testCompressor();
+
+
 
     testSimpleQuantizer();
 
