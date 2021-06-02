@@ -275,6 +275,34 @@ static void testLexLabel() {
 }
 
 #include <fstream>
+// has lots of includes
+static void testLexBeef() {
+   // std::string path("d:\\samples\\beefowulf_alpha_0100\\Programs\\beefowulf_keyswitch.sfz");
+    FilePath path("d:\\samples\\beefowulf_alpha_0100\\Programs\\beefowulf_keyswitch.sfz");
+    std::string errorText;
+    std::ifstream t(path.toString());
+    if (!t.good()) {
+        printf("can't open file\n");
+        assert(false);
+        return;
+    }
+   
+
+    std::string str((std::istreambuf_iterator<char>(t)),
+                    std::istreambuf_iterator<char>());
+    if (str.empty()) {
+        assert(false);
+        return;
+    }
+
+    auto lex = SLex::go(str, &errorText, 0, &path);
+    SQINFO("error=%s", errorText.c_str());
+
+    assert(lex);
+    lex->validate();
+    assertGT(lex->items.size(), 20000);
+}
+
 static void testLexMarimba2() {
     std::string path("d:\\samples\\test\\PatchArena_marimba.sfz");
 
@@ -808,6 +836,7 @@ void testx() {
     testLexCommentInFile2();
     testLexCommentInFile3();
     testLexMacPath();
+    testLexBeef();
 
     testparse1();
     testParseRegion();

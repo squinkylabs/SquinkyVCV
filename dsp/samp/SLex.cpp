@@ -11,9 +11,6 @@
 #include "SqStream.h"
 
 SLex::SLex(std::string* errorText, int includeDepth, const FilePath* filePath) : outErrorStringPtr(errorText), includeRecursionDepth(includeDepth), rootFilePath(filePath) {
-    if (rootFilePath) {
-        SQINFO("SLex::SLex myFilePath=%s", rootFilePath->toString().c_str());
-    }
 }
 
 SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includeDepth, const FilePath* yourFilePath) {
@@ -146,13 +143,13 @@ bool SLex::procStateNextHashChar(char c) {
             state = State::InInclude;
             includeSubState = IncludeSubState::MatchingOpcode;
             curItem = "i";
-            SQINFO("going into incl, curItem=%s", curItem.c_str());
+            // SQINFO("going into incl, curItem=%s", curItem.c_str());
             return true;
         case 'd':
             state = State::InDefine;
             defineSubState = DefineSubState::MatchingOpcode;
             curItem = "d";
-            SQINFO("going into define, curItem=%s", curItem.c_str());
+            // SQINFO("going into define, curItem=%s", curItem.c_str());
             return true;
         default:
             // TODO: tests case #xx
@@ -204,7 +201,7 @@ bool SLex::procStateNextDefineChar(char c) {
             return false;
 
         case DefineSubState::MatchingLhs:
-            SQINFO("match lhs, got %c", c);
+            // SQINFO("match lhs, got %c", c);
             if (isspace(c)) {
                 defineSubState = DefineSubState::MatchingSpace2;
                 spaceCount = 1;
@@ -466,7 +463,7 @@ std::string SLexItem::lineNumberAsString() const {
 }
 
 bool SLex::handleIncludeFile(const std::string& fileName) {
-    SQINFO("SLex::handleIncludeFile %s", fileName.c_str());
+   //  SQINFO("SLex::handleIncludeFile %s", fileName.c_str());
     assert(!fileName.empty());
     if (includeRecursionDepth > 10) {
         return error("include nesting too deep");
@@ -484,7 +481,7 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
     FilePath namePart(rawFilename);
     FilePath fullPath = origFolder;
     fullPath.concat(namePart);
-    SQINFO("make full include path: %s", fullPath.toString().c_str());
+    //SQINFO("make full include path: %s", fullPath.toString().c_str());
 
     std::ifstream t(fullPath.toString());
     if (!t.good()) {
@@ -503,7 +500,7 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
     if (str.empty()) {
         return error("Include file empty ");
     }
-    SQINFO("going into %s", fullPath.toString().c_str());
+    //SQINFO("going into %s", fullPath.toString().c_str());
 
     // ok, we have the content of the include.
     // we must:
@@ -518,12 +515,10 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
         this->items.end(),
         std::make_move_iterator(includeLexer->items.begin()),
         std::make_move_iterator(includeLexer->items.end()));
-    SQINFO("finished incl, curItem=%s", curItem.c_str());
+    // SQINFO("finished incl, curItem=%s", curItem.c_str());
     curItem.clear();
     // 3 continue lexing
     state = State::Ready;
-    SQINFO("back frm %s", fullPath.toString().c_str());
+    // SQINFO("back frm %s", fullPath.toString().c_str());
     return true;
-    // assert(false);      // finish
-    // return false;
 }
