@@ -9,19 +9,16 @@
 #include "SParse.h"
 #include "SqLog.h"
 #include "asserts.h"
-//#include "pugixml.hpp"
 
-#if 0
-static void testx0() {
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_file("fale_path.xml");
-    auto status = result.status;
-    int x = 5;
-    assertEQ(status, pugi::xml_parse_status::status_file_not_found);
-}
-#endif
+/**
+ * Naming conventions for SFZ tests.
+ * testLex123 - any test of the lexer only.
+ * testParse123 - general parsing test.
+ * testWaveLoader... - test of the save loader
+ * testCompile.... and test that goes all the way to a compiled instrument
+ */
 
-static void testx1() {
+static void testLex1() {
     SLexPtr lex = SLex::go("<global>");
     assert(lex);
     lex->validate();
@@ -31,7 +28,7 @@ static void testx1() {
     assertEQ(ptag->tagName, "global");
 }
 
-static void testx2() {
+static void testLex2() {
     SLexPtr lex = SLex::go("=");
     assert(lex);
     lex->validate();
@@ -39,7 +36,7 @@ static void testx2() {
     assert(lex->items[0]->itemType == SLexItem::Type::Equal);
 }
 
-static void testx3() {
+static void testLex3() {
     SLexPtr lex = SLex::go("qrst");
     assert(lex);
     lex->validate();
@@ -49,7 +46,7 @@ static void testx3() {
     assertEQ(pid->idName, "qrst");
 }
 
-static void testxKVP() {
+static void testLexKVP() {
     SLexPtr lex = SLex::go("abc=def");
     assert(lex);
     lex->validate();
@@ -65,7 +62,7 @@ static void testxKVP() {
     assertEQ(pid->idName, "def");
 }
 
-static void testxKVP2() {
+static void testLexKVP2() {
     SLexPtr lex = SLex::go("ampeg_release=0.6");
     assert(lex);
     lex->validate();
@@ -478,7 +475,7 @@ static void testLexMacPath() {
     assertEQ(ident->idName, "/abs/path.wav");
 }
 
-static void testparse1() {
+static void testParse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     auto err = SParse::go("random-text", inst);
@@ -492,13 +489,11 @@ static void testParseRegion() {
 
     assertEQ(inst->headings.size(), 1)
     assertEQ(int(inst->headings[0]->type), int(SHeading::Type::Region));
-   // assertEQ(inst->groups.size(), 1);
-   // assertEQ(inst->groups[0]->regions.size(), 1);
 }
 
 
 
-static void testparse2() {
+static void testParse2() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>pitch_keycenter=24", inst);
     assert(err.empty());
@@ -508,12 +503,6 @@ static void testparse2() {
     SHeadingPtr region = inst->headings[0];
     assertEQ(int(region->type), int(SHeading::Type::Region));
 
-  //  assertEQ(inst->groups.size(), 1);
- //   SGroupPtr group = inst->groups[0];
- //   assert(group->values.empty());
- //  assertEQ(group->regions.size(), 1);
- //   SRegionPtr region = group->regions[0];
-  //  assertEQ(region->values.size(), 1);
     SKeyValuePairPtr kv = region->values[0];
     assertEQ(kv->key, "pitch_keycenter");
     assertEQ(kv->value, "24");
@@ -529,55 +518,8 @@ static void testParseLabel2() {
 }
 
 
-#if 0
-static void testParseMutliControls() {
-    // SQINFO("--- start testParseMutliControls");
-
-    const char* test = R"foo(
-        <control>
-        default_path=a
-        <region>
-        sample=r1
-        <control>
-        default_path=b
-        <region>
-        sample=r2
-    )foo";
-
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    auto err = SParse::go(test, inst);
-    assert(err.empty());
-
-    // we should end up with two regions in two groups
-    // we always make a new group when we hit a new heading,
-    // in this case <control>
-    assertEQ(inst->groups.size(), 2);
-    assertEQ(inst->groups[0]->regions.size(), 1);
-    assertEQ(inst->groups[1]->regions.size(), 1);
-
-    // each regions should have the 'sample' key, as well as the 'default_path' key
-
-    SKeyValueList kv = inst->groups[0]->regions[0]->values;
-    assertEQ(kv.size(), 2);
-
-    assertEQ(kv[0]->key, "default_path");
-    assertEQ(kv[0]->value, "a");
-    assertEQ(kv[1]->key, "sample");
-    assertEQ(kv[1]->value, "r1");
-    //
-    kv = inst->groups[1]->regions[0]->values;
-    assertEQ(kv.size(), 2);
-    assertEQ(kv[0]->key, "default_path");
-    assertEQ(kv[0]->value, "b");
-    assertEQ(kv[1]->key, "sample");
-    assertEQ(kv[1]->value, "r2");
-}
-#endif
-
 
 static void testParseGroupAndValues() {
-    //SQINFO("---- start testParseGroupAndValues");
-    //   const char* test = R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo";
     const char* test = R"foo(<group>a=b<region>)foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(test, inst);
@@ -601,10 +543,7 @@ static void testParseGlobal() {
     assert(err.empty());
     assertEQ(inst->headings.size(), 1);
     assertEQ(int(inst->headings[0]->type), int(SHeading::Type::Global));
-    //assert(inst->groups[0]->regions.empty());
 }
-
-
 
 static void testParseGlobalGroupAndRegion() {
     // SQINFO("\n-- start testParseGlobalAndRegion\n");
@@ -629,14 +568,11 @@ static void testParseComment() {
 }
 
 
-
-
 static void testParseGroups() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><region><region>", inst);
     assert(err.empty());
 }
-
 
 static void testParseTwoGroupsA() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -730,6 +666,8 @@ v127=1
     assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Curve);
 }
 
+
+// We aren't using these random ranges any more, but might as will keep alive.
 static void testRandomRange0() {
     RandomRange<float> r(0);
     r.addRange(.33f);
@@ -757,54 +695,18 @@ static void testRandomRange1() {
     assertEQ(test.size(), 3);
 }
 
-
-#if 0 // deleted this file
-
-static void testParseDX() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-
-    // maybe need to compile this...
-    auto err = SParse::goFile(FilePath("D:\\samples\\__test\\BS-DX7-Bright-Bow.sfz"), inst);
-    assert(err.empty());
-
-    assertEQ(inst->headings.size(), 14);
-    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Group);
-    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
-    assertEQ(inst->headings[0]->values.size(), 2);
-    assertEQ(inst->headings[1]->values.size(), 5);
-}
-#endif
-
-
 extern int compileCount;
 
-#if 0
-void testx3() {
-    assert(false);
-}
-void testx4() {
-    assert(false);
-}
-
-void testx5() {
-    assert(false);
-}
-
-void testx6() {
-    assert(false);
-}
-#endif
 
 void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
 
-    //testx0();
-    testx1();
-    testx2();
-    testx3();
-    testxKVP();
-    testxKVP2();
+    testLex1();
+    testLex2();
+    testLex3();
+    testLexKVP();
+    testLexKVP2();
 
     testLexTrivialComment();
     testLexComment();
@@ -838,23 +740,17 @@ void testx() {
     testLexMacPath();
     testLexBeef();
 
-    testparse1();
+    testParse1();
     testParseRegion();
-    testparse2();
+    testParse2();
     testParseGlobal();
-
-   
 
     testParseGlobalAndRegion();
     testParseGlobalGroupAndRegion();
 
-   
-
     testParseComment();
     testParseGroups();
 
-    // better as a cimpiler test
-  //  testParseMutliControls();
     testParseGroupAndValues();
     testParseLabel2();
 

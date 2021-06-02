@@ -1126,7 +1126,7 @@ static void testCompileMulPitchAndVelComplex2() {
     sampleIndicies.insert(info.sampleIndex);
 }
 
-static void testGroupInherit() {
+static void testCompileGroupInherit() {
     const char* data = R"foo(
         //snare =====================================
         <group> amp_veltrack=98 key=40 loop_mode=one_shot lovel=101 hivel=127  // snare1 /////
@@ -1151,7 +1151,8 @@ static void testGroupInherit() {
     ci->play(info, params, nullptr, 0);
     assert(!info.valid);
 
-    // This doesn't work, becuase we don't have exclusive velocity zones.
+    // This doesn't work, because we don't have exclusive velocity zones.
+    // update - yes we do.
     // ci->play(info, 40, 100);
     // assert(!info.valid);
 }
@@ -1369,8 +1370,6 @@ static void testSampleRate() {
 
     CompiledRegionPtr cr1 = st::makeRegion(R"foo(<region>sample=a key=60 seq_position=200)foo");
 
-    //  SimpleVoicePlayer(CompiledRegionPtr reg, int midiPitch, int sampleIndex) :
-
     SimpleVoicePlayer simplePlayer(cr1, 60, 1);
 
     VoicePlayInfo info;
@@ -1401,6 +1400,7 @@ static void testSampleRate() {
     assertClose(info.transposeV, yy, .0001);
 
 #else
+a b
     assertClose(info.transposeAmt, expectedTranspose, .01);
 #endif
 }
@@ -1452,6 +1452,7 @@ void testx2() {
 
     testWaveLoader2();
     testWaveLoaderNot44();
+
     testPlayInfo();
 
     testCIKeysAndValues();
@@ -1491,11 +1492,7 @@ void testx2() {
     testCompileMulPitchAndVelComplex2();
     testCompileGroupProbability();
     testCompileBassoon();
-    testGroupInherit();
-
-#if 0
-    assert(false);
-#else
+    testCompileGroupInherit();
 
     // put here just for now
     testCompileMutliControls();
@@ -1508,10 +1505,7 @@ void testx2() {
 
     assertEQ(compileCount, 0);
 
-    assertEQ(compileCount, 0);
-
     testCompileSort();
-
     testCompileInst0();
     testCompileInst1();
     testCompileOverlap();
@@ -1524,10 +1518,9 @@ void testx2() {
 
 #ifdef _SFZ_RANDOM
     testCompileSimpleDrum();
+#else
+    assert(false);
 #endif
-
-#endif
-
     testParseControl();
     testParseLabel();
     testParseInclude();
