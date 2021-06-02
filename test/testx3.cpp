@@ -44,50 +44,18 @@ static CompiledRegionPtr makeTestRegion(bool usePitch, const std::string& minVal
     return r0;
 }
 
-#if 0   // merge conflict here
-
-static CompiledRegionPtr makeTestRegion(SGroupPtr gp, bool usePitch, const std::string& minVal, const std::string& maxVal) {
-
-    SHeading h;
-    SRegionPtr sr = std::make_shared<SRegion>(1234, h);
-    gp->regions.push_back(sr);
-
-    SKeyValuePairPtr kv;
-    if (usePitch) {
-        kv = std::make_shared<SKeyValuePair>("lokey", minVal);
-        sr->values.push_back(kv);
-        kv = std::make_shared<SKeyValuePair>("hikey", maxVal);
-        sr->values.push_back(kv);
-    } else {
-        kv = std::make_shared<SKeyValuePair>("lovel", minVal);
-        sr->values.push_back(kv);
-        kv = std::make_shared<SKeyValuePair>("hivel", maxVal);
-        sr->values.push_back(kv);
-    }
-    SamplerErrorContext errc;
-    sr->compiledValues = SamplerSchema::compile(errc, sr->values);
-    assert(errc.empty());
-
-    CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(45);
-    r0->addRegionInfo(sr->compiledValues);
-
-    //  //CompiledRegionPtr r0 = std::make_shared<CompiledRegion>(sr, nullptr, gp);
-    return r0;
-}
-#endif
 
 static void testOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, bool shouldOverlap) {
     assert(mina <= maxa);
-   // SGroupPtr gp = std::make_shared<SGroup>(1234);
+
     SamplerErrorContext errc;
-  //  gp->compiledValues = SamplerSchema::compile(errc, gp->values);
     auto regionA = makeTestRegion(testPitch, std::to_string(mina), std::to_string(maxa));
     auto regionB = makeTestRegion(testPitch, std::to_string(minb), std::to_string(maxb));
     bool overlap = testPitch ? regionA->overlapsPitch(*regionB) : regionA->overlapsVelocity(*regionB);
     assertEQ(overlap, shouldOverlap);
 }
 
-static void testOverlap(bool testPitch) {
+static void testRegionOverlap(bool testPitch) {
     // negative tests
     testOverlapSub(testPitch, 10, 20, 30, 40, false);
     testOverlapSub(testPitch, 50, 60, 30, 40, false);
@@ -109,9 +77,9 @@ static void testOverlap(bool testPitch) {
     // assert(false);
 }
 
-static void testOverlap() {
-    testOverlap(true);
-    testOverlap(false);
+static void testRegionOverlap() {
+    testRegionOverlap(true);
+    testRegionOverlap(false);
 }
 
 static void testParitalOverlapSub(bool testPitch, int mina, int maxa, int minb, int maxb, float expectedOverlap, int expectedIntOverlap) {
@@ -128,7 +96,7 @@ static void testParitalOverlapSub(bool testPitch, int mina, int maxa, int minb, 
     assertEQ(overlap.first, expectedIntOverlap);
 }
 
-static void testPartialOverlap(bool testPitch) {
+static void testRegionPartialOverlap(bool testPitch) {
     testParitalOverlapSub(testPitch, 10, 20, 30, 40, 0, 0);         // no overlap
     testParitalOverlapSub(testPitch, 1, 2, 2, 3, .5f, 1);           // one overlap, simple case
     testParitalOverlapSub(testPitch, 10, 20, 20, 30, .1f, 1);       // one overlap
@@ -136,16 +104,16 @@ static void testPartialOverlap(bool testPitch) {
     testParitalOverlapSub(testPitch, 10, 20, 15, 25, 6.f / 11.f, 6);
     testParitalOverlapSub(testPitch, 15, 25, 10, 20, 6.f / 11.f, 6);
 }
-static void testPartialOverlap() {
-    testPartialOverlap(false);
-    testPartialOverlap(true); 
+static void testRegionPartialOverlap() {
+    testRegionPartialOverlap(false);
+    testRegionPartialOverlap(true); 
 }
 
 static char* smallPiano = R"foo(D:\samples\K18-Upright-Piano\K18-Upright-Piano.sfz)foo";
 static char* snare = R"foo(D:\samples\SalamanderDrumkit\snare.sfz)foo";
 static char* allSal = R"foo(D:\samples\SalamanderDrumkit\all.sfz)foo";
 
-static void testSmallPianoVelswitch() {
+static void testPlaySmallPianoVelswitch() {
      SQWARN("\n----  testSmallPianoVelswitch\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -156,7 +124,7 @@ static void testSmallPianoVelswitch() {
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     SQWARN("----  fix this bug and put the test back\n");
 
-#if 1
+
     VoicePlayInfo info;
     VoicePlayParameter params;
     params.midiPitch = 60;
@@ -208,10 +176,9 @@ static void testSmallPianoVelswitch() {
     assertEQ(si107, si127);
 
     assertNE(si1, si44);
-#endif
 }
 
-static void testSnareBasic() {
+static void testPlaySnareBasic() {
     printf("\n------- testSnareBasic\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -223,7 +190,7 @@ static void testSnareBasic() {
     VoicePlayInfo info;
 }
 
-static void testAllSal() {
+static void testPlayAllSal() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     auto err = SParse::goFile(FilePath(allSal), inst);
@@ -236,7 +203,7 @@ static void testAllSal() {
     // cinst->_dump(0);
 }
 
-static void testKeswitchCompiled() {
+static void testCompileKeswitch() {
     static char* patch = R"foo(
        <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 sw_hikey=15
@@ -278,7 +245,7 @@ static void testKeswitchCompiled() {
 }
 
 // two regions at same pitch, but never on at the same time
-static void testKeswitchCompiledOverlap() {
+static void testCompileKeswitchOverlap() {
     static char* patch = R"foo(
        <group>
         lokey=9
@@ -307,7 +274,7 @@ static void testKeswitchCompiledOverlap() {
     assertEQ(regions.size(), 2);
 }
 
-static void testKeyswitch() {
+static void testCompileKeyswitch() {
     static char* patch = R"foo(
        <group> sw_last=10 sw_label=key switch label
         sw_lokey=5 sw_hikey=15
@@ -331,7 +298,7 @@ static void testKeyswitch() {
 }
 
 // this one has not default
-static void testKeyswitch15() {
+static void testPlayKeyswitch15() {
     static char* patch = R"foo(
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15
@@ -390,7 +357,7 @@ static void testKeyswitch15() {
     assertEQ(info.sampleIndex, 2);
 }
 
-static void testKeyswitch2() {
+static void testPlayKeyswitch2() {
     static char* patch = R"foo(
         <group> sw_last=11 sw_label=key switch label 11
         sw_lokey=5 sw_hikey=15
@@ -450,7 +417,7 @@ static void testKeyswitch2() {
     assertEQ(info.sampleIndex, 1);
 }
 
-static void testOverlapVel() {
+static void testPlayOverlapVel() {
     SQINFO("---- testOverlapVel");
     static char* patch = R"foo(
     <group> // kick - snares on
@@ -543,7 +510,7 @@ static void testOverlapVel() {
     assertEQ(info.sampleIndex, 4);
 }
 
-static void testOverlapPitch() {
+static void testPlayOverlapPitch() {
     SQINFO("---- testOverlapVel");
     static char* patch = R"foo(
     <region> 
@@ -633,7 +600,7 @@ static void testOverlapPitch() {
     assertEQ(info.sampleIndex, 4);
 }
 
-static void testOverlapRestore() {
+static void testPlayOverlapRestore() {
      static char* patch = R"foo(
     <region> 
     sample=a
@@ -745,35 +712,35 @@ static void testMalformedKey() {
 }
 
 void testx3() {
-    testAllSal();
+    testPlayAllSal();
     // work up to these
     assert(parseCount == 0);
 
     //  testVelSwitch1();
-    testOverlap();
-    testPartialOverlap();
+    testRegionOverlap();
+    testRegionPartialOverlap();
 
-    testSmallPianoVelswitch();
+    testPlaySmallPianoVelswitch();
 
     // Note: this tests are in testx2. Just moved here for logical
     // sequencing reasons.
     testPlayInfoTinnyPiano();
     testPlayInfoSmallPiano();
-    testSnareBasic();
-    testAllSal();
+    testPlaySnareBasic();
+    testPlayAllSal();
 
-    testKeswitchCompiled();
-    testKeswitchCompiledOverlap();
-    testKeyswitch();
-    testKeyswitch15();
-    testKeyswitch2();
+    testCompileKeswitch();
+    testCompileKeswitchOverlap();
+    testCompileKeyswitch();
+    testPlayKeyswitch15();
+    testPlayKeyswitch2();
 
     testMalformedRelease();
     testMalformedKey();
 
-    testOverlapVel();
-    testOverlapPitch();
-    testOverlapRestore();
+    testPlayOverlapVel();
+    testPlayOverlapPitch();
+    testPlayOverlapRestore();
 
     assert(parseCount == 0);
     assert(compileCount == 0);

@@ -13,9 +13,12 @@
 /**
  * Naming conventions for SFZ tests.
  * testLex123 - any test of the lexer only.
- * testParse123 - general parsing test.
+ * testParse... - general parsing test.
+ * testParseHeading...  specific parse tests around headings.
  * testWaveLoader... - test of the save loader
  * testCompile.... and test that goes all the way to a compiled instrument
+ * testRegion...    test the CompiledRegion object itself
+ * testPlay..   compiles and intsrument and plays it
  */
 
 static void testLex1() {

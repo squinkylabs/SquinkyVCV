@@ -210,7 +210,7 @@ static void testCIKeysAndValuesNotesSharp() {
     testCIKeysAndValues("d#4", expectedPitch);
 }
 
-static void testParseGlobalAndRegionCompiled() {
+static void testParseHeadingGlobalAndRegionCompiled() {
     printf("start test parse global\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><region>", inst);
@@ -231,7 +231,7 @@ static void testParseGlobalAndRegionCompiled() {
     assertEQ(inst->headings[1]->compiledValues->_size(), 0);
 }
 
-static void testParseGlobalWithKVAndRegionCompiled() {
+static void testParseHeadingGlobalWithKVAndRegionCompiled() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global>hikey=57<region>", inst);
 
@@ -255,7 +255,7 @@ static void testParseGlobalWithKVAndRegionCompiled() {
     assertEQ(inst->headings[1]->compiledValues->_size(), 0);
 }
 
-static void testParseGlobalWitRegionKVCompiled() {
+static void testParseHeadingGlobalWitRegionKVCompiled() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><region><region>lokey=57<region>", inst);
 
@@ -286,7 +286,7 @@ static void testParseGlobalWitRegionKVCompiled() {
     assertEQ(val->numericInt, 57);
 }
 
-static void testParseControl() {
+static void testParseHeadingControl() {
     SQINFO("------------- testParseControl");
     const char* data = R"foo(<control>
         default_path=Woodwinds\Bassoon\stac\
@@ -487,7 +487,7 @@ static void testCompileOverlap() {
     ci->play(info, params, nullptr, 0);
     assert(!info.valid);
 }
-static void testTranspose1() {
+static void testCompileTranspose1() {
     printf("\nstarting on transpose 1\n");
     auto inst = std::make_shared<SInstrument>();
     auto err = SParse::go(R"foo(<region> sample=K18\D#1.pp.wav lovel=1 hivel=65 lokey=26 hikey=28 pitch_keycenter=27)foo", inst);
@@ -560,8 +560,8 @@ static void testCompileCrash2() {
     assert(!info.valid);
 }
 
-#if 1
-static void testCompiledGroupSub(const char* data, bool shouldIgnore) {
+
+static void testCompileGroupSub(const char* data, bool shouldIgnore) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
@@ -581,18 +581,18 @@ static void testCompiledGroupSub(const char* data, bool shouldIgnore) {
     assertEQ(cr->shouldIgnore(), shouldIgnore);
 }
 
-static void testCompiledGroup0() {
-    testCompiledGroupSub(R"foo(<group>)foo", false);
+static void testCompileGroup0() {
+    testCompileGroupSub(R"foo(<group>)foo", false);
 }
 
-static void testCompiledGroup1() {
-    testCompiledGroupSub(R"foo(<group>trigger=attack)foo", false);
+static void testCompileGroup1() {
+    testCompileGroupSub(R"foo(<group>trigger=attack)foo", false);
 }
 
-static void testCompiledGroup2() {
-    testCompiledGroupSub(R"foo(<group>trigger=release)foo", true);
+static void testCompileGroup2() {
+    testCompileGroupSub(R"foo(<group>trigger=release)foo", true);
 }
-#endif
+
 
 static void testCompileMutliControls() {
     SQWARN("need to re-implement testCompileMutliControls");
@@ -1460,11 +1460,9 @@ void testx2() {
     testCIKeysAndValuesNotesUC();
     testCIKeysAndValuesNotesSharp();
 
-    testParseGlobalAndRegionCompiled();
-
-    testParseGlobalWithKVAndRegionCompiled();
-
-    testParseGlobalWitRegionKVCompiled();
+    testParseHeadingGlobalAndRegionCompiled();
+    testParseHeadingGlobalWithKVAndRegionCompiled();
+    testParseHeadingGlobalWitRegionKVCompiled();
 
     testCompiledRegion();
     testCompiledRegionAddedOpcodes();
@@ -1477,9 +1475,9 @@ void testx2() {
     testCompiledRegionSeqIndex1();
     testCompiledRegionSeqIndex2();
 
-    testCompiledGroup0();
-    testCompiledGroup1();
-    testCompiledGroup2();
+    testCompileGroup0();
+    testCompileGroup1();
+    testCompileGroup2();
 
     // Let' put lots of very basic compilation tests here
     testCompileTreeOne();
@@ -1512,7 +1510,7 @@ void testx2() {
 
     testLoadWavesPiano();
 
-    testTranspose1();
+    testCompileTranspose1();
     testSampleRate();
     testPlayVolumeAndTune();
 
@@ -1521,7 +1519,7 @@ void testx2() {
 #else
     assert(false);
 #endif
-    testParseControl();
+    testParseHeadingControl();
     testParseLabel();
     testParseInclude();
 
