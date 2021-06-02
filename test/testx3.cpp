@@ -668,7 +668,7 @@ static void testPlayOverlapRestore() {
     assert(!info.valid);
 }
 
-static void shouldFindMalformed(const char* input) {
+static void compileShouldFindMalformed(const char* input) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     auto err = SParse::go(input, inst);
@@ -684,29 +684,29 @@ static void shouldFindMalformed(const char* input) {
     assert(!errc.empty());
 }
 
-static void testMalformedRelease() {
-    shouldFindMalformed(R"foo(
+static void testCompileMalformedRelease() {
+    compileShouldFindMalformed(R"foo(
         <region>ampeg_release=abcd
         )foo");
-    shouldFindMalformed(R"foo(
+    compileShouldFindMalformed(R"foo(
         <region>ampeg_release=qb.3
         )foo");
 }
 
-static void testMalformedKey() {
-    shouldFindMalformed(R"foo(
+static void testCompileMalformedKey() {
+    compileShouldFindMalformed(R"foo(
         <region>key=abcd
         )foo");
-    shouldFindMalformed(R"foo(
+    compileShouldFindMalformed(R"foo(
         <region>key=c#
         )foo");
-    shouldFindMalformed(R"foo(
+    compileShouldFindMalformed(R"foo(
         <region>key=cn
         )foo");
-    shouldFindMalformed(R"foo(
+    compileShouldFindMalformed(R"foo(
         <region>key=c.
         )foo");
-    shouldFindMalformed(R"foo(
+    compileShouldFindMalformed(R"foo(
         <region>key=h3
         )foo");
 }
@@ -735,8 +735,8 @@ void testx3() {
     testPlayKeyswitch15();
     testPlayKeyswitch2();
 
-    testMalformedRelease();
-    testMalformedKey();
+    testCompileMalformedRelease();
+    testCompileMalformedKey();
 
     testPlayOverlapVel();
     testPlayOverlapPitch();

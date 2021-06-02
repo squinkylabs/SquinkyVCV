@@ -19,6 +19,8 @@
  * testCompile.... and test that goes all the way to a compiled instrument
  * testRegion...    test the CompiledRegion object itself
  * testPlay..   compiles and intsrument and plays it
+ * testFilePath.. test of the filePath object that is used a lot if SFZ Player
+ * testSchema... test of the SamplerSchema class.
  */
 
 static void testLex1() {
