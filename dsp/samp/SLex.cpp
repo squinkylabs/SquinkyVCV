@@ -19,7 +19,7 @@ SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includ
     return goCommon(lx, sContent);
 }
 
-SLexPtr SLex::goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth) {
+SLexPtr SLex::goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth, const std::string& dbg) {
     int count = 0;
     // song and dance to work around MS bug.
     SLex* lx = new SLex(errorText, includeDepth, rootFilePath);
@@ -506,7 +506,7 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
     // we must:
     // 1) lex it.
     //    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
-    auto includeLexer = SLex::goRecurse(rootFilePath, str, outErrorStringPtr, includeRecursionDepth + 1);
+    auto includeLexer = SLex::goRecurse(rootFilePath, str, outErrorStringPtr, includeRecursionDepth + 1, namePart.toString());
     if (!includeLexer) {
         return false;  // error should already be in outErrorStringPtr
     }

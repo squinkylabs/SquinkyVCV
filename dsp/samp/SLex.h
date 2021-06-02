@@ -64,7 +64,7 @@ public:
     /**
      * This is the factory for "child" lexers while processing includes
      */
-    static SLexPtr goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth);
+    static SLexPtr goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth, const std::string& dbgString);
 
     std::vector<SLexItemPtr> items;
     SLexItemPtr next() {
@@ -86,6 +86,7 @@ public:
 
 private:
     SLex(std::string* errorText, int includeDepth, const FilePath* rootFilePath);
+    const std::string debugString;
 
     // return true if no error
     // the functions that take a second argument expect it to either be
