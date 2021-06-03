@@ -12,15 +12,27 @@
 
 /**
  * Naming conventions for SFZ tests.
- * testLex123 - any test of the lexer only.
+ * mostly in testx:
+ * testLex... - any test of the lexer only.
  * testParse... - general parsing test.
- * testParseHeading...  specific parse tests around headings.
+
+ * 
+ * mostly in text2.cpp
  * testWaveLoader... - test of the save loader
+ * testParseHeading...  specific parse tests around headings.
+ * testCompiledRegion... mostly tests of the lower level compiled region struct
  * testCompile.... and test that goes all the way to a compiled instrument
+ * 
+ * mostly in testx3
  * testRegion...    test the CompiledRegion object itself
  * testPlay..   compiles and intsrument and plays it
+ * 
+ * mostly in testx4
  * testFilePath.. test of the filePath object that is used a lot if SFZ Player
  * testSchema... test of the SamplerSchema class.
+ * 
+ * mostly in testx5
+ * testSampler4v... tests of the lower level sample playback class
  */
 
 static void testLex1() {

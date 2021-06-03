@@ -560,7 +560,6 @@ static void testCompileCrash2() {
     assert(!info.valid);
 }
 
-
 static void testCompileGroupSub(const char* data, bool shouldIgnore) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
@@ -592,7 +591,6 @@ static void testCompileGroup1() {
 static void testCompileGroup2() {
     testCompileGroupSub(R"foo(<group>trigger=release)foo", true);
 }
-
 
 static void testCompileMutliControls() {
     SQWARN("need to re-implement testCompileMutliControls");
@@ -1400,8 +1398,8 @@ static void testSampleRate() {
     assertClose(info.transposeV, yy, .0001);
 
 #else
-a b
-    assertClose(info.transposeAmt, expectedTranspose, .01);
+    a b
+        assertClose(info.transposeAmt, expectedTranspose, .01);
 #endif
 }
 
@@ -1441,6 +1439,30 @@ static void testPlayVolumeAndTune() {
 
     assertEQ(info.transposeAmt, expectedTransposeMult);
 #endif
+}
+
+static void testCompileLoop() {
+    const char* data = (R"foo(
+          <group>
+          <region>sample=a offset=100
+          )foo");
+  SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 12;
+    params.midiVelocity = 60;
+
+    bool didKS = false;
+    const CompiledRegion* region = ci->_pool().play(params, .5, didKS);
+
+
+    assert(false);
 }
 
 void testx2() {
@@ -1525,6 +1547,7 @@ void testx2() {
 
     testCompileAmpVel();
     testCompileAmpegRelease();
+    testCompileLoop();
 
     assertEQ(parseCount, 0);
     assertEQ(compileCount, 0);

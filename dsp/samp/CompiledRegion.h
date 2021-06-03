@@ -39,17 +39,6 @@ public:
     virtual ~CompiledRegion() { compileCount--; }
     void _dump(int depth) const;
 
-    // still used??
-#if 1
-    enum class Type {
-        Base,
-        RoundRobin,  // group and regions where we RR between the regions in the one group.
-        Random,      // group and regions where we random between the regions in the one group.
-        GRandom,     // probability is on each group, so multiple groups involved.
-        GRoundRobbin
-    };
-    
-#endif
 
     int velRange() const;
     int pitchRange() const;
@@ -129,13 +118,30 @@ public:
     float volume = 0;           // volume change in db
     int tune = 0;               // tuning offset in cents
 
+    class LoopData {
+    public:
+        unsigned int offset = 0;
+        unsigned int loop_start = 0;
+        unsigned int loop_end = 0;
+        SamplerSchema::DiscreteValue loop_mode = SamplerSchema::DiscreteValue::NO_LOOP;
+    };
+
+    LoopData loopData;
+
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
     
     bool isKeyswitched() const {
         return keySwitched;
     }
 
+
+
+    /**
+     * Returns true if the settings in the region lead us to determine it
+     * does not, or should not, make sound.
+     */
     bool shouldIgnore() const;
+
 
     /** 
      * should be called after everyone has called 
@@ -152,7 +158,4 @@ private:
     static void findValue(int& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
     static void findValue(std::string& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
     static void findValue(SamplerSchema::DiscreteValue& returnVAlue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
-
-    // not used ??
-    virtual Type type() const { return Type::Base; }
 };
