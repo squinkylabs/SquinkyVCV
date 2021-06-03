@@ -1,5 +1,7 @@
 # Using a compressor
 
+![Block Diagram](./comp-block-diagram.png)
+
 There are many ways to use a compressor, and many of them are fairly subtle. There are many sources of information about how to use compressors, so we will just try to hit some of the basics.
 There are a few common uses for compressors, and these are:
 
