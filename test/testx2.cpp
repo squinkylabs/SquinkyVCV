@@ -1443,15 +1443,16 @@ static void testPlayVolumeAndTune() {
 
 static void testCompileLoop() {
     const char* data = (R"foo(
-          <group>
-          <region>sample=a offset=100
+          <group>loop_mode=loop_continuous
+          <region>sample=a offset=100 loop_start=1234 loop_end=4567
           )foo");
-  SInstrumentPtr inst = std::make_shared<SInstrument>();
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
     SamplerErrorContext errc;
     auto ci = CompiledInstrument::make(errc, inst);
 
+    assertEQ(errc.unrecognizedOpcodes.size(), 0);
 
     VoicePlayInfo info;
     VoicePlayParameter params;
@@ -1460,9 +1461,11 @@ static void testCompileLoop() {
 
     bool didKS = false;
     const CompiledRegion* region = ci->_pool().play(params, .5, didKS);
-
-
-    assert(false);
+    
+    assertEQ(region->loopData.offset, 100);
+    assertEQ(region->loopData.loop_start, 1234);
+    assertEQ(region->loopData.loop_end, 4567);
+    assertEQ((int) region->loopData.loop_mode, (int) SamplerSchema::DiscreteValue::LOOP_CONTINUOUS);
 }
 
 void testx2() {

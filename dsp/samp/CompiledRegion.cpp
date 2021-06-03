@@ -30,6 +30,15 @@ void CompiledRegion::findValue(int& intValue, SamplerSchema::KeysAndValuesPtr in
     }
 }
 
+void CompiledRegion::findValue(unsigned int& intValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
+    assert(inputValues);
+    auto value = inputValues->get(opcode);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Int);
+        intValue = value->numericInt;
+    }
+}
+
 void CompiledRegion::findValue(std::string& stringValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
     assert(inputValues);
     auto value = inputValues->get(opcode);
@@ -51,9 +60,6 @@ void CompiledRegion::findValue(SamplerSchema::DiscreteValue& discreteValue, Samp
 using Opcode = SamplerSchema::Opcode;
 
 void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
-    //SQINFO("enter addRegionInfo seqPos=%d  len=", sequencePosition, sequenceLength);
-    // SQINFO("accepting values: ");
-    //values->_dump();
 
     //---------------- key related values
     findValue(lokey, values, SamplerSchema::Opcode::LO_KEY);
@@ -80,19 +86,9 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     findValue(trigger, values, SamplerSchema::Opcode::TRIGGER);
 
     //----------- sample file
-  //  std::string baseFileName;
-  //  std::string defaultPathName;
     findValue(baseFileName, values, SamplerSchema::Opcode::SAMPLE);
     findValue(defaultPathName, values, SamplerSchema::Opcode::DEFAULT_PATH);
-#if 0
-    // let's move this to finalize
-    FilePath def(defaultPathName);
-    FilePath base(baseFileName);
-    def.concat(base);
-    if (!def.empty()) {
-        this->sampleFile = def.toString();
-    }
-#endif
+
 
     // ---- random and RR -------------------
     findValue(lorand, values, SamplerSchema::Opcode::LO_RAND);
@@ -131,6 +127,11 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
 
     findValue(tune, values, SamplerSchema::Opcode::TUNE);
     findValue(volume, values, SamplerSchema::Opcode::VOLUME);
+
+    findValue(loopData.offset, values, SamplerSchema::Opcode::OFFSET);
+    findValue(loopData.loop_start, values, SamplerSchema::Opcode::LOOP_START);
+    findValue(loopData.loop_end, values, SamplerSchema::Opcode::LOOP_END);
+    findValue(loopData.loop_mode, values, SamplerSchema::Opcode::LOOP_MODE);
 
     //SQINFO("leave addRegionInfo seqPos=%d seqLen=%d samp=%s trigger=%d", sequencePosition, sequenceLength, sampleFile.c_str(), trigger);
 }
@@ -269,70 +270,6 @@ int CompiledRegion::pitchRange() const {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-#if 0   // incoming merge conflict
-CompiledGroup::CompiledGroup(SGroupPtr group) : lineNumber(group->lineNumber) {
-    compileCount++;
-
-    // do we still need all these members in groups?
-    // do they really do something anymore?
-    auto value = group->compiledValues->get(Opcode::TRIGGER);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Discrete);
-        //ignore = (trigger != DiscreteValue::ATTACK);
-        trigger = value->discrete;
-    }
-
-    value = group->compiledValues->get(Opcode::SEQ_LENGTH);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Int);
-        sequence_length = value->numericInt;
-    }
-    value = group->compiledValues->get(Opcode::LO_RAND);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Float);
-        lorand = value->numericFloat;
-    }
-    value = group->compiledValues->get(Opcode::HI_RAND);
-    if (value) {
-        assert(value->type == SamplerSchema::OpcodeType::Float);
-        hirand = value->numericFloat;
-    }
-}
-
-CompiledGroup::CompiledGroup(int line) : lineNumber(line) {
-    compileCount++;
-}
-
-bool CompiledGroup::shouldIgnore() const {
-    bool dontIgnore = trigger == SamplerSchema::DiscreteValue::NONE || trigger == SamplerSchema::DiscreteValue::ATTACK;
-    return !dontIgnore;
-}
-
-CompiledRegion::Type CompiledGroup::type() const {
-    CompiledRegion::Type theType = CompiledRegion::Type::Base;
-    if (this->sequence_length > 0) {
-        theType = CompiledRegion::Type::RoundRobin;
-    } else if (this->lorand >= 0) {
-        // the group has prob on it.
-        theType = CompiledRegion::Type::GRandom;
-    } else {
-        bool isProbabilty = !regions.empty();  // assume if any regions we are a probability group
-        for (auto child : regions) {
-            // lorand=0 hirand=0.3
-            if (child->lorand < 0) {
-                isProbabilty = false;
-            }
-        }
-        if (isProbabilty) {
-            theType = CompiledRegion::Type::Random;
-            if (regions.size() < 2) SQWARN("rand region no options");
-            //assert(regions.size() > 1);
-        }
-    }
-    return theType;
-}
-
-#endif
 void CompiledRegion::_dump(int depth) const {
     SQINFO("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d", isKeyswitched(), sw_lolast, sw_hilast);
     SQINFO("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
