@@ -668,6 +668,33 @@ static void testPlayOverlapRestore() {
     assert(!info.valid);
 }
 
+static void testPlayLoop() {
+    const char* data = (R"foo(
+          <group>loop_mode=one_shot
+          <region>sample=a offset=222 loop_start=91 loop_end=112
+          )foo");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    SamplerErrorContext errc;
+    auto cinst = CompiledInstrument::make(errc, inst);
+
+    assertEQ(errc.unrecognizedOpcodes.size(), 0);
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 12;
+    params.midiVelocity = 60;
+
+    cinst->play(info, params, nullptr, 0);
+    assert(info.valid);
+    assertEQ(info.loopData.offset, 222);
+    assertEQ(info.loopData.loop_start, 91);
+    assertEQ(info.loopData.loop_end, 112);
+    assertEQ((int)info.loopData.loop_mode, (int)SamplerSchema::DiscreteValue::ONE_SHOT);
+
+}
+
 static void compileShouldFindMalformed(const char* input) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -741,6 +768,7 @@ void testx3() {
     testPlayOverlapVel();
     testPlayOverlapPitch();
     testPlayOverlapRestore();
+    testPlayLoop();
 
     assert(parseCount == 0);
     assert(compileCount == 0);

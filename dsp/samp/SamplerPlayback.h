@@ -33,6 +33,8 @@ public:
     bool canPlay() const {
         return valid && (sampleIndex > 0);
     }
+
+    CompiledRegion::LoopData loopData;
 };
 using VoicePlayInfoPtr = std::shared_ptr<VoicePlayInfo>;
 

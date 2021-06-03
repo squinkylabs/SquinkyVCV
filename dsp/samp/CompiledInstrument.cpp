@@ -226,6 +226,7 @@ bool CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
         info.ampeg_release = region->ampeg_release;
         getPlayPitch(info, params.midiPitch, region->keycenter, region->tune, loader, sampleRate);
         getGain(info, params.midiVelocity, region->amp_veltrack, region->volume);
+        info.loopData = region->loopData;
     }
     return didKS;
 }
