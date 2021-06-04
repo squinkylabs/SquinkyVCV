@@ -306,7 +306,7 @@ void CompressorWidget2::addVu(Compressor2Module* module) {
     vu->module = module;
     addChild(vu);
 
-    auto lab = new VULabels(&lastStereo, &lastLabelMode, &lastChannel);
+    auto lab = new VULabels(&lastStereo, &lastLabelMode, &lastChannel, !module);
     lab->box.pos = Vec(5, 73);
     addChild(lab);
 }
