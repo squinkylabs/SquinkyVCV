@@ -1,6 +1,6 @@
 # Comp Compressor
 
-![Comp Panel](./comp.png)
+![CompII Panel](./compII.png)
 
 ## About Comp II
 
@@ -25,6 +25,16 @@ It can be a little tricky at first to learn how to use a compressor. But there a
 ## Block diagram of Comp II
 
 ![Block Diagram](./comp-block-diagram.png)
+
+## TL;DR Comp II isn't doing anything
+
+When inserted into a patch, Comp II will not have any effect until you change some settings. When Comp II is compressing, this will be reflected in the gain reduction meters. If there are not meter bars visible, Comp II isn't compressing.
+
+Usual reasons are:
+
+* All the channels start disabled (pass-through). Enable the channel in question.
+* The channel selector may not be set to the channel you are trying to compress. Make sure this isn't the case.
+* The default threshold setting is very high, you will usually need to lower this to make Comp II compress.
 
 ## Stereo / Mono / Linked stereo
 

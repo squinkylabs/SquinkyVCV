@@ -318,6 +318,15 @@ public:
         addSvg("res/oval-button-up-grey.svg");
         addSvg("res/oval-button-down.svg");
     }
+
+};
+
+class SqBlueButtonInv : public ToggleButton {
+public:
+    SqBlueButtonInv() {
+        addSvg("res/oval-button-down.svg");
+        addSvg("res/oval-button-up-grey.svg");
+    }
 };
 
 void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
@@ -390,11 +399,11 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #ifdef _LAB
     addLabel(Vec(49, 250), "Ena", TEXTCOLOR);
 #endif
-    SqBlueButton* tog = SqHelper::createParam<SqBlueButton>(
+    SqBlueButtonInv* enaButton = SqHelper::createParam<SqBlueButtonInv>(
         icomp,
         Vec(52, 268),
         module, Comp::NOTBYPASS_PARAM);
-    addParam(tog);
+    addParam(enaButton);
 
     // x = 32 too much
     std::vector<std::string> labels = Comp::ratios();
@@ -409,11 +418,11 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
     p->setLabels(labels);
     addParam(p);
 
-    tog = SqHelper::createParam<SqBlueButton>(
+    SqBlueButton* scButton = SqHelper::createParam<SqBlueButton>(
         icomp,
         Vec(52, 304),
         module, Comp::SIDECHAIN_PARAM);
-    addParam(tog);
+    addParam(scButton);
 }
 
 void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
