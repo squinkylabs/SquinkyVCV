@@ -348,7 +348,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(9, 211),
+        Vec(6, 211),
         module, Comp::THRESHOLD_PARAM));
 
 #ifdef _LAB
@@ -358,10 +358,14 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #endif
     channelKnob = SqHelper::createParam<Blue30SnapKnob>(
         icomp,
-        Vec(17, 27),
+        Vec(17, 24),
         module, Comp::CHANNEL_PARAM);
     addParam(channelKnob);
-    channelIndicator = addLabel(Vec(104, 35), "", TEXTCOLOR);
+    // was 104 / 35
+    // then 96 / 32
+    // then 92, 31
+
+    channelIndicator = addLabel(Vec(93, 31.8), "", TEXTCOLOR);
 
 #ifdef _LAB
     addLabel(
@@ -380,7 +384,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(97, 268),
+        Vec(98, 268),
         module, Comp::MAKEUPGAIN_PARAM));
 
 #ifdef _LAB
@@ -407,7 +411,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 
     tog = SqHelper::createParam<SqBlueButton>(
         icomp,
-        Vec(52, 307),
+        Vec(52, 304),
         module, Comp::SIDECHAIN_PARAM);
     addParam(tog);
 }
@@ -431,7 +435,7 @@ void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<ICom
 #endif
     addInput(createInput<PJ301MPort>(
         //Vec(jackX, jackY),
-        Vec(55, 326),
+        Vec(54.5, 326),
         module,
         Comp::SIDECHAIN_INPUT));
 
