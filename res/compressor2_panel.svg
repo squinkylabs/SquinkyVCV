@@ -1,21 +1,25 @@
-<svg id="Layer_1" data-name="Layer 1" 
-    xmlns="http://www.w3.org/2000/svg" 
-    xmlns:xlink="http://www.w3.org/1999/xlink"
-    width="135" height="380"
-    viewBox="0 0 135 380">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="135" height="380" viewBox="0 0 135 380">
   <defs>
-    <clipPath id="clip-path">
-      <rect width="135" height="380" style="fill: none"/>
+    <clipPath id="clip-compressor2_panel">
+      <rect width="135" height="380"/>
     </clipPath>
   </defs>
-  <title>panel-6b-flat</title>
-  <g style="clip-path: url(#clip-path)">
-    <g id="panel">
-      <rect width="135" height="380" style="fill: #fff"/>
-      <g id="background_fill" data-name="background fill">
-        <rect width="135" height="380" style="fill: #353535"/>
-        <rect x="0.5" y="0.5" width="134" height="379" style="fill: none;stroke: #707070"/>
-      </g>
+  <g id="compressor2_panel" clip-path="url(#clip-compressor2_panel)">
+    <rect width="135" height="380" fill="#353535"/>
+    <text id="Squinky_Labs" data-name="Squinky Labs" transform="translate(14 373)" fill="#fff" font-size="18" font-family="SpacePatrol"><tspan x="0" y="0">Squinky Labs</tspan></text>
+    <text id="Thrsh" transform="translate(8 206)" fill="#fff" font-size="12" font-family="RobotoCondensed-Regular, Roboto"><tspan x="0" y="0">Thrsh</tspan></text>
+    <text id="Att" transform="translate(59 206)" fill="#fff" font-size="12" font-family="RobotoCondensed-Regular, Roboto"><tspan x="0" y="0">Att</tspan></text>
+    <text id="Mix" transform="translate(12 263)" fill="#fff" font-size="12" font-family="RobotoCondensed-Regular, Roboto"><tspan x="0" y="0">Mix</tspan></text>
+    <text id="Rel" transform="translate(105 206)" fill="#fff" font-size="12" font-family="RobotoCondensed-Regular, Roboto"><tspan x="0" y="0">Rel</tspan></text>
+    <text id="In" transform="translate(17 320)" fill="#fff" font-size="12" font-family="RobotoCondensed-Regular, Roboto"><tspan x="0" y="0">In</tspan></text>
+    <text id="Channel:" transform="translate(54 46)" fill="#fff" font-size="12" font-family="Roboto-Regular, Roboto"><tspan x="0" y="0">Channel:</tspan></text>
+    <text id="Comp_II" data-name="Comp II" transform="translate(41 17)" fill="#fff" font-size="16" font-family="Roboto-Light, Roboto" font-weight="300"><tspan x="0" y="0">Comp II</tspan></text>
+    <text id="Out" transform="translate(104 263)" fill="#fff" font-size="12" font-family="RobotoCondensed-Regular, Roboto"><tspan x="0" y="0">Out</tspan></text>
+    <text id="Byp" transform="translate(58 263)" fill="#fff" font-size="12" font-family="RobotoCondensed-Regular, Roboto"><tspan x="0" y="0">Byp</tspan></text>
+    <text id="SC" transform="translate(61 300)" fill="#fff" font-size="12" font-family="RobotoCondensed-Regular, Roboto"><tspan x="0" y="0">SC</tspan></text>
+    <g id="Standard_Output_Jack" data-name="Standard Output Jack" transform="translate(97 309)">
+      <rect id="Rectangle_9" data-name="Rectangle 9" width="32" height="50" rx="3"/>
+      <text id="Out-2" data-name="Out" transform="translate(7 11)" fill="#fff" font-size="12" font-family="RobotoCondensed-Regular, Roboto"><tspan x="0" y="0">Out</tspan></text>
     </g>
   </g>
 </svg>

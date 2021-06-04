@@ -129,7 +129,7 @@ public:
 
 inline void MultiVUMeter::draw(const DrawArgs& args) {
     nvgBeginPath(args.vg);
-    nvgRoundedRect(args.vg, 0, 0, box.size.x, box.size.y, 2.0);
+    nvgRect(args.vg, 0, 0, box.size.x, box.size.y);
     nvgFillColor(args.vg, nvgRGB(0, 0, 0));
     nvgFill(args.vg);
 
@@ -147,7 +147,7 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
         nvgFontFaceId(args.vg, f);
         nvgFontSize(args.vg, 11);
         nvgBeginPath(args.vg);
-         nvgFillColor(args.vg, this->lineColor);
+        nvgFillColor(args.vg, this->lineColor);
 
         const float y6 = y0 + r.size.y / 3;
         const float y12 = y0 + 2 * r.size.y / 3;
@@ -155,12 +155,11 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
         const float w = r.size.x;
         const float xLabel = x0 + (r.size.x / 2) - 10;
 
-
         nvgRect(args.vg, x0, y6, w, 1);
-      //  nvgText(args.vg, xLabel, y6,"-6 dB.", nullptr);
+        //  nvgText(args.vg, xLabel, y6,"-6 dB.", nullptr);
 
-        nvgRect(args.vg, x0, y12,w, 1);
- 
+        nvgRect(args.vg, x0, y12, w, 1);
+
         nvgFill(args.vg);
     }
 

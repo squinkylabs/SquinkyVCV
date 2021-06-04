@@ -10,8 +10,6 @@
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
-//#include "ctrl/SqTooltips.h"
-//#include "ctrl/SqVuMeter.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SubMenuParamCtrl.h"
 #include "ctrl/ToggleButton.h"
@@ -127,12 +125,12 @@ void Compressor2Module::onSampleRateChange() {
 
 #include "MultiVUMeter.h"       // need to include this after module definition
 
-#define _LAB
+// #define _LAB
 struct CompressorWidget2 : ModuleWidget {
     CompressorWidget2(Compressor2Module*);
     void appendContextMenu(Menu* menu) override;
 
-#ifdef _LAB
+#if 1
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_WHITE) {
         Label* label = new Label();
         label->box.pos = v;
