@@ -305,7 +305,6 @@ static void testFixedPoint() {
     testFixedPoint0();
     testFixedPoint1();
     testFixedPoint2();
-
 }
 
 void testStreamer() {
@@ -315,8 +314,8 @@ void testStreamer() {
     testStreamEnd();
 
     // since no-tranpose mode disable, this test doesn't work
-   // testStreamValues();
-  //  testStreamRetrigger();
+    // testStreamValues();
+    //  testStreamRetrigger();
 
     testStreamXpose1();
     // printf("fix testStreamXpose2\n");

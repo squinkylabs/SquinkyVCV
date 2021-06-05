@@ -390,12 +390,30 @@ static void testSampPitch() {
     }
 }
 
+// test that our output is not delayed by two samples
+#if 0   // let's move this test to streamer
 static void testSampNoOffset() {
     auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::RampOneSec);
+
+    const int channel = 0;
     const int midiPitch = 60;
     const int midiVel = 60;
+    s->note_on(channel, midiPitch, midiVel, 0);
+
+    const float sampleTime = 1.f / 44100.f;
+    const float_4 gates = SimdBlocks::maskTrue();
+
+    for (int i = 0; i < 20; ++i) {
+        float_4 x = s->step(gates, sampleTime, 0, false);
+        float expected = float(i);
+         // let's start with loose tolerance, and work up.
+        assertClose(x[0], expected, .1f);
+    }
+
     assert(false);
+   
 }
+#endif
 
 void testx5() {
     testSampler();
@@ -410,7 +428,7 @@ void testx5() {
     testSampBuilds();
 
     testSampPitch();
-    testSampNoOffset();
+    //testSampNoOffset();
 
     // testSampleRetrigger();      // now write a test for retriggering played out voice
 }

@@ -11,9 +11,9 @@
  */
 class Streamer {
 public:
-   // Streamer();
+    // Streamer();
     void setSample(int chan, const float* data, int frames);
-  //  void setTranspose(int chan, bool doTranspose, float amount);
+    //  void setTranspose(int chan, bool doTranspose, float amount);
 
     /**
      * set the instantaneous pitch.
@@ -50,8 +50,8 @@ public:
          * and just use the float for the fraction, but I have a feeling that 
          * just using a double is simpler and faster.
          */
-        double curFloatSampleOffset = 0;   
-        
+        double curFloatSampleOffset = 0;
+
         bool transposeEnabled = false;
         float transposeMultiplier = 1;
         float gain = 1;
@@ -62,5 +62,4 @@ public:
 
     float stepNoTranspose(ChannelData&);
     float stepTranspose(ChannelData&, const float lfm);
-
 };

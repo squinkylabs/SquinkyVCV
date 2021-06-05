@@ -11,7 +11,6 @@
 
 #define _INTERP
 
-
 float_4 Streamer::step(float_4 fm, bool fmEnabled) {
     float_4 ret;
     // SQINFO("St:Step %d, %s", fmEnabled, toStr(fm).c_str());
@@ -19,11 +18,14 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
         ChannelData& cd = channels[channel];
 
         if (cd.data) {
-            const bool doInterp = true;         // until we can figure out a way to enable it without pops, we will leave "no transpose" disabled.
+            const bool doInterp = true;  // until we can figure out a way to enable it without pops, we will leave "no transpose" disabled.
             //const bool doInterp = cd.transposeEnabled || fmEnabled;
 
             float scalarData = doInterp ? stepTranspose(cd, fm[channel]) : stepNoTranspose(cd);
 
+            // if we get rid of these dumb balidity checks, then our
+            // unit tests can pump crazy tests data. These never go off anyway.
+#if 0
             const float acceptable = 1.1f;
             if (scalarData > acceptable || scalarData < -acceptable) {
                 SQWARN("bad sample value from step %f", scalarData);
@@ -31,6 +33,7 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
             }
             assert(scalarData <= acceptable);
             assert(scalarData >= -acceptable);
+#endif
             scalarData *= cd.gain;
             ret[channel] = scalarData;
         } else {
@@ -54,8 +57,8 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
 #ifdef _INTERP
         ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
 #else
-a b
-        size_t index = cd.curFloatSampleOffset;
+        a b
+            size_t index = cd.curFloatSampleOffset;
         ret = cd.data[index];
 #endif
         // advance the sample offset
@@ -63,7 +66,6 @@ a b
         cd.curFloatSampleOffset += lfm;
         cd.curFloatSampleOffset = std::max(2.0, cd.curFloatSampleOffset);
     }
-
 
     if (!CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         cd.arePlaying = false;
@@ -101,21 +103,21 @@ void Streamer::setGain(int channel, float gain) {
     cd.gain = gain;
 }
 
-void Streamer::setSample(int channel, const float* d, int f) {
-    assert(channel < 4);
-    ChannelData& cd = channels[channel];
+void Streamer::setSample(int whichChannel, const float* data, int totalFrames) {
+    assert(whichChannel < 4);
+    ChannelData& cd = channels[whichChannel];
 
     // temporary validity test
-#ifndef NDEBUG
+#if 0  // ndef NDEBUG
     // SQINFO("st::setSample(%d) siz=%d", channel, f);
-    for (int i = 0; i < f; ++i) {
-        const float x = d[i];
+    for (int i = 0; i < totalFrames; ++i) {
+        const float x = data[i];
         assert(x <= 1);
         assert(x >= -1);
     }
 #endif
-    cd.data = d;
-    cd.frames = f;
+    cd.data = data;
+    cd.frames = totalFrames;
     cd.arePlaying = true;  // this variable doesn't mean much, but???
     cd.curIntegerSampleOffset = 0;
     cd.curFloatSampleOffset = 1;  // start one past, to allow for interpolator padding
@@ -150,7 +152,6 @@ void Streamer::setTranspose(float_4 amount) {
 #endif
         cd.transposeEnabled = doTranspose;
         cd.transposeMultiplier = xpose;
-
 
 #if 0
         if (myIndex == 0 && channel == 0) {
