@@ -858,7 +858,9 @@ void testCompCurves() {
     assertEQ(_numLookupParams, 0);
 
   //  justPrintSpline();
-    testSpline();
+  // 
+  // This "test is just a design too that prints values
+ //   testSpline();
     testBiggestSlopeJumpNew();
     testInflection();
 

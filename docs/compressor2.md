@@ -12,7 +12,7 @@ It is fully polyphonic, and unlike Comp, each channel may have different setting
 
 The "Limiter" is an infinite ratio hard-knee compressor. It is also implemented much differently than the other ratios. Consequently it uses almost no CPU when processing 16 channels. So, if you want to "Squash everything" it's a very economical setting.
 
-Comp II has a fixed (preset) selection of compression ratios and knee widths. Using presets like this allows Comp to have very high audio quality without using much CPU.
+Comp II has a fixed (preset) selection of compression ratios and knee widths. Using presets like this allows Comp II to have very high audio quality without using much CPU.
 
 Comp II also has a wet/dry mix to allow "parallel compression", which is very stylish right now.
 
@@ -20,7 +20,7 @@ The compression functionality is identical to our previous compressor, Comp. You
 
 Most of the controls for Comp II are on the panel, but there are some important functions in the context menu, too.
 
-It can be a little tricky at first to learn how to use a compressor. But there are lots and lots of articles and videos on the Internet that will be very helpful. Also see [using a compressor](./using-a-compressor.md)
+It can be a little tricky at first to learn how to use a compressor. But there are lots and lots of articles and videos on the Internet that will be very helpful. Also see our [using a compressor](./using-a-compressor.md)
 
 ## Block diagram of Comp II
 
@@ -28,7 +28,7 @@ It can be a little tricky at first to learn how to use a compressor. But there a
 
 ## TL;DR Comp II isn't doing anything
 
-When inserted into a patch, Comp II will not have any effect until you change some settings. When Comp II is compressing, this will be reflected in the gain reduction meters. If there are not meter bars visible, Comp II isn't compressing.
+When inserted into a patch, Comp II will not have any effect until you change some settings. When Comp II is compressing, this will be reflected in the gain reduction meters. If there are no meter bars visible, Comp II isn't compressing.
 
 Usual reasons are:
 
@@ -64,6 +64,8 @@ There are, however, some features that can speed editing. The context menu has "
 
 ## The context menu
 
+Make sure to look in the context menu. There are handy actions in there that can speed up patching quite a bit.
+
 * **Comp II manual** takes you directly to the manual for Comp II. All of our module have a link directly to their manual.
 
 * **Copy channel** copies all the settings from the current channel to the clipboard.
@@ -76,7 +78,7 @@ There are, however, some features that can speed editing. The context menu has "
 
 * **Stereo mono** opens another menu offering a choice of Mono, Stereo, and Linked-stereo. These are explained above.
 
-* **Panel channels** opens another menu offering the following choices: "1-8", "9-16", "Group/Aux". This setting does not affect the sound, it only changes how the different channels are labeled in the gain reduction meter, and in the current channel indicator at the top.
+* **Panel channels** opens another menu offering the following choices: "1-8", "9-16", "Group/Aux". This setting does not affect the sound, it only changes how the different channels are labeled in the gain reduction meter, and in the current channel indicator at the top. Usually you will want these to match the channels in Mind Meld mixer that you are patching.
 
 ## The panel controls
 
