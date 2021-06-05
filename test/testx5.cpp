@@ -149,7 +149,6 @@ static void testSampler4vxAttack() {
 
     float_4 gates = SimdBlocks::maskTrue();
     ProcFunc lambda = [s, &gates, sampleTime] {
-    
         const float_4 x = s->step(gates, sampleTime, 0, false);
         return x[0];
     };
@@ -260,7 +259,6 @@ static void testSamplerEnd() {
 }
 #endif
 
-
 static void testSampler4vxRetrigger() {
     auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
     prime(s);
@@ -354,11 +352,11 @@ static void testSampBuilds() {
 static void testSampPitch0(int channel) {
     auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
-   // const int channel = 0;
+    // const int channel = 0;
     const int midiPitch = 60;
     const int midiVel = 60;
     s->note_on(channel, midiPitch, midiVel, 0);
-    const bool isTrans= s->_isTransposed(channel);
+    const bool isTrans = s->_isTransposed(channel);
     const float transAmt = s->_transAmt(channel);
 
     assert(!isTrans);
@@ -370,11 +368,10 @@ static void testSampPitch1(int channel) {
     const int midiPitch = 60;
     const int midiVel = 60;
 
-
     s->note_on(channel, midiPitch, midiVel, 0);
 
     float_4 mod = float_4::zero();
-    mod[channel] = 1;               // let's go up an octabe (1V/8)
+    mod[channel] = 1;  // let's go up an octabe (1V/8)
     s->setExpFM(mod);
     for (int i = 0; i < 4; ++i) {
         const bool isTrans = s->_isTransposed(i);
@@ -393,12 +390,19 @@ static void testSampPitch() {
     }
 }
 
+static void testSampNoOffset() {
+    auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::RampOneSec);
+    const int midiPitch = 60;
+    const int midiVel = 60;
+    assert(false);
+}
+
 void testx5() {
     testSampler();
     testSampler4vxTestOutput();
 
     testSampler4vxRelease();
-    testSampler4vxAttack();   
+    testSampler4vxAttack();
     // no working any more
     //testSamplerRealSound();
     testSamplerRelease2();
@@ -406,6 +410,7 @@ void testx5() {
     testSampBuilds();
 
     testSampPitch();
+    testSampNoOffset();
 
     // testSampleRetrigger();      // now write a test for retriggering played out voice
 }

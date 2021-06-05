@@ -287,7 +287,6 @@ static void testParseHeadingGlobalWitRegionKVCompiled() {
 }
 
 static void testParseHeadingControl() {
-    SQINFO("------------- testParseControl");
     const char* data = R"foo(<control>
         default_path=Woodwinds\Bassoon\stac\
         <global>ampeg_attack=0.001 ampeg_release=3 ampeg_dynamic=1 volume=0
@@ -297,7 +296,6 @@ static void testParseHeadingControl() {
         <region>sample=PSBassoon_A1_v1_rr1.wav lokey=43 hikey=46 pitch_keycenter=45 lovel=1 hivel=62 volume=12
         )foo";
 
-    SQINFO("took out random group. does that still work?");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
     assert(err.empty());
@@ -315,7 +313,6 @@ static void testParseHeadingControl() {
     cinst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);
     CompiledRegionPtr creg = regions[0];
-    SQINFO("IN test, creg = %p\n", creg.get());
     assertEQ(creg->lokey, 43);
     // TODO: does this test work?
 }
@@ -339,7 +336,6 @@ static void testParseLabel() {
 }
 
 static void testCompiledRegion() {
-    SQINFO("---- starting testCompiledRegion");
     CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 offset=200)foo");
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
@@ -355,7 +351,6 @@ static void testCompiledRegion() {
 }
 
 static void testCompiledRegionAddedOpcodes() {
-    SQINFO("---- starting testCompiledRegionAddedOpcodes");
     CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=a key=64 tune=11 volume=-13)foo");
 
     assertEQ(cr->tune, 11);
@@ -363,7 +358,6 @@ static void testCompiledRegionAddedOpcodes() {
 }
 
 static void testCompiledRegionInherit() {
-    SQINFO("---- starting testCompiledRegionInherit");
     CompiledRegionPtr cr = st::makeRegion(R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo");
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
@@ -1202,8 +1196,6 @@ static void testCompileSimpleDrum() {
     waves.clear();
     assertEQ(waves.size(), 0);
 
-    SQWARN("--- done with rand, now seq");
-
     VoicePlayParameter params;
     params.midiPitch = 41;
     params.midiVelocity = 64;
@@ -1271,7 +1263,6 @@ static void testComp(const std::string& path) {
 }
 
 static void testCompileBassoon() {
-    SQINFO("testCompileBassoon");
     testComp(R"foo(D:\samples\VSCO-2-CE-1.1.0\VSCO-2-CE-1.1.0\BassoonStac.sfz)foo");
 }
 
@@ -1404,7 +1395,6 @@ static void testSampleRate() {
 }
 
 static void testPlayVolumeAndTune() {
-    SQINFO("---- starting testCompiledRegionAddedOpcodes");
     const char* data = (R"foo(<region>sample=a key=44 tune=11 volume=-13)foo");
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();

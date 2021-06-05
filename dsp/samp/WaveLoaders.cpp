@@ -140,6 +140,9 @@ public:
             case WaveLoader::Tests::DCTenSec:
                 setupDC(10);
                 break;
+            case WaveLoader::Tests::RampOneSec:
+                setupRamp(1);
+                break;
             default:
                 assert(false);
         }
@@ -153,6 +156,14 @@ private:
         totalFrameCount = 44100 * seconds;
         for (uint64_t i = 0; i < totalFrameCount; ++i) {
             data[i] = 1;
+        }
+    }
+    void setupRamp(int seconds) {
+        data = reinterpret_cast<float*>(DRWAV_MALLOC(44100 * seconds * sizeof(float)));
+        sampleRate = 44100;
+        totalFrameCount = 44100 * seconds;
+        for (uint64_t i = 0; i < totalFrameCount; ++i) {
+            data[i] = float(i);
         }
     }
     const WaveLoader::Tests _test = WaveLoader::Tests::None;
@@ -196,6 +207,7 @@ void WaveLoader::_setTestMode(Tests test) {
     switch (test) {
         case Tests::None:
             break;
+        case Tests::RampOneSec:
         case Tests::DCTenSec:
         case Tests::DCOneSec: {
             finalInfo.push_back(wav);

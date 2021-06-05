@@ -453,7 +453,7 @@ static void testLexNewLine() {
 static void testLexCommentInFile() {
     auto lex = SLex::go("sample=a/b//c");
     assert(lex);
-    lex->_dump();
+    // lex->_dump();
     assertEQ(lex->items.size(), 3);
     assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
     SLexItemPtr id = lex->items[2];
@@ -464,7 +464,7 @@ static void testLexCommentInFile() {
 static void testLexCommentInFile2() {
     auto lex = SLex::go("sample=a/b //c");
     assert(lex);
-    lex->_dump();
+    //lex->_dump();
     assertEQ(lex->items.size(), 3);
     assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
     SLexItemPtr id = lex->items[2];
@@ -475,7 +475,7 @@ static void testLexCommentInFile2() {
 static void testLexCommentInFile3() {
     auto lex = SLex::go("sample=a/b\t//c");
     assert(lex);
-    lex->_dump();
+    //lex->_dump();
     assertEQ(lex->items.size(), 3);
     assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
     SLexItemPtr id = lex->items[2];
