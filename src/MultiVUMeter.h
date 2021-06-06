@@ -6,7 +6,8 @@ class VULabels : public widget::TransparentWidget {
 public:
     // Compressor2Module* module;
     VULabels() = delete;
-    VULabels(int* stereo, int* labelMode, int* channel) : isStereo_(stereo), labelMode_(labelMode), channel_(channel) {
+    VULabels(int* stereo, int* labelMode, int* channel, bool isFake) : isStereo_(stereo), labelMode_(labelMode), channel_(channel), isFake_(isFake) {
+        SQINFO("Lables CTOR");
         box.size = Vec(125, 10);
         labels.resize(16);
     }
@@ -22,11 +23,20 @@ private:
     int lastStereo = -1;
     int lastLabelMode = -1;
     //int lastChannel = -1;
+    const bool isFake_;
 
     void updateLabels();
 };
 
 inline void VULabels::updateLabels() {
+    if (isFake_) {
+         for (int i = 0; i < 8; ++i) {
+            SqStream sq;
+            sq.add(i+1);
+            std::string s = sq.str();
+            labels[i] = s;
+        }
+    }
     if ((*isStereo_ < 0) || (*labelMode_ < 0)) {
         INFO("short 1");
         return;
@@ -39,7 +49,7 @@ inline void VULabels::updateLabels() {
 
     if (*isStereo_ > 0) {
         for (int i = 0; i < 8; ++i) {
-            SqStream sq;
+           // SqStream sq;
             std::string s = Comp2TextUtil::channelLabel(*labelMode_, i + 1);
             labels[i] = s;
         }
@@ -57,19 +67,21 @@ inline void VULabels::updateLabels() {
 }
 
 inline void VULabels::draw(const DrawArgs& args) {
+    //SQINFO("lab draw");
     updateLabels();
     int f = ::rack::appGet()->window->uiFont->handle;
     NVGcontext* vg = args.vg;
 
     nvgFontFaceId(vg, f);
 
-    if (lastStereo > 0) {
+    if ((lastStereo > 0) || isFake_) {
         // ---------- Stereo -------------
         float y = 5;
         float fontSize = (lastLabelMode == 2) ? 11 : 12;
         nvgFontSize(vg, fontSize);
         const float dx = 15.5;  // 15.6 slightly too much
         for (int i = 0; i < 8; ++i) {
+            //FO("draw lab stereo %d", i);
             bool twoDigits = ((lastLabelMode == 1) && (i > 0));
             float x = 5 + i * dx;
             if (twoDigits) {
@@ -89,6 +101,7 @@ inline void VULabels::draw(const DrawArgs& args) {
         nvgFontSize(vg, 11);
         const float dx = 7.65;  // 9 way too big 7.5 slightly low
         for (int i = 0; i < 16; ++i) {
+            //SQINFO("loop %d", i);
             switch (i) {
                 case 0:
                 case 4:
@@ -125,17 +138,38 @@ public:
         box.size = Vec(125, 75);
     }
     void draw(const DrawArgs& args) override;
+    float getFakeGain(int channel);
+    int getNumFakeChannels() {
+        return 8;
+    }
 };
+
+inline float MultiVUMeter::getFakeGain(int channel) {
+    float ret = 1;
+    switch(channel) {
+        case 1:
+            ret = .25f;
+            break;
+        case 2:
+            ret = .6f;
+            break;
+        case 5:
+            ret = .157f;
+            break;
+    }
+    //SQINFO("get fake %d ret %f", channel, ret);
+    return ret;
+}
 
 inline void MultiVUMeter::draw(const DrawArgs& args) {
     nvgBeginPath(args.vg);
-    nvgRoundedRect(args.vg, 0, 0, box.size.x, box.size.y, 2.0);
+    nvgRect(args.vg, 0, 0, box.size.x, box.size.y);
     nvgFillColor(args.vg, nvgRGB(0, 0, 0));
     nvgFill(args.vg);
 
     const Vec margin = Vec(1, 1);
     const Rect r = box.zeroPos().grow(margin.neg());
-    const int channels = module ? module->getNumVUChannels() : 1;
+    const int channels = module ? module->getNumVUChannels() : getNumFakeChannels();
     const double dbMaxReduction = -18;
     const double y0 = r.pos.y;
     const float barMargin = .5;
@@ -147,20 +181,19 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
         nvgFontFaceId(args.vg, f);
         nvgFontSize(args.vg, 11);
         nvgBeginPath(args.vg);
-         nvgFillColor(args.vg, this->lineColor);
+        nvgFillColor(args.vg, this->lineColor);
 
         const float y6 = y0 + r.size.y / 3;
         const float y12 = y0 + 2 * r.size.y / 3;
         const float x0 = r.pos.x;
         const float w = r.size.x;
-        const float xLabel = x0 + (r.size.x / 2) - 10;
-
+       // const float xLabel = x0 + (r.size.x / 2) - 10;
 
         nvgRect(args.vg, x0, y6, w, 1);
-      //  nvgText(args.vg, xLabel, y6,"-6 dB.", nullptr);
+        //  nvgText(args.vg, xLabel, y6,"-6 dB.", nullptr);
 
-        nvgRect(args.vg, x0, y12,w, 1);
- 
+        nvgRect(args.vg, x0, y12, w, 1);
+
         nvgFill(args.vg);
     }
 
@@ -168,13 +201,14 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
     nvgBeginPath(args.vg);
     for (int c = 0; c < channels; c++) {
         // gain == 1...0
-        const float gain = module ? module->getChannelGain(c) : 1.f;
+        const float gain = module ? module->getChannelGain(c) : getFakeGain(c);
         // db = 0.... -infi
 
         // let's do 1 db per segment
         const double db = std::max(AudioMath::db(gain), dbMaxReduction);
         const double h = db * r.size.y / dbMaxReduction;
 
+        //SQINFO("in draw %d h= %f", c, h);
         if (h >= 0.005f) {
             //INFO("got level at c=%d", c);
             float x = r.pos.x + r.size.x * c / channels;
@@ -195,9 +229,12 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
     {
         nvgBeginPath(args.vg);
         const NVGcolor ltBlue = nvgRGB(48 + 50, 125 + 50, 255);
-        const int c = *channel_ - 1;
+        int c = *channel_ - 1;
+        if (!module) {
+            c = 1;
+        }
         if (c >= 0) {
-            const float gain = module ? module->getChannelGain(c) : 1.f;
+            const float gain = module ? module->getChannelGain(c) : getFakeGain(c);
             const double db = std::max(AudioMath::db(gain), dbMaxReduction);
 
             const double h = db * r.size.y / dbMaxReduction;

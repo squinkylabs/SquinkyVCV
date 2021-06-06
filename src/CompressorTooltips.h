@@ -152,3 +152,19 @@ public:
         return value < .5 ? "Bypassed" : "Normal";
     }
 };
+
+class BypassQuantityComp2 : public rack::engine::ParamQuantity {
+public:
+    std::string getDisplayValueString() override {
+        auto value = getValue();
+        return value < .5 ? "Bypassed" : "Engaged";
+    }
+};
+
+class SideChainQuantity2 : public rack::engine::ParamQuantity {
+public:
+    std::string getDisplayValueString() override {
+        auto value = getValue();
+        return value < .5 ? "Inactive" : "Engaged";
+    }
+};

@@ -10,8 +10,6 @@
 #include "ctrl/PopupMenuParamWidget.h"
 #include "ctrl/SqHelper.h"
 #include "ctrl/SqMenuItem.h"
-//#include "ctrl/SqTooltips.h"
-//#include "ctrl/SqVuMeter.h"
 #include "ctrl/SqWidgets.h"
 #include "ctrl/SubMenuParamCtrl.h"
 #include "ctrl/ToggleButton.h"
@@ -90,7 +88,10 @@ void Compressor2Module::addParams() {
                 this->configParam<RatiosQuantity2>(i, param.min, param.max, param.def, paramName);
                 break;
             case Comp::NOTBYPASS_PARAM:
-                this->configParam<BypassQuantity2>(i, param.min, param.max, param.def, paramName);
+                this->configParam<BypassQuantityComp2>(i, param.min, param.max, param.def, paramName);
+                break;
+              case Comp::SIDECHAIN_PARAM:
+                this->configParam<SideChainQuantity2>(i, param.min, param.max, param.def, paramName);
                 break;
             default:
                 this->configParam(i, param.min, param.max, param.def, paramName);
@@ -127,12 +128,12 @@ void Compressor2Module::onSampleRateChange() {
 
 #include "MultiVUMeter.h"       // need to include this after module definition
 
-#define _LAB
+// #define _LAB
 struct CompressorWidget2 : ModuleWidget {
     CompressorWidget2(Compressor2Module*);
     void appendContextMenu(Menu* menu) override;
 
-#ifdef _LAB
+#if 1
     Label* addLabel(const Vec& v, const char* str, const NVGcolor& color = SqHelper::COLOR_WHITE) {
         Label* label = new Label();
         label->box.pos = v;
@@ -200,7 +201,7 @@ void CompressorWidget2::paste() {
 void CompressorWidget2::appendContextMenu(Menu* theMenu) {
     MenuLabel* spacerLabel = new MenuLabel();
     theMenu->addChild(spacerLabel);
-    ManualMenuItem* manual = new ManualMenuItem("Comp II manual", "https://github.com/squinkylabs/SquinkyVCV/blob/c2/docs/compressor2.md");
+    ManualMenuItem* manual = new ManualMenuItem("Comp II manual", "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor2.md");
     theMenu->addChild(manual);
 
     theMenu->addChild(new SqMenuItem(
@@ -308,7 +309,7 @@ void CompressorWidget2::addVu(Compressor2Module* module) {
     vu->module = module;
     addChild(vu);
 
-    auto lab = new VULabels(&lastStereo, &lastLabelMode, &lastChannel);
+    auto lab = new VULabels(&lastStereo, &lastLabelMode, &lastChannel, !module);
     lab->box.pos = Vec(5, 73);
     addChild(lab);
 }
@@ -319,6 +320,15 @@ public:
     SqBlueButton() {
         addSvg("res/oval-button-up-grey.svg");
         addSvg("res/oval-button-down.svg");
+    }
+
+};
+
+class SqBlueButtonInv : public ToggleButton {
+public:
+    SqBlueButtonInv() {
+        addSvg("res/oval-button-down.svg");
+        addSvg("res/oval-button-up-grey.svg");
     }
 };
 
@@ -350,7 +360,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(9, 211),
+        Vec(6, 211),
         module, Comp::THRESHOLD_PARAM));
 
 #ifdef _LAB
@@ -360,10 +370,14 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #endif
     channelKnob = SqHelper::createParam<Blue30SnapKnob>(
         icomp,
-        Vec(17, 27),
+        Vec(17, 24),
         module, Comp::CHANNEL_PARAM);
     addParam(channelKnob);
-    channelIndicator = addLabel(Vec(104, 35), "", TEXTCOLOR);
+    // was 104 / 35
+    // then 96 / 32
+    // then 92, 31
+
+    channelIndicator = addLabel(Vec(93, 31.8), "", TEXTCOLOR);
 
 #ifdef _LAB
     addLabel(
@@ -382,17 +396,17 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(97, 268),
+        Vec(98, 268),
         module, Comp::MAKEUPGAIN_PARAM));
 
 #ifdef _LAB
     addLabel(Vec(49, 250), "Ena", TEXTCOLOR);
 #endif
-    SqBlueButton* tog = SqHelper::createParam<SqBlueButton>(
+    SqBlueButtonInv* enaButton = SqHelper::createParam<SqBlueButtonInv>(
         icomp,
         Vec(52, 268),
         module, Comp::NOTBYPASS_PARAM);
-    addParam(tog);
+    addParam(enaButton);
 
     // x = 32 too much
     std::vector<std::string> labels = Comp::ratios();
@@ -407,11 +421,11 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
     p->setLabels(labels);
     addParam(p);
 
-    tog = SqHelper::createParam<SqBlueButton>(
+    SqBlueButton* scButton = SqHelper::createParam<SqBlueButton>(
         icomp,
-        Vec(52, 307),
+        Vec(52, 304),
         module, Comp::SIDECHAIN_PARAM);
-    addParam(tog);
+    addParam(scButton);
 }
 
 void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
@@ -433,7 +447,7 @@ void CompressorWidget2::addJacks(Compressor2Module* module, std::shared_ptr<ICom
 #endif
     addInput(createInput<PJ301MPort>(
         //Vec(jackX, jackY),
-        Vec(55, 326),
+        Vec(54.5, 326),
         module,
         Comp::SIDECHAIN_INPUT));
 

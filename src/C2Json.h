@@ -26,6 +26,8 @@ private:
     const char* enabledSC_ = "enabledSC";
     const char* wetdry_ = "wetdry";
     const char* ratio_ = "ratio";
+    const char* schema_ = "schema";
+    const char* comp2_schema_ = "sq-compII";
 
     json_t* paramsToJsonOneChannel(const CompressorParamHolder& params, int channel);
     bool jsonToParamOneChannel(json_t* obj, CompressorParamHolder* outParams, int channel);
@@ -41,7 +43,18 @@ inline bool C2Json::getClipAsParamChannel(CompressorParamChannel* ch) {
     json_error_t error;
     json_t* obj = json_loads(jsonString, 0, &error);
     if (!obj) {
-        INFO("data on clip not for us");
+        INFO("data on clip not json us");
+        return false;
+    }
+
+    json_t* schemaJ = json_object_get(obj, schema_);
+    if (!schemaJ) {
+        INFO("cllipboard json has no schema");
+        return false;
+    }
+    std::string s = json_string_value(schemaJ);
+    if (s != comp2_schema_) {
+        INFO("clipboard schema mismatch");
         return false;
     }
 
@@ -56,7 +69,7 @@ inline bool C2Json::getClipAsParamChannel(CompressorParamChannel* ch) {
     json_t* enabledSCJ = json_object_get(obj, enabledSC_);
     if (!attackJ || !releaseJ || !thresholdJ || !makeupJ || !enabledJ || !ratioJ || !wetdryJ || !enabledSCJ) {
         json_decref(obj);
-        WARN("json schema no match");
+        WARN("json schema mismatch");
         return false;
     }
 
@@ -85,6 +98,7 @@ inline void C2Json::copyToClip(const CompressorParamChannel& ch) {
     json_object_set_new(root, enabled_, json_boolean(ch.enabled));
     json_object_set_new(root, enabledSC_, json_boolean(ch.sidechainEnabled));
     json_object_set_new(root, ratio_, json_integer(ch.ratio));
+    json_object_set_new(root, schema_, json_string(comp2_schema_));
 
     char* clipJson = json_dumps(root, JSON_INDENT(2) | JSON_REAL_PRECISION(9));
     glfwSetClipboardString(APP->window->win, clipJson);
