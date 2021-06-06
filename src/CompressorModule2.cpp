@@ -88,7 +88,10 @@ void Compressor2Module::addParams() {
                 this->configParam<RatiosQuantity2>(i, param.min, param.max, param.def, paramName);
                 break;
             case Comp::NOTBYPASS_PARAM:
-                this->configParam<BypassQuantity2>(i, param.min, param.max, param.def, paramName);
+                this->configParam<BypassQuantityComp2>(i, param.min, param.max, param.def, paramName);
+                break;
+              case Comp::SIDECHAIN_PARAM:
+                this->configParam<SideChainQuantity2>(i, param.min, param.max, param.def, paramName);
                 break;
             default:
                 this->configParam(i, param.min, param.max, param.def, paramName);

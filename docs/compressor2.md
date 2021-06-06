@@ -82,6 +82,8 @@ Make sure to look in the context menu. There are handy actions in there that can
 
 ## The panel controls
 
+* **Edit Channel** Select which compressor channel will be edited from the panel.
+
 * **Compression Ratio** How much compression, for inputs that are over the threshold. The higher the ratio, the more compression. Soft-knee gives a more gradual range between compressed and not compressed.
 
 * **Gain reduction meter** Show how much each compressor is compressing. See below for more information.

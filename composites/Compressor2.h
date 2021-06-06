@@ -797,7 +797,7 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             ret = {0, 40, 0, "Makeup gain"};
             break;
         case Compressor2<TBase>::NOTBYPASS_PARAM:
-            ret = {0, 1, 0, "Effect enabled"};
+            ret = {0, 1, 0, "Comp II"};
             break;
         case Compressor2<TBase>::WETDRY_PARAM:
             ret = {-1, 1, 1, "Dry/wet mix"};
@@ -812,7 +812,7 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             ret = {0, 2, 0, "Labels"};
             break;
         case Compressor2<TBase>::SIDECHAIN_PARAM:
-            ret = {0, 1, 0, "Sidechain enable"};
+            ret = {0, 1, 0, "Sidechain"};
             break;
 #if 0
         case Compressor2<TBase>::SIDECHAIN_ALL_PARAM:
