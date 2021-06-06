@@ -120,10 +120,10 @@ void HeadingTrackerTester::testRegionAndGlobal() {
     HeadingTracker t(hl);
     for (int i = 0; i < elements; ++i) {
         switch (i) {
-            case SHeading::Type::Region:
+            case int(SHeading::Type::Region):
                 assert(t.curHeadingsIndex[i] == 0);
                 break;
-            case SHeading::Type::Global:
+            case int(SHeading::Type::Global):
                 assert(t.curHeadingsIndex[i] < 0);
                 break;
             default:
@@ -143,11 +143,11 @@ void HeadingTrackerTester::testRegionAndGlobal2() {
     HeadingTracker t(hl);
     for (int i = 0; i < elements; ++i) {
         switch (i) {
-            case SHeading::Type::Region:
+            case int(SHeading::Type::Region):
                 assertEQ(t.curHeadingsIndex[i], 1);
                 assertLT(t.nextHeadingsIndex[i], 0);
                 break;
-            case SHeading::Type::Global:
+            case int(SHeading::Type::Global):
                 assertEQ(t.curHeadingsIndex[i], 0);
                 assertLT(t.nextHeadingsIndex[i], 0);
                 break;

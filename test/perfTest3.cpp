@@ -134,7 +134,7 @@ void perfTest3() {
     assert(overheadOutOnly > 0);
   //  testSamp1();
   //  testSamp2();
-  //  testSamp3();
+    testSamp3();
     testSamp4();
      testSamp5();
 }

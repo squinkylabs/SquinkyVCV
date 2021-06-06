@@ -504,7 +504,7 @@ static void testParseRegion() {
     auto err = SParse::go("<region>", inst);
     assert(err.empty());
 
-    assertEQ(inst->headings.size(), 1)
+    assertEQ(inst->headings.size(), 1);
     assertEQ(int(inst->headings[0]->type), int(SHeading::Type::Region));
 }
 

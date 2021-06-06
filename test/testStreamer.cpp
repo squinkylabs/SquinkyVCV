@@ -27,6 +27,51 @@ static void testCubicInterp() {
     assertClose(x, 8.5f, .0001);
 }
 
+static void testCubicInterpDouble() {
+    double data[] = { 10, 9, 8, 7 };
+
+
+    double x = CubicInterpolator<double>::interpolate(data, 1);
+    assertClose(x, 9, .0000001);
+    x = CubicInterpolator<double>::interpolate(data, 1.9999999);
+    assertClose(x, 8, .0000001);
+
+    x = CubicInterpolator<double>::interpolate(data, 1.5);
+    assertClose(x, 8.5, .000001);
+}
+
+// more perverse data values
+static void testCubicInterp2Double() {
+    double data[] = {1, 1, 21, 21 };
+
+    double x = CubicInterpolator<double>::interpolate(data, 1);
+    assertClose(x, 1, .0000001);
+    x = CubicInterpolator<double>::interpolate(data, 1.9999999);
+    assertClose(x, 21, .00001);
+
+    x = CubicInterpolator<double>::interpolate(data, 1.5);
+    assertClose(x, 11, .0000001);
+}
+
+// more perverse data values
+static void testCubicInterp3Double() {
+    double data[] = { 0, 100, 100, 0 };
+
+    double x = CubicInterpolator<double>::interpolate(data, 1.5);
+    assertClose(x, 100, 13);
+
+    double data2[] = { 100, 100, 100, 100 };
+    x = CubicInterpolator<double>::interpolate(data2, 1.5);
+    assertClose(x, 100, .0000001);
+    x = CubicInterpolator<double>::interpolate(data2, 1.25);
+    assertClose(x, 100, .0000001);
+    x = CubicInterpolator<double>::interpolate(data2, 1.75);
+    assertClose(x, 100, .0000001);
+
+    assert(false);
+}
+
+
 static void testStream() {
     Streamer s;
     s._assertValid();
@@ -309,6 +354,9 @@ static void testFixedPoint() {
 
 void testStreamer() {
     testCubicInterp();
+    testCubicInterpDouble();
+    testCubicInterp2Double();
+    testCubicInterp3Double();
 
     testStream();
     testStreamEnd();

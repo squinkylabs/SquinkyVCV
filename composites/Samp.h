@@ -28,8 +28,8 @@
 //   #define ARCH_WIN
 #endif
 
-#define _ATOM       // use atomic operations.
-#define _KS2        // new key-switch with params
+#define _ATOM  // use atomic operations.
+#define _KS2   // new key-switch with params
 
 namespace rack {
 namespace engine {
@@ -78,6 +78,11 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+ * 16 NOTES         35.4
+ * 4 notes mod      10.3
+ * 4 notes no mod   9.9
 
 template <class TBase>
 class SampDescription : public IComposite {
@@ -196,6 +201,7 @@ public:
     void _setupPerfTest();
 
     void suppressErrors();
+
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
                              // SInstrumentPtr instrument;
@@ -217,8 +223,8 @@ private:
     int numBanks_n = 1;
     bool lfmConnected_n = false;
     float_4 lfmGain_n = {0};
-    float rawVolume_n=0;
-    float taperedVolume_n=0;
+    float rawVolume_n = 0;
+    float taperedVolume_n = 0;
 
     float_4 lastGate4[4];
     Divider divn;
@@ -236,7 +242,7 @@ private:
     std::atomic<bool> _isNewInstrument = {false};
 
 #ifdef _KS2
-    int lastServicedKeyswitchValue = { -1 };
+    int lastServicedKeyswitchValue = {-1};
 #else
     std::atomic<int> _nextKeySwitchRequest = {-1};
 #endif
@@ -300,7 +306,7 @@ inline void Samp<TBase>::_setupPerfTest() {
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
-    w->_setTestMode( WaveLoader::Tests::DCTenSec);
+    w->_setTestMode(WaveLoader::Tests::DCTenSec);
 
     cinst->_setTestMode(CompiledInstrument::Tests::MiddleC11);  // I don't know what this test mode does now, but probably not enough?
 
@@ -313,7 +319,7 @@ inline void Samp<TBase>::_setupPerfTest() {
 // Called when a patch has come back from thread server
 template <class TBase>
 inline void Samp<TBase>::setNewPatch(SampMessage* newMessage) {
-    SQINFO("Samp::setNewPatch (came back from thread server)");
+    // SQINFO("Samp::setNewPatch (came back from thread server)");
     assert(newMessage);
     if (!newMessage->instrument || !newMessage->waves) {
         if (!newMessage->instrument) {
@@ -333,7 +339,7 @@ inline void Samp<TBase>::setNewPatch(SampMessage* newMessage) {
 
     // even if just for errors, we do have a new "instrument"
     _isNewInstrument = true;
-    SQINFO("Samp::setNewPatch _isNewInstrument");
+    // SQINFO("Samp::setNewPatch _isNewInstrument");
     this->gcWaveLoader = newMessage->waves;
     this->gcInstrument = newMessage->instrument;
 
@@ -370,12 +376,12 @@ inline void Samp<TBase>::step_n() {
 #ifdef _KS2
 template <class TBase>
 inline void Samp<TBase>::serviceKeySwitch() {
-   const int val = int(std::round( TBase::params[DUMMYKS_PARAM].value));
-   if (val !=lastServicedKeyswitchValue) {
-       SQINFO("comp saw ks param change from %d to %d", lastServicedKeyswitchValue, val);
-       lastServicedKeyswitchValue = val;
-       playback[0].note_on(0, val, 64, 44100.f);
-   }
+    const int val = int(std::round(TBase::params[DUMMYKS_PARAM].value));
+    if (val != lastServicedKeyswitchValue) {
+        // SQINFO("comp saw ks param change from %d to %d", lastServicedKeyswitchValue, val);
+        lastServicedKeyswitchValue = val;
+        playback[0].note_on(0, val, 64, 44100.f);
+    }
 }
 
 template <class TBase>
@@ -466,7 +472,6 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
 
     // Loop for all channels. Does gate detections, runs audio
     for (int bank = 0; bank < numBanks_n; ++bank) {
-
         // Step 1: gate processing. This doesn't have to run every sample, btw.
         // prepare 4 gates. note that ADSR / Sampler4vx must see simd mask (0 or nan)
         // but our logic needs to see numbers (we use 1 and 0).
@@ -609,7 +614,7 @@ public:
             sendMessageToClient(msg);
             return;
         }
-      //  cinst->_dump(0);
+        //  cinst->_dump(0);
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
         assert(cinst->getInfo());
 

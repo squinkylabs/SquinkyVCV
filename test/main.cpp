@@ -187,7 +187,7 @@ int main(int argc, char** argv) {
             printf("%s is not a valid command line argument\n", arg.c_str());
         }
     }
-   // do_gc();
+    // do_gc();
 #ifdef _PERF
     runPerf = true;
 #ifndef NDEBUG
@@ -210,12 +210,13 @@ int main(int argc, char** argv) {
 
     if (runPerf) {
         initPerf();
-        perfTest2();
         perfTest3();
+        perfTest2();
+
         perfTest();
         return 0;
     }
-    
+
     testCompCurves();
 
     // mode these up where while we work...
@@ -224,7 +225,6 @@ int main(int argc, char** argv) {
     testCompressorII();
     testCompressorParamHolder();
     testCompressor();
-   
 
     testSimpleQuantizer();
     testFilterComposites();
@@ -234,13 +234,13 @@ int main(int argc, char** argv) {
     testx();
     testx2();
     testx3();
-    testx4();  
+    testx4();
     testx5();
     testx6();
     testx7();
 
     testSampComposite();
- 
+
     testFlac();
     testADSRSampler();
     testStreamer();
@@ -274,8 +274,6 @@ int main(int argc, char** argv) {
     testSub();
     simd_testBiquad();
     testWVCO();
-
-
 
     testSimpleQuantizer();
 
