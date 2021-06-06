@@ -18,7 +18,7 @@ It can be a little tricky at first to learn how to use a compressor. But there a
 
 ## vs. Comp II
 
-We have another compressor, called Comp II. The two are very similar. Comp II id designed to be patched into the send/returns of the Mind Meld mixer, although it does not need to be. Comp can be a little easier to use for a stereo signal, and is slightly smaller. Comp II does have a linked stereo mode, which Comp does not. More info [here](./compressor2.md)
+We have another compressor, called Comp II. The two are very similar. Comp II is designed to be patched into the send/returns of the Mind Meld mixer, although it does not need to be. Comp can be a little easier to use for a stereo signal, and is slightly smaller. Comp II does have a linked stereo mode, and a side-chain which Comp does not. The documentation for Comp II contains a useful block diagram which mostly applies to Comp. Documentation for Comp II [here](./compressor2.md)
 
 ## Some uses for Comp
 

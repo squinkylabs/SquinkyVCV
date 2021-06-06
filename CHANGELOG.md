@@ -2,17 +2,17 @@
 
 ## 10.0.19
 
-New module: Comp 2.
-
-Tooltips for compressor threshold now displayed in dB, for both compressors.
+New module: Comp II.
 
 Compressor level detector now has less IM distortion (re-design).
 
 Compressor soft-knee now has smoother shape - sounds better (re-design).
 
+Tooltips for compressor threshold now displayed in dB, for both compressors. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/198)
+
 User may now type into tooltips on Comp (bug fix).
 
-SFZ Player: now understands absolute path.
+SFZ Player: now understands absolute path to sample files.
 
 ## 10.0.18
 
