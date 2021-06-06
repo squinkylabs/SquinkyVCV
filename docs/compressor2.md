@@ -1,4 +1,4 @@
-# Comp Compressor
+# Comp II Compressor
 
 ![CompII Panel](./compII.png)
 
