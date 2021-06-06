@@ -88,7 +88,7 @@ Make sure to look in the context menu. There are handy actions in there that can
 
 * **Gain reduction meter** Show how much each compressor is compressing. See below for more information.
 
-* **Thrh** Signals above the threshold will be compressed, signals below threshold they will not. So, the lower the threshold, the more compression you will get.
+* **Thrsh** Signals above the threshold will be compressed, signals below threshold they will not. So, the lower the threshold, the more compression you will get.
 
 * **Out** Makeup gain. Boosts the output. Typically you reduce the threshold to get more compression, but that makes everything quieter. So you add some makeup gain to compensate and make it loud again.
 
@@ -98,7 +98,7 @@ Make sure to look in the context menu. There are handy actions in there that can
 
 * **Mix** Blends the "wet" (compressed) signal with the "dry" (unprocessed) signal. Used for "parallel compression".
 
-* **Ena** Enable/Bypass. When the compressor is bypassed the input is fed straight to the output. This allows you to compared the compressed vs. uncompressed sound quickly.
+* **Byp** Enable/Bypass. When the compressor is bypassed the input is fed straight to the output. This allows you to compared the compressed vs. uncompressed sound quickly.
 
 * **SC** Enables the side-chain input for the current channel. When the side-chain is enabled the compressor's gain detector does not look at the level of the audio input, it looks at the level of the side-chain input. See [using a compressor](./using-a-compressor.md)
 

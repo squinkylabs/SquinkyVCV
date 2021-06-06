@@ -2,7 +2,7 @@
 	"slug": "squinkylabs-plug1",
 	"name": "Squinky Labs",
 	"author": "Squinky Labs",
-	"license": "CC0-1.0",
+	"license": "GPL-3.0-only",
 	"pluginUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/README.md",
 	"authorUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/README.md",
 	"sourceUrl": "https://github.com/squinkylabs/SquinkyVCV",
