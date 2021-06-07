@@ -83,6 +83,9 @@ public:
  * 16 NOTES         35.4
  * 4 notes mod      10.3
  * 4 notes no mod   9.9
+ * 
+ * 
+ */
 
 template <class TBase>
 class SampDescription : public IComposite {

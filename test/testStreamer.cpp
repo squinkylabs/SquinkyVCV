@@ -7,7 +7,7 @@
 #include "asserts.h"
 
 static void testCubicInterp() {
-    float data[] = {10, 9, 8, 7};
+    float data[] = { 10, 9, 8, 7 };
 
     // would need sample at -1 to interpolate sample 0
     assertEQ(CubicInterpolator<float>::canInterpolate(0, 4), false);
@@ -24,6 +24,16 @@ static void testCubicInterp() {
     assertClose(x, 8, .002);
 
     x = CubicInterpolator<float>::interpolate(data, 1.5f);
+    assertClose(x, 8.5f, .0001);
+
+
+    const float offset = 1.5f;
+    const unsigned int delayTimeSamples = CubicInterpolator<float>::getIntegerPart(offset);
+    const float y0 = data[delayTimeSamples - 1];
+    const float y1 = data[delayTimeSamples];
+    const float y2 = data[delayTimeSamples + 1];
+    const float y3 = data[delayTimeSamples + 2];
+    x = CubicInterpolator<float>::interpolate(offset, y0, y1, y2, y3);
     assertClose(x, 8.5f, .0001);
 }
 
@@ -68,7 +78,6 @@ static void testCubicInterp3Double() {
     x = CubicInterpolator<double>::interpolate(data2, 1.75);
     assertClose(x, 100, .0000001);
 
-    assert(false);
 }
 
 
