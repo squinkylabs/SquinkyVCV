@@ -12,7 +12,8 @@
  */
 class Streamer {
 public:
-    // Streamer();
+    Streamer() = default;
+    Streamer(const Streamer&) = delete;
     void setSample(int chan, const float* data, int frames);
     void setLoopData(int chan, const CompiledRegion::LoopData& data);
 
@@ -40,11 +41,11 @@ public:
     class ChannelData {
     public:
         const float* data = nullptr;
-        int frames = 0;
+        unsigned int frames = 0;
 
         float vol = 1;  // this will go away when we have envelopes
 
-        int curIntegerSampleOffset = 0;
+        unsigned int curIntegerSampleOffset = 0;
         bool arePlaying = false;
 
         /* If curFloatSampleOffset is a float we build up error and it 

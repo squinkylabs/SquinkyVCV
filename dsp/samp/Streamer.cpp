@@ -278,6 +278,9 @@ float Streamer::_transAmt(int channel) const {
 
 
 void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
+    ChannelData& cd = channels[chan];
+    assert(0 == cd.curFloatSampleOffset);
+
    // assert(chan < 4 && chan >= 0);
     channels[chan].loopData = data;
     channels[chan].loopActive = (data.offset != 0);
@@ -288,5 +291,14 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
     if (data.loop_end < data.loop_start) {
         valid = false;
     }
+    if (data.loop_end >= cd.frames) {
+        valid = false;
+    }
     channels[chan].loopActive = valid;
+
+    if (valid) {
+        // they should have called setSample right before
+        assert(0 == cd.curFloatSampleOffset);
+        cd.curFloatSampleOffset = data.offset;
+    }
  }

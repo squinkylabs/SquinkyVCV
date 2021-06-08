@@ -108,6 +108,7 @@ bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
 #endif
 
     player.setSample(channel, waveInfo->getData(), int(waveInfo->getTotalFrameCount()));
+    player.setLoopData(channel, patchInfo.loopData);
     player.setGain(channel, patchInfo.gain);
 
     // I don't think this test cares what we set the player too

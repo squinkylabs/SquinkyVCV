@@ -390,30 +390,51 @@ static void testSampPitch() {
     }
 }
 
-// test that our output is not delayed by two samples
-#if 0   // let's move this test to streamer
-static void testSampNoOffset() {
-    auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::RampOneSec);
 
-    const int channel = 0;
-    const int midiPitch = 60;
-    const int midiVel = 60;
-    s->note_on(channel, midiPitch, midiVel, 0);
+static void testSampOffset() {
+    std::shared_ptr<Sampler4vx> s = std::make_shared<Sampler4vx>();
 
-    const float sampleTime = 1.f / 44100.f;
-    const float_4 gates = SimdBlocks::maskTrue();
+ //   SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-    for (int i = 0; i < 20; ++i) {
-        float_4 x = s->step(gates, sampleTime, 0, false);
-        float expected = float(i);
-         // let's start with loose tolerance, and work up.
-        assertClose(x[0], expected, .1f);
-    }
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst;
+    WaveLoaderPtr w = std::make_shared<WaveLoader>();
+    w->_setTestMode(WaveLoader::Tests::RampOneSec);
 
-    assert(false);
-   
+
+    const char* test = R"foo(
+        <region>
+        sample=r1
+        offset=4321
+    )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto perr = SParse::go(test, inst);
+    assert(perr.empty());
+
+    SamplerErrorContext cerr;
+    auto ci = CompiledInstrument::make(cerr, inst);
+    assert(ci);
+
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 60;
+
+    Sampler4vx samp;
+    samp.setLoader(w);
+    samp.setPatch(ci);
+
+    VoicePlayInfo info;
+    ci->play(info, params, nullptr, 0);
+    assertEQ(info.loopData.offset, 4321);
+    SQINFO("foo");
+
+    samp.note_on(0, 60, 60, 44100);
+    const Streamer& player = samp._player();
+    assertEQ(player.channels[0].loopData.offset, 4321);
+    assert(player.channels[0].loopActive);
 }
-#endif
+
 
 void testx5() {
     testSampler();
@@ -428,7 +449,5 @@ void testx5() {
     testSampBuilds();
 
     testSampPitch();
-    //testSampNoOffset();
-
-    // testSampleRetrigger();      // now write a test for retriggering played out voice
+    testSampOffset();
 }

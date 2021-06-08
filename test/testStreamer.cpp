@@ -9,7 +9,7 @@
 //********************************* Interpolator tests ********************************
 
 static void testCubicInterp() {
-    float data[] = { 10, 9, 8, 7 };
+    float data[] = {10, 9, 8, 7};
 
     // would need sample at -1 to interpolate sample 0
     assertEQ(CubicInterpolator<float>::canInterpolate(0, 4), false);
@@ -28,7 +28,6 @@ static void testCubicInterp() {
     x = CubicInterpolator<float>::interpolate(data, 1.5f);
     assertClose(x, 8.5f, .0001);
 
-
     const float offset = 1.5f;
     const unsigned int delayTimeSamples = CubicInterpolator<float>::getIntegerPart(offset);
     const float y0 = data[delayTimeSamples - 1];
@@ -40,8 +39,7 @@ static void testCubicInterp() {
 }
 
 static void testCubicInterpDouble() {
-    double data[] = { 10, 9, 8, 7 };
-
+    double data[] = {10, 9, 8, 7};
 
     double x = CubicInterpolator<double>::interpolate(data, 1);
     assertClose(x, 9, .0000001);
@@ -54,7 +52,7 @@ static void testCubicInterpDouble() {
 
 // more perverse data values
 static void testCubicInterp2Double() {
-    double data[] = {1, 1, 21, 21 };
+    double data[] = {1, 1, 21, 21};
 
     double x = CubicInterpolator<double>::interpolate(data, 1);
     assertClose(x, 1, .0000001);
@@ -67,22 +65,19 @@ static void testCubicInterp2Double() {
 
 // more perverse data values
 static void testCubicInterp3Double() {
-    double data[] = { 0, 100, 100, 0 };
+    double data[] = {0, 100, 100, 0};
 
     double x = CubicInterpolator<double>::interpolate(data, 1.5);
     assertClose(x, 100, 13);
 
-    double data2[] = { 100, 100, 100, 100 };
+    double data2[] = {100, 100, 100, 100};
     x = CubicInterpolator<double>::interpolate(data2, 1.5);
     assertClose(x, 100, .0000001);
     x = CubicInterpolator<double>::interpolate(data2, 1.25);
     assertClose(x, 100, .0000001);
     x = CubicInterpolator<double>::interpolate(data2, 1.75);
     assertClose(x, 100, .0000001);
-
 }
-
-
 
 //****************************************** Streamer tests *****************
 static void testStream() {
@@ -103,8 +98,10 @@ static void testStream() {
     assert(!s.channels[0].loopActive);
 }
 
-static void  testStreamLoopData() {
+static void testStreamLoopData() {
+  
     Streamer s;
+    s.setSample(3, nullptr, 1000);
     CompiledRegion::LoopData loopData;
     s.setLoopData(3, loopData);
     assert(!s.channels[3].loopActive);
@@ -117,11 +114,15 @@ static void  testStreamLoopData() {
     loopData = CompiledRegion::LoopData();
     loopData.loop_start = 100;
     loopData.loop_end = 200;
+    s.setSample(2, nullptr, 1000);
     s.setLoopData(2, loopData);
     assert(s.channels[2].loopActive);
 
-
- 
+    loopData = CompiledRegion::LoopData();
+    loopData.loop_start = 300;
+    loopData.loop_end = 200;
+    s.setLoopData(2, loopData);
+    assert(!s.channels[2].loopActive);
 }
 
 static void testStreamEnd() {
@@ -163,7 +164,6 @@ static void testStreamValues() {
     assert(!s.canPlay(channel));
     assert(!s.channels[channel].loopActive);
 }
-
 
 static void testStreamOffset() {
     Streamer s;
@@ -323,7 +323,6 @@ void testStreamer() {
     testStreamXpose1();
     testBugCaseHighFreq();
     testStreamOffset();
-
 
     testFixedPoint();
 }
