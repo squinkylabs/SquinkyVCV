@@ -270,6 +270,11 @@ int CompiledRegion::pitchRange() const {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
+bool CompiledRegion::LoopData::operator == (const LoopData& l) const {
+    return offset == l.offset;
+    
+}
+
 void CompiledRegion::_dump(int depth) const {
     SQINFO("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d", isKeyswitched(), sw_lolast, sw_hilast);
     SQINFO("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);

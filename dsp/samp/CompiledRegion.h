@@ -120,6 +120,7 @@ public:
 
     class LoopData {
     public:
+        bool operator == (const LoopData&) const;
         unsigned int offset = 0;
         unsigned int loop_start = 0;
         unsigned int loop_end = 0;

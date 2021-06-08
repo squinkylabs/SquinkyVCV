@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "CompiledRegion.h"
 #include "SimdBlocks.h"
 #include "SqLog.h"
 
@@ -13,7 +14,8 @@ class Streamer {
 public:
     // Streamer();
     void setSample(int chan, const float* data, int frames);
-    //  void setTranspose(int chan, bool doTranspose, float amount);
+    void setLoopData(int chan, const CompiledRegion::LoopData& data);
+
 
     /**
      * set the instantaneous pitch.
@@ -55,6 +57,12 @@ public:
         bool transposeEnabled = false;
         float transposeMultiplier = 1;
         float gain = 1;
+        CompiledRegion::LoopData loopData;
+
+        /**
+         * true if playback needs to look at loop data. 
+         */
+        bool loopActive = false;
 
         void _dump() const;
     };

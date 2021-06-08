@@ -83,6 +83,7 @@ static void testCubicInterp3Double() {
 }
 
 
+
 //****************************************** Streamer tests *****************
 static void testStream() {
     Streamer s;
@@ -99,6 +100,28 @@ static void testStream() {
     assert(s.canPlay(0));
     assert(!s.canPlay(1));
     s._assertValid();
+    assert(!s.channels[0].loopActive);
+}
+
+static void  testStreamLoopData() {
+    Streamer s;
+    CompiledRegion::LoopData loopData;
+    s.setLoopData(3, loopData);
+    assert(!s.channels[3].loopActive);
+
+    loopData.offset = 123;
+    s.setLoopData(3, loopData);
+    assert(s.channels[3].loopActive);
+    assert(s.channels[3].loopData == loopData);
+
+    loopData = CompiledRegion::LoopData();
+    loopData.loop_start = 100;
+    loopData.loop_end = 200;
+    s.setLoopData(2, loopData);
+    assert(s.channels[2].loopActive);
+
+
+ 
 }
 
 static void testStreamEnd() {
@@ -115,6 +138,7 @@ static void testStreamEnd() {
         s._assertValid();
     }
     assert(!s.canPlay(channel));
+    assert(!s.channels[channel].loopActive);
 }
 
 static void testStreamValues() {
@@ -133,10 +157,41 @@ static void testStreamValues() {
         s._assertValid();
         float_4 v = s.step(0, false);
         SQINFO("sample[%d] = %f", i, v[channel]);
-        assertClosePct(v[channel], .1f * (6 - i), 1);
+        assertClose(v[channel], x[i], .01);
         s._assertValid();
     }
     assert(!s.canPlay(channel));
+    assert(!s.channels[channel].loopActive);
+}
+
+
+static void testStreamOffset() {
+    Streamer s;
+    const int channel = 1;
+    assert(!s.canPlay(channel));
+
+    float x[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
+    assertEQ(x[0], .6f);
+
+    s.setSample(channel, x, 6);
+    CompiledRegion::LoopData loopData;
+    loopData.offset = 1;
+    s.setLoopData(channel, loopData);
+    assert(s.channels[channel].loopActive);
+    s.setTranspose(float_4(1));
+    assert(s.canPlay(channel));
+    SQINFO("--- here we go");
+    for (int i = 0; i < 5; ++i) {
+        s._assertValid();
+        float_4 v = s.step(0, false);
+        SQINFO("sample[%d] = %f", i, v[channel]);
+        assertClose(v[channel], x[i] - .1f, .01);
+        s._assertValid();
+    }
+    assert(!s.canPlay(channel));
+    assert(s.channels[channel].loopActive);
+
+    SQWARN("write full tests for setLoopData");
 }
 
 static void testStreamXpose1() {
@@ -154,6 +209,7 @@ static void testStreamXpose1() {
     s.step(0, false);
     s._assertValid();
     assert(s.canPlay(channel));
+    assert(!s.channels[channel].loopActive);
 }
 
 // Now that we have cubic interpolation, this test no longer works.
@@ -176,6 +232,7 @@ static void testStreamXpose2() {
         assertEQ(v[channel], 5 - (2 * i));
     }
     assert(!s.canPlay(channel));
+    assert(!s.channels[channel].loopActive);
 }
 
 static void testStreamRetrigger() {
@@ -204,6 +261,7 @@ static void testStreamRetrigger() {
         s._assertValid();
     }
     assert(!s.canPlay(channel));
+    assert(!s.channels[channel].loopActive);
 }
 
 static void testBugCaseHighFreq() {
@@ -259,9 +317,13 @@ void testStreamer() {
     testCubicInterp3Double();
 
     testStream();
+    testStreamLoopData();
     testStreamValues();
     testStreamEnd();
     testStreamXpose1();
     testBugCaseHighFreq();
+    testStreamOffset();
+
+
     testFixedPoint();
 }

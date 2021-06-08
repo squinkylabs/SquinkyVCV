@@ -275,3 +275,18 @@ float Streamer::_transAmt(int channel) const {
     const ChannelData& cd = channels[channel];
     return cd.transposeMultiplier;
 }
+
+
+void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
+   // assert(chan < 4 && chan >= 0);
+    channels[chan].loopData = data;
+    channels[chan].loopActive = (data.offset != 0);
+    bool valid = false;
+    if (data.offset || data.loop_start || data.loop_end) {
+        valid = true;
+    }
+    if (data.loop_end < data.loop_start) {
+        valid = false;
+    }
+    channels[chan].loopActive = valid;
+ }
