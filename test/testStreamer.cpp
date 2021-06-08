@@ -6,6 +6,8 @@
 #include "TestSignal.h"
 #include "asserts.h"
 
+//********************************* Interpolator tests ********************************
+
 static void testCubicInterp() {
     float data[] = { 10, 9, 8, 7 };
 
@@ -81,6 +83,7 @@ static void testCubicInterp3Double() {
 }
 
 
+//****************************************** Streamer tests *****************
 static void testStream() {
     Streamer s;
     s._assertValid();
@@ -125,9 +128,11 @@ static void testStreamValues() {
     s.setSample(channel, x, 6);
     s.setTranspose(float_4(1));
     assert(s.canPlay(channel));
+    SQINFO("--- here we go");
     for (int i = 0; i < 6; ++i) {
         s._assertValid();
         float_4 v = s.step(0, false);
+        SQINFO("sample[%d] = %f", i, v[channel]);
         assertClosePct(v[channel], .1f * (6 - i), 1);
         s._assertValid();
     }
@@ -219,121 +224,7 @@ static void testBugCaseHighFreq() {
     assert(!s.canPlay(channel));
 }
 
-#if 0
-static bool testClick(float trans, bool injectChange=false, float signalValueAtChange = 0, float changeAmount = 0)
-{
-    SQINFO("------- tests click %f", trans);
-    if (injectChange) {
-        SQINFO("--- will inject change of %f at %f", changeAmount, signalValueAtChange);
-    }
-    const size_t size = 100000;
-    float buffer[size];
-    TestSignal<float>::generateSin(buffer, size, .001f);
-    Streamer s;
-    s.setSample(0, buffer, size);
-    s.setTranspose(trans);
-    s.setGain(0, 1.f);
-
-    float lastSample = s.step(0, false)[0];
-    float biggestChange = 0;
-    bool haveInjected = false;
-
-    for (int i=0; i< (size * .9f); ++i) {
-        float_4 samples = s.step(0, false);
-        float sample = samples[0];
-        float change = std::abs(sample - lastSample);
-        if (change > biggestChange) {
-            SQINFO("change = %f at sample%d\n", change, i);
-            biggestChange = change;
-        }
-        lastSample = sample;
-
-        if (injectChange && !haveInjected && (i > size/2)) {
-            float distToTarget = std::abs(lastSample - signalValueAtChange);
-            if (distToTarget < .001) {
-                SQINFO("injecting change at %f", lastSample);
-                s.setTranspose(trans + changeAmount);
-                haveInjected = true;
-            }
-        }
-    }
-    return haveInjected;
-}
-
-
-static void testClick2(float baseFreq, float trans,float changeAmount)
-{
-    SQINFO("------- tests click2 %f", trans);
-
-    const size_t size = 100000;
-    float buffer[size];
-    TestSignal<float>::generateSin(buffer, size, baseFreq);
-    Streamer s;
-    s.setSample(0, buffer, size);
-    s.setTranspose(trans);
-    s.setGain(0, 1.f);
-
-    float lastSample = s.step(0, false)[0];
-    float biggestChange = 0;
-
-    assert(trans < 1);
-    assert(trans + changeAmount > 0);
-    float counter = 0;
-    bool sign = false;
-
-
-    for (int i=0; i< (size * .9f); ++i) {
-        float_4 samples = s.step(0, false);
-        float sample = samples[0];
-        float change = std::abs(sample - lastSample);
-        if (change > biggestChange) {
-            SQINFO("change = %f at sample%d\n", change, i);
-            biggestChange = change;
-        }
-        lastSample = sample;
-
-        if (++counter > 1000) {
-                counter = 0;
-                if (sign) {
-                    s.setTranspose(trans + changeAmount);
-                    sign = false;
-                } else {
-                    s.setTranspose(trans - changeAmount);
-                    sign = true;
-                }
-        }
-
-
-    }
-}
-
-static void testClick() {
-#if 0
-    bool b = testClick(1.0f);
-    assert(!b);
-    b = testClick(1.01f);
-    assert(!b);
-    b = testClick(.99f);
-    assert(!b);
-
-    b=testClick(.99f, true, 0, .03f);
-    assert(b);
-    b = testClick(.99f, true, .5, .03f);
-    assert(b);
-    b = testClick(1.02f, true, 0, -.04f);
-    assert(b);
-    b = testClick(1.01f, true, .5, -.04f);
-    assert(b);
-#endif
-
-    testClick2(.001f, .99f, .04f );
-    testClick2(.0001f, .986f, .0216f);
-    testClick2(.01f, .993f, .01f);
-
-    assert(false);
-}
-#endif
-
+// this fixed point acc was a dead end....
 static void testFixedPoint0() {
     FixedPointAccumulator a;
     a.add(1);
@@ -368,17 +259,9 @@ void testStreamer() {
     testCubicInterp3Double();
 
     testStream();
+    testStreamValues();
     testStreamEnd();
-
-    // since no-tranpose mode disable, this test doesn't work
-    // testStreamValues();
-    //  testStreamRetrigger();
-
     testStreamXpose1();
-    // printf("fix testStreamXpose2\n");
-    //testStreamXpose2();
-
     testBugCaseHighFreq();
-    //testClick();
     testFixedPoint();
 }

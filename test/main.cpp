@@ -229,8 +229,8 @@ int main(int argc, char** argv) {
     testSimpleQuantizer();
     testFilterComposites();
 
+    testStreamer();
     testHeadingTracker();
-
     testx();
     testx2();
     testx3();
@@ -243,8 +243,7 @@ int main(int argc, char** argv) {
 
     testFlac();
     testADSRSampler();
-    testStreamer();
-
+   
     testADSR();
 
     testWavThread();

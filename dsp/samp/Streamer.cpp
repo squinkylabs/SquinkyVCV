@@ -45,9 +45,66 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
     return ret;
 }
 
+
+
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
     float ret = 0;
 
+    // first try interp in place
+    if (CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
+         ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
+    } else if (cd.curFloatSampleOffset < cd.frames) {      
+        // OK, can't in place, but we can still do it
+        if (cd.curFloatSampleOffset < 1) {
+            // interp from sample before start, add a zero
+            const float y0 = 0;
+            const float y1 = cd.data[0];
+            const float y2 = cd.data[1];
+            const float y3 = cd.data[2];
+            ret = CubicInterpolator<float>::interpolate(float(cd.curFloatSampleOffset), y0, y1, y2, y3);
+
+        } else {
+            // for now, we only know three kinds of interp:
+            // normal in-place, insert zero at the end, and put two zeros at the end
+            //assert(false);
+            unsigned int index = CubicInterpolator<float>::getIntegerPart(float(cd.curFloatSampleOffset));
+            const float y0 = cd.data[index-1];
+            const float y1 = cd.data[index];
+            float y2 = 0;
+            float y3 = 0;
+            if (cd.curFloatSampleOffset + 1 < cd.frames) {
+                y2 = cd.data[index + 1];
+            }
+            ret = CubicInterpolator<float>::interpolate(float(cd.curFloatSampleOffset), y0, y1, y2, y3);
+           
+        }
+
+    } else {
+        cd.arePlaying = false;
+        return 0;
+    }
+    
+
+    // advance the sample offset
+    cd.curFloatSampleOffset += cd.transposeMultiplier;
+    cd.curFloatSampleOffset += lfm;
+
+    // don't let FM push it negative
+    cd.curFloatSampleOffset = std::max(0.0, cd.curFloatSampleOffset);
+
+
+    if (!CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
+        cd.arePlaying = false;
+    }
+
+    return ret * cd.vol;
+}
+
+#if 0
+float Streamer::stepTranspose(ChannelData& cd, float lfm) {
+    float ret = 0;
+    
+    // first try to interpolate in place
     if (CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         if (!cd.arePlaying) {
             SQWARN("why are we playing a streamer not started? pl=%d, fo=%f, io=%d", cd.arePlaying, cd.curFloatSampleOffset, cd.curIntegerSampleOffset);
@@ -64,7 +121,12 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
         // advance the sample offset
         cd.curFloatSampleOffset += cd.transposeMultiplier;
         cd.curFloatSampleOffset += lfm;
-        cd.curFloatSampleOffset = std::max(2.0, cd.curFloatSampleOffset);
+
+        // don't let FM push it negative
+        cd.curFloatSampleOffset = std::max(0.0, cd.curFloatSampleOffset);
+    }
+    else {
+        assert(false);
     }
 
     if (!CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
@@ -73,6 +135,7 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
 
     return ret * cd.vol;
 }
+#endif
 
 float Streamer::stepNoTranspose(ChannelData& cd) {
     assert(false);
@@ -120,7 +183,11 @@ void Streamer::setSample(int whichChannel, const float* data, int totalFrames) {
     cd.frames = totalFrames;
     cd.arePlaying = true;  // this variable doesn't mean much, but???
     cd.curIntegerSampleOffset = 0;
-    cd.curFloatSampleOffset = 1;  // start one past, to allow for interpolator padding
+
+    // New way - no "off by one" on the sample counts, will do some more work..
+    cd.curFloatSampleOffset = 0;
+   // old way, add one to make the math easier for interp
+   // cd.curFloatSampleOffset = 1;  // start one past, to allow for interpolator padding
     cd.vol = 1;
 }
 
@@ -177,6 +244,8 @@ void Streamer::ChannelData::_dump() const {
 }
 
 void Streamer::_assertValid() {
+    // this is too simplistic now.
+#if 0
     for (int channel = 0; channel < 4; ++channel) {
         ChannelData& cd = channels[channel];
 
@@ -192,6 +261,7 @@ void Streamer::_assertValid() {
             }
         }
     }
+#endif
 }
 
 bool Streamer::_isTransposed(int channel) const {

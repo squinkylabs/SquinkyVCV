@@ -8,7 +8,7 @@ template <typename T>
 class CubicInterpolator {
 public:
     /**
-     * don't call interpolate if canInterpolate returns false
+     * don't call array interpolate if canInterpolate returns false
      */
     static bool canInterpolate(T offset, unsigned int totalSize);
     static T interpolate(const T* data, T offset);
@@ -19,10 +19,12 @@ private:
     static T getFloatPart(T);
 };
 
+
+// Should more properly be called canInterpolateInPlace
 template <typename T>
 inline bool CubicInterpolator<T>::canInterpolate(T offset, unsigned int totalSize) {
     // const unsigned int index = getIntegerPart(offset);
-    return (offset > 0 && offset < (totalSize - 2));
+    return (offset >= 1 && offset < (totalSize - 2));
 }
 
 #if defined(_MSC_VER)
