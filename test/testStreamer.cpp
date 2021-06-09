@@ -147,11 +147,12 @@ class TestValues {
 public:
     float fractionalOffset = 0;
     Streamer s;
-    unsigned int sampleCount;
-    const float* input;
-    const float* expectedOutput;
-    int channel;
+    unsigned int sampleCount=0;
+    const float* input = nullptr;
+    const float* expectedOutput = nullptr;
+    int channel = 0;
     unsigned int skipSamples = 0;
+    CompiledRegion::LoopData loopData;
 };
 
 static void testStreamValuesSub(TestValues& v) {
@@ -160,10 +161,12 @@ static void testStreamValuesSub(TestValues& v) {
     assert(v.input && v.expectedOutput);
 
     v.s.setSample(v.channel, v.input, v.sampleCount);
+    v.s.setLoopData(v.channel, v.loopData);
     v.s.setTranspose(float_4(1));
     assert(v.s.canPlay(v.channel));
     v.s.channels[v.channel].curFloatSampleOffset += v.fractionalOffset;
     for (unsigned int i = 0; i < v.sampleCount; ++i) {
+        SQINFO("top of loop %d", i);
         v.s._assertValid();
         float_4 vx = v.s.step(0, false);
         SQINFO("sample[%d] = %f", i, vx[v.channel]);
@@ -209,32 +212,34 @@ static void testStreamValuesInterp() {
 }
 
 static void testStreamOffset() {
-    Streamer s;
-    const int channel = 1;
-    assert(!s.canPlay(channel));
+    TestValues v;
+    v.channel = 1;
+    assert(!v.s.canPlay(v.channel));
 
-    float x[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
-    assertEQ(x[0], .6f);
+    float input[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
+    float output[5] = { .5f, .4f, .3f, .2f, .1f };
+    v.sampleCount = 5;
+    v.loopData.offset = 1;
+    testStreamValuesSub(v);
+    assert(v.s.channels[v.channel].loopActive);
+}
 
-    s.setSample(channel, x, 6);
-    CompiledRegion::LoopData loopData;
-    loopData.offset = 1;
-    s.setLoopData(channel, loopData);
-    assert(s.channels[channel].loopActive);
-    s.setTranspose(float_4(1));
-    assert(s.canPlay(channel));
-    SQINFO("--- here we go");
-    for (int i = 0; i < 5; ++i) {
-        s._assertValid();
-        float_4 v = s.step(0, false);
-        SQINFO("sample[%d] = %f", i, v[channel]);
-        assertClose(v[channel], x[i] - .1f, .01);
-        s._assertValid();
-    }
-    assert(!s.canPlay(channel));
-    assert(s.channels[channel].loopActive);
+static void testStreamValuesLoop() {
+    SQINFO("-- testStreamValuesLoop -- ");
+    TestValues v;
+    v.channel = 1;
+    assert(!v.s.canPlay(v.channel));
 
-    SQWARN("write full tests for setLoopData");
+    //                  0  1  2  3  4     5      6       7   8   9
+    float input[10] = { 1, 2, 3, 4, 1000, 1000, 2000, 2000, 2000, 2000 };
+    float output[10] = { 1, 2, 3, 4, 3, 4, 3, 4, 3, 4 };
+    v.input = input;
+    v.expectedOutput = output;
+    v.sampleCount = 10;
+    v.loopData.loop_start = 2;
+    v.loopData.loop_end = 3;
+    testStreamValuesSub(v);
+    assert(v.s.channels[v.channel].loopActive);
 }
 
 static void testStreamXpose1() {
@@ -363,6 +368,7 @@ void testStreamer() {
     testStreamLoopData();
     testStreamValues();
     testStreamValuesInterp();
+    testStreamValuesLoop();
     testStreamEnd();
     testStreamXpose1();
     testBugCaseHighFreq();

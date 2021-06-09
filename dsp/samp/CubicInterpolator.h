@@ -61,7 +61,7 @@ inline T CubicInterpolator<T>::interpolate(const T* data, T offset) {
     return interpolate(offset, y0, y1, y2, y3);
 }
 
-#if 0
+#if 0   // before divide up:
 template <typename T>
 inline T CubicInterpolator<T>::interpolate(const T* data, T offset) {
 #if 1
