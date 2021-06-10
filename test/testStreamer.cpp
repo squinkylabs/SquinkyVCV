@@ -102,15 +102,19 @@ static void testStreamLoopData() {
     Streamer s;
     float data[1000] = { 0 };
     s.setSample(3, data, 1000);
+
+    // blank loop data
     CompiledRegion::LoopData loopData;
     s.setLoopData(3, loopData);
     assert(!s.channels[3].loopActive);
 
+    // offset only (TODO: I don't think loopActive should be true)
     loopData.offset = 123;
     s.setLoopData(3, loopData);
     assert(s.channels[3].loopActive);
     assert(s.channels[3].loopData == loopData);
 
+    // normal loop
     loopData = CompiledRegion::LoopData();
     loopData.loop_start = 100;
     loopData.loop_end = 200;
@@ -119,11 +123,43 @@ static void testStreamLoopData() {
     s.setLoopData(2, loopData);
     assert(s.channels[2].loopActive);
 
+    // inverted loop points
     loopData = CompiledRegion::LoopData();
     loopData.loop_start = 300;
     loopData.loop_end = 200;
     s.setLoopData(2, loopData);
     assert(!s.channels[2].loopActive);
+}
+
+static void testStreamLoopData2() {
+    Streamer s;
+    float data[10] = { 0 };
+    s.setSample(3, data, 10);
+
+    CompiledRegion::LoopData loopData;
+   
+
+    // zero sample loop
+    loopData = CompiledRegion::LoopData();
+    loopData.loop_start = 2;
+    loopData.loop_end = 2;
+    s.setLoopData(3, loopData);
+    assert(!s.channels[3].loopActive);
+
+    // offset too big
+    loopData = CompiledRegion::LoopData();
+    loopData.offset = 1000;
+    s.setLoopData(3, loopData);
+    assertEQ(s.channels[3].loopData.offset, 0);
+
+    //  loop end out of range
+    loopData = CompiledRegion::LoopData();
+    loopData.loop_end = 100;
+    s.setSample(3, data, 10);
+    
+    s.setLoopData(3, loopData);
+    assert(!s.channels[3].loopActive);
+
 }
 
 static void testStreamEnd() {
@@ -369,6 +405,7 @@ void testStreamer() {
 
     testStream();
     testStreamLoopData();
+    testStreamLoopData2();
     testStreamValues();
     testStreamValuesInterp();
     testStreamValuesLoop();

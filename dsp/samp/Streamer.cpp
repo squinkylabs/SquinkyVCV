@@ -352,6 +352,9 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
     if (data.loop_end >= cd.frames) {
         valid = false;
     }
+    if ((data.loop_end > 0) && (data.loop_end <= data.loop_start)) {
+        valid = false;
+    }
     channels[chan].loopActive = valid;
 
     if (valid) {
@@ -359,6 +362,12 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
         assert(0 == cd.curFloatSampleOffset);
         cd.curFloatSampleOffset = data.offset;
     }
+
+    // if offset crazy, ignore it
+    if (cd.loopData.offset >= cd.frames) {
+        cd.loopData.offset = 0;
+    }
+
     cd.offsetBuffer[0] = 0;
     cd.endBuffer[3] = 0;
     for (int i=0; i<3; ++i) {
