@@ -46,6 +46,51 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
 }
 
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
+    if (CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
+        // common case - interp in place
+        {
+            int x = CubicInterpolator<float>::getIntegerPart(float(cd.curFloatSampleOffset));
+            SQINFO("interp, case 1 linear x=%d to %d", x - 1, x + 2);
+        }
+        float ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
+        cd.advancePointer(lfm);
+        return ret * cd.vol;
+    }
+    else if (cd.curFloatSampleOffset >= cd.frames) {
+        // if not more data, something is wrong - we ran past end.
+        assert(false); 
+        return 0;
+    }  else if (cd.curFloatSampleOffset < 1) {
+        // If we are right at the start, we need to use the offset buffer
+        float ret = CubicInterpolator<float>::interpolate(cd.offsetBuffer, float(1 + cd.curFloatSampleOffset));
+        cd.advancePointer(lfm);
+        return ret * cd.vol;
+    } else if (cd.curFloatSampleOffset >= (cd.frames - 2)) {
+        const float subIndex = float(cd.curFloatSampleOffset - (cd.frames - 3));
+        assert(subIndex >= 1);
+        float ret = CubicInterpolator<float>::interpolate(cd.endBuffer, subIndex);
+        cd.advancePointer(lfm);
+        return ret * cd.vol;
+    }
+    assert(false);
+    return 0;
+}
+
+void Streamer::ChannelData::advancePointer(float lfm) {
+    curFloatSampleOffset += transposeMultiplier;
+    curFloatSampleOffset += lfm;
+
+    // don't let FM push it negative
+    curFloatSampleOffset = std::max(0.0, curFloatSampleOffset);
+
+    if (!CubicInterpolator<float>::canInterpolate(float(curFloatSampleOffset), frames)) {
+        arePlaying = false;
+    }
+
+}
+
+#if 0  // second version
+float Streamer::stepTranspose(ChannelData& cd, float lfm) {
     float ret = 0;
 
     // first try interp in place
@@ -110,8 +155,9 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
 
     return ret * cd.vol;
 }
+#endif
 
-#if 0
+#if 0  // first version
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
     float ret = 0;
     
@@ -180,6 +226,10 @@ void Streamer::setGain(int channel, float gain) {
 void Streamer::setSample(int whichChannel, const float* data, int totalFrames) {
     assert(whichChannel < 4);
     ChannelData& cd = channels[whichChannel];
+    if (totalFrames < 4) {
+        assert(false);
+        return;
+    }
 
     // temporary validity test
 #if 0  // ndef NDEBUG
@@ -194,12 +244,10 @@ void Streamer::setSample(int whichChannel, const float* data, int totalFrames) {
     cd.frames = totalFrames;
     cd.arePlaying = true;  // this variable doesn't mean much, but???
     cd.curIntegerSampleOffset = 0;
-
-    // New way - no "off by one" on the sample counts, will do some more work..
     cd.curFloatSampleOffset = 0;
-    // old way, add one to make the math easier for interp
-    // cd.curFloatSampleOffset = 1;  // start one past, to allow for interpolator padding
     cd.vol = 1;
+    assert(cd.data);
+    assert(cd.frames >= 4);
 }
 
 void Streamer::clearSamples() {
@@ -310,5 +358,11 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
         // they should have called setSample right before
         assert(0 == cd.curFloatSampleOffset);
         cd.curFloatSampleOffset = data.offset;
+    }
+    cd.offsetBuffer[0] = 0;
+    cd.endBuffer[3] = 0;
+    for (int i=0; i<3; ++i) {
+        cd.offsetBuffer[i+1] = cd.data[i];
+        cd.endBuffer[i] = cd.data[i + cd.frames - 3];
     }
 }

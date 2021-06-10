@@ -100,7 +100,8 @@ static void testStream() {
 
 static void testStreamLoopData() {
     Streamer s;
-    s.setSample(3, nullptr, 1000);
+    float data[1000] = { 0 };
+    s.setSample(3, data, 1000);
     CompiledRegion::LoopData loopData;
     s.setLoopData(3, loopData);
     assert(!s.channels[3].loopActive);
@@ -113,7 +114,8 @@ static void testStreamLoopData() {
     loopData = CompiledRegion::LoopData();
     loopData.loop_start = 100;
     loopData.loop_end = 200;
-    s.setSample(2, nullptr, 1000);
+
+    s.setSample(2, data, 1000);
     s.setLoopData(2, loopData);
     assert(s.channels[2].loopActive);
 
@@ -179,6 +181,7 @@ static void testStreamValuesSub(TestValues& v) {
 }
 
 static void testStreamValues() {
+    SQINFO("-- testStreamValues -- ");
     TestValues v;
     v.channel = 1;
     assert(!v.s.canPlay(v.channel));

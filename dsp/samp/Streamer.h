@@ -40,6 +40,19 @@ public:
 public:
     class ChannelData {
     public:
+        /*
+         * buffer that holds the first three samples, in case we are offset.
+         * 0, s0, s1, s2
+         */
+        float offsetBuffer[4] = {0};  
+
+        /*
+         *  buffer that hold the last three samples
+         *   sn-2, sn-1, sn, 0
+         */   
+        float endBuffer[4] = {0};          
+        float loopStartBuffer[4] = {0};
+        float loopEndBuffer[4] = {0};
         const float* data = nullptr;
         unsigned int frames = 0;
 
@@ -66,6 +79,7 @@ public:
         bool loopActive = false;
 
         void _dump() const;
+        void advancePointer(float lfm);
     };
     ChannelData channels[4];
 
