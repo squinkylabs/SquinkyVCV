@@ -51,7 +51,7 @@ public:
          *   sn-2, sn-1, sn, 0
          */   
         float endBuffer[4] = {0};          
-        float loopStartBuffer[4] = {0};
+       // float loopStartBuffer[4] = {0};
         float loopEndBuffer[4] = {0};
         const float* data = nullptr;
         unsigned int frames = 0;
