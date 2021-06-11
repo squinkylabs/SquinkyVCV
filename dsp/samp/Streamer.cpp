@@ -361,7 +361,7 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
     channels[chan].loopData = data;
     channels[chan].loopActive = (data.offset != 0);
     bool valid = false;
-    if (data.offset || data.loop_start || data.loop_end) {
+    if (data.loop_start || data.loop_end) {
         valid = true;
     }
     if (data.loop_end < data.loop_start) {

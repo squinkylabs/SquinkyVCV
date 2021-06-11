@@ -108,17 +108,10 @@ static void testStreamLoopData() {
     s.setLoopData(3, loopData);
     assert(!s.channels[3].loopActive);
 
-    // offset only (TODO: I don't think loopActive should be true)
-    loopData.offset = 123;
-    s.setLoopData(3, loopData);
-    assert(s.channels[3].loopActive);
-    assert(s.channels[3].loopData == loopData);
-
     // normal loop
     loopData = CompiledRegion::LoopData();
     loopData.loop_start = 100;
     loopData.loop_end = 200;
-
     s.setSample(2, data, 1000);
     s.setLoopData(2, loopData);
     assert(s.channels[2].loopActive);
