@@ -52,7 +52,10 @@ inline T CubicInterpolator<T>::interpolate(T offset, T y0, T y1, T y2, T y3) {
 }
 template <typename T>
 inline T CubicInterpolator<T>::interpolate(const T* data, T offset) {
+    assert(offset >= 0);
     unsigned int delayTimeSamples = getIntegerPart(offset);
+    assert(delayTimeSamples >= 1);
+
     //   const double x = getFloatPart(offset);
     const T y0 = data[delayTimeSamples - 1];
     const T y1 = data[delayTimeSamples];

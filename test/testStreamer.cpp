@@ -256,7 +256,26 @@ static void testStreamOffset() {
     assert(v.s.channels[v.channel].loopActive);
 }
 
+
 static void testStreamValuesLoop() {
+    SQINFO("-- testStreamValuesLoop -- ");
+    TestValues v;
+    v.channel = 1;
+    assert(!v.s.canPlay(v.channel));
+
+    //                  0  1  2  3  4  5  6   7      8   9      10    11   12
+    float input[13] = { 1, 2, 3, 4, 5, 6, 7, 1000, 1000, 2000, 2000, 2000, 2000 };
+    float output[13] = {1, 2, 3, 4, 5, 6, 7, 3,     4,     5,    6,   7,    3};
+    v.input = input;
+    v.expectedOutput = output;
+    v.sampleCount = 13;
+    v.loopData.loop_start = 2;
+    v.loopData.loop_end = 6;
+    testStreamValuesSub(v);
+    assert(v.s.channels[v.channel].loopActive);
+}
+
+static void testStreamValuesLoop2() {
     SQINFO("-- testStreamValuesLoop -- ");
     TestValues v;
     v.channel = 1;
@@ -402,6 +421,7 @@ void testStreamer() {
     testStreamValues();
     testStreamValuesInterp();
     testStreamValuesLoop();
+    testStreamValuesLoop2();
     testStreamEnd();
     testStreamXpose1();
     testBugCaseHighFreq();
