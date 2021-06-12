@@ -184,6 +184,7 @@ public:
     int channel = 0;
     unsigned int skipSamples = 0;
     CompiledRegion::LoopData loopData;
+    bool expectCanPlayAfter = false;
 };
 
 static void testStreamValuesSub(TestValues& v) {
@@ -206,7 +207,9 @@ static void testStreamValuesSub(TestValues& v) {
         }
         v.s._assertValid();
     }
-    assert(!v.s.canPlay(v.channel));
+
+    // we are looping, so we play forever.
+    assertEQ(v.s.canPlay(v.channel), v.expectCanPlayAfter);
 }
 
 static void testStreamValues() {
@@ -271,6 +274,7 @@ static void testStreamValuesLoop() {
     v.sampleCount = 13;
     v.loopData.loop_start = 2;
     v.loopData.loop_end = 6;
+    v.expectCanPlayAfter = true;        // looped, so should still play forever
     testStreamValuesSub(v);
     assert(v.s.channels[v.channel].loopActive);
 }

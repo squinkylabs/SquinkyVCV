@@ -96,7 +96,7 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
     }
 
     if (cd.loopActive) {
-        if (cd.loopData.loop_end && cd.curFloatSampleOffset > cd.loopData.loop_end) {
+        if (cd.loopData.loop_end && cd.curFloatSampleOffset > (cd.loopData.loop_end + 2)) {
             assert(false);
             // const unsigned int loop_length = cd.loopData.loop_end - cd.loopData.loop_start;
             //cd.curFloatSampleOffset -= loop_length;
@@ -114,8 +114,17 @@ void Streamer::ChannelData::advancePointer(float lfm) {
     // don't let FM push it negative
     curFloatSampleOffset = std::max(0.0, curFloatSampleOffset);
 
-    if (!CubicInterpolator<float>::canInterpolate(float(curFloatSampleOffset), frames)) {
-        arePlaying = false;
+    if (loopActive && (curFloatSampleOffset > loopData.loop_end)) {
+        SQINFO("in advance, offset was %f", curFloatSampleOffset);
+        const int loopLength = loopData.loop_end - loopData.loop_start;
+        curFloatSampleOffset -= (loopLength + 1);
+        SQINFO("after adjust: %f", curFloatSampleOffset);
+    }
+
+    if (!loopActive) {
+        if (!CubicInterpolator<float>::canInterpolate(float(curFloatSampleOffset), frames)) {
+            arePlaying = false;
+        }
     }
 }
 
