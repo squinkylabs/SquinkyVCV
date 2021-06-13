@@ -47,7 +47,7 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
 
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
     SQINFO("in loop offset=%f", cd.curFloatSampleOffset);
-    if (cd.loopActive && (cd.curFloatSampleOffset >= (cd.loopData.loop_end-2))) {
+    if (cd.loopActive && (cd.curFloatSampleOffset >= (cd.loopData.loop_end - 2))) {
         const int dataBufferOffset = 3 - cd.loopData.loop_end;
         {
             int x = CubicInterpolator<float>::getIntegerPart(dataBufferOffset + float(cd.curFloatSampleOffset));
@@ -307,34 +307,10 @@ void Streamer::setTranspose(float_4 amount) {
         float xpose = amount[channel];
         float delta = std::abs(xpose - 1);
         bool doTranspose = delta > .0001;  // TODO: is this in tune enough?
-
-#if 0
-        if ((doTranspose != cd.transposeEnabled) || (xpose != cd.transposeMultiplier)) {
-            SQINFO("");
-            SQINFO("pose was %d / %f", cd.transposeEnabled, cd.transposeMultiplier);
-            SQINFO("will be %d / %f", doTranspose, xpose);
-        }
-#endif
         cd.transposeEnabled = doTranspose;
         cd.transposeMultiplier = xpose;
-
-#if 0
-        if (myIndex == 0 && channel == 0) {
-            SQINFO("Streamer::setTranspose %f, %d", xpose, doTranspose)
-        }
-#endif
     }
 }
-
-#if 0
-void Streamer::setTranspose(int channel, bool doTranspose, float amount) {
-    SQINFO("streamer trans ch=%d amt=%f\n", channel, amount);
-    assert(channel < 4);
-    ChannelData& cd = channels[channel];
-    cd.transposeEnabled = doTranspose;
-    cd.transposeMultiplier = amount;
-}
-#endif
 
 void Streamer::ChannelData::_dump() const {
     SQINFO("dumping %p", this);
@@ -378,6 +354,13 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
     ChannelData& cd = channels[chan];
     assert(0 == cd.curFloatSampleOffset);
 
+    bool sqLooped = false;
+    switch (data.loop_mode) {
+        case SamplerSchema::DiscreteValue::LOOP_CONTINUOUS:
+        case SamplerSchema::DiscreteValue::LOOP_SUSTAIN:
+            sqLooped = true;
+    }
+
     // assert(chan < 4 && chan >= 0);
     channels[chan].loopData = data;
     channels[chan].loopActive = (data.offset != 0);
@@ -394,7 +377,7 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
     if ((data.loop_end > 0) && (data.loop_end <= data.loop_start)) {
         valid = false;
     }
-    channels[chan].loopActive = valid;
+    channels[chan].loopActive = valid && sqLooped;
 
     if (valid) {
         // they should have called setSample right before
@@ -417,7 +400,7 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
     if (cd.loopActive) {
         assert(cd.loopData.loop_end >= (cd.loopData.loop_start + 4));
         for (int i = 0; i < 8; ++i) {
-            if (i <= 3) {                                     // first four samples are from end of loop
+            if (i <= 3) {                                           // first four samples are from end of loop
                 const int endIndex = i + cd.loopData.loop_end - 3;  // where we get data to move
                 cd.loopEndBuffer[i] = cd.data[endIndex];
             } else {
