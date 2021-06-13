@@ -9,9 +9,9 @@ There are a few common uses for compressors, and these are:
 * Special effects – notably “pumping.
 * Ducking.
 
-In general, a compressor will reduce the level of the “loud” parts. Of course this is the same as increasing the level of the soft parts, especially if you use some “makeup-gain”. Very roughly, the attack and release controls affect how quickly the compressor adapts to loud and soft parts. The threshold, and compression curve will determine “how much” the signal gets compressed.
+In general, a compressor will reduce the level of the “loud” parts. Of course, this is the same as increasing the level of the soft parts, especially if you use some “makeup-gain”. Very roughly, the attack and release controls affect how quickly the compressor adapts to loud and soft parts. The threshold, and compression curve will determine “how much” the signal gets compressed.
 
-It is very common to adjust the controls on the compressor, and end up with a sound that is “worse” than what you started with. That’s one of the reasons there is a bypass (or on/off) on our compressors. It’s always a good idea to compare the processed sound vs the original.
+It is very common to adjust the controls on the compressor and end up with a sound that is “worse” than what you started with. That’s one of the reasons there is a bypass (or on/off) on our compressors. It’s always a good idea to compare the processed sound vs the original.
 
 ## Attack and Release
 
@@ -27,7 +27,7 @@ So, setting the attack and release requires experimentation.
 
 ## Threshold and Ratio
 
-The threshold is the input level that will cause the compressor to start compressing. The ratio is how much is will compress, once it starts to compress. This is only strictly true with the “hard knee” versions of the ratio curves. “soft knee” makes this be almost true, but not completely.
+The threshold is the input level that will cause the compressor to start compressing. The ratio is how much it will compress, once it starts to compress. This is only strictly true with the “hard knee” versions of the ratio curves. “soft knee” makes this be almost true, but not completely.
 
 So, with a hard knee, no compression at all will take place as long as the input level is below the threshold. Once the input is over the threshold, it will compress using the ratio you have selected. This ratio is the how much the input needs to change to change the output by one decibel. So, for a 4:1 compression ratio, each 4 dB increase above the threshold will cause the output to only change by 1 dB.
 
