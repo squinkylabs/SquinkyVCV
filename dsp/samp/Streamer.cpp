@@ -12,11 +12,12 @@
 #define _INTERP
 
 float_4 Streamer::step(float_4 fm, bool fmEnabled) {
-    float_4 ret;
+    float_4 ret = 0;
     // SQINFO("St:Step %d, %s", fmEnabled, toStr(fm).c_str());
     for (int channel = 0; channel < 4; ++channel) {
         ChannelData& cd = channels[channel];
 
+        // if (cd.canPlay()) {
         if (cd.data) {
             const bool doInterp = true;  // until we can figure out a way to enable it without pops, we will leave "no transpose" disabled.
             //const bool doInterp = cd.transposeEnabled || fmEnabled;
@@ -67,7 +68,8 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
         return ret * cd.vol;
     } else if (cd.curFloatSampleOffset >= cd.frames) {
         // if not more data, something is wrong - we ran past end.
-        assert(false);
+        // this can happen with transpose is high..
+        SQINFO("ran past end");
         return 0;
     } else if (cd.curFloatSampleOffset < 1) {
         // If we are right at the start, we need to use the offset buffer
@@ -121,8 +123,10 @@ void Streamer::ChannelData::advancePointer(float lfm) {
         SQINFO("after adjust: %f", curFloatSampleOffset);
     }
 
+    SQINFO("Laving advancePointer, frames = %d, offset = %f", frames, curFloatSampleOffset);
     if (!loopActive) {
         if (!CubicInterpolator<float>::canInterpolate(float(curFloatSampleOffset), frames)) {
+            SQINFO("shut off");
             arePlaying = false;
         }
     }
@@ -251,10 +255,14 @@ float Streamer::stepNoTranspose(ChannelData& cd) {
     return ret * cd.vol;
 }
 
-bool Streamer::canPlay(int channel) {
+const Streamer::ChannelData& Streamer::_cd(int channel) const {
     assert(channel < 4);
-    const ChannelData& cd = channels[channel];
-    return bool(cd.data && cd.arePlaying);
+    assert(channel >= 0);
+    return channels[channel];
+}
+
+bool Streamer::ChannelData::canPlay() const {
+    return bool(data && arePlaying);
 }
 
 void Streamer::setGain(int channel, float gain) {

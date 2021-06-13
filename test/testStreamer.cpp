@@ -83,17 +83,17 @@ static void testCubicInterp3Double() {
 static void testStream() {
     Streamer s;
     s._assertValid();
-    assert(!s.canPlay(0));
-    assert(!s.canPlay(1));
-    assert(!s.canPlay(2));
-    assert(!s.canPlay(3));
+    assertEQ(s._cd(0).canPlay(), false);
+    assertEQ(s._cd(1).canPlay(), false);
+    assertEQ(s._cd(2).canPlay(), false);
+    assertEQ(s._cd(3).canPlay(), false);
     s.step(0, false);
     s._assertValid();
 
     float x[6] = {0};
     s.setSample(0, x, 6);
-    assert(s.canPlay(0));
-    assert(!s.canPlay(1));
+    assertEQ(s._cd(0).canPlay(), true);
+    assertEQ(s._cd(1).canPlay(), false);
     s._assertValid();
     assert(!s.channels[0].loopActive);
 }
@@ -159,17 +159,17 @@ static void testStreamLoopData2() {
 static void testStreamEnd() {
     Streamer s;
     const int channel = 2;
-    assert(!s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), false);
 
     float x[6] = {0};
     s.setSample(channel, x, 6);
-    assert(s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), true);
     for (int i = 0; i < 6; ++i) {
         s._assertValid();
         s.step(0, false);
         s._assertValid();
     }
-    assert(!s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), false);
     assert(!s.channels[channel].loopActive);
 }
 
@@ -196,7 +196,7 @@ static void testStreamValuesSub(TestValues& v) {
     v.s.setSample(v.channel, v.input, v.sampleCount);
     v.s.setLoopData(v.channel, v.loopData);
     v.s.setTranspose(float_4(1));
-    assert(v.s.canPlay(v.channel));
+    assertEQ(v.s._cd(v.channel).canPlay(), true);
     v.s.channels[v.channel].curFloatSampleOffset += v.fractionalOffset;
     for (unsigned int i = 0; i < v.sampleCount; ++i) {
         SQINFO("top of loop %d", i);
@@ -210,14 +210,14 @@ static void testStreamValuesSub(TestValues& v) {
     }
 
     // we are looping, so we play forever.
-    assertEQ(v.s.canPlay(v.channel), v.expectCanPlayAfter);
+    assertEQ(v.s._cd(v.channel).canPlay(), v.expectCanPlayAfter);
 }
 
 static void testStreamValues() {
     SQINFO("-- testStreamValues -- ");
     TestValues v;
     v.channel = 1;
-    assert(!v.s.canPlay(v.channel));
+    assertEQ(v.s._cd(v.channel).canPlay(), false);
 
     float input[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
     v.input = input;
@@ -225,7 +225,7 @@ static void testStreamValues() {
     v.sampleCount = 6;
 
     testStreamValuesSub(v);
-    assert(!v.s.canPlay(v.channel));
+    assertEQ(v.s._cd(v.channel).canPlay(), false);
     assert(!v.s.channels[v.channel].loopActive);
 }
 
@@ -233,7 +233,7 @@ static void testStreamValuesInterp() {
     SQINFO("-- testStreamValuesInterp -- ");
     TestValues v;
     v.channel = 2;
-    assert(!v.s.canPlay(v.channel));
+    assertEQ(v.s._cd(v.channel).canPlay(), false);
 
     float input[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
     float output[6] = {.55f, .45f, .35f, .25f, .15f, .05f};
@@ -250,7 +250,7 @@ static void testStreamValuesInterp() {
 static void testStreamOffset() {
     TestValues v;
     v.channel = 1;
-    assert(!v.s.canPlay(v.channel));
+    assertEQ(v.s._cd(v.channel).canPlay(), false);
 
     float input[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
     float output[5] = { .5f, .4f, .3f, .2f, .1f };
@@ -265,7 +265,7 @@ static void testStreamValuesLoop() {
     SQINFO("-- testStreamValuesLoop -- ");
     TestValues v;
     v.channel = 1;
-    assert(!v.s.canPlay(v.channel));
+    assertEQ(v.s._cd(v.channel).canPlay(), false);
 
     //                  0  1  2  3  4  5  6   7      8   9      10    11   12
     float input[13] = { 1, 2, 3, 4, 5, 6, 7, 1000, 1000, 2000, 2000, 2000, 2000 };
@@ -285,7 +285,7 @@ static void testStreamValuesLoop2() {
     SQINFO("-- testStreamValuesLoop (make me pass! -- ");
     TestValues v;
     v.channel = 1;
-    assert(!v.s.canPlay(v.channel));
+    assertEQ(v.s._cd(v.channel).canPlay(), false);
 
     //                  0  1  2  3  4     5      6       7   8   9
     float input[10] = { 1, 2, 3, 4, 1000, 1000, 2000, 2000, 2000, 2000 };
@@ -305,18 +305,18 @@ static void testStreamValuesLoop2() {
 static void testStreamXpose1() {
     Streamer s;
     const int channel = 3;
-    assert(!s.canPlay(channel));
+    assertEQ(s._cd(0).canPlay(), false);
 
     float x[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
     assertEQ(x[0], .6f);
 
     s.setSample(channel, x, 6);
     s.setTranspose(float_4(1));
-    assert(s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), true);
     s._assertValid();
     s.step(0, false);
     s._assertValid();
-    assert(s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), true);
     assert(!s.channels[channel].loopActive);
 }
 
@@ -325,21 +325,21 @@ static void testStreamXpose1() {
 static void testStreamXpose2() {
     Streamer s;
     const int channel = 3;
-    assert(!s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), false);
 
     float x[7] = {6, 5, 4, 3, 2, 1, 0};
     assertEQ(x[0], 6);
 
     s.setSample(channel, x, 7);
     s.setTranspose(float_4(2));
-    assert(s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), true);
     for (int i = 0; i < 3; ++i) {
         float_4 v = s.step(0, false);
         // start with 5, as interpoator forces us to start on second sample
         printf("i = %d v=%f\n", i, v[channel]);
         assertEQ(v[channel], 5 - (2 * i));
     }
-    assert(!s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), false);
     assert(!s.channels[channel].loopActive);
 }
 
@@ -352,42 +352,43 @@ static void testStreamRetrigger() {
 
     s.setSample(channel, x, 6);
     s.setTranspose(float_4(1));
-    assert(s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), true);
     for (int i = 0; i < 6; ++i) {
         s._assertValid();
         float_4 v = s.step(0, false);
         s._assertValid();
     }
-    assert(!s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), false);
 
     s.setSample(channel, x, 6);
-    assert(s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), true);
     for (int i = 0; i < 6; ++i) {
-        assert(s.canPlay(channel));
+        assertEQ(s._cd(channel).canPlay(), true);
         s._assertValid();
         float_4 v = s.step(0, false);
         s._assertValid();
     }
-    assert(!s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), false);
     assert(!s.channels[channel].loopActive);
 }
 
 static void testBugCaseHighFreq() {
+    SQINFO("---- bug case high freq ----");
     Streamer s;
     const int channel = 0;
-    assert(!s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), false);
 
     float x[6] = {0};
     s.setSample(channel, x, 6);
     s.setTranspose(float_4(33.4f));
 
-    assert(s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), true);
     for (int i = 0; i < 6; ++i) {
         s._assertValid();
         s.step(0, false);
         s._assertValid();
     }
-    assert(!s.canPlay(channel));
+    assertEQ(s._cd(channel).canPlay(), false);
 }
 
 // this fixed point acc was a dead end....

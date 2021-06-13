@@ -23,7 +23,7 @@ public:
      * @param amount is the ratio, so 1 means no transpose.
      */
     void setTranspose(float_4 amount);
-    bool canPlay(int chan);
+   // bool canPlay(int chan);
     void clearSamples();
     void clearSamples(int channel);
     void setGain(int chan, float gain);
@@ -36,6 +36,7 @@ public:
 
     bool _isTransposed(int channel) const;
     float _transAmt(int channel) const;
+ 
 
 public:
     class ChannelData {
@@ -79,9 +80,12 @@ public:
 
         void _dump() const;
         void advancePointer(float lfm);
+        bool canPlay() const;
     };
     ChannelData channels[4];
 
     float stepNoTranspose(ChannelData&);
     float stepTranspose(ChannelData&, const float lfm);
+
+    const ChannelData& _cd(int channel) const;
 };
