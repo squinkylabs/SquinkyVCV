@@ -67,10 +67,10 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
         float ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
         cd.advancePointer(lfm);
         return ret * cd.vol;
-    } else if (cd.curFloatSampleOffset >= cd.frames) {
+    } else if (cd.curFloatSampleOffset > (cd.frames-1)) {
         // if not more data, something is wrong - we ran past end.
         // this can happen with transpose is high..
-        SQINFO("ran past end");
+        SQINFO("ran past end offset=%f frames=%d", cd.curFloatSampleOffset, cd.frames);
         return 0;
     } else if (cd.curFloatSampleOffset < 1) {
         // If we are right at the start, we need to use the offset buffer
@@ -126,8 +126,9 @@ void Streamer::ChannelData::advancePointer(float lfm) {
 
     SQINFO("Laving advancePointer, frames = %d, offset = %f", frames, curFloatSampleOffset);
     if (!loopActive) {
-        if (!CubicInterpolator<float>::canInterpolate(float(curFloatSampleOffset), frames)) {
-            SQINFO("shut off");
+       // if (!CubicInterpolator<float>::canInterpolate(float(curFloatSampleOffset), frames)) {
+        if (curFloatSampleOffset > (frames-1)) {
+            SQINFO("shut off: setting arePlaying = false in advance pointer");
             arePlaying = false;
         }
     }

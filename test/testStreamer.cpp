@@ -223,6 +223,7 @@ static void testStreamValues() {
     v.input = input;
     v.expectedOutput = input;
     v.sampleCount = 6;
+    v.expectCanPlayAfter = false;       //  we will play all the samples
 
     testStreamValuesSub(v);
     assertEQ(v.s._cd(v.channel).canPlay(), false);
