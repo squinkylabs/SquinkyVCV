@@ -253,14 +253,18 @@ static void testStreamValuesOffset() {
     v.channel = 1;
     assertEQ(v.s._cd(v.channel).canPlay(), false);
 
-    float input[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
-    float output[5] = { .5f, .4f, .3f, .2f, .1f };
+
+    // TODO: need to separate how much data we have, vs. how many samples to run over?
+    // or should this just be working (with end buffer?)
+    //                  0     1    2    3    4    5
+    float input[] = {  .6f, .5f, .4f, .3f, .2f, .1f};
+    float output[6] = { .5f, .4f, .3f, .2f, .1f };
     v.sampleCount = 5;
     v.loopData.offset = 1;
     v.input = input;
     v.expectedOutput = output;
     testStreamValuesSub(v);
-    assert(v.s.channels[v.channel].loopActive);
+    assertEQ(v.s.channels[v.channel].loopActive, false);
 }
 
 

@@ -47,7 +47,8 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
 }
 
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
-    SQINFO("in loop offset=%f loopOffset=%d", cd.curFloatSampleOffset, cd.loopData.offset);
+
+    SQINFO("in loop offset=%f", cd.curFloatSampleOffset);
     if (cd.loopActive && (cd.curFloatSampleOffset >= (cd.loopData.loop_end - 2))) {
         const int dataBufferOffset = 3 - cd.loopData.loop_end;
         {
@@ -371,7 +372,7 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
 
     // assert(chan < 4 && chan >= 0);
     channels[chan].loopData = data;
-    channels[chan].loopActive = (data.offset != 0);
+    //channels[chan].loopActive = (data.offset != 0);
     bool valid = false;
     if (data.loop_start || data.loop_end) {
         valid = true;
@@ -387,17 +388,15 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
     }
     channels[chan].loopActive = valid && sqLooped;
 
-    if (valid) {
-        // they should have called setSample right before
-        assert(0 == cd.curFloatSampleOffset);
-        cd.curFloatSampleOffset = data.offset;
-    }
-
-    // if offset crazy, ignore it
+     // if offset crazy, ignore it
     if (cd.loopData.offset >= cd.frames) {
         cd.loopData.offset = 0;
     }
 
+    // they should have called setSample right before
+    assert(0 == cd.curFloatSampleOffset);
+    cd.curFloatSampleOffset = data.offset;
+ 
     cd.offsetBuffer[0] = 0;
     cd.endBuffer[3] = 0;
     for (int i = 0; i < 3; ++i) {
