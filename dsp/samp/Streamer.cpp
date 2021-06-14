@@ -47,7 +47,7 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
 }
 
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
-    SQINFO("in loop offset=%f", cd.curFloatSampleOffset);
+    SQINFO("in loop offset=%f loopOffset=%d", cd.curFloatSampleOffset, cd.loopData.offset);
     if (cd.loopActive && (cd.curFloatSampleOffset >= (cd.loopData.loop_end - 2))) {
         const int dataBufferOffset = 3 - cd.loopData.loop_end;
         {
@@ -61,7 +61,7 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
         // common case - interp in place
         {
             int x = CubicInterpolator<float>::getIntegerPart(float(cd.curFloatSampleOffset));
-            SQINFO("interp, case 1 linear x=%d to %d", x - 1, x + 2);
+            SQINFO("straight interp, case 1 linear x=%d to %d", x - 1, x + 2);
         }
         float ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
         cd.advancePointer(lfm);
@@ -76,7 +76,7 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
         // This won't be correct if we are looping
         {
             int x = CubicInterpolator<float>::getIntegerPart(float(1 + cd.curFloatSampleOffset));
-            SQINFO("offset buffer interp,  x=%d to %d", x - 1, x + 2);
+            SQINFO("start: offset buffer interp,  x=%d to %d", x - 1, x + 2);
         }
         float ret = CubicInterpolator<float>::interpolate(cd.offsetBuffer, float(1 + cd.curFloatSampleOffset));
         cd.advancePointer(lfm);
@@ -430,4 +430,6 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
         SQINFO("loop_end[%d]=%f", i, cd.loopEndBuffer[i]);
     }
     SQINFO("loopActive = %d, loop end = %d", channels[chan].loopActive, channels[chan].loopData.loop_end);
+    SQINFO("offset = %d",  channels[chan].loopData.offset);
+    SQINFO("------");
 }

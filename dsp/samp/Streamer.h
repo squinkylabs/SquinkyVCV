@@ -23,7 +23,6 @@ public:
      * @param amount is the ratio, so 1 means no transpose.
      */
     void setTranspose(float_4 amount);
-   // bool canPlay(int chan);
     void clearSamples();
     void clearSamples(int channel);
     void setGain(int chan, float gain);

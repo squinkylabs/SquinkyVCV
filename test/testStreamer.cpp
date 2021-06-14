@@ -199,7 +199,7 @@ static void testStreamValuesSub(TestValues& v) {
     assertEQ(v.s._cd(v.channel).canPlay(), true);
     v.s.channels[v.channel].curFloatSampleOffset += v.fractionalOffset;
     for (unsigned int i = 0; i < v.sampleCount; ++i) {
-        SQINFO("top of loop %d", i);
+        SQINFO("\ntop of test loop %d", i);
         v.s._assertValid();
         float_4 vx = v.s.step(0, false);
         SQINFO("sample[%d] = %f", i, vx[v.channel]);
@@ -247,7 +247,8 @@ static void testStreamValuesInterp() {
     assert(!v.s.channels[v.channel].loopActive);
 }
 
-static void testStreamOffset() {
+static void testStreamValuesOffset() {
+    SQINFO("------ testStreamValuesOffset --------------");
     TestValues v;
     v.channel = 1;
     assertEQ(v.s._cd(v.channel).canPlay(), false);
@@ -256,6 +257,8 @@ static void testStreamOffset() {
     float output[5] = { .5f, .4f, .3f, .2f, .1f };
     v.sampleCount = 5;
     v.loopData.offset = 1;
+    v.input = input;
+    v.expectedOutput = output;
     testStreamValuesSub(v);
     assert(v.s.channels[v.channel].loopActive);
 }
@@ -435,7 +438,7 @@ void testStreamer() {
     testStreamEnd();
     testStreamXpose1();
     testBugCaseHighFreq();
-    testStreamOffset();
+    testStreamValuesOffset();
 
     testFixedPoint();
 }
