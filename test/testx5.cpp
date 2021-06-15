@@ -394,8 +394,6 @@ static void testSampPitch() {
 static void testSampOffset() {
     std::shared_ptr<Sampler4vx> s = std::make_shared<Sampler4vx>();
 
- //   SInstrumentPtr inst = std::make_shared<SInstrument>();
-
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst;
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
@@ -432,7 +430,7 @@ static void testSampOffset() {
     samp.note_on(0, 60, 60, 44100);
     const Streamer& player = samp._player();
     assertEQ(player.channels[0].loopData.offset, 4321);
-    assert(player.channels[0].loopActive);
+    assertEQ(player.channels[0].loopActive, false);
 }
 
 

@@ -10,6 +10,7 @@
 #include "SqLog.h"
 
 #define _INTERP
+// #define _LOG
 
 float_4 Streamer::step(float_4 fm, bool fmEnabled) {
     float_4 ret = 0;
@@ -47,38 +48,47 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
 }
 
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
-
+#ifdef _LOG
     SQINFO("in loop offset=%f", cd.curFloatSampleOffset);
+#endif
     if (cd.loopActive && (cd.curFloatSampleOffset >= (cd.loopData.loop_end - 2))) {
         const int dataBufferOffset = 3 - cd.loopData.loop_end;
+#ifdef _LOG
         {
             int x = CubicInterpolator<float>::getIntegerPart(dataBufferOffset + float(cd.curFloatSampleOffset));
             SQINFO("loop, loope end x=%d to %d shift=%d", x - 1, x + 2, dataBufferOffset);
         }
+#endif
         float ret = CubicInterpolator<float>::interpolate(cd.loopEndBuffer, float(dataBufferOffset + cd.curFloatSampleOffset));
         cd.advancePointer(lfm);
         return ret * cd.vol;
     } else if (CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
         // common case - interp in place
+#ifdef _LOG
         {
             int x = CubicInterpolator<float>::getIntegerPart(float(cd.curFloatSampleOffset));
             SQINFO("straight interp, case 1 linear x=%d to %d", x - 1, x + 2);
         }
+#endif
         float ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
         cd.advancePointer(lfm);
         return ret * cd.vol;
     } else if (cd.curFloatSampleOffset > (cd.frames-1)) {
         // if not more data, something is wrong - we ran past end.
         // this can happen with transpose is high..
+#ifdef _LOG
         SQINFO("ran past end offset=%f frames=%d", cd.curFloatSampleOffset, cd.frames);
+#endif
         return 0;
     } else if (cd.curFloatSampleOffset < 1) {
         // If we are right at the start, we need to use the offset buffer
         // This won't be correct if we are looping
+#ifdef _LOG
         {
             int x = CubicInterpolator<float>::getIntegerPart(float(1 + cd.curFloatSampleOffset));
             SQINFO("start: offset buffer interp,  x=%d to %d", x - 1, x + 2);
         }
+#endif
         float ret = CubicInterpolator<float>::interpolate(cd.offsetBuffer, float(1 + cd.curFloatSampleOffset));
         cd.advancePointer(lfm);
         return ret * cd.vol;
@@ -118,17 +128,24 @@ void Streamer::ChannelData::advancePointer(float lfm) {
     curFloatSampleOffset = std::max(0.0, curFloatSampleOffset);
 
     if (loopActive && (curFloatSampleOffset > loopData.loop_end)) {
+#ifdef _LOG
         SQINFO("in advance, offset was %f", curFloatSampleOffset);
+#endif
         const int loopLength = loopData.loop_end - loopData.loop_start;
         curFloatSampleOffset -= (loopLength + 1);
+#ifdef _LOG
         SQINFO("after adjust: %f", curFloatSampleOffset);
+#endif
     }
-
-    SQINFO("Laving advancePointer, frames = %d, offset = %f", frames, curFloatSampleOffset);
+#ifdef _LOG
+    SQINFO("Leaving advancePointer, frames = %d, offset = %f", frames, curFloatSampleOffset);
+#endif
     if (!loopActive) {
        // if (!CubicInterpolator<float>::canInterpolate(float(curFloatSampleOffset), frames)) {
         if (curFloatSampleOffset > (frames-1)) {
+#ifdef _LOG
             SQINFO("shut off: setting arePlaying = false in advance pointer");
+#endif
             arePlaying = false;
         }
     }
@@ -420,7 +437,7 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
             }
         }
     }
-
+#ifdef _LOG
     for (int i = 0; i < 4; ++i) {
         SQINFO("offset[%d]=%f", i, cd.offsetBuffer[i]);
     }
@@ -435,4 +452,5 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
     SQINFO("loopActive = %d, loop end = %d", channels[chan].loopActive, channels[chan].loopData.loop_end);
     SQINFO("offset = %d",  channels[chan].loopData.offset);
     SQINFO("------");
+#endif
 }
