@@ -276,7 +276,7 @@ void Streamer::setSample(int whichChannel, const float* data, int totalFrames) {
     assert(whichChannel < 4);
     ChannelData& cd = channels[whichChannel];
     if (totalFrames < 4) {
-        assert(false);
+        assert(totalFrames == 0);
         return;
     }
 
@@ -369,6 +369,9 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
         case SamplerSchema::DiscreteValue::LOOP_CONTINUOUS:
         case SamplerSchema::DiscreteValue::LOOP_SUSTAIN:
             sqLooped = true;
+            break;
+        default:
+            break;
     }
 
     // assert(chan < 4 && chan >= 0);

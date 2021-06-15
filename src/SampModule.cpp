@@ -458,11 +458,11 @@ const float dx = 38;
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
     float jacksY = 319;
-    float jacksY0 = jacksY - 50;
+  //  float jacksY0 = jacksY - 50;
     float jacksX = 16;
   //  float jacksDx = 40;
-    float labelY = jacksY - 25;
-    float labelY0 = jacksY0 - 25;
+  //  float labelY = jacksY - 25;
+  //  float labelY0 = jacksY0 - 25;
 #ifdef _LAB
     addLabel(
         Vec(jacksX + 5 * dx - 5, labelY),
@@ -533,13 +533,13 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
 }
 
 void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp) {
-    float knobsY = 200;
-    float knobsX = 173 - 46;
+  //  float knobsY = 200;
+  //  float knobsX = 173 - 46;
 
-    float labelDy = 25;
-    float labelY = knobsY - labelDy;
+   // float labelDy = 25;
+  //  float labelY = knobsY - labelDy;
 
-    float knobsY2 = knobsY + 40;
+  //  float knobsY2 = knobsY + 40;
 
 #ifdef _LAB
     addLabel(

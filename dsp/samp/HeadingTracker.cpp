@@ -8,7 +8,7 @@ bool HeadingTracker::valid() const {
     }
 
     const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
-    for (int i = 0; i < elements; ++i) {
+    for (size_t i = 0; i < elements; ++i) {
         if (i == int(SHeading::Type::Region)) {
             if (curHeadingsIndex[i] != regionHeadingIndex) {
                 return false;
@@ -33,7 +33,7 @@ SHeadingPtr HeadingTracker::getCurrent(SHeading::Type t) {
         return nullptr;
     }
 
-    assert(curIndex < headings.size());
+    assert(size_t(curIndex) < headings.size());
     return headings[curIndex];
 }
 
@@ -60,8 +60,8 @@ HeadingTracker::HeadingTracker(const SHeadingList& hl) : headings(hl) {
 
     // new fill the non-region slots
     // iterate through every heading we have in order
-  //  const size_t headingIndexLimit = std::min(headings.size(), size_t(SHeading::Type::NUM_TYPES_INHERIT));
-  //  SQINFO("size=%d, limit=%d", headings.size(), headingIndexLimit);
+    //  const size_t headingIndexLimit = std::min(headings.size(), size_t(SHeading::Type::NUM_TYPES_INHERIT));
+    //  SQINFO("size=%d, limit=%d", headings.size(), headingIndexLimit);
     for (int headingIndex = 0; headingIndex < headings.size(); ++headingIndex) {
         const SHeadingPtr heading = headings[headingIndex];
 
@@ -69,7 +69,6 @@ HeadingTracker::HeadingTracker(const SHeadingList& hl) : headings(hl) {
         if (heading->type != SHeading::Type::Region) {
             const int typeIndex = int(heading->type);
             if (typeIndex < int(SHeading::Type::NUM_TYPES_INHERIT)) {
-
                 // if we haven't found a heading of this type for our current slow
                 bool addedToCurrentSlot = false;
                 if (curHeadingsIndex[typeIndex] < 0) {
@@ -79,21 +78,11 @@ HeadingTracker::HeadingTracker(const SHeadingList& hl) : headings(hl) {
                         addedToCurrentSlot = true;
                     }
                 }
-#if 1  // tried to fix bug                                 \
-    // If heading under consideration not used for current \
-    // and next is empty
                 if (!addedToCurrentSlot && nextHeadingsIndex[typeIndex] < 0) {
                     // if we need a next, anything after prev is ok
                     nextHeadingsIndex[typeIndex] = headingIndex;
                     assert(nextHeadingsIndex[typeIndex] > curHeadingsIndex[typeIndex]);
                 }
-#else
-                else if ((nextHeadingsIndex[typeIndex] < 0) && (headingIndex > curHeadingsIndex[typeIndex])) {
-                    // if we need a next, anything after prev is ok
-                    nextHeadingsIndex[typeIndex] = headingIndex;
-                    assert(nextHeadingsIndex[typeIndex] > curHeadingsIndex[typeIndex]);
-                }
-#endif
             }
         }
     }
@@ -118,24 +107,10 @@ void HeadingTracker::nextRegion() {
     for (int i = 0; i < elements; ++i) {
         // if we are a region parent
         if (i != regionIndex) {
-#if 1  // try to fix bug with cur = -1, next -3;                                                             \
-    // Now, see if the NEXT heading is valid. If so that means the current one isn't, and we need to move up \
-    // and grab the next heading.
             if ((nextHeadingsIndex[i] >= 0) && (nextHeadingsIndex[i] < curRegionHeadingIndex)) {
                 curHeadingsIndex[i] = nextHeadingsIndex[i];
-              //  nextHeadingsIndex[i] = -1;  // and mark next as invalid. Maybe we will fill it
+                //  nextHeadingsIndex[i] = -1;  // and mark next as invalid. Maybe we will fill it
             }
-#else
-            // and we aren't exhausted yet
-            // problem here is that cur could be -1, but next is still good
-            if (curHeadingsIndex[i] >= 0) {
-                // Now, see if the NEXT heading is valid. If so that means the current one isn't, and we need to move up
-                // and grab the next heading.
-                if ((nextHeadingsIndex[i] >= 0) && (nextHeadingsIndex[i] < curRegionHeadingIndex)) {
-                    curHeadingsIndex[i] = nextHeadingsIndex[i];
-                }
-            }
-#endif
         }
     }
 
@@ -166,7 +141,7 @@ void HeadingTracker::nextRegion() {
                             if (nextIndexCandidate < curRegionHeadingIndex) {
                                 acceptThisOne = true;
                             }
-                            acceptThisOne = true;       // new idea - as long as it's past the other one, let's accept this
+                            acceptThisOne = true;  // new idea - as long as it's past the other one, let's accept this
                             done = true;
                         }
                         assert(done);

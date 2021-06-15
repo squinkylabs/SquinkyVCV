@@ -100,7 +100,7 @@ static void testStream() {
 
 static void testStreamLoopData() {
     Streamer s;
-    float data[1000] = { 0 };
+    float data[1000] = {0};
     s.setSample(3, data, 1000);
 
     // blank loop data
@@ -127,11 +127,10 @@ static void testStreamLoopData() {
 
 static void testStreamLoopData2() {
     Streamer s;
-    float data[10] = { 0 };
+    float data[10] = {0};
     s.setSample(3, data, 10);
 
     CompiledRegion::LoopData loopData;
-   
 
     // zero sample loop
     loopData = CompiledRegion::LoopData();
@@ -150,10 +149,9 @@ static void testStreamLoopData2() {
     loopData = CompiledRegion::LoopData();
     loopData.loop_end = 100;
     s.setSample(3, data, 10);
-    
+
     s.setLoopData(3, loopData);
     assert(!s.channels[3].loopActive);
-
 }
 
 static void testStreamEnd() {
@@ -179,16 +177,21 @@ class TestValues {
 public:
     float fractionalOffset = 0;
     Streamer s;
-    unsigned int sampleCount=0;
+    unsigned int sampleCount = 0;
     const float* input = nullptr;
     const float* expectedOutput = nullptr;
     int channel = 0;
     unsigned int skipSamples = 0;
     CompiledRegion::LoopData loopData;
     bool expectCanPlayAfter = false;
+    unsigned int expectedOutputSamples = 0;
 };
 
 static void testStreamValuesSub(TestValues& v) {
+    if (v.expectedOutputSamples == 0) {
+        v.expectedOutputSamples = v.sampleCount;
+    }
+
     assert(v.sampleCount);
     assert(v.skipSamples < v.sampleCount);
     assert(v.input && v.expectedOutput);
@@ -198,7 +201,7 @@ static void testStreamValuesSub(TestValues& v) {
     v.s.setTranspose(float_4(1));
     assertEQ(v.s._cd(v.channel).canPlay(), true);
     v.s.channels[v.channel].curFloatSampleOffset += v.fractionalOffset;
-    for (unsigned int i = 0; i < v.sampleCount; ++i) {
+    for (unsigned int i = 0; i < v.expectedOutputSamples; ++i) {
         SQINFO("\ntop of test loop %d", i);
         v.s._assertValid();
         float_4 vx = v.s.step(0, false);
@@ -223,7 +226,7 @@ static void testStreamValues() {
     v.input = input;
     v.expectedOutput = input;
     v.sampleCount = 6;
-    v.expectCanPlayAfter = false;       //  we will play all the samples
+    v.expectCanPlayAfter = false;  //  we will play all the samples
 
     testStreamValuesSub(v);
     assertEQ(v.s._cd(v.channel).canPlay(), false);
@@ -236,13 +239,14 @@ static void testStreamValuesInterp() {
     v.channel = 2;
     assertEQ(v.s._cd(v.channel).canPlay(), false);
 
-    float input[6] = {.6f, .5f, .4f, .3f, .2f, .1f};
+    float input[7] = {.6f, .5f, .4f, .3f, .2f, .1f, 0.f};
     float output[6] = {.55f, .45f, .35f, .25f, .15f, .05f};
     v.input = input;
     v.expectedOutput = output;
     v.fractionalOffset = .5f;
     v.sampleCount = 6;
     v.skipSamples = 2;  // interp won't be fired up yet
+    v.expectedOutputSamples = v.sampleCount - 1;
 
     testStreamValuesSub(v);
     assert(!v.s.channels[v.channel].loopActive);
@@ -255,19 +259,19 @@ static void testStreamValuesOffset() {
     assertEQ(v.s._cd(v.channel).canPlay(), false);
 
 
+    const int samples = 6;
     // TODO: need to separate how much data we have, vs. how many samples to run over?
     // or should this just be working (with end buffer?)
     //                  0     1    2    3    4    5
-    float input[] = {  .6f, .5f, .4f, .3f, .2f, .1f};
-    float output[6] = { .5f, .4f, .3f, .2f, .1f };
-    v.sampleCount = 5;
+    float input[samples] = {.6f, .5f, .4f, .3f, .2f, .1f};
+    float output[samples] = {.5f, .4f, .3f, .2f, .1f};
+    v.sampleCount = samples;
     v.loopData.offset = 1;
     v.input = input;
     v.expectedOutput = output;
     testStreamValuesSub(v);
     assertEQ(v.s.channels[v.channel].loopActive, false);
 }
-
 
 static void testStreamValuesLoop() {
     SQINFO("-- testStreamValuesLoop -- ");
@@ -276,15 +280,15 @@ static void testStreamValuesLoop() {
     assertEQ(v.s._cd(v.channel).canPlay(), false);
 
     //                  0  1  2  3  4  5  6   7      8   9      10    11   12
-    float input[13] = { 1, 2, 3, 4, 5, 6, 7, 1000, 1000, 2000, 2000, 2000, 2000 };
-    float output[13] = {1, 2, 3, 4, 5, 6, 7, 3,     4,     5,    6,   7,    3};
+    float input[13] = {1, 2, 3, 4, 5, 6, 7, 1000, 1000, 2000, 2000, 2000, 2000};
+    float output[13] = {1, 2, 3, 4, 5, 6, 7, 3, 4, 5, 6, 7, 3};
     v.input = input;
     v.expectedOutput = output;
     v.sampleCount = 13;
     v.loopData.loop_start = 2;
     v.loopData.loop_end = 6;
     v.loopData.loop_mode = SamplerSchema::DiscreteValue::LOOP_CONTINUOUS;
-    v.expectCanPlayAfter = true;        // looped, so should still play forever
+    v.expectCanPlayAfter = true;  // looped, so should still play forever
     testStreamValuesSub(v);
     assert(v.s.channels[v.channel].loopActive);
 }
@@ -296,8 +300,8 @@ static void testStreamValuesLoop2() {
     assertEQ(v.s._cd(v.channel).canPlay(), false);
 
     //                  0  1  2  3  4     5      6       7   8   9
-    float input[10] = { 1, 2, 3, 4, 1000, 1000, 2000, 2000, 2000, 2000 };
-    float output[10] = { 1, 2, 3, 4, 3, 4, 3, 4, 3, 4 };
+    float input[10] = {1, 2, 3, 4, 1000, 1000, 2000, 2000, 2000, 2000};
+    float output[10] = {1, 2, 3, 4, 3, 4, 3, 4, 3, 4};
     v.input = input;
     v.expectedOutput = output;
     v.sampleCount = 10;

@@ -46,7 +46,7 @@ std::string SParse::readFileIntoString(FILE* fp) {
 
     const size_t numRead = fread(const_cast<char*>(res.data()), 1, size, fp);
     // SQINFO("requested: %d, read %d", size, numRead);
-    if (numRead != size) {
+    if (numRead != long(size)) {
         res.resize(numRead);
     }
     return res;
