@@ -32,6 +32,7 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime, const float_4& 
 
         float_4 envelopes = adsr.step(gates, sampleTime);
         float_4 samples = player.step(lfm, lfmEnabled);
+       // SQINFO("in s4::step env=%f samp=%f", envelopes[0], samples[0]);
         // apply envelope and boost level
         return envelopes * samples * _outputGain();
     } else {
@@ -66,6 +67,10 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
 
 void Sampler4vx::updatePitch() {
     // TODO: get rid of all this crazy semitone/ocatve stuff!!
+    assert(!std::isinf(pitchCVFromKeyboard[0]));
+    assert(!std::isinf(pitchCVFromKeyboard[1]));
+    assert(!std::isinf(pitchCVFromKeyboard[2]));
+    assert(!std::isinf(pitchCVFromKeyboard[3]));
 
     float_4 combinedCV = fmCV * 12 + pitchCVFromKeyboard;
     float_4 transposeAmt;
@@ -81,6 +86,7 @@ void Sampler4vx::updatePitch() {
 }
 
 bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
+    assert(sampleRate > 100);
     if (!patch || !waves) {
         if (printErrors) {
             SQDEBUG("4vx not intit");
@@ -114,9 +120,10 @@ bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     // I don't think this test cares what we set the player too
 
 #ifdef _SAMPFM
-
+    assert(!std::isinf(patchInfo.transposeV));
     const float transposeCV = patchInfo.transposeV * 12;
     pitchCVFromKeyboard[channel] = transposeCV;
+    assert(!std::isinf(transposeCV));
     updatePitch();
 #if 0  // old way
     const float transposeCV = patchInfo.transposeV * 12 + 12 * fmCV[channel];

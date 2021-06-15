@@ -390,7 +390,6 @@ static void testSampPitch() {
     }
 }
 
-
 static void testSampOffset() {
     std::shared_ptr<Sampler4vx> s = std::make_shared<Sampler4vx>();
 
@@ -398,7 +397,6 @@ static void testSampOffset() {
     CompiledInstrumentPtr cinst;
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
     w->_setTestMode(WaveLoader::Tests::RampOneSec);
-
 
     const char* test = R"foo(
         <region>
@@ -433,8 +431,89 @@ static void testSampOffset() {
     assertEQ(player.channels[0].loopActive, false);
 }
 
+static void testOneShot(bool oneShot) {
+    SQINFO("--- testOneShot(%d)", oneShot);
+    //std::shared_ptr<Sampler4vx> s = std::make_shared<Sampler4vx>();
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst;
+    WaveLoaderPtr w = std::make_shared<WaveLoader>();
+    w->_setTestMode(WaveLoader::Tests::DCOneSec);
+
+    const char* testNorm = R"foo(
+        <region>
+        ampeg_release=.001
+        sample=r1
+    )foo";
+
+    const char* testOneShot = R"foo(
+        <region>
+        sample=r1
+        ampeg_release=.001
+        loop_mode=one_shot
+    )foo";
+
+    const char* test = oneShot ? testOneShot : testNorm;
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto perr = SParse::go(test, inst);
+    assert(perr.empty());
+
+    SamplerErrorContext cerr;
+    auto ci = CompiledInstrument::make(cerr, inst);
+    assert(ci);
+
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 60;
+
+    Sampler4vx samp;
+    samp.setLoader(w);
+    samp.setPatch(ci);
+
+    VoicePlayInfo info;
+    //  ci->play(info, params, w.get(), 44100.f);
+    const int channel = 0;
+    const int midiPitch = 60;
+    const int midiVel = 60;
+    samp.note_on(channel, midiPitch, midiVel, 44100);
+
+    auto gates = SimdBlocks::maskTrue();
+    const float sampleTime = 1.f / 44100.f;
+    float_4 lfm = SimdBlocks::maskFalse();
+
+    float largest = 0;
+    for (int i = 0; i < 200; ++i) {
+        auto x = samp.step(gates, sampleTime, lfm, false);
+        //SQINFO("x = %f", x[0]);
+        largest = std::max(x[0], largest);
+    }
+    SQINFO("larges was %f", largest);
+    // while playing, should have something
+    assert(largest > .2);
+
+    // takes gates low, pump a little
+    SQINFO("gates go low now");
+    gates = SimdBlocks::maskFalse();
+    for (int i = 0; i < 200; ++i) {
+        auto x = samp.step(gates, sampleTime, lfm, false);
+    }
+
+
+    // now see if playing
+    largest = 0;
+    for (int i = 0; i < 200; ++i) {
+        auto x = samp.step(gates, sampleTime, lfm, false);
+        largest = std::max(x[0], largest);
+    }
+    SQINFO("largest was %f", largest);
+    const bool wasSignal =  largest > .01f;
+    assertEQ(wasSignal, oneShot);
+
+}
 
 void testx5() {
+#if 0
     testSampler();
     testSampler4vxTestOutput();
 
@@ -448,4 +527,7 @@ void testx5() {
 
     testSampPitch();
     testSampOffset();
+#endif
+    testOneShot(false);
+    testOneShot(true);
 }

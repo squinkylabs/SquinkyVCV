@@ -129,40 +129,40 @@ static void testPlaySmallPianoVelswitch() {
     VoicePlayParameter params;
     params.midiPitch = 60;
     params.midiVelocity = 60;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
 
     params.midiPitch = 64;
     params.midiVelocity = 1;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     const int si1 = info.sampleIndex;
 
     params.midiVelocity = 22;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     const int si22 = info.sampleIndex;
 
     params.midiVelocity = 23;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     const int si23 = info.sampleIndex;
 
     params.midiVelocity = 30;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     const int si30 = info.sampleIndex;
 
     params.midiVelocity = 43;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     const int si43 = info.sampleIndex;
 
     params.midiVelocity = 44;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     const int si44 = info.sampleIndex;
 
     params.midiVelocity = 107;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     const int si107 = info.sampleIndex;
 
     params.midiVelocity = 127;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     const int si127 = info.sampleIndex;
 
     assertEQ(si1, si22);
@@ -328,31 +328,31 @@ static void testPlayKeyswitch15() {
     info.sampleIndex = 0;
     params.midiPitch = 50;
     params.midiVelocity = 60;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
 
     assert(!info.valid);
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     // keyswitch with pitch 11
     params.midiPitch = 11;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     // now play 50 again, should play first region
     params.midiPitch = 50;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 
     // keyswitch with pitch 10
     params.midiPitch = 10;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     // now play 50 again, should play second region
     params.midiPitch = 50;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
 }
@@ -397,22 +397,22 @@ static void testPlayKeyswitch2() {
     // play pitch 50
     params.midiPitch = 50;
     params.midiVelocity = 60;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
 
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
 
     // keyswitch
     params.midiPitch = 11;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     // other one
     params.midiPitch = 50;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 }
@@ -463,49 +463,49 @@ static void testPlayOverlapVel() {
     
     params.midiPitch= 48;
     params.midiVelocity = 1;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 
     // first region gets shrunk, so second region plays here
     params.midiVelocity = 30;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);  
 
     params.midiVelocity = 31;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
 
     params.midiVelocity = 59;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
 
     // second gets shrunk
     params.midiVelocity = 60;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 3);
 
     params.midiVelocity = 61;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 3);
 
     params.midiVelocity = 90;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 3);
 
     params.midiVelocity = 91;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 4);
 
     params.midiVelocity = 127;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 4);
 }
@@ -553,49 +553,49 @@ static void testPlayOverlapPitch() {
 
     params.midiPitch = 1;
     params.midiVelocity = 64;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 
     // first region gets shrunk, so second region plays here
     params.midiPitch = 30;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
 
     params.midiPitch = 31;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
 
     params.midiPitch = 59;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 2);
 
     // second gets shrunk
     params.midiPitch = 60;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 3);
 
     params.midiPitch = 61;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 3);
 
     params.midiPitch = 90;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 3);
 
     params.midiPitch = 91;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 4);
 
     params.midiPitch = 127;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 4);
 }
@@ -637,34 +637,34 @@ static void testPlayOverlapRestore() {
     // big region deleted, small one intact
     params.midiPitch = 1;
     params.midiVelocity = 64;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     params.midiPitch = 29;
     params.midiVelocity = 64;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     params.midiPitch = 30;
     params.midiVelocity = 64;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 
     params.midiPitch = 60;
     params.midiVelocity = 64;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
   
     params.midiPitch = 61;
     params.midiVelocity = 64;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     params.midiPitch = 127;
     params.midiVelocity = 64;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(!info.valid);
 }
 
@@ -686,7 +686,7 @@ static void testPlayLoop() {
     params.midiPitch = 12;
     params.midiVelocity = 60;
 
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.loopData.offset, 222);
     assertEQ(info.loopData.loop_start, 91);

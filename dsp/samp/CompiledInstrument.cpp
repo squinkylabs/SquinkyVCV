@@ -174,6 +174,7 @@ void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float re
 }
 
 void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate) {
+    assert(sampleRate > 100);
     // first base pitch
     const int semiOffset = midiPitch - regionKeyCenter;
     if (semiOffset == 0 && tuneCents == 0) {
@@ -186,6 +187,7 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
     } else {
         info.needsTranspose = true;
         // maybe in the future we could do this in the v/8 domain?
+       
         const float tuneSemiOffset = float(semiOffset) + float(tuneCents) / 100;
 #ifdef _SAMPFM
         const float offsetCV = tuneSemiOffset / 12.f;
@@ -212,6 +214,7 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
 }
 
 bool CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
+    assert(sampleRate > 100);
     if (ciTestMode != Tests::None) {
         return playTestMode(info, params, loader, sampleRate);
     }
