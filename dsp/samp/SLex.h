@@ -35,10 +35,27 @@ public:
     SLexEqual(int line) : SLexItem(Type::Equal, line) {}
 };
 
+inline std::string removeTrailingSpace(const std::string& s) {
+    const std::string whitespace = " \t";
+    const auto strEnd = s.find_last_not_of(whitespace);
+    return s.substr(0, strEnd + 1);
+}
+
 class SLexIdentifier : public SLexItem {
 public:
     SLexIdentifier(const SLexIdentifier&) = delete;
-    SLexIdentifier(const std::string sName, int line) : SLexItem(Type::Identifier, line), idName(sName) {}
+
+    /**
+     * Trailing space it removed from the name.
+     * This was done for a bug where spaces after a file name were getting added to the extension,
+     * but it's good in general. No ident has trailing spaces.
+     */
+    SLexIdentifier(const std::string sName, int line) : SLexItem(Type::Identifier, line), idName(removeTrailingSpace(sName)) {
+        if (!idName.empty()) {
+            assert(idName.back() != ' ');
+            assert(idName.back() != '\t');
+        }
+    }
     const std::string idName;
 };
 

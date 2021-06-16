@@ -482,9 +482,18 @@ static void testLexCommentInFile3() {
     SLexIdentifier* p = static_cast<SLexIdentifier*>(id.get());
     assertEQ(p->idName, "a/b");
 }
-//
+
 static void testLexMacPath() {
     auto lex = SLex::go("sample=/abs/path.wav");
+    assert(lex);
+    assertEQ(lex->items.size(), 3);
+    assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
+    SLexIdentifier* ident = static_cast<SLexIdentifier*>(lex->items[2].get());
+    assertEQ(ident->idName, "/abs/path.wav");
+}
+
+static void testLexPathTrailingSpace() {
+    auto lex = SLex::go("sample=/abs/path.wav ");
     assert(lex);
     assertEQ(lex->items.size(), 3);
     assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
@@ -663,6 +672,45 @@ static void testParseSimpleDrum() {
 }
 
 
+static void  testParseComplexDrum1() {
+ const char* p = R"foo(
+<group> volume=-29 amp_veltrack=100 loop_mode=one_shot key=54 group=2         // crash1Choke /////
+<region> sample=OH\crash1Choke_OH_F_1.wav 
+
+<group> volume=-19 amp_veltrack=95 ampeg_release=0.6 key=55 loop_mode=one_shot lovel=1 hivel=59 off_mode=normal off_by=2		// crash1 ////5 Samples Random!
+<region> sample=OH\crash1_OH_P_1.wav lorand=0 hirand=0.2
+)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(p, inst);
+    assert(err.empty());
+    assertEQ(inst->headings.size(), 4);
+
+    assertEQ(int(inst->headings[1]->type), int(SHeading::Type::Region));
+    auto region = inst->headings[1];
+    assertEQ(region->values.size(), 1);
+    std::string filePath = region->values[0]->value;
+    FilePath fp(filePath);
+    assertEQ(fp.getExtensionLC().size(), 3);
+}
+
+static void  testParseComplexDrum() {
+    const char* p = R"foo(
+<region>sample=OH\crash1Choke_OH_F_1.wav 
+<group>
+)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(p, inst);
+    assert(err.empty());
+    assertEQ(inst->headings.size(), 2);
+
+    assertEQ(int(inst->headings[0]->type), int(SHeading::Type::Region));
+    auto region = inst->headings[0];
+    assertEQ(region->values.size(), 1);
+    std::string filePath = region->values[0]->value;
+    FilePath fp(filePath);
+    assertEQ(fp.getExtensionLC().size(), 3);
+}
+
 
 // make sure we dont' crash from parsing unused regions.
 static void testParseCurve() {
@@ -712,6 +760,7 @@ static void testRandomRange1() {
     assertEQ(test.size(), 3);
 }
 
+
 extern int compileCount;
 
 
@@ -755,6 +804,7 @@ void testx() {
     testLexCommentInFile2();
     testLexCommentInFile3();
     testLexMacPath();
+    testLexPathTrailingSpace();
     testLexBeef();
 
     testParse1();
@@ -779,6 +829,7 @@ void testx() {
     // testparse_piano2b();
     testparse_piano2();
     testParseSimpleDrum();
+    testParseComplexDrum();
     testRandomRange0();
     testRandomRange1();
 
