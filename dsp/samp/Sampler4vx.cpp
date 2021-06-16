@@ -29,12 +29,13 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime, const float_4& 
     sampleTime_ = sampleTime;
     if (patch && waves) {
         simd_assertMask(gates);
-
-        float_4 envelopes = adsr.step(gates, sampleTime);
         float_4 samples = player.step(lfm, lfmEnabled);
-       // SQINFO("in s4::step env=%f samp=%f", envelopes[0], samples[0]);
-        // apply envelope and boost level
-        return envelopes * samples * _outputGain();
+        samples *= _outputGain();
+        if (!player.blockEnvelopes()) {
+            float_4 envelopes = adsr.step(gates, sampleTime);
+            samples *= envelopes;
+        }
+        return samples;
     } else {
         return 0;
     }
@@ -145,7 +146,7 @@ bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
 #endif
 
-   // std::string sample = waveInfo->fileName.getFilenamePart();
+    // std::string sample = waveInfo->fileName.getFilenamePart();
     // SQINFO("play vel=%d pitch=%d gain=%f samp=%s", midiVelocity, midiPitch, patchInfo.gain, sample.c_str());
 
     // this is a little messed up - the adsr should really have independent

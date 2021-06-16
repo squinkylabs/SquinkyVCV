@@ -35,6 +35,7 @@ public:
 
     bool _isTransposed(int channel) const;
     float _transAmt(int channel) const;
+    bool blockEnvelopes() const;
  
 
 public:

@@ -386,6 +386,11 @@ float Streamer::_transAmt(int channel) const {
     return cd.transposeMultiplier;
 }
 
+bool Streamer::blockEnvelopes() const {
+    // all are the same, just look at 0
+    return channels[0].loopData.loop_mode == SamplerSchema::DiscreteValue::ONE_SHOT;
+}
+
 void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
     ChannelData& cd = channels[chan];
     assert(0 == cd.curFloatSampleOffset);
