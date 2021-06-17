@@ -126,6 +126,7 @@ extern void testSampComposite();
 extern void testFlac();
 extern void testHeadingTracker();
 extern void do_gc();
+extern void testxLex();
 
 #if 0
 #include <iostream>
@@ -231,6 +232,7 @@ int main(int argc, char** argv) {
 
     testStreamer();
     testHeadingTracker();
+    testxLex();
     testx();
     testx2();
     testx3();
