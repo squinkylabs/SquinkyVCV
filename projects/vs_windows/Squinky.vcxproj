@@ -32,6 +32,7 @@
     <ClCompile Include="..\..\dsp\samp\FilePath.cpp" />
     <ClCompile Include="..\..\dsp\samp\FlacReader.cpp" />
     <ClCompile Include="..\..\dsp\samp\HeadingTracker.cpp" />
+    <ClCompile Include="..\..\dsp\samp\LexContext.cpp" />
     <ClCompile Include="..\..\dsp\samp\RegionPool.cpp" />
     <ClCompile Include="..\..\dsp\samp\Sampler4vx.cpp" />
     <ClCompile Include="..\..\dsp\samp\SamplerPlayback.cpp" />

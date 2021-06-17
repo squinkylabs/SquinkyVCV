@@ -1,8 +1,10 @@
+#include "LexContext.h"
 #include "SLex.h"
 #include "FilePath.h"
+
 #include "asserts.h"
 
-
+#include <fstream>
 
 static void testLex1() {
     SLexPtr lex = SLex::go("<global>");
@@ -257,12 +259,13 @@ static void testLexLabel() {
     assertEQ(fname->idName, "abc def ghi");
 }
 
-#include <fstream>
-// has lots of includes
+
+
 static void testLexBeef() {
-   // std::string path("d:\\samples\\beefowulf_alpha_0100\\Programs\\beefowulf_keyswitch.sfz");
+    SQINFO("------ testLexBeef");
+
+    // this real sfz has lots of includes.
     FilePath path("d:\\samples\\beefowulf_alpha_0100\\Programs\\beefowulf_keyswitch.sfz");
-    std::string errorText;
     std::ifstream t(path.toString());
     if (!t.good()) {
         printf("can't open file\n");
@@ -278,8 +281,12 @@ static void testLexBeef() {
         return;
     }
 
-    auto lex = SLex::go(str, &errorText, 0, &path);
-    SQINFO("error=%s", errorText.c_str());
+    // This test will need all the args to pass !!!
+    LexContextPtr ctx = std::make_shared<LexContext>(str);
+    ctx->addRootPath(path);
+  //  auto lex = SLex::go(str, &errorText, 0, &path);
+    auto lex = SLex::go(ctx);
+    SQINFO("error=%s", ctx->errorString().c_str());
 
     assert(lex);
     lex->validate();
@@ -322,28 +329,29 @@ static void testLexMarimba() {
 
 static void testLexIncludeMalformed() {
     std::string str("#includ \"abc\"");
-    std::string err;
-    auto lex = SLex::go(str, &err);
+    LexContextPtr ctx = std::make_shared<LexContext>(str);
+    auto lex = SLex::go(ctx);
     assert(!lex);
-    assert(!err.empty());
-    assertEQ(err, "Malformed #include at line 1");
+    assert(!ctx->errorString().empty());
+    assertEQ(ctx->errorString(), "Malformed #include at line 1");
 }
 
 static void testLexIncludeBadFile() {
     std::string str("#include \"abc\"");
-    std::string err;
     FilePath fp("fake");
-    auto lex = SLex::go(str, &err, 0, &fp);
-
-    assert(!err.empty());
-    assertEQ(err, "Can't open abc included at line 1");
+    LexContextPtr ctx = std::make_shared<LexContext>(str);
+    ctx->addRootPath(fp);
+    auto lex = SLex::go(ctx);
 
     // this should error out, as "abc" can't be opened.
+    assert(!ctx->errorString().empty());
     assert(!lex);
+    assertEQ(ctx->errorString(), "Can't open abc included at line 1");
 }
 
 // This uses a "real" sfz on disk
 static void testLexIncludeSuccess() {
+    SQINFO("------------ testLexIncludeSuccess");
     FilePath filePath(R"foo(D:\samples\test\test-include.sfz)foo");
     std::ifstream t(filePath.toString());
     assert(t.good());
@@ -351,10 +359,11 @@ static void testLexIncludeSuccess() {
     std::string sContent((std::istreambuf_iterator<char>(t)),
                          std::istreambuf_iterator<char>());
 
-    std::string err;
-    auto lex = SLex::go(sContent, &err, 0, &filePath);
+    LexContextPtr ctx = std::make_shared<LexContext>(sContent);
+    ctx->addRootPath(filePath);
+    auto lex = SLex::go(ctx);
 
-    assert(lex && err.empty());
+    assert(lex && ctx->errorString().empty());
 
     assertEQ(lex->items.size(), 3);
     assertEQ(int(lex->items[0]->itemType), int(SLexItem::Type::Tag));
@@ -365,19 +374,19 @@ static void testLexIncludeSuccess() {
 // can we parse a simple define?
 static void testLexDefineSuccess() {
     std::string content(R"foo(#define A 22)foo");
-    std::string err;
-    auto lex = SLex::go(content, &err, 0);
+    LexContextPtr ctx = std::make_shared<LexContext>(content);
+    auto lex = SLex::go(ctx);
 
-    assert(lex && err.empty());
+    assert(lex && ctx->errorString().empty());
     assertEQ(lex->items.size(), 0);
 }
 
 static void testLexDefineSuccess2() {
     std::string content(R"foo(a=b #define A 22 c=d)foo");
-    std::string err;
-    auto lex = SLex::go(content, &err, 0);
+    LexContextPtr ctx = std::make_shared<LexContext>(content);
+    auto lex = SLex::go(ctx);
 
-    assert(lex && err.empty());
+    assert(lex && ctx->errorString().empty());
     assertEQ(lex->items.size(), 6);
 }
 
@@ -388,10 +397,11 @@ default_path=Soft String Spurs Samples/
 
 label_cc$MW=MW ($MW)
 )foo");
-    std::string err;
-    auto lex = SLex::go(content, &err, 0);
 
-    assert(lex && err.empty());
+    LexContextPtr ctx = std::make_shared<LexContext>(content);
+    auto lex = SLex::go(ctx);
+
+    assert(lex && ctx->errorString().empty());
     assertEQ(lex->items.size(), 7);
 }
 
@@ -403,18 +413,17 @@ static void testLexDefineSuccess4() {
         #define $ABC 22
         label_cc$ABC=foo
 )foo");
-    std::string err;
-    auto lex = SLex::go(content, &err, 0);
 
-    lex->_dump();
-    assert(lex && err.empty());
+    LexContextPtr ctx = std::make_shared<LexContext>(content);
+    auto lex = SLex::go(ctx);
+
+    // lex->_dump();
+    assert(lex && ctx->errorString().empty());
     assertEQ(lex->items.size(), 3);
     auto label = lex->items[0];
 
     assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
-  //  SLexItemPtr id = lex->items[2];
     SLexIdentifier* p = static_cast<SLexIdentifier*>(lex->items[0].get());
-  //  assertEQ(label->itemType ==
     std::string s = p->idName;
 
 #if 0       // this doesn't work yet.

@@ -4,6 +4,7 @@
 #include <assert.h>
 
 #include "FilePath.h"
+#include "LexContext.h"
 #include "SInstrument.h"
 #include "SLex.h"
 #include "SqLog.h"
@@ -83,11 +84,13 @@ static std::string filter(const std::string& sInput) {
 
 std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outParsedInstrument, const FilePath* fullPathToSFZ) {
     std::string sContent = filter(sContentIn);
-    std::string lexError;
-    SLexPtr lex = SLex::go(sContent, &lexError, 0, fullPathToSFZ);
+    LexContextPtr lexContext = std::make_shared<LexContext>(sContent);
+  //  SLexPtr lex = SLex::go(sContent, &lexError, 0, fullPathToSFZ);
+    SLexPtr lex = SLex::go(lexContext);
     if (!lex) {
-        assert(!lexError.empty());
-        return lexError;
+        std::string sError = lexContext->errorString();
+        assert(!sError.empty());
+        return sError;
     }
    // SQINFO("here is lex output we will parse");
    // lex->_dump();

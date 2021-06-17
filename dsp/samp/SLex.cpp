@@ -1,6 +1,7 @@
 
 
 #include "SLex.h"
+#include "LexContext.h"
 
 #include <assert.h>
 
@@ -10,22 +11,80 @@
 #include "SqLog.h"
 #include "SqStream.h"
 
-SLex::SLex(std::string* errorText, int includeDepth, const FilePath* filePath) : outErrorStringPtr(errorText), includeRecursionDepth(includeDepth), rootFilePath(filePath) {
-}
+//SLex::SLex(std::string* errorText, int includeDepth, const FilePath* filePath) : outErrorStringPtr(errorText), includeRecursionDepth(includeDepth), rootFilePath(filePath) {
+//}
 
+SLex::SLex(LexContextPtr ctx) : context(ctx) {
+}
+#if 0
 SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includeDepth, const FilePath* yourFilePath) {
     // song and dance to work around MS bug.
     SLex* lx = new SLex(errorText, includeDepth, yourFilePath);
     return goCommon(lx, sContent);
 }
+#endif
 
+ SLexPtr SLex::go(const std::string& sContent) {
+     LexContextPtr ctx = std::make_shared<LexContext>(sContent);
+     return go(ctx);
+ }
+ 
+ SLexPtr SLex::go(LexContextPtr context) {
+  
+     SLex* lx = new SLex(context);
+     return goCommon(lx, context);
+ }
+
+#if 0
+ static SLexPtr goCommon(SLex* lx, LexContextPtr ctx) {
+     assert(false);
+     SLexPtr result(lx);
+     return result;
+ }
+#endif
+
+ SLexPtr SLex::goRecurse(LexContextPtr context) {
+     SLex* lx = new SLex(context);
+  //   SQINFO("will recurse into content: %s", context->getCurrentContent().c_str());
+     assert( context->includeRecursionDepth > 0);
+     SQINFO("depth = %d", context->includeRecursionDepth);
+     return goCommon(lx, context);
+ }
+
+#if 0
 SLexPtr SLex::goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth, const std::string& dbg) {
     int count = 0;
     // song and dance to work around MS bug.
     SLex* lx = new SLex(errorText, includeDepth, rootFilePath);
     return goCommon(lx, sContent);
 }
+#endif
 
+
+SLexPtr SLex::goCommon(SLex* lx, LexContextPtr ctx) {
+    int count = 0;
+    SLexPtr result(lx);
+
+    std::string sContent = ctx->getCurrentContent();
+    for (size_t i = 0; i < sContent.size(); ++i) {
+        const char c = sContent[i];
+        const char nextC = (i >= (sContent.size() - 1)) ? -1 : sContent[i + 1];
+        if (c == '\n') {
+            ++result->currentLine;
+        }
+
+        bool ret = result->procNextChar(c, nextC);
+        if (!ret) {
+            return nullptr;
+        }
+        ++count;
+    }
+    SQINFO("in goCommon will dec recusion is %d", ctx->includeRecursionDepth);
+    ctx->includeRecursionDepth--;
+    bool ret = result->procEnd();
+    return ret ? result : nullptr;
+}
+#if 0   // old one
 SLexPtr SLex::goCommon(SLex* lx, const std::string& sContent) {
     int count = 0;
     SLexPtr result(lx);
@@ -46,6 +105,7 @@ SLexPtr SLex::goCommon(SLex* lx, const std::string& sContent) {
     bool ret = result->procEnd();
     return ret ? result : nullptr;
 }
+#endif
 
 
 void SLex::validateName(const std::string& name) {
@@ -126,7 +186,21 @@ bool SLex::procNextChar(char c, char nextC) {
     return true;
 }
 
+
+
 bool SLex::error(const std::string& err) {
+    SqStream st;
+    st.add(err);
+    st.add(" at line ");
+    st.add(currentLine + 1);
+    //*outErrorStringPtr = st.str();
+    context->logError(st.str());
+    return false;
+}
+
+#if 0
+bool SLex::error(const std::string& err) {
+
     if (outErrorStringPtr) {
         SqStream st;
         st.add(err);
@@ -134,8 +208,10 @@ bool SLex::error(const std::string& err) {
         st.add(currentLine + 1);
         *outErrorStringPtr = st.str();
     }
+
     return false;
 }
+#endif
 
 bool SLex::procStateNextHashChar(char c) {
     switch (c) {
@@ -462,13 +538,54 @@ std::string SLexItem::lineNumberAsString() const {
     return buf;
 }
 
+bool SLex::handleIncludeFile(const std::string& relativeFileName) {
+   //  SQINFO("SLex::handleIncludeFile %s", fileName.c_str());
+    assert(!relativeFileName.empty());
+  
+
+    if (context->includeRecursionDepth > 10) {
+        return error("include nesting too deep");
+    }
+
+    const auto before = context->includeRecursionDepth;
+
+    //  bool pushOneLevel(const std::string& relativePath, std::string* fileContents);
+    bool bOK = context->pushOneLevel(relativeFileName, currentLine);
+    if (!bOK) {
+        return false;
+    }
+
+    // now need to recurse
+    auto includeLexer = SLex::goRecurse(context);
+    if (!includeLexer) {
+        return false;  // error should already be in outErrorStringPtr
+    }
+    //assert(context->includeRecursionDepth == before + 1);
+    // 2) copy the tokens from include to this.
+    this->items.insert(
+        this->items.end(),
+        std::make_move_iterator(includeLexer->items.begin()),
+        std::make_move_iterator(includeLexer->items.end()));
+    // SQINFO("finished incl, curItem=%s", curItem.c_str());
+    curItem.clear();
+    // 3 continue lexing
+    state = State::Ready;
+    // SQINFO("back frm %s", fullPath.toString().c_str());
+
+    return true;
+}
+
+#if 0
 bool SLex::handleIncludeFile(const std::string& fileName) {
    //  SQINFO("SLex::handleIncludeFile %s", fileName.c_str());
     assert(!fileName.empty());
+    assert(false);
+
     if (includeRecursionDepth > 10) {
         return error("include nesting too deep");
     }
 
+// part 2 - open new file and get contents
     if (fileName.front() != '"' || fileName.back() != '"') {
         return error("Include filename not quoted");
     }
@@ -506,6 +623,8 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
     // we must:
     // 1) lex it.
     //    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
+
+// part 3, using new file to recurse
     auto includeLexer = SLex::goRecurse(rootFilePath, str, outErrorStringPtr, includeRecursionDepth + 1, namePart.toString());
     if (!includeLexer) {
         return false;  // error should already be in outErrorStringPtr
@@ -520,5 +639,7 @@ bool SLex::handleIncludeFile(const std::string& fileName) {
     // 3 continue lexing
     state = State::Ready;
     // SQINFO("back frm %s", fullPath.toString().c_str());
+
     return true;
 }
+#endif

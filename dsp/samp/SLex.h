@@ -9,7 +9,9 @@
 
 class FilePath;
 class SLex;
+class LexContext;
 using SLexPtr = std::shared_ptr<SLex>;
+using LexContextPtr = std::shared_ptr<LexContext>;
 
 class SLexItem {
 public:
@@ -76,12 +78,16 @@ public:
      * 
      * @returns lexer full of tokens, or null if error
      */
-    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
+
+    static SLexPtr go(LexContextPtr context);        // full featured factory
+    static SLexPtr go(const std::string& sContent);  // limited one, just for test
+                                                     // static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
 
     /**
      * This is the factory for "child" lexers while processing includes
      */
-    static SLexPtr goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth, const std::string& dbgString);
+  //  static SLexPtr goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth, const std::string& dbgString);
+    static SLexPtr goRecurse(LexContextPtr ctx);
 
     std::vector<SLexItemPtr> items;
     SLexItemPtr next() {
@@ -102,7 +108,8 @@ public:
     const SLex& operator=(const SLex&) = delete;
 
 private:
-    SLex(std::string* errorText, int includeDepth, const FilePath* rootFilePath);
+    SLex(std::string* errorText, int includeDepth, const FilePath* rootFilePath);       // old legacy one
+    SLex(LexContextPtr);                    // new spiffy one
     const std::string debugString;
 
     // return true if no error
@@ -158,15 +165,16 @@ private:
     DefineSubState defineSubState = DefineSubState::MatchingOpcode;
 
     int spaceCount = 0;
+      LexContextPtr const context;
 
     std::string curItem;
     bool lastIdentifierIsString = false;
     bool lastCharWasForwardSlash = false;
-    std::string* const outErrorStringPtr;
-    const int includeRecursionDepth;
+  //  std::string* const outErrorStringPtr;
+  
+  //  const int includeRecursionDepth;
 
-    //const FilePath* const myFilePath;
-    const FilePath* const rootFilePath;
+  //  const FilePath* const rootFilePath;
 
     int currentIndex = 0;
 
@@ -174,5 +182,6 @@ private:
     int currentLine = 0;
 
     static void validateName(const std::string&);
-    static SLexPtr goCommon(SLex* lx, const std::string& sContent);
+  //  static SLexPtr goCommon(SLex* lx, const std::string& sContent);
+    static SLexPtr goCommon(SLex* lx, LexContextPtr);
 };
