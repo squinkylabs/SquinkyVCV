@@ -14,9 +14,19 @@ LexContext::LexContext(const FilePath& initialFile) {
     assert(false);
 }
 
+
+bool LexContext::popOneLevel() {
+    --includeRecursionDepth;
+    return true;
+}
+
 bool LexContext::pushOneLevel(const std::string& relativePath, int currentLine) {
     
     ++includeRecursionDepth;
+    if (includeRecursionDepth > 10) {
+        errorString_ = "Include nesting too deep";
+        return false;
+    }
     if (relativePath.front() != '"' || relativePath.back() != '"') {
         errorString_ = "Include filename not quoted";
         return false;

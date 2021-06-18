@@ -30,6 +30,7 @@ public:
      * @param sourceLine used for formatting error message
      */
     bool pushOneLevel(const std::string& relativePath, int sourceLine);
+    bool popOneLevel();
 
     std::string getCurrentContent() const { 
         assert(!currentContent.empty());
@@ -40,12 +41,13 @@ public:
     std::string errorString() const { return errorString_; }
     FilePath getRootFilePath() const { return rootFilePath; }
 
-    // TODO: hide this
-    int includeRecursionDepth = 0;
+  
 private:
     std::string currentContent;
     std::string errorString_;
     FilePath rootFilePath;
+      // TODO: hide this
+    int includeRecursionDepth = 0;
 };
 
 class TestLexContext : public LexContext {

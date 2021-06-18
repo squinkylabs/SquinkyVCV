@@ -46,8 +46,8 @@ SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includ
  SLexPtr SLex::goRecurse(LexContextPtr context) {
      SLex* lx = new SLex(context);
   //   SQINFO("will recurse into content: %s", context->getCurrentContent().c_str());
-     assert( context->includeRecursionDepth > 0);
-     SQINFO("depth = %d", context->includeRecursionDepth);
+ //    assert( context->includeRecursionDepth > 0);
+  //   SQINFO("depth = %d", context->includeRecursionDepth);
      return goCommon(lx, context);
  }
 
@@ -79,8 +79,9 @@ SLexPtr SLex::goCommon(SLex* lx, LexContextPtr ctx) {
         }
         ++count;
     }
-    SQINFO("in goCommon will dec recusion is %d", ctx->includeRecursionDepth);
-    ctx->includeRecursionDepth--;
+    //SQINFO("in goCommon will dec recusion is %d", ctx->includeRecursionDepth);
+   // ctx->includeRecursionDepth--;
+    ctx->popOneLevel();
     bool ret = result->procEnd();
     return ret ? result : nullptr;
 }
@@ -543,11 +544,11 @@ bool SLex::handleIncludeFile(const std::string& relativeFileName) {
     assert(!relativeFileName.empty());
   
 
-    if (context->includeRecursionDepth > 10) {
-        return error("include nesting too deep");
-    }
+ //   if (context->includeRecursionDepth > 10) {
+  //      return error("include nesting too deep");
+ //   }
 
-    const auto before = context->includeRecursionDepth;
+  //  const auto before = context->includeRecursionDepth;
 
     //  bool pushOneLevel(const std::string& relativePath, std::string* fileContents);
     bool bOK = context->pushOneLevel(relativeFileName, currentLine);
