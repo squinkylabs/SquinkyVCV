@@ -1,5 +1,9 @@
 # Change log for Squinky Labs modules
 
+## 10.0.20
+
+Comp2: removed tooltip from channel select knob.
+
 ## 10.0.19
 
 New module: Comp II.

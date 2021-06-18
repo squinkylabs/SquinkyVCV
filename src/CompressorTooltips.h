@@ -8,9 +8,16 @@
 
 class AttackQuantity2 : public rack::engine::ParamQuantity {
 public:
-    AttackQuantity2() : func(Compressor2<WidgetComposite>::getSlowAttackFunction()),
-                        antiFunc(Compressor2<WidgetComposite>::getSlowAntiAttackFunction()) {
+
+#ifdef _CMP_SCHEMA2
+   AttackQuantity2() : func(Compressor2<WidgetComposite>::getSlowAttackFunction_2()),
+                        antiFunc(Compressor2<WidgetComposite>::getSlowAntiAttackFunction_2()) {
     }
+#else
+    AttackQuantity2() : func(Compressor2<WidgetComposite>::getSlowAttackFunction_1()),
+                        antiFunc(Compressor2<WidgetComposite>::getSlowAntiAttackFunction_1()) {
+    }
+#endif
 
     std::string getDisplayValueString() override {
         auto value = getValue();
@@ -41,9 +48,15 @@ private:
 
 class ReleaseQuantity2 : public rack::engine::ParamQuantity {
 public:
-    ReleaseQuantity2() : func(Compressor2<WidgetComposite>::getSlowReleaseFunction()),
-                         antiFunc(Compressor2<WidgetComposite>::getSlowAntiReleaseFunction()) {
+#ifdef _CMP_SCHEMA2
+ ReleaseQuantity2() : func(Compressor2<WidgetComposite>::getSlowReleaseFunction_2()),
+                         antiFunc(Compressor2<WidgetComposite>::getSlowAntiReleaseFunction_2()) {
     }
+#else
+    ReleaseQuantity2() : func(Compressor2<WidgetComposite>::getSlowReleaseFunction_1()),
+                         antiFunc(Compressor2<WidgetComposite>::getSlowAntiReleaseFunction_1()) {
+    }
+#endif
 
     std::string getDisplayValueString() override {
         auto value = getValue();

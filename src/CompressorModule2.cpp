@@ -34,7 +34,6 @@ public:
     void onReset() override {
         compressor->initAllParams();
     }
-    //   float getGainReductionDb();
 
     int getNumVUChannels() {
         return compressor->ui_getNumVUChannels();
