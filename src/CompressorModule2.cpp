@@ -90,7 +90,7 @@ void Compressor2Module::addParams() {
             case Comp::NOTBYPASS_PARAM:
                 this->configParam<BypassQuantityComp2>(i, param.min, param.max, param.def, paramName);
                 break;
-              case Comp::SIDECHAIN_PARAM:
+            case Comp::SIDECHAIN_PARAM:
                 this->configParam<SideChainQuantity2>(i, param.min, param.max, param.def, paramName);
                 break;
             default:
@@ -126,7 +126,7 @@ void Compressor2Module::onSampleRateChange() {
 
 ******************************************************************************/
 
-#include "MultiVUMeter.h"       // need to include this after module definition
+#include "MultiVUMeter.h"  // need to include this after module definition
 
 // #define _LAB
 struct CompressorWidget2 : ModuleWidget {
@@ -147,7 +147,7 @@ struct CompressorWidget2 : ModuleWidget {
     void addJacks(Compressor2Module* module, std::shared_ptr<IComposite> icomp);
     void addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp);
     void addVu(Compressor2Module* module);
-   // void addNumbers();
+    // void addNumbers();
     void step() override;
 
     int lastStereo = -1;
@@ -321,7 +321,6 @@ public:
         addSvg("res/oval-button-up-grey.svg");
         addSvg("res/oval-button-down.svg");
     }
-
 };
 
 class SqBlueButtonInv : public ToggleButton {
@@ -330,6 +329,12 @@ public:
         addSvg("res/oval-button-down.svg");
         addSvg("res/oval-button-up-grey.svg");
     }
+};
+
+class Blue30SnapKnobNoTT : public Blue30SnapKnob {
+public:
+    // don't do anything (base class would put up TT).
+    void onEnter(const event::Enter&) override {}
 };
 
 void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
@@ -368,7 +373,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
         Vec(54, 35),
         "Channel:", TEXTCOLOR);
 #endif
-    channelKnob = SqHelper::createParam<Blue30SnapKnob>(
+    channelKnob = SqHelper::createParam<Blue30SnapKnobNoTT>(
         icomp,
         Vec(17, 24),
         module, Comp::CHANNEL_PARAM);
