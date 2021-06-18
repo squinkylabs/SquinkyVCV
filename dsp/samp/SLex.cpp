@@ -1,39 +1,31 @@
 
-
 #include "SLex.h"
-#include "LexContext.h"
 
 #include <assert.h>
-
 #include <fstream>
 
 #include "FilePath.h"
+#include "LexContext.h"
 #include "SqLog.h"
 #include "SqStream.h"
-
 
 SLex::SLex(LexContextPtr ctx) : context(ctx) {
 }
 
+SLexPtr SLex::go(const std::string& sContent) {
+    LexContextPtr ctx = std::make_shared<LexContext>(sContent);
+    return go(ctx);
+}
 
- SLexPtr SLex::go(const std::string& sContent) {
-     LexContextPtr ctx = std::make_shared<LexContext>(sContent);
-     return go(ctx);
- }
- 
- SLexPtr SLex::go(LexContextPtr context) {
-  
-     SLex* lx = new SLex(context);
-     return goCommon(lx, context);
- }
+SLexPtr SLex::go(LexContextPtr context) {
+    SLex* lx = new SLex(context);
+    return goCommon(lx, context);
+}
 
-
- SLexPtr SLex::goRecurse(LexContextPtr context) {
-     SLex* lx = new SLex(context);
-     return goCommon(lx, context);
- }
-
-
+SLexPtr SLex::goRecurse(LexContextPtr context) {
+    SLex* lx = new SLex(context);
+    return goCommon(lx, context);
+}
 
 SLexPtr SLex::goCommon(SLex* lx, LexContextPtr ctx) {
     int count = 0;
@@ -58,7 +50,6 @@ SLexPtr SLex::goCommon(SLex* lx, LexContextPtr ctx) {
     ctx->popOneLevel();
     return ret ? result : nullptr;
 }
-
 
 void SLex::validateName(const std::string& name) {
 // TODO: now that file names can have spaces, we can't do this.
@@ -115,7 +106,6 @@ void SLex::_dump() const {
 }
 
 bool SLex::procNextChar(char c, char nextC) {
-    //SQINFO("proc next: %c", c);
     switch (state) {
         case State::Ready:
             return procFreshChar(c, nextC);
@@ -143,7 +133,6 @@ bool SLex::error(const std::string& err) {
     st.add(err);
     st.add(" at line ");
     st.add(currentLine + 1);
-    //*outErrorStringPtr = st.str();
     context->logError(st.str());
     return false;
 }
@@ -154,13 +143,11 @@ bool SLex::procStateNextHashChar(char c) {
             state = State::InInclude;
             includeSubState = IncludeSubState::MatchingOpcode;
             curItem = "i";
-            // SQINFO("going into incl, curItem=%s", curItem.c_str());
             return true;
         case 'd':
             state = State::InDefine;
             defineSubState = DefineSubState::MatchingOpcode;
             curItem = "d";
-            // SQINFO("going into define, curItem=%s", curItem.c_str());
             return true;
         default:
             // TODO: tests case #xx
@@ -175,11 +162,9 @@ bool SLex::procStateNextDefineChar(char c) {
         case DefineSubState::MatchingOpcode:
             curItem += c;
             if (defineStr.find(curItem) != 0) {
-                // SQINFO("bad item: >%s<", curItem.c_str());
                 return error("Malformed #define");
             }
             if (curItem == defineStr) {
-               // SQINFO("got define: item=%s", curItem.c_str());
                 defineSubState = DefineSubState::MatchingSpace;
                 curItem.clear();
                 spaceCount = 0;
@@ -194,7 +179,6 @@ bool SLex::procStateNextDefineChar(char c) {
             if (spaceCount > 0) {
                 curItem.clear();
                 curItem += c;
-                // SQINFO("woing into lhs with %s", curItem.c_str());
                 defineSubState = DefineSubState::MatchingLhs;
                 return true;
             }
@@ -219,10 +203,8 @@ bool SLex::procStateNextDefineChar(char c) {
             return false;
 
         case DefineSubState::MatchingLhs:
-            // SQINFO("match lhs, got %c", c);
             if (isspace(c)) {
                 defineVarName = curItem;
-                // SQINFO("done lhs = %s", curItem.c_str());
                 defineSubState = DefineSubState::MatchingSpace2;
                 spaceCount = 1;
                 return true;
@@ -231,12 +213,8 @@ bool SLex::procStateNextDefineChar(char c) {
             }
             return true;
         case DefineSubState::MatchingRhs:
-            //SQINFO("match rhs, got %c", c);
-            //SQINFO("Line: %d", currentLine);
             if (isspace(c)) {
-                //SQINFO("in match, is space");
                 // when we finish rhs, we are done
-                //SQINFO("match rhs = %s", curItem.c_str());
                 defineValue = curItem;
                 curItem.clear();
 
@@ -301,7 +279,6 @@ bool SLex::procNextIncludeChar(char c) {
     }
 
     // for now just keep eating chars
-    //assert(false);
     return true;
 }
 
@@ -326,7 +303,7 @@ bool SLex::procFreshChar(char c, char nextC) {
                 state = State::InComment;
                 return true;
             }
-            break;          
+            break;
         case '=':
             addCompletedItem(std::make_shared<SLexEqual>(currentLine), false);
             return true;
@@ -335,22 +312,18 @@ bool SLex::procFreshChar(char c, char nextC) {
             return true;
     }
 
-    // inIdentifier = true;
     state = State::InIdentifier;
     curItem.clear();
     curItem += c;
-    //printf("119, curItem = %s\n", curItem.c_str());
     validateName(curItem);
     return true;
 }
 
 bool SLex::procNextTagChar(char c) {
-    // printf("nextteag=%c\n", c);
     if (isspace(c)) {
         return false;  // can't have white space in the middle of a tag
     }
     if (c == '<') {
-        // printf("nested tag\n");
         return false;
     }
     if (c == '>') {
@@ -362,7 +335,6 @@ bool SLex::procNextTagChar(char c) {
     }
 
     curItem += c;  // do we care about line feeds?
-                   // printf("141, curItem = %s\n", curItem.c_str());
     validateName(curItem);
     return true;
 }
@@ -375,7 +347,6 @@ bool SLex::procEnd() {
     }
 
     if (state == State::InTag) {
-        //printf("final tag unterminated\n");terminatingSpace
         return false;
     }
 
@@ -417,16 +388,14 @@ bool SLex::procNextIdentifierChar(char c) {
     }
 
     // We only terminate on a space if we are not parsing a String type opcode
-    // const bool terminatingSpace = isspace(c) && (lastIdentifierType != SamplerSchema::OpcodeType::String);
     const bool terminatingSpace = isspace(c) && !lastIdentifierIsString;
     // terminate on these, but don't proc
     if (terminatingSpace) {
         addCompletedItem(std::make_shared<SLexIdentifier>(curItem, currentLine), true);
-        //inIdentifier = false;
         state = State::Ready;
         return true;
     }
-    //assert(inIdentifier);
+
     assert(state == State::InIdentifier);
     curItem += c;
     validateName(curItem);
@@ -483,23 +452,20 @@ void SLex::addCompletedItem(SLexItemPtr item, bool clearCurItem) {
         // They get treated special
         lastIdentifierIsString = SamplerSchema::isFreeTextType(ident->idName);
 
-       context->applyDefine(&ident->idName);
-
-        // printf("just pushed new id : >%s<\n", lastIdentifier.c_str());
+        context->applyDefine(&ident->idName);
     }
 }
 
 std::string SLexItem::lineNumberAsString() const {
     char buf[100];
-    // sprintf_s(buf, "%d", lineNumber);
     snprintf(buf, sizeof(buf), "%d", lineNumber);
     return buf;
 }
 
 bool SLex::handleIncludeFile(const std::string& relativeFileName) {
-   //  SQINFO("SLex::handleIncludeFile %s", fileName.c_str());
+    //  SQINFO("SLex::handleIncludeFile %s", fileName.c_str());
     assert(!relativeFileName.empty());
-  
+
     bool bOK = context->pushOneLevel(relativeFileName, currentLine);
     if (!bOK) {
         return false;

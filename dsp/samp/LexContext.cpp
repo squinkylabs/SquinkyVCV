@@ -115,7 +115,6 @@ bool LexContext::pushOneLevel(const std::string& relativePath, int currentLine) 
 }
 
 void LexContext::addTestFolder(const FilePath& folder, const std::string& content) {
-    SQINFO("adding a mapping for folder >%s<", folder.toString().c_str());
     testFolders[folder.toString()] = content;
 }
 

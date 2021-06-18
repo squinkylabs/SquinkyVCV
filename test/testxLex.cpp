@@ -262,8 +262,6 @@ static void testLexLabel() {
 
 
 static void testLexBeef() {
-    SQINFO("------ testLexBeef");
-
     // this real sfz has lots of includes.
     FilePath path("d:\\samples\\beefowulf_alpha_0100\\Programs\\beefowulf_keyswitch.sfz");
     std::ifstream t(path.toString());
@@ -281,12 +279,9 @@ static void testLexBeef() {
         return;
     }
 
-    // This test will need all the args to pass !!!
     LexContextPtr ctx = std::make_shared<LexContext>(str);
     ctx->addRootPath(path);
-  //  auto lex = SLex::go(str, &errorText, 0, &path);
     auto lex = SLex::go(ctx);
-    SQINFO("error=%s", ctx->errorString().c_str());
 
     assert(lex);
     lex->validate();
@@ -351,7 +346,6 @@ static void testLexIncludeBadFile() {
 
 // This uses a "real" sfz on disk
 static void testLexIncludeSuccess() {
-    SQINFO("------------ testLexIncludeSuccess");
     FilePath filePath(R"foo(D:\samples\test\test-include.sfz)foo");
     std::ifstream t(filePath.toString());
     assert(t.good());
@@ -412,7 +406,6 @@ static void testLexDefineSuccess4() {
     LexContextPtr ctx = std::make_shared<LexContext>(content);
     auto lex = SLex::go(ctx);
 
-    // lex->_dump();
     assert(lex && ctx->errorString().empty());
     assertEQ(lex->items.size(), 3);
     auto label = lex->items[0];
@@ -425,13 +418,11 @@ static void testLexDefineSuccess4() {
 
 // test that includes can find defines from parents.
 static void testLexDefineNested() {
-    SQINFO("--- testLexDefineNested");
     std::string baseContent = R"foo(#define $ABC 27
         label_cc$ABC
         #include "stuff/a.sfz")foo";
     std::string includeContent = R"foo(label_cc$ABC)foo";
 
-        
     LexContextPtr ctx = std::make_shared<LexContext>(baseContent);
     FilePath root("c:/files/x.sfz");
     ctx->addRootPath(root);
@@ -453,12 +444,10 @@ static void testLexDefineNested() {
 
 // test that includes prefer local overrides
 static void testLexDefineNested2() {
-    SQINFO("--- testLexDefineNested");
     std::string baseContent = R"foo(#define $ABC 27
         #include "stuff/a.sfz")foo";
-    std::string includeContent = R"foo((#define $ABC 72 label_cc$ABC)foo";
-
-        
+    std::string includeContent = R"foo(#define $ABC 72 label_cc$ABC)foo";
+ 
     LexContextPtr ctx = std::make_shared<LexContext>(baseContent);
     FilePath root("c:/files/x.sfz");
     ctx->addRootPath(root);
@@ -471,7 +460,31 @@ static void testLexDefineNested2() {
     SLexIdentifier* p = static_cast<SLexIdentifier*>(lex->items[0].get());
     std::string s = p->idName;
     assertEQ(s, "label_cc72");
-  
+}
+
+// test that defines in includes go away
+// when they leave scope
+static void testLexDefineNested3() {
+
+    std::string baseContent = R"foo(#define $ABC 27
+            #define $ABC 22
+            #include "stuff/a.sfz"
+            label_cc$ABC
+        )foo";
+    std::string includeContent = R"foo(#define $ABC 72)foo";
+
+    LexContextPtr ctx = std::make_shared<LexContext>(baseContent);
+    FilePath root("c:/files/x.sfz");
+    ctx->addRootPath(root);
+    ctx->addTestFolder(FilePath("c:/files/stuff/a.sfz"), includeContent);
+    auto lex = SLex::go(ctx);
+    assert(lex && ctx->errorString().empty());
+
+    assertEQ(lex->items.size(), 1);
+    assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
+    SLexIdentifier* p = static_cast<SLexIdentifier*>(lex->items[0].get());
+    std::string s = p->idName;
+    assertEQ(s, "label_cc22");
 }
 
 #if 0
@@ -552,7 +565,7 @@ static void testLexPathTrailingSpace() {
 
 
 void testxLex() {
-       testLex1();
+    testLex1();
     testLex2();
     testLex3();
     testLexKVP();
@@ -583,6 +596,8 @@ void testxLex() {
     testLexDefineSuccess3();
     testLexDefineSuccess4();
     testLexDefineNested();
+    testLexDefineNested2();
+    testLexDefineNested3();
     //  testLexDefineFail();
     testLexLabel2();
     testLexNewLine();

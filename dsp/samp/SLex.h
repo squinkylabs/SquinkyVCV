@@ -13,6 +13,9 @@ class LexContext;
 using SLexPtr = std::shared_ptr<SLex>;
 using LexContextPtr = std::shared_ptr<LexContext>;
 
+
+///////////////////////////// declarations for the lexer tokens (items) /////////////////////////////////////
+
 class SLexItem {
 public:
     enum class Type {
@@ -63,8 +66,12 @@ public:
 
 using SLexItemPtr = std::shared_ptr<SLexItem>;
 
+
+//////////////////////////////////////////// Lexer proper ////////////////////////////////////////////////
+
 class SLex {
 public:
+
     /**
      * This factory should only be called to make the top level Lexer. It should not be used
      * internally to recurse into a new file.
@@ -81,12 +88,10 @@ public:
 
     static SLexPtr go(LexContextPtr context);        // full featured factory
     static SLexPtr go(const std::string& sContent);  // limited one, just for test
-                                                     // static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
 
     /**
      * This is the factory for "child" lexers while processing includes
      */
-  //  static SLexPtr goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth, const std::string& dbgString);
     static SLexPtr goRecurse(LexContextPtr ctx);
 
     std::vector<SLexItemPtr> items;
@@ -96,7 +101,6 @@ public:
 
     void consume() {
         currentIndex++;
-        // printf("after lex::consume, index = %d\n", currentIndex);
     }
     void _dump() const;
     int _index() const {
@@ -109,12 +113,14 @@ public:
 
 private:
     SLex(std::string* errorText, int includeDepth, const FilePath* rootFilePath);       // old legacy one
-    SLex(LexContextPtr);                    // new spiffy one
+    SLex(LexContextPtr);                        // new spiffy one
     const std::string debugString;
 
-    // return true if no error
-    // the functions that take a second argument expect it to either be
-    // the next character, or -1 for "none" or "not known"
+    /**
+     * Return true if no error.
+     * The functions that take a second argument expect it to either be
+     * the next character, or -1 for "none" or "not known"
+     */
     bool procNextChar(char c, char nextC = -1);
     bool procFreshChar(char c, char nextC = -1);
     bool procNextTagChar(char c);
@@ -150,9 +156,11 @@ private:
         MatchingFileName
     };
 
-    // #define a b
-    // a is lhs, b is rhs
-    // match: opcode, space, lhs, space2, rhs
+    /**
+     *  #define a b
+     * a is lhs, b is rhs
+     * match: opcode, space, lhs, space2, rhs
+     */
     enum class DefineSubState {
         MatchingOpcode,
         MatchingSpace,

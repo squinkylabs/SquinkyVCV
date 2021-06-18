@@ -34,8 +34,7 @@ using SKeyValueList = std::vector<SKeyValuePairPtr>;
 // A heading represents any heading, including regions and groups
 class SHeading {
 public:
-
-    void _dump() const {dumpKeysAndValues(values); }
+    void _dump() const { dumpKeysAndValues(values); }
     enum class Type {
         Region,
         Group,
@@ -43,7 +42,7 @@ public:
         Control,
         Master,
         // This is kind of a hack, but...
-        // All headings are sort of treaded the same, but not all of
+        // All headings are sort of treated the same, but not all of
         // them are inherited by regions. So ATM, all of the types above
         // DO participate in inheritance, and the ones below do not.
         NUM_TYPES_INHERIT = Master + 1,
@@ -56,7 +55,6 @@ public:
     };
 
     SHeading(Type t, int lnNumber) : lineNumber(lnNumber), type(t) {
-        
     }
     /**
      * Parsing populates values with the opcodes found while parsing
@@ -103,16 +101,14 @@ private:
         Res res = Res::ok;
     };
 
-
     // a"heading group" is a series of headings, where a region is also a heading
     static std::string matchHeadingGroups(SInstrumentPtr, SLexPtr);
     static Result matchHeadingGroup(SInstrumentPtr, SLexPtr);
-    // return.second is true it heading it a group
+
     static Result matchSingleHeading(SLexPtr lex, SHeadingPtr& outputHeading);
- //   static std::pair<Result, bool> matchSingleHeading(SInstrumentPtr, SLexPtr);
     static std::string matchKeyValuePairs(SKeyValueList&, SLexPtr);
     static Result matchKeyValuePair(SKeyValueList&, SLexPtr);
 
-        // return empty if it's not a tag
+    // return empty if it's not a tag
     static std::string getTagName(SLexItemPtr);
 };

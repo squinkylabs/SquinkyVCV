@@ -17,7 +17,6 @@ int parseCount = 0;
 #if defined(ARCH_WIN)
 
 FILE* SParse::openFile(const FilePath& fp) {
-    // SQINFO("in win wide version open file");
     flac_set_utf8_filenames(true);
     return flac_internal_fopen_utf8(fp.toString().c_str(), "r");
 }
@@ -31,7 +30,6 @@ FILE* SParse::openFile(const FilePath& fp) {
 #endif
 
 std::string SParse::readFileIntoString(FILE* fp) {
-    // SQINFO("read f %p", fp );
     if (fseek(fp, 0, SEEK_END) < 0)
         return "";
 
@@ -46,7 +44,6 @@ std::string SParse::readFileIntoString(FILE* fp) {
     res.resize(size);
 
     const size_t numRead = fread(const_cast<char*>(res.data()), 1, size, fp);
-    // SQINFO("requested: %d, read %d", size, numRead);
     if (numRead != long(size)) {
         res.resize(numRead);
     }
@@ -54,16 +51,11 @@ std::string SParse::readFileIntoString(FILE* fp) {
 }
 
 std::string SParse::goFile(const FilePath& filePath, SInstrumentPtr inst) {
-    // SQINFO("in Parse::go file with %s", filePath.toString().c_str());
-    //  FILE* fp = fopen(filePath.toString().c_str(), "r");
     FILE* fp = openFile(filePath);
-    //SQINFO("ret %p\n", fp);
     if (!fp) {
-        // SQINFO("Parse::go canot open sfz");
         return "can't open " + filePath.toString();
     }
     std::string sContent = readFileIntoString(fp);
-    // SQINFO("read content: %s", sContent.c_str());
     fclose(fp);
     return goCommon(sContent, inst, filePath);
 }
@@ -85,10 +77,6 @@ static std::string filter(const std::string& sInput) {
 std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outParsedInstrument, const FilePath& fullPathToSFZ) {
     std::string sContent = filter(sContentIn);
     LexContextPtr lexContext = std::make_shared<LexContext>(sContent);
-  //  SLexPtr lex = SLex::go(sContent, &lexError, 0, fullPathToSFZ);
-
-  //  LexContextPtr ctx = std::make_shared<LexContext>(sContentIn);
-
     if (!fullPathToSFZ.empty()) {
         lexContext->addRootPath(fullPathToSFZ);
     }
@@ -114,7 +102,6 @@ std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outPa
         errorStream.add(int(type));
         errorStream.add(" index=");
         errorStream.add(lex->_index());
-        //printf("extra tok line number %d type = %d index=%d\n", int(lineNumber), int(type), lex->_index());
         if (type == SLexItem::Type::Tag) {
             auto tag = std::static_pointer_cast<SLexTag>(item);
             SQINFO("extra tok = %s", tag->tagName.c_str());
@@ -122,14 +109,11 @@ std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outPa
 
         if (type == SLexItem::Type::Identifier) {
             SLexIdentifier* id = static_cast<SLexIdentifier*>(item.get());
-            // printf("id name is %s\n", id->idName.c_str());
             errorStream.add(" id name is ");
             errorStream.add(id->idName);
         }
         return errorStream.str();
     }
-
-    
 
     if (outParsedInstrument->headings.empty()) {
         return "no groups or regions";
@@ -149,9 +133,8 @@ std::string SParse::matchHeadingGroups(SInstrumentPtr inst, SLexPtr lex) {
     return "";
 }
 
-
 // I think now this just needs to match a single heading
-#if 1
+
 SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
     bool matchedOneHeading = false;
 
@@ -161,11 +144,7 @@ SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
         inst->headings.push_back(theHeading);
     }
     return result;
-
-   // assert(false);
-  //  return result;
 }
-#endif
 
 static std::map<std::string, SHeading::Type> headingTags = {
     {"region", SHeading::Type::Region},
@@ -176,14 +155,12 @@ static std::map<std::string, SHeading::Type> headingTags = {
     {"curve", SHeading::Type::Curve},
     {"effect", SHeading::Type::Effect},
     {"midi", SHeading::Type::Midi},
-    {"sample", SHeading::Type::Sample}
-};
-
+    {"sample", SHeading::Type::Sample}};
 
 SHeading::Type getHeadingType(const std::string& s) {
     auto it = headingTags.find(s);
     if (it == headingTags.end()) {
-        return SHeading::Type::Unknown; 
+        return SHeading::Type::Unknown;
     }
     return it->second;
 }
@@ -194,15 +171,14 @@ SParse::Result SParse::matchSingleHeading(SLexPtr lex, SHeadingPtr& outputHeadin
     auto tok = lex->next();
     if (!tok) {
         result.res = Result::no_match;
-        return result; 
+        return result;
     }
 
     SHeading::Type headingType = getHeadingType(getTagName(tok));
     if (headingType == SHeading::Type::Unknown) {
         result.res = Result::no_match;
-        return result; 
+        return result;
     }
-
 
     // ok, here we matched a heading. Remember the name
     // and consume the [heading] token.
