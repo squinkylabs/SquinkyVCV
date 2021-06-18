@@ -19,7 +19,7 @@ LexContext::LexContext(const FilePath& initialFile) {
 #endif
 
 void LexContext::addDefine(const std::string& defineVarName, const std::string& defineVal) {
-    SQINFO("addDefine var=%s val=%s", defineVarName.c_str(), defineVal.c_str());
+    // SQINFO("addDefine var=%s val=%s", defineVarName.c_str(), defineVal.c_str());
     if (defineVarName.empty()) {
         SQWARN("trying to add empty define");
         return;
@@ -33,10 +33,17 @@ void LexContext::addDefine(const std::string& defineVarName, const std::string& 
 }
 
 void LexContext::applyDefine(std::string* theString) {
-    SQINFO("applyDefine: %s", theString->c_str());
-    assert(scopes.size() == 1);
-    auto scope = scopes.back();
-    scope->applyDefine(theString);
+    // SQINFO("applyDefine: %s", theString->c_str());
+    
+    // search the scopes from closest to farthest,
+    // looking for a scope that has this string.
+    for (auto it = scopes.rbegin(); it !=scopes.rend(); ++it) {
+        LexFileScopePtr scope = *it;
+        bool found = scope->applyDefine(theString);
+        if (found) {
+            return;
+        }
+    }
 }
 
 bool LexContext::popOneLevel() {
@@ -69,48 +76,65 @@ bool LexContext::pushOneLevel(const std::string& relativePath, int currentLine) 
     FilePath namePart(rawFilename);
     FilePath fullPath = origFolder;
     fullPath.concat(namePart);
-    //SQINFO("make full include path: %s", fullPath.toString().c_str());
+    // SQINFO("make full include path: %s", fullPath.toString().c_str());
 
-    std::ifstream t(fullPath.toString());
-    if (!t.good()) {
-        //  printf("can't open file\n");
-        // return "can't open source file: " + sPath;
-        SQWARN("can't open include");
+    std::string sIncludeContent;
 
-        SqStream s;
-        s.add("Can't open ");
-        s.add(rawFilename);
-        s.add(" included");
-        s.add(" at line ");
-        s.add(currentLine + 1);
-        errorString_ = s.str();
-        return false;
+    // if a unit test is providing content, use it.
+    // otherwise open the include file.
+    auto it = testFolders.find(fullPath.toString());
+    if (it != testFolders.end()) {
+        sIncludeContent = it->second;
+    } else {
+        std::ifstream t(fullPath.toString());
+        if (!t.good()) {
+            //  printf("can't open file\n");
+            // return "can't open source file: " + sPath;
+            SQWARN("can't open include %s", fullPath.toString().c_str());
+            SQWARN("root = %s", rootFilePath.toString().c_str());
+
+            SqStream s;
+            s.add("Can't open ");
+            s.add(rawFilename);
+            s.add(" included");
+            s.add(" at line ");
+            s.add(currentLine + 1);
+            errorString_ = s.str();
+            return false;
+        }
+        std::string str((std::istreambuf_iterator<char>(t)),
+                        std::istreambuf_iterator<char>());
+        sIncludeContent = std::move(str);
     }
-    std::string str((std::istreambuf_iterator<char>(t)),
-                    std::istreambuf_iterator<char>());
-    if (str.empty()) {
+    if (sIncludeContent.empty()) {
         errorString_ = ("Include file empty ");
         return false;
     }
-    currentContent = std::move(str);
+    currentContent = std::move(sIncludeContent);
     return true;
 }
 
+void LexContext::addTestFolder(const FilePath& folder, const std::string& content) {
+    SQINFO("adding a mapping for folder >%s<", folder.toString().c_str());
+    testFolders[folder.toString()] = content;
+}
 
- bool LexFileScope::applyDefine(std::string* theString) {
-     SQINFO("apply define %s", theString->c_str());
-     if (theString->empty()) {
-         return false;
-     }
-     for (auto it : defines) {
-         auto pos = theString->find(it.first);
-         if (pos != std::string::npos) {
-             const size_t len = it.first.size();
-            
-             SQINFO("found a match, val = %s", it.second.c_str());
-              theString->replace(pos, len,  it.second);
-              return true;
-         }
-     }
-     return false;
- }
+//////////////////////////////////////////////////////////////////////////////
+
+bool LexFileScope::applyDefine(std::string* theString) {
+    // SQINFO("apply define %s", theString->c_str());
+    if (theString->empty()) {
+        return false;
+    }
+    for (auto it : defines) {
+        auto pos = theString->find(it.first);
+        if (pos != std::string::npos) {
+            const size_t len = it.first.size();
+
+            // SQINFO("found a match, val = %s", it.second.c_str());
+            theString->replace(pos, len, it.second);
+            return true;
+        }
+    }
+    return false;
+}

@@ -406,14 +406,9 @@ label_cc$MW=MW ($MW)
 }
 
 static void testLexDefineSuccess4() {
-    SQINFO("---- testLexDefineSuccess4");
+    std::string content(R"foo(#define $ABC 27
+        label_cc$ABC=foo)foo");
 
-    std::string content(R"foo(
-        #define $ABC 27
-        label_cc$ABC=foo
-)foo");
-
-    SQINFO("the text=%s", content.c_str());
     LexContextPtr ctx = std::make_shared<LexContext>(content);
     auto lex = SLex::go(ctx);
 
@@ -425,8 +420,58 @@ static void testLexDefineSuccess4() {
     assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
     SLexIdentifier* p = static_cast<SLexIdentifier*>(lex->items[0].get());
     std::string s = p->idName;
-
     assertEQ(s, "label_cc27");
+}
+
+// test that includes can find defines from parents.
+static void testLexDefineNested() {
+    SQINFO("--- testLexDefineNested");
+    std::string baseContent = R"foo(#define $ABC 27
+        label_cc$ABC
+        #include "stuff/a.sfz")foo";
+    std::string includeContent = R"foo(label_cc$ABC)foo";
+
+        
+    LexContextPtr ctx = std::make_shared<LexContext>(baseContent);
+    FilePath root("c:/files/x.sfz");
+    ctx->addRootPath(root);
+    ctx->addTestFolder(FilePath("c:/files/stuff/a.sfz"), includeContent);
+    auto lex = SLex::go(ctx);
+    assert(lex && ctx->errorString().empty());
+
+    assertEQ(lex->items.size(), 2);
+    assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
+    assert(lex->items[1]->itemType == SLexItem::Type::Identifier);
+
+    SLexIdentifier* p = static_cast<SLexIdentifier*>(lex->items[0].get());
+    std::string s = p->idName;
+    assertEQ(s, "label_cc27");
+    p = static_cast<SLexIdentifier*>(lex->items[1].get());
+    s = p->idName;
+    assertEQ(s, "label_cc27");
+}
+
+// test that includes prefer local overrides
+static void testLexDefineNested2() {
+    SQINFO("--- testLexDefineNested");
+    std::string baseContent = R"foo(#define $ABC 27
+        #include "stuff/a.sfz")foo";
+    std::string includeContent = R"foo((#define $ABC 72 label_cc$ABC)foo";
+
+        
+    LexContextPtr ctx = std::make_shared<LexContext>(baseContent);
+    FilePath root("c:/files/x.sfz");
+    ctx->addRootPath(root);
+    ctx->addTestFolder(FilePath("c:/files/stuff/a.sfz"), includeContent);
+    auto lex = SLex::go(ctx);
+    assert(lex && ctx->errorString().empty());
+
+    assertEQ(lex->items.size(), 1);
+    assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
+    SLexIdentifier* p = static_cast<SLexIdentifier*>(lex->items[0].get());
+    std::string s = p->idName;
+    assertEQ(s, "label_cc72");
+  
 }
 
 #if 0
@@ -537,6 +582,7 @@ void testxLex() {
     testLexDefineSuccess2();
     testLexDefineSuccess3();
     testLexDefineSuccess4();
+    testLexDefineNested();
     //  testLexDefineFail();
     testLexLabel2();
     testLexNewLine();

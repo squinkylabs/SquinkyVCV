@@ -17,7 +17,6 @@ SLex::SLex(LexContextPtr ctx) : context(ctx) {
 
 
  SLexPtr SLex::go(const std::string& sContent) {
-     SQINFO("go: content = %s", sContent.c_str());
      LexContextPtr ctx = std::make_shared<LexContext>(sContent);
      return go(ctx);
  }
@@ -176,11 +175,11 @@ bool SLex::procStateNextDefineChar(char c) {
         case DefineSubState::MatchingOpcode:
             curItem += c;
             if (defineStr.find(curItem) != 0) {
-                SQINFO("bad item: >%s<", curItem.c_str());
+                // SQINFO("bad item: >%s<", curItem.c_str());
                 return error("Malformed #define");
             }
             if (curItem == defineStr) {
-                SQINFO("got define: item=%s", curItem.c_str());
+               // SQINFO("got define: item=%s", curItem.c_str());
                 defineSubState = DefineSubState::MatchingSpace;
                 curItem.clear();
                 spaceCount = 0;
@@ -195,7 +194,7 @@ bool SLex::procStateNextDefineChar(char c) {
             if (spaceCount > 0) {
                 curItem.clear();
                 curItem += c;
-                SQINFO("woing into lhs with %s", curItem.c_str());
+                // SQINFO("woing into lhs with %s", curItem.c_str());
                 defineSubState = DefineSubState::MatchingLhs;
                 return true;
             }
@@ -220,10 +219,10 @@ bool SLex::procStateNextDefineChar(char c) {
             return false;
 
         case DefineSubState::MatchingLhs:
-             SQINFO("match lhs, got %c", c);
+            // SQINFO("match lhs, got %c", c);
             if (isspace(c)) {
                 defineVarName = curItem;
-                SQINFO("done lhs = %s", curItem.c_str());
+                // SQINFO("done lhs = %s", curItem.c_str());
                 defineSubState = DefineSubState::MatchingSpace2;
                 spaceCount = 1;
                 return true;
@@ -232,12 +231,12 @@ bool SLex::procStateNextDefineChar(char c) {
             }
             return true;
         case DefineSubState::MatchingRhs:
-            SQINFO("match rhs, got %c", c);
+            //SQINFO("match rhs, got %c", c);
             //SQINFO("Line: %d", currentLine);
             if (isspace(c)) {
                 //SQINFO("in match, is space");
                 // when we finish rhs, we are done
-                SQINFO("match rhs = %s", curItem.c_str());
+                //SQINFO("match rhs = %s", curItem.c_str());
                 defineValue = curItem;
                 curItem.clear();
 
@@ -262,7 +261,7 @@ bool SLex::procNextIncludeChar(char c) {
         case IncludeSubState::MatchingOpcode:
             curItem += c;
             if (includeStr.find(curItem) != 0) {
-                SQINFO("bad item: >%s<", curItem.c_str());
+                // SQINFO("bad item: >%s<", curItem.c_str());
                 return error("Malformed #include");
             }
             if (curItem == includeStr) {
@@ -525,72 +524,3 @@ bool SLex::handleIncludeFile(const std::string& relativeFileName) {
 
     return true;
 }
-
-#if 0
-bool SLex::handleIncludeFile(const std::string& fileName) {
-   //  SQINFO("SLex::handleIncludeFile %s", fileName.c_str());
-    assert(!fileName.empty());
-    assert(false);
-
-    if (includeRecursionDepth > 10) {
-        return error("include nesting too deep");
-    }
-
-// part 2 - open new file and get contents
-    if (fileName.front() != '"' || fileName.back() != '"') {
-        return error("Include filename not quoted");
-    }
-    std::string rawFilename = fileName.substr(1, fileName.length() - 2);
-    if (!rootFilePath) {
-        return error("Can't resolve include with no context");
-    }
-    FilePath origPath(*rootFilePath);
-    FilePath origFolder = origPath.getPathPart();
-    FilePath namePart(rawFilename);
-    FilePath fullPath = origFolder;
-    fullPath.concat(namePart);
-    //SQINFO("make full include path: %s", fullPath.toString().c_str());
-
-    std::ifstream t(fullPath.toString());
-    if (!t.good()) {
-        //  printf("can't open file\n");
-        // return "can't open source file: " + sPath;
-        SQWARN("can't open include");
-
-        SqStream s;
-        s.add("Can't open ");
-        s.add(rawFilename);
-        s.add(" included");
-        return error(s.str());
-    }
-    std::string str((std::istreambuf_iterator<char>(t)),
-                    std::istreambuf_iterator<char>());
-    if (str.empty()) {
-        return error("Include file empty ");
-    }
-    //SQINFO("going into %s", fullPath.toString().c_str());
-
-    // ok, we have the content of the include.
-    // we must:
-    // 1) lex it.
-    //    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
-
-// part 3, using new file to recurse
-    auto includeLexer = SLex::goRecurse(rootFilePath, str, outErrorStringPtr, includeRecursionDepth + 1, namePart.toString());
-    if (!includeLexer) {
-        return false;  // error should already be in outErrorStringPtr
-    }
-    // 2) copy the tokens from include to this.
-    this->items.insert(
-        this->items.end(),
-        std::make_move_iterator(includeLexer->items.begin()),
-        std::make_move_iterator(includeLexer->items.end()));
-    // SQINFO("finished incl, curItem=%s", curItem.c_str());
-    curItem.clear();
-    // 3 continue lexing
-    state = State::Ready;
-    // SQINFO("back frm %s", fullPath.toString().c_str());
-
-    return true;
-}
-#endif

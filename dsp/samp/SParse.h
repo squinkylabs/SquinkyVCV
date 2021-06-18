@@ -90,7 +90,7 @@ public:
 private:
     static FILE* openFile(const FilePath& fp);
     static std::string readFileIntoString(FILE* fp);
-    static std::string goCommon(const std::string& sContent, SInstrumentPtr outParsedInstrument, const FilePath* fullPathToSFZ);
+    static std::string goCommon(const std::string& sContent, SInstrumentPtr outParsedInstrument, const FilePath& fullPathToSFZ);
 
     class Result {
     public:

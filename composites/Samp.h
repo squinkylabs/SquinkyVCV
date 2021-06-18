@@ -603,6 +603,7 @@ public:
 
         SInstrumentPtr inst = std::make_shared<SInstrument>();
 
+        SQINFO("--- real sampler, calling goFile with %s", fullPath.toString().c_str());
         // now load it, and then return it.
         auto err = SParse::goFile(fullPath, inst);
 

@@ -318,6 +318,7 @@ static void testParseHeadingControl() {
 }
 
 static void testParseInclude() {
+    SQINFO("------ testParseInclude");
     const char* data = R"foo(<global>bend_up=1200
         bend_down=-1200
         #include "vc_arco_sus_map.sfz")foo";

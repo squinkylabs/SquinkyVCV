@@ -26,9 +26,7 @@ using LexFileScopePtr = std::shared_ptr<LexFileScope>;
  */
 class LexContext {
 public:
-   // static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
     LexContext(const std::string& initialContent);
-  //  LexContext(const FilePath& initialFile);
 
     void addRootPath(const FilePath& fp) {
         assert(rootFilePath.empty());
@@ -45,7 +43,15 @@ public:
     bool pushOneLevel(const std::string& relativePath, int sourceLine);
     bool popOneLevel();
 
+    /**
+     *  When lexer hits a define, will register it here
+     */
     void addDefine(const std::string& defineVarName, const std::string& defineVal);
+
+    /** 
+     * For unit tests. overrides our opening of files to resolve includes.
+     */
+    void addTestFolder(const FilePath& folder, const std::string& content);
 
     /**
      * Look up string and replace defined part
@@ -69,6 +75,11 @@ private:
 
     int includeRecursionDepth = 0;
     std::list<LexFileScopePtr> scopes;
+
+    // key is path, value is content.
+    // kind of a kluge converting path back to string here, but
+    // it's just a test ;-)
+    std::map<std::string, std::string> testFolders;
 };
 
 class TestLexContext : public LexContext {

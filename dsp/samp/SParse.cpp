@@ -65,11 +65,11 @@ std::string SParse::goFile(const FilePath& filePath, SInstrumentPtr inst) {
     std::string sContent = readFileIntoString(fp);
     // SQINFO("read content: %s", sContent.c_str());
     fclose(fp);
-    return goCommon(sContent, inst, &filePath);
+    return goCommon(sContent, inst, filePath);
 }
 
 std::string SParse::go(const std::string& s, SInstrumentPtr inst) {
-    return goCommon(s, inst, nullptr);
+    return goCommon(s, inst, FilePath());
 }
 
 static std::string filter(const std::string& sInput) {
@@ -82,18 +82,22 @@ static std::string filter(const std::string& sInput) {
     return ret;
 }
 
-std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outParsedInstrument, const FilePath* fullPathToSFZ) {
+std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outParsedInstrument, const FilePath& fullPathToSFZ) {
     std::string sContent = filter(sContentIn);
     LexContextPtr lexContext = std::make_shared<LexContext>(sContent);
   //  SLexPtr lex = SLex::go(sContent, &lexError, 0, fullPathToSFZ);
+
+  //  LexContextPtr ctx = std::make_shared<LexContext>(sContentIn);
+
+    if (!fullPathToSFZ.empty()) {
+        lexContext->addRootPath(fullPathToSFZ);
+    }
     SLexPtr lex = SLex::go(lexContext);
     if (!lex) {
         std::string sError = lexContext->errorString();
         assert(!sError.empty());
         return sError;
     }
-   // SQINFO("here is lex output we will parse");
-   // lex->_dump();
 
     std::string sError = matchHeadingGroups(outParsedInstrument, lex);
     if (!sError.empty()) {
@@ -131,9 +135,6 @@ std::string SParse::goCommon(const std::string& sContentIn, SInstrumentPtr outPa
         return "no groups or regions";
     }
 
-  //  SQINFO("and here is parser ourput");
-  //  outParsedInstrument->_dump();
-
     return sError;
 }
 
@@ -148,13 +149,6 @@ std::string SParse::matchHeadingGroups(SInstrumentPtr inst, SLexPtr lex) {
     return "";
 }
 
-/* dummy version
-SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
-    assert(false);
-    Result result;
-    return result;
-}
-*/
 
 // I think now this just needs to match a single heading
 #if 1
@@ -168,84 +162,11 @@ SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
     }
     return result;
 
-#if 0
-    switch (result.res) {
-        case Result::ok:
-            assert(theHeading);
-            inst->headings.push_back(theHeading);
-            return result;
-            break;
-        case Result::error:
-            return result;
-            break;
-        case Result::no_match:
-            // if we match no headings, then we don't look for more,
-            // but it's not an error. region with no headings is ok
-            assert(result.errorMessage.empty());
-            result.res = Result::ok;
-            return result;
-    }
-    #endif
-
-#if 0
-    // There must be a better way
-    int lineNumber = 0;
-    if (lex->next()) {
-        lineNumber = lex->next()->lineNumber;
-    } else
-        assert(false);
-
-   // Result result;
-    SHeadingPtr newHeading = std::make_shared<SHeading>(lineNumber);
-    assert(false);
-#endif
-#if 0
-    // Getting here means we have successfully parsed at least one
-    // heading, and we are done with them. Now we just need to round up the regions
-
-    // and continue an get all the region children
-    // TODO: copy all the data into the new group!!
-
-    Result result;
-    SGroupPtr newGroup = std::make_shared<SGroup>(inst->currentGroup.lineNumber);
-    newGroup->values = inst->currentGroup.values;
-    inst->currentGroup.values.clear();
-
-    assert(newGroup);
-    // TODO: clean out control when appropriate
-    std::string regionsError = matchRegions(newGroup->regions, lex, inst->currentControl);
-    if (!regionsError.empty()) {
-        result.res = Result::Res::error;
-        result.errorMessage = regionsError;
-    }
-
-    if (!matchedOneHeading && newGroup->regions.empty()) {
-        result.res = Result::no_match;
-        // SQINFO("matchHeadingGroup found no match");
-    }
-
-    // if we found regions, then this group is "real"
-    if (result.res == Result::ok) {
-        inst->groups.push_back(newGroup);
-    }
-#endif
-    assert(false);
-    return result;
+   // assert(false);
+  //  return result;
 }
 #endif
 
-#if 0
-static std::set<std::string> headingTags = {
-    {"region"},
-    {"group"},
-    {"global"},
-    {"control"},
-    {"master"},
-    {"curve"},
-    {"effect"},
-    {"midi"},
-    {"sample"}};
-#endif
 static std::map<std::string, SHeading::Type> headingTags = {
     {"region", SHeading::Type::Region},
     {"group", SHeading::Type::Group},
@@ -258,12 +179,7 @@ static std::map<std::string, SHeading::Type> headingTags = {
     {"sample", SHeading::Type::Sample}
 };
 
-#if 0
-static bool isHeadingName(const std::string& s) {
-    // SQINFO("checking heading name %s", s.c_str());
-    return headingTags.find(s) != headingTags.end();
-}
-#endif
+
 SHeading::Type getHeadingType(const std::string& s) {
     auto it = headingTags.find(s);
     if (it == headingTags.end()) {
