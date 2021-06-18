@@ -58,7 +58,7 @@ public:
             assert(idName.back() != '\t');
         }
     }
-    const std::string idName;
+    std::string idName;
 };
 
 using SLexItemPtr = std::shared_ptr<SLexItem>;
@@ -170,11 +170,9 @@ private:
     std::string curItem;
     bool lastIdentifierIsString = false;
     bool lastCharWasForwardSlash = false;
-  //  std::string* const outErrorStringPtr;
-  
-  //  const int includeRecursionDepth;
 
-  //  const FilePath* const rootFilePath;
+    std::string defineVarName;
+    std::string defineValue;
 
     int currentIndex = 0;
 
@@ -182,6 +180,5 @@ private:
     int currentLine = 0;
 
     static void validateName(const std::string&);
-  //  static SLexPtr goCommon(SLex* lx, const std::string& sContent);
     static SLexPtr goCommon(SLex* lx, LexContextPtr);
 };

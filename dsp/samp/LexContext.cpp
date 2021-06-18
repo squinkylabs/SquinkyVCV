@@ -1,27 +1,52 @@
 #include "LexContext.h"
 
+#include <assert.h>
+
+#include <fstream>
+
 #include "SqLog.h"
 #include "SqStream.h"
 
-#include <assert.h>
-#include <fstream>
-
-
 LexContext::LexContext(const std::string& initialContent) : currentContent(initialContent) {
+    includeRecursionDepth = 1;
+    scopes.push_back(std::make_shared<LexFileScope>());
 }
 
+#if 0
 LexContext::LexContext(const FilePath& initialFile) {
     assert(false);
 }
+#endif
 
+void LexContext::addDefine(const std::string& defineVarName, const std::string& defineVal) {
+    SQINFO("addDefine var=%s val=%s", defineVarName.c_str(), defineVal.c_str());
+    if (defineVarName.empty()) {
+        SQWARN("trying to add empty define");
+        return;
+    }
+    if (defineVarName.front() != '$') {
+        SQWARN("var does not start with $: %s", defineVarName.c_str());
+        return;
+    }
+    assert(!scopes.empty());
+    scopes.back()->addDefine(defineVarName, defineVal);
+}
+
+void LexContext::applyDefine(std::string* theString) {
+    SQINFO("applyDefine: %s", theString->c_str());
+    assert(scopes.size() == 1);
+    auto scope = scopes.back();
+    scope->applyDefine(theString);
+}
 
 bool LexContext::popOneLevel() {
     --includeRecursionDepth;
+    assert(scopes.size() > 0);
+    scopes.pop_back();
     return true;
 }
 
 bool LexContext::pushOneLevel(const std::string& relativePath, int currentLine) {
-    
     ++includeRecursionDepth;
     if (includeRecursionDepth > 10) {
         errorString_ = "Include nesting too deep";
@@ -37,6 +62,8 @@ bool LexContext::pushOneLevel(const std::string& relativePath, int currentLine) 
         errorString_ = "Can't resolve include with no root path";
         return false;
     }
+
+    scopes.push_back(std::make_shared<LexFileScope>());
     FilePath origPath(rootFilePath);
     FilePath origFolder = origPath.getPathPart();
     FilePath namePart(rawFilename);
@@ -68,3 +95,22 @@ bool LexContext::pushOneLevel(const std::string& relativePath, int currentLine) 
     currentContent = std::move(str);
     return true;
 }
+
+
+ bool LexFileScope::applyDefine(std::string* theString) {
+     SQINFO("apply define %s", theString->c_str());
+     if (theString->empty()) {
+         return false;
+     }
+     for (auto it : defines) {
+         auto pos = theString->find(it.first);
+         if (pos != std::string::npos) {
+             const size_t len = it.first.size();
+            
+             SQINFO("found a match, val = %s", it.second.c_str());
+              theString->replace(pos, len,  it.second);
+              return true;
+         }
+     }
+     return false;
+ }

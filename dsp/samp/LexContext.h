@@ -2,8 +2,21 @@
 
 #include "FilePath.h"
 #include <assert.h>
+#include <list>
+#include <map>
 #include <string>
 #include <memory>
+
+class LexFileScope {
+public:
+    void addDefine(const std::string& defineVarName, const std::string& defineVal) {
+        defines[defineVarName] = defineVal;
+    }
+    bool applyDefine(std::string*);
+private:
+    std::map<std::string, std::string> defines;
+};
+using LexFileScopePtr = std::shared_ptr<LexFileScope>;
 
 /**
  * LexContext it a concrete class we use
@@ -15,7 +28,7 @@ class LexContext {
 public:
    // static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
     LexContext(const std::string& initialContent);
-    LexContext(const FilePath& initialFile);
+  //  LexContext(const FilePath& initialFile);
 
     void addRootPath(const FilePath& fp) {
         assert(rootFilePath.empty());
@@ -32,6 +45,13 @@ public:
     bool pushOneLevel(const std::string& relativePath, int sourceLine);
     bool popOneLevel();
 
+    void addDefine(const std::string& defineVarName, const std::string& defineVal);
+
+    /**
+     * Look up string and replace defined part
+     */
+    void applyDefine(std::string*);
+
     std::string getCurrentContent() const { 
         assert(!currentContent.empty());
         return currentContent;
@@ -46,8 +66,9 @@ private:
     std::string currentContent;
     std::string errorString_;
     FilePath rootFilePath;
-      // TODO: hide this
+
     int includeRecursionDepth = 0;
+    std::list<LexFileScopePtr> scopes;
 };
 
 class TestLexContext : public LexContext {

@@ -11,20 +11,13 @@
 #include "SqLog.h"
 #include "SqStream.h"
 
-//SLex::SLex(std::string* errorText, int includeDepth, const FilePath* filePath) : outErrorStringPtr(errorText), includeRecursionDepth(includeDepth), rootFilePath(filePath) {
-//}
 
 SLex::SLex(LexContextPtr ctx) : context(ctx) {
 }
-#if 0
-SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includeDepth, const FilePath* yourFilePath) {
-    // song and dance to work around MS bug.
-    SLex* lx = new SLex(errorText, includeDepth, yourFilePath);
-    return goCommon(lx, sContent);
-}
-#endif
+
 
  SLexPtr SLex::go(const std::string& sContent) {
+     SQINFO("go: content = %s", sContent.c_str());
      LexContextPtr ctx = std::make_shared<LexContext>(sContent);
      return go(ctx);
  }
@@ -35,30 +28,12 @@ SLexPtr SLex::go(const std::string& sContent, std::string* errorText, int includ
      return goCommon(lx, context);
  }
 
-#if 0
- static SLexPtr goCommon(SLex* lx, LexContextPtr ctx) {
-     assert(false);
-     SLexPtr result(lx);
-     return result;
- }
-#endif
 
  SLexPtr SLex::goRecurse(LexContextPtr context) {
      SLex* lx = new SLex(context);
-  //   SQINFO("will recurse into content: %s", context->getCurrentContent().c_str());
- //    assert( context->includeRecursionDepth > 0);
-  //   SQINFO("depth = %d", context->includeRecursionDepth);
      return goCommon(lx, context);
  }
 
-#if 0
-SLexPtr SLex::goRecurse(const FilePath* rootFilePath, const std::string& sContent, std::string* errorText, int includeDepth, const std::string& dbg) {
-    int count = 0;
-    // song and dance to work around MS bug.
-    SLex* lx = new SLex(errorText, includeDepth, rootFilePath);
-    return goCommon(lx, sContent);
-}
-#endif
 
 
 SLexPtr SLex::goCommon(SLex* lx, LexContextPtr ctx) {
@@ -79,34 +54,11 @@ SLexPtr SLex::goCommon(SLex* lx, LexContextPtr ctx) {
         }
         ++count;
     }
-    //SQINFO("in goCommon will dec recusion is %d", ctx->includeRecursionDepth);
-   // ctx->includeRecursionDepth--;
-    ctx->popOneLevel();
-    bool ret = result->procEnd();
-    return ret ? result : nullptr;
-}
-#if 0   // old one
-SLexPtr SLex::goCommon(SLex* lx, const std::string& sContent) {
-    int count = 0;
-    SLexPtr result(lx);
 
-    for (size_t i=0; i< sContent.size(); ++i) {
-        const char c = sContent[i];
-        const char nextC = (i >= (sContent.size() - 1)) ? -1 : sContent[i + 1];
-        if (c == '\n') {
-            ++result->currentLine;
-        }
-      
-        bool ret = result->procNextChar(c, nextC);
-        if (!ret) {
-            return nullptr;
-        }
-        ++count;
-    }
     bool ret = result->procEnd();
+    ctx->popOneLevel();
     return ret ? result : nullptr;
 }
-#endif
 
 
 void SLex::validateName(const std::string& name) {
@@ -187,8 +139,6 @@ bool SLex::procNextChar(char c, char nextC) {
     return true;
 }
 
-
-
 bool SLex::error(const std::string& err) {
     SqStream st;
     st.add(err);
@@ -198,21 +148,6 @@ bool SLex::error(const std::string& err) {
     context->logError(st.str());
     return false;
 }
-
-#if 0
-bool SLex::error(const std::string& err) {
-
-    if (outErrorStringPtr) {
-        SqStream st;
-        st.add(err);
-        st.add(" at line ");
-        st.add(currentLine + 1);
-        *outErrorStringPtr = st.str();
-    }
-
-    return false;
-}
-#endif
 
 bool SLex::procStateNextHashChar(char c) {
     switch (c) {
@@ -245,7 +180,9 @@ bool SLex::procStateNextDefineChar(char c) {
                 return error("Malformed #define");
             }
             if (curItem == defineStr) {
+                SQINFO("got define: item=%s", curItem.c_str());
                 defineSubState = DefineSubState::MatchingSpace;
+                curItem.clear();
                 spaceCount = 0;
             }
             return true;
@@ -256,6 +193,9 @@ bool SLex::procStateNextDefineChar(char c) {
                 return true;
             }
             if (spaceCount > 0) {
+                curItem.clear();
+                curItem += c;
+                SQINFO("woing into lhs with %s", curItem.c_str());
                 defineSubState = DefineSubState::MatchingLhs;
                 return true;
             }
@@ -270,6 +210,8 @@ bool SLex::procStateNextDefineChar(char c) {
             }
             if (spaceCount > 0) {
                 defineSubState = DefineSubState::MatchingRhs;
+                curItem.clear();
+                curItem += c;
                 // need to save off char we just saw (in the future, if we care about the content
                 return true;
             }
@@ -278,23 +220,33 @@ bool SLex::procStateNextDefineChar(char c) {
             return false;
 
         case DefineSubState::MatchingLhs:
-            // SQINFO("match lhs, got %c", c);
+             SQINFO("match lhs, got %c", c);
             if (isspace(c)) {
+                defineVarName = curItem;
+                SQINFO("done lhs = %s", curItem.c_str());
                 defineSubState = DefineSubState::MatchingSpace2;
                 spaceCount = 1;
                 return true;
+            } else {
+                curItem += c;
             }
             return true;
         case DefineSubState::MatchingRhs:
-            //SQINFO("match rhs, got %c", c);
+            SQINFO("match rhs, got %c", c);
             //SQINFO("Line: %d", currentLine);
             if (isspace(c)) {
                 //SQINFO("in match, is space");
                 // when we finish rhs, we are done
+                SQINFO("match rhs = %s", curItem.c_str());
+                defineValue = curItem;
                 curItem.clear();
+
+                context->addDefine(defineVarName, defineValue);
                 // 3 continue lexing
                 state = State::Ready;
                 return true;
+            } else {
+                curItem += c;
             }
             return true;
 
@@ -527,7 +479,13 @@ void SLex::addCompletedItem(SLexItemPtr item, bool clearCurItem) {
     }
     if (item->itemType == SLexItem::Type::Identifier) {
         SLexIdentifier* ident = static_cast<SLexIdentifier*>(item.get());
+
+        // check if we are an opcode that takes a string value, like path=foo bar.wav
+        // They get treated special
         lastIdentifierIsString = SamplerSchema::isFreeTextType(ident->idName);
+
+       context->applyDefine(&ident->idName);
+
         // printf("just pushed new id : >%s<\n", lastIdentifier.c_str());
     }
 }
@@ -543,14 +501,6 @@ bool SLex::handleIncludeFile(const std::string& relativeFileName) {
    //  SQINFO("SLex::handleIncludeFile %s", fileName.c_str());
     assert(!relativeFileName.empty());
   
-
- //   if (context->includeRecursionDepth > 10) {
-  //      return error("include nesting too deep");
- //   }
-
-  //  const auto before = context->includeRecursionDepth;
-
-    //  bool pushOneLevel(const std::string& relativePath, std::string* fileContents);
     bool bOK = context->pushOneLevel(relativeFileName, currentLine);
     if (!bOK) {
         return false;

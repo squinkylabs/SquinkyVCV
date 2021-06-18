@@ -407,13 +407,13 @@ label_cc$MW=MW ($MW)
 
 static void testLexDefineSuccess4() {
     SQINFO("---- testLexDefineSuccess4");
-    SQINFO("testLexDefineSuccess4 does not pass yet!!!!!!");
 
     std::string content(R"foo(
-        #define $ABC 22
+        #define $ABC 27
         label_cc$ABC=foo
 )foo");
 
+    SQINFO("the text=%s", content.c_str());
     LexContextPtr ctx = std::make_shared<LexContext>(content);
     auto lex = SLex::go(ctx);
 
@@ -426,9 +426,7 @@ static void testLexDefineSuccess4() {
     SLexIdentifier* p = static_cast<SLexIdentifier*>(lex->items[0].get());
     std::string s = p->idName;
 
-#if 0       // this doesn't work yet.
-    assertEQ(s, "label_cc22");
-#endif
+    assertEQ(s, "label_cc27");
 }
 
 #if 0
