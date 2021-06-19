@@ -82,9 +82,12 @@ void CompressorModule::addParams() {
     }
 }
 
-const static char* schemaKey = "SqSchema";
+
 
 #ifdef _CMP_SCHEMA2
+
+const static char* schemaKey = "SqSchema";
+
 json_t *CompressorModule::dataToJson() {
     json_t *rootJ = json_object();
     json_object_set_new(rootJ, schemaKey, json_integer(2));
@@ -92,7 +95,6 @@ json_t *CompressorModule::dataToJson() {
 }
 
 void CompressorModule::dataFromJson(json_t *rootJ) {
-
     json_t *schemaJ = json_object_get(rootJ, schemaKey);
     if (schemaJ) {
         knownSchema = json_integer_value(schemaJ);
@@ -105,7 +107,7 @@ float CompressorModule::getGainReductionDb() {
 }
 
 void CompressorModule::process(const ProcessArgs &args) {
-    assert(knownSchema == 0 || knownSchema == 2);
+    assert(knownSchema <= 2);
     // if we didn't get schema from loading patch, then we need to
     // use a "heuristic" implemented in Compressor.
     if (knownSchema == 0) {

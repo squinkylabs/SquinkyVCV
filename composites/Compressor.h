@@ -328,7 +328,7 @@ inline void Compressor<TBase>::onNewPatch(int knownSchema) {
             const float def = myDescription->getParam(i).def;
             const float cur = Compressor<TBase>::params[i].value;
             const bool same = (def == cur);
-            SQINFO("p=%d def=%f cur=%f same = %d", i, def, cur, same);
+            // SQINFO("p=%d def=%f cur=%f same = %d", i, def, cur, same);
             if (!same) {
                 needsUpdate = false;
             }
@@ -339,13 +339,11 @@ inline void Compressor<TBase>::onNewPatch(int knownSchema) {
         float attackTime = getSlowAttackFunction_1()(storedAttackParam);
         float newAttackParam = getSlowAntiAttackFunction_2()(attackTime);
         Compressor<TBase>::params[ATTACK_PARAM].value = newAttackParam;
-        SQINFO("update val was %f, attackTime=%f newParam=%f", storedAttackParam, attackTime, newAttackParam);
 
         float storedReleaseParam = Compressor<TBase>::params[ATTACK_PARAM].value;
         float releaseTime = getSlowReleaseFunction_1()(storedReleaseParam);
         float newReleaseParam = getSlowAntiReleaseFunction_2()(releaseTime);
         Compressor<TBase>::params[ATTACK_PARAM].value = newReleaseParam;
-        SQINFO("update val was %f, relTime=%f newParam=%f", storedReleaseParam, releaseTime, newReleaseParam);
     }
 #endif
 }

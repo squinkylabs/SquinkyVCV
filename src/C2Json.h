@@ -40,25 +40,21 @@ private:
 inline bool C2Json::getClipAsParamChannel(CompressorParamChannel* ch) {
     const char* jsonString = glfwGetClipboardString(APP->window->win);
     if (!jsonString) {
-        INFO("nothing to paste");
         return false;
     }
 
     json_error_t error;
     json_t* obj = json_loads(jsonString, 0, &error);
     if (!obj) {
-        INFO("data on clip not json us");
         return false;
     }
 
     json_t* schemaJ = json_object_get(obj, schema_);
     if (!schemaJ) {
-        INFO("cllipboard json has no schema");
         return false;
     }
     std::string s = json_string_value(schemaJ);
     if (s != comp2_schema_) {
-        INFO("clipboard schema mismatch");
         return false;
     }
 
@@ -140,16 +136,12 @@ inline int C2Json::jsonToParams(json_t* json, CompressorParamHolder* outParams) 
     bool b = jsonToParamsNew(json, outParams);
     if (!b) {
         jsonToParamsOrig(json, outParams);
-    } else {
-        INFO("will try to deser json schmea");
-       
+    } else {       
         json_t* obj = json_array_get(json, 16);
         if (obj && json_is_integer(obj)) {
-            INFO("found it");
             schema = json_integer_value(obj);
         }
     }
-    INFO("reutrning schema %d", schema);
     return schema;
 }
 
