@@ -7,7 +7,6 @@ public:
     // Compressor2Module* module;
     VULabels() = delete;
     VULabels(int* stereo, int* labelMode, int* channel, bool isFake) : isStereo_(stereo), labelMode_(labelMode), channel_(channel), isFake_(isFake) {
-        SQINFO("Lables CTOR");
         box.size = Vec(125, 10);
         labels.resize(16);
     }
@@ -67,7 +66,6 @@ inline void VULabels::updateLabels() {
 }
 
 inline void VULabels::draw(const DrawArgs& args) {
-    //SQINFO("lab draw");
     updateLabels();
     int f = ::rack::appGet()->window->uiFont->handle;
     NVGcontext* vg = args.vg;
@@ -101,7 +99,6 @@ inline void VULabels::draw(const DrawArgs& args) {
         nvgFontSize(vg, 11);
         const float dx = 7.65;  // 9 way too big 7.5 slightly low
         for (int i = 0; i < 16; ++i) {
-            //SQINFO("loop %d", i);
             switch (i) {
                 case 0:
                 case 4:
@@ -157,7 +154,6 @@ inline float MultiVUMeter::getFakeGain(int channel) {
             ret = .157f;
             break;
     }
-    //SQINFO("get fake %d ret %f", channel, ret);
     return ret;
 }
 
@@ -208,7 +204,6 @@ inline void MultiVUMeter::draw(const DrawArgs& args) {
         const double db = std::max(AudioMath::db(gain), dbMaxReduction);
         const double h = db * r.size.y / dbMaxReduction;
 
-        //SQINFO("in draw %d h= %f", c, h);
         if (h >= 0.005f) {
             //INFO("got level at c=%d", c);
             float x = r.pos.x + r.size.x * c / channels;

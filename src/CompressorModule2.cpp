@@ -49,6 +49,7 @@ public:
 
 private:
     void addParams();
+    void checkForFormatUpgrade();
 };
 
 Compressor2Module::Compressor2Module() {
@@ -101,16 +102,29 @@ void Compressor2Module::addParams() {
 json_t* Compressor2Module::dataToJson() {
     const CompressorParamHolder& params = compressor->getParamHolder();
     C2Json ser;
-    return ser.paramsToJson(params);
+    
+#ifdef _CMP_SCHEMA2
+    const int schema = 2;
+#else
+    const int schema = 1;
+#endif
+    return ser.paramsToJson(params, schema);
 }
 
 void Compressor2Module::dataFromJson(json_t* rootJ) {
     CompressorParamHolder* params = &compressor->getParamHolder();
     C2Json ser;
-    ser.jsonToParams(rootJ, params);
-    compressor->updateAllChannels();
+    
+    const int schema = ser.jsonToParams(rootJ, params);
+   
+    compressor->onNewPatch(schema);
+    //compressor->updateAllChannels();
 }
 
+void Compressor2Module::checkForFormatUpgrade() {
+    
+}
+    
 void Compressor2Module::process(const ProcessArgs& args) {
     compressor->process(args);
 }
@@ -183,7 +197,7 @@ void CompressorWidget2::copy() {
     if (lastStereo > 1) {
         currentChannel *= 2;
     }
-    //SQINFO("copy using channel %d", currentChannel);
+
     ch.copyFromHolder(params, currentChannel);
     C2Json json;
     json.copyToClip(ch);

@@ -71,9 +71,6 @@ public:
         STEREO_PARAM,
         LABELS_PARAM,
         SIDECHAIN_PARAM,
-#ifdef _CMP_SCHEMA2
-        PATCH_VERSION_PARAM,
-#endif
         NUM_PARAMS
     };
 
@@ -183,6 +180,12 @@ public:
 
     void updateAllChannels();
 
+    /**
+     * @param schema is what is stored in the json, or
+     * zero if nothing found
+     */
+    void onNewPatch(int schema);
+
 private:
     CompressorParamHolder compParams;
 
@@ -277,6 +280,20 @@ inline void Compressor2<TBase>::init() {
     LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, MIN_RELEASE, MAX_RELEASE);
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
     initAllParams();
+
+#if 0 // temp calculations for new default to give same time as old.
+    SQINFO("default old A = %f R =%f", .8074f, .25f );
+    float attackTime = getSlowAttackFunction_1()(.8074f);
+    float releaseTime = getSlowReleaseFunction_1()(.25f);
+    SQINFO("which gives a real A=%f R=%f", attackTime, releaseTime);
+    float newAttackParam = getSlowAntiAttackFunction_2()(attackTime);
+    float newReleaseParam = getSlowAntiReleaseFunction_2()(releaseTime);
+    SQINFO("new def need to be A=%f, R=%f", newAttackParam, newReleaseParam);
+    float a2 =  getSlowAttackFunction_2()(newAttackParam);
+    float r2 =  getSlowReleaseFunction_2()(newReleaseParam);
+    SQINFO("which give times %f, %f", a2, r2);
+#endif
+
 }
 
 /**
@@ -359,9 +376,37 @@ inline void Compressor2<TBase>::updateAllChannels() {
         updateWetDry(bank);
         updateMakeupGain(bank);
         updateBypassed(bank);
-        // updateSidechainEnabled(bank);
         updateMakeupGain(bank);
         // TODO: put all the update here
+    }
+}
+
+template <class TBase>
+inline void Compressor2<TBase>::onNewPatch(int schema) {
+    // SQINFO("comp2::onNewPatch");
+#ifdef _CMP_SCHEMA2
+
+    if (schema < 2 ) {
+        // SQINFO("need to update schemma!!!");
+        for (int i=0; i< 16; ++i) {
+            float storedAttackParam = compParams.getAttack(i);
+            float attackTime = getSlowAttackFunction_1()(storedAttackParam);
+            float newAttackParam = getSlowAntiAttackFunction_2()(attackTime);
+            compParams.setAttack(i, newAttackParam);
+            SQINFO("update val was %f, attackTime=%f newParam=%f", storedAttackParam, attackTime, newAttackParam);
+
+            float storedReleaseParam = compParams.getRelease(i);
+            float releaseTime = getSlowReleaseFunction_1()(storedReleaseParam);
+            float newReleaseParam = getSlowAntiReleaseFunction_2()(releaseTime);
+            compParams.setRelease(i, newReleaseParam);
+           // SQINFO("update val was %f, relTime=%f newParam=%f", storedReleaseParam, releaseTime, newReleaseParam);
+        }
+
+        updateAllChannels();
+    } else
+#endif
+    {
+        updateAllChannels();
     }
 }
 
@@ -492,13 +537,6 @@ inline void Compressor2<TBase>::pollUI() {
         TBase::params[SIDECHAIN_PARAM].value = ptr->sidechainEnabled ? 1.f : 0.f;
         TBase::params[WETDRY_PARAM].value = ptr->wetDryMix;
         assert(getParamHolder().getNumParams() == 8);
-#if 0
-        update = true;
-        if (currentStereo_m > 0) {
-            ptr->copyToHolder(holder, current
-           assert(false);
-        }
-#endif
     }
 
     if (initCurrentChannelFlag) {
@@ -811,7 +849,7 @@ template <class TBase>
 inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
-#ifdef _CMP_SCHEMA2
+#ifndef _CMP_SCHEMA2
         case Compressor2<TBase>::ATTACK_PARAM:
             // .8073 too low .8075 too much
             // 8.75 ms
@@ -822,14 +860,13 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
             ret = {0, 1, .25f, "Release time"};
             break;
 #else
+        // these new values calculated with "maths" to give same times as before
         case Compressor2<TBase>::ATTACK_PARAM:
-            // .8073 too low .8075 too much
-            // 8.75 ms
-            ret = {0, 1, .8074f, "Attack time"};
+            ret = {0, 1, .58336f, "Attack time"};
             break;
             // 200ms
         case Compressor2<TBase>::RELEASE_PARAM:
-            ret = {0, 1, .25f, "Release time"};
+            ret = {0, 1, .6395f, "Release time"};
             break;
 #endif
         case Compressor2<TBase>::THRESHOLD_PARAM:
@@ -859,11 +896,6 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
         case Compressor2<TBase>::SIDECHAIN_PARAM:
             ret = {0, 1, 0, "Sidechain"};
             break;
-#ifdef _CMP_SCHEMA2
-        case Compressor2<TBase>::PATCH_VERSION_PARAM:
-            ret = {0, 10, 0, "patch version"};
-            break;
-#endif
         default:
             assert(false);
     }
