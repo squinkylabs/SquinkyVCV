@@ -15,6 +15,8 @@
 #include "SqPort.h"
 #include "engine/Port.hpp"
 
+#define _CMP_SCHEMA2
+
 namespace rack {
 namespace engine {
 struct Module;
@@ -69,8 +71,6 @@ public:
         STEREO_PARAM,
         LABELS_PARAM,
         SIDECHAIN_PARAM,
-     //   SIDECHAIN_ALL_PARAM,
-        // EXPERIMENT_PARAM,
         NUM_PARAMS
     };
 
@@ -98,6 +98,18 @@ public:
         return std::make_shared<Compressor2Description<TBase>>();
     }
 
+#ifdef _CMP_SCHEMA2
+#define MIN_ATTACK .05
+#define MAX_ATTACK 350
+#define MIN_RELEASE 5
+#define MAX_RELEASE 1600
+#else
+#define MIN_ATTACK .05
+#define MAX_ATTACK 30
+#define MIN_RELEASE 100
+#define MAX_RELEASE 1600
+#endif
+
     /**
      * Main processing entry point. Called every sample
      */
@@ -107,20 +119,35 @@ public:
 
     static const std::vector<std::string>& ratios();
     static const std::vector<std::string>& ratiosLong();
-    static std::function<double(double)> getSlowAttackFunction() {
+
+    static std::function<double(double)> getSlowAttackFunction_1() {
         return AudioMath::makeFunc_Exp(0, 1, .05, 30);
     }
-    static std::function<double(double)> getSlowAntiAttackFunction() {
+    static std::function<double(double)> getSlowAntiAttackFunction_1() {
         return AudioMath::makeFunc_InverseExp(0, 1, .05, 30);
     }
 
-    static std::function<double(double)> getSlowReleaseFunction() {
+    static std::function<double(double)> getSlowReleaseFunction_1() {
         return AudioMath::makeFunc_Exp(0, 1, 100, 1600);
     }
-    static std::function<double(double)> getSlowAntiReleaseFunction() {
+    static std::function<double(double)> getSlowAntiReleaseFunction_1() {
         return AudioMath::makeFunc_InverseExp(0, 1, 100, 1600);
     }
+#ifdef _CMP_SCHEMA2
+    static std::function<double(double)> getSlowAttackFunction_2() {
+        return AudioMath::makeFunc_Exp(0, 1, MIN_ATTACK, MAX_ATTACK);
+    }
+    static std::function<double(double)> getSlowAntiAttackFunction_2() {
+        return AudioMath::makeFunc_InverseExp(0, 1, MIN_ATTACK, MAX_ATTACK);
+    }
 
+    static std::function<double(double)> getSlowReleaseFunction_2() {
+        return AudioMath::makeFunc_Exp(0, 1, MIN_RELEASE, MAX_RELEASE);
+    }
+    static std::function<double(double)> getSlowAntiReleaseFunction_2() {
+        return AudioMath::makeFunc_InverseExp(0, 1, MIN_RELEASE, MAX_RELEASE);
+    }
+#endif
     static std::function<double(double)> getSlowThresholdFunction() {
         return AudioMath::makeFunc_Exp(0, 10, .1, 10);
     }
@@ -152,6 +179,13 @@ public:
     void initCurrentChannelParams();
 
     void updateAllChannels();
+
+    /**
+     * @param schema is what is stored in the json, or
+     * zero if nothing found
+     */
+    void onNewPatch(int schema);
+
 private:
     CompressorParamHolder compParams;
 
@@ -174,7 +208,7 @@ private:
     void pollStereo();
     void makeAllSettingsStereo();
     void setLinkAllBanks(bool);
-   
+
     void pollUI();
 
     /**
@@ -242,10 +276,24 @@ inline void Compressor2<TBase>::init() {
         this->stepn();
     });
 
-    LookupTableFactory<float>::makeGenericExpTaper(64, attackFunctionParams, 0, 1, .05, 30);
-    LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, 100, 1600);
+    LookupTableFactory<float>::makeGenericExpTaper(64, attackFunctionParams, 0, 1, MIN_ATTACK, MAX_ATTACK);
+    LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, MIN_RELEASE, MAX_RELEASE);
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
     initAllParams();
+
+#if 0 // temp calculations for new default to give same time as old.
+    SQINFO("default old A = %f R =%f", .8074f, .25f );
+    float attackTime = getSlowAttackFunction_1()(.8074f);
+    float releaseTime = getSlowReleaseFunction_1()(.25f);
+    SQINFO("which gives a real A=%f R=%f", attackTime, releaseTime);
+    float newAttackParam = getSlowAntiAttackFunction_2()(attackTime);
+    float newReleaseParam = getSlowAntiReleaseFunction_2()(releaseTime);
+    SQINFO("new def need to be A=%f, R=%f", newAttackParam, newReleaseParam);
+    float a2 =  getSlowAttackFunction_2()(newAttackParam);
+    float r2 =  getSlowReleaseFunction_2()(newReleaseParam);
+    SQINFO("which give times %f, %f", a2, r2);
+#endif
+
 }
 
 /**
@@ -328,9 +376,37 @@ inline void Compressor2<TBase>::updateAllChannels() {
         updateWetDry(bank);
         updateMakeupGain(bank);
         updateBypassed(bank);
-        // updateSidechainEnabled(bank);
         updateMakeupGain(bank);
         // TODO: put all the update here
+    }
+}
+
+template <class TBase>
+inline void Compressor2<TBase>::onNewPatch(int schema) {
+    // SQINFO("comp2::onNewPatch");
+#ifdef _CMP_SCHEMA2
+
+    if (schema < 2 ) {
+        // SQINFO("need to update schemma!!!");
+        for (int i=0; i< 16; ++i) {
+            float storedAttackParam = compParams.getAttack(i);
+            float attackTime = getSlowAttackFunction_1()(storedAttackParam);
+            float newAttackParam = getSlowAntiAttackFunction_2()(attackTime);
+            compParams.setAttack(i, newAttackParam);
+            SQINFO("update val was %f, attackTime=%f newParam=%f", storedAttackParam, attackTime, newAttackParam);
+
+            float storedReleaseParam = compParams.getRelease(i);
+            float releaseTime = getSlowReleaseFunction_1()(storedReleaseParam);
+            float newReleaseParam = getSlowAntiReleaseFunction_2()(releaseTime);
+            compParams.setRelease(i, newReleaseParam);
+           // SQINFO("update val was %f, relTime=%f newParam=%f", storedReleaseParam, releaseTime, newReleaseParam);
+        }
+
+        updateAllChannels();
+    } else
+#endif
+    {
+        updateAllChannels();
     }
 }
 
@@ -461,13 +537,6 @@ inline void Compressor2<TBase>::pollUI() {
         TBase::params[SIDECHAIN_PARAM].value = ptr->sidechainEnabled ? 1.f : 0.f;
         TBase::params[WETDRY_PARAM].value = ptr->wetDryMix;
         assert(getParamHolder().getNumParams() == 8);
-#if 0
-        update = true;
-        if (currentStereo_m > 0) {
-            ptr->copyToHolder(holder, current
-           assert(false);
-        }
-#endif
     }
 
     if (initCurrentChannelFlag) {
@@ -780,13 +849,26 @@ template <class TBase>
 inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
+#ifndef _CMP_SCHEMA2
         case Compressor2<TBase>::ATTACK_PARAM:
             // .8073 too low .8075 too much
+            // 8.75 ms
             ret = {0, 1, .8074f, "Attack time"};
             break;
+            // 200ms
         case Compressor2<TBase>::RELEASE_PARAM:
             ret = {0, 1, .25f, "Release time"};
             break;
+#else
+        // these new values calculated with "maths" to give same times as before
+        case Compressor2<TBase>::ATTACK_PARAM:
+            ret = {0, 1, .58336f, "Attack time"};
+            break;
+            // 200ms
+        case Compressor2<TBase>::RELEASE_PARAM:
+            ret = {0, 1, .6395f, "Release time"};
+            break;
+#endif
         case Compressor2<TBase>::THRESHOLD_PARAM:
             ret = {0, 10, 10, "Threshold"};
             break;
@@ -814,15 +896,6 @@ inline IComposite::Config Compressor2Description<TBase>::getParam(int i) {
         case Compressor2<TBase>::SIDECHAIN_PARAM:
             ret = {0, 1, 0, "Sidechain"};
             break;
-#if 0
-        case Compressor2<TBase>::SIDECHAIN_ALL_PARAM:
-            ret = {0, 1, 0, "sidechain all"};
-            break;
-
-        case Compressor2<TBase>::EXPERIMENT_PARAM:
-            ret = {0, 2, 0, "experiment"};
-            break;
-#endif
         default:
             assert(false);
     }

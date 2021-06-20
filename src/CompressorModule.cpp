@@ -29,8 +29,15 @@ public:
 
     std::shared_ptr<Comp> compressor;
 
+    // These two are just for local schema data
+#ifdef _CMP_SCHEMA2
+    json_t *dataToJson() override;
+    virtual void dataFromJson(json_t *root) override;
+#endif
+
 private:
     void addParams();
+    int knownSchema = 0;
 };
 
 CompressorModule::CompressorModule() {
@@ -75,11 +82,38 @@ void CompressorModule::addParams() {
     }
 }
 
+
+
+#ifdef _CMP_SCHEMA2
+
+const static char* schemaKey = "SqSchema";
+
+json_t *CompressorModule::dataToJson() {
+    json_t *rootJ = json_object();
+    json_object_set_new(rootJ, schemaKey, json_integer(2));
+    return rootJ;
+}
+
+void CompressorModule::dataFromJson(json_t *rootJ) {
+    json_t *schemaJ = json_object_get(rootJ, schemaKey);
+    if (schemaJ) {
+        knownSchema = json_integer_value(schemaJ);
+    }
+}
+#endif
+
 float CompressorModule::getGainReductionDb() {
     return compressor->getGainReductionDb();
 }
 
 void CompressorModule::process(const ProcessArgs &args) {
+    assert(knownSchema <= 2);
+    // if we didn't get schema from loading patch, then we need to
+    // use a "heuristic" implemented in Compressor.
+    if (knownSchema == 0) {
+        knownSchema = 1;        // bump up to 1 to prevent calling over and over.
+        compressor->onNewPatch(0);
+    }
     compressor->process(args);
 }
 

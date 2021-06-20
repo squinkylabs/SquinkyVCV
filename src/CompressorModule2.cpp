@@ -34,7 +34,6 @@ public:
     void onReset() override {
         compressor->initAllParams();
     }
-    //   float getGainReductionDb();
 
     int getNumVUChannels() {
         return compressor->ui_getNumVUChannels();
@@ -50,6 +49,7 @@ public:
 
 private:
     void addParams();
+    void checkForFormatUpgrade();
 };
 
 Compressor2Module::Compressor2Module() {
@@ -90,7 +90,7 @@ void Compressor2Module::addParams() {
             case Comp::NOTBYPASS_PARAM:
                 this->configParam<BypassQuantityComp2>(i, param.min, param.max, param.def, paramName);
                 break;
-              case Comp::SIDECHAIN_PARAM:
+            case Comp::SIDECHAIN_PARAM:
                 this->configParam<SideChainQuantity2>(i, param.min, param.max, param.def, paramName);
                 break;
             default:
@@ -102,16 +102,29 @@ void Compressor2Module::addParams() {
 json_t* Compressor2Module::dataToJson() {
     const CompressorParamHolder& params = compressor->getParamHolder();
     C2Json ser;
-    return ser.paramsToJson(params);
+    
+#ifdef _CMP_SCHEMA2
+    const int schema = 2;
+#else
+    const int schema = 1;
+#endif
+    return ser.paramsToJson(params, schema);
 }
 
 void Compressor2Module::dataFromJson(json_t* rootJ) {
     CompressorParamHolder* params = &compressor->getParamHolder();
     C2Json ser;
-    ser.jsonToParams(rootJ, params);
-    compressor->updateAllChannels();
+    
+    const int schema = ser.jsonToParams(rootJ, params);
+   
+    compressor->onNewPatch(schema);
+    //compressor->updateAllChannels();
 }
 
+void Compressor2Module::checkForFormatUpgrade() {
+    
+}
+    
 void Compressor2Module::process(const ProcessArgs& args) {
     compressor->process(args);
 }
@@ -126,7 +139,7 @@ void Compressor2Module::onSampleRateChange() {
 
 ******************************************************************************/
 
-#include "MultiVUMeter.h"       // need to include this after module definition
+#include "MultiVUMeter.h"  // need to include this after module definition
 
 // #define _LAB
 struct CompressorWidget2 : ModuleWidget {
@@ -147,7 +160,7 @@ struct CompressorWidget2 : ModuleWidget {
     void addJacks(Compressor2Module* module, std::shared_ptr<IComposite> icomp);
     void addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp);
     void addVu(Compressor2Module* module);
-   // void addNumbers();
+    // void addNumbers();
     void step() override;
 
     int lastStereo = -1;
@@ -184,7 +197,7 @@ void CompressorWidget2::copy() {
     if (lastStereo > 1) {
         currentChannel *= 2;
     }
-    //SQINFO("copy using channel %d", currentChannel);
+
     ch.copyFromHolder(params, currentChannel);
     C2Json json;
     json.copyToClip(ch);
@@ -321,7 +334,6 @@ public:
         addSvg("res/oval-button-up-grey.svg");
         addSvg("res/oval-button-down.svg");
     }
-
 };
 
 class SqBlueButtonInv : public ToggleButton {
@@ -330,6 +342,12 @@ public:
         addSvg("res/oval-button-down.svg");
         addSvg("res/oval-button-up-grey.svg");
     }
+};
+
+class Blue30SnapKnobNoTT : public Blue30SnapKnob {
+public:
+    // don't do anything (base class would put up TT).
+    void onEnter(const event::Enter&) override {}
 };
 
 void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<IComposite> icomp) {
@@ -368,7 +386,7 @@ void CompressorWidget2::addControls(Compressor2Module* module, std::shared_ptr<I
         Vec(54, 35),
         "Channel:", TEXTCOLOR);
 #endif
-    channelKnob = SqHelper::createParam<Blue30SnapKnob>(
+    channelKnob = SqHelper::createParam<Blue30SnapKnobNoTT>(
         icomp,
         Vec(17, 24),
         module, Comp::CHANNEL_PARAM);
