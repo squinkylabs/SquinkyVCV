@@ -6,6 +6,8 @@ Comp and Comp II: extended the maximum attack time and the minimum release time.
 
 Comp II: removed tooltip from channel select knob.
 
+Comp and Comp II: VU meters stay bright with Modular Fungi Lights Off.
+
 ## 10.0.19
 
 New module: Comp II.
