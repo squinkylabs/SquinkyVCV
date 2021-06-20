@@ -2,7 +2,9 @@
 
 ## 10.0.20
 
-Comp2: removed tooltip from channel select knob.
+Comp and Comp II: extended the maximum attack time and the minimum release time.
+
+Comp II: removed tooltip from channel select knob.
 
 ## 10.0.19
 
