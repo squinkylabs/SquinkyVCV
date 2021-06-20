@@ -2,9 +2,10 @@
 
 #include "../seq/SqGfx.h"
 #include "../seq/UIPrefs.h"
-#include "widget/TransparentWidget.hpp"
+// #include "widget/TransparentWidget.hpp"
+#include "app/LightWidget.hpp"
 
-class SqVuMeter : public widget::TransparentWidget
+class SqVuMeter : public app::LightWidget
 {
 public:
     void draw(const DrawArgs &args) override;

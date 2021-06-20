@@ -9,9 +9,13 @@
  */
 class C2Json {
 public:
-    json_t* paramsToJson(const CompressorParamHolder& params);
+    json_t* paramsToJson(const CompressorParamHolder& params, int schema);
     void jsonToParamsOrig(json_t* json, CompressorParamHolder* outParams);
-    void jsonToParams(json_t* json, CompressorParamHolder* outParams);
+
+    /**
+     * @returns the schema number
+     */
+    int jsonToParams(json_t* json, CompressorParamHolder* outParams);
     bool jsonToParamsNew(json_t* json, CompressorParamHolder* outParams);
 
     void copyToClip(const CompressorParamChannel&);
@@ -36,25 +40,21 @@ private:
 inline bool C2Json::getClipAsParamChannel(CompressorParamChannel* ch) {
     const char* jsonString = glfwGetClipboardString(APP->window->win);
     if (!jsonString) {
-        INFO("nothing to paste");
         return false;
     }
 
     json_error_t error;
     json_t* obj = json_loads(jsonString, 0, &error);
     if (!obj) {
-        INFO("data on clip not json us");
         return false;
     }
 
     json_t* schemaJ = json_object_get(obj, schema_);
     if (!schemaJ) {
-        INFO("cllipboard json has no schema");
         return false;
     }
     std::string s = json_string_value(schemaJ);
     if (s != comp2_schema_) {
-        INFO("clipboard schema mismatch");
         return false;
     }
 
@@ -107,11 +107,13 @@ inline void C2Json::copyToClip(const CompressorParamChannel& ch) {
     free(clipJson);
 }
 
-inline json_t* C2Json::paramsToJson(const CompressorParamHolder& params) {
+inline json_t* C2Json::paramsToJson(const CompressorParamHolder& params, int schema) {
     json_t* arrayJ = json_array();
     for (int i = 0; i < 16; ++i) {
         json_array_append_new(arrayJ, paramsToJsonOneChannel(params, i));
     }
+    // 17th element is scheme int.
+    json_array_append_new(arrayJ, json_integer(schema));
     return arrayJ;
 }
 
@@ -129,11 +131,18 @@ inline json_t* C2Json::paramsToJsonOneChannel(const CompressorParamHolder& param
     return objJ;
 }
 
-inline void C2Json::jsonToParams(json_t* json, CompressorParamHolder* outParams) {
+inline int C2Json::jsonToParams(json_t* json, CompressorParamHolder* outParams) {
+     int schema = 0;
     bool b = jsonToParamsNew(json, outParams);
     if (!b) {
         jsonToParamsOrig(json, outParams);
+    } else {       
+        json_t* obj = json_array_get(json, 16);
+        if (obj && json_is_integer(obj)) {
+            schema = json_integer_value(obj);
+        }
     }
+    return schema;
 }
 
 inline bool C2Json::jsonToParamsNew(json_t* json, CompressorParamHolder* outParams) {

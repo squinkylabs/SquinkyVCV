@@ -13,6 +13,19 @@
 #include "SqPort.h"
 #include "engine/Port.hpp"
 
+#define _CMP_SCHEMA2
+#ifdef _CMP_SCHEMA2
+#define MIN_ATTACK .05
+#define MAX_ATTACK 350
+#define MIN_RELEASE 5
+#define MAX_RELEASE 1600
+#else
+#define MIN_ATTACK .05
+#define MAX_ATTACK 30
+#define MIN_RELEASE 100
+#define MAX_RELEASE 1600
+#endif
+
 namespace rack {
 namespace engine {
 struct Module;
@@ -209,16 +222,35 @@ public:
     float getGainReductionDb() const;
     static const std::vector<std::string>& ratios();
     static const std::vector<std::string>& ratiosLong();
-    static std::function<double(double)> getSlowAttackFunction() {
+    static std::function<double(double)> getSlowAttackFunction_1() {
         return AudioMath::makeFunc_Exp(0, 1, .05, 30);
     }
 
-    static std::function<double(double)> getSlowReleaseFunction() {
+    static std::function<double(double)> getSlowReleaseFunction_1() {
         return AudioMath::makeFunc_Exp(0, 1, 100, 1600);
     }
     static std::function<double(double)> getSlowThresholdFunction() {
         return AudioMath::makeFunc_Exp(0, 10, .1, 10);
     }
+#ifdef _CMP_SCHEMA2
+    static std::function<double(double)> getSlowAttackFunction_2() {
+        return AudioMath::makeFunc_Exp(0, 1, MIN_ATTACK, MAX_ATTACK);
+    }
+    static std::function<double(double)> getSlowAntiAttackFunction_2() {
+        return AudioMath::makeFunc_InverseExp(0, 1, MIN_ATTACK, MAX_ATTACK);
+    }
+
+    static std::function<double(double)> getSlowReleaseFunction_2() {
+        return AudioMath::makeFunc_Exp(0, 1, MIN_RELEASE, MAX_RELEASE);
+    }
+    static std::function<double(double)> getSlowAntiReleaseFunction_2() {
+        return AudioMath::makeFunc_InverseExp(0, 1, MIN_RELEASE, MAX_RELEASE);
+    }
+
+   
+#endif
+    void onNewPatch(int schema);
+   
 
 private:
     Cmprsr compressorsL[4];
@@ -254,6 +286,7 @@ private:
     int lastNumChannelsL = -1;
     int lastNumChannelsR = -1;
     bool bypassed = false;
+    std::shared_ptr<IComposite> myDescription;
 };
 
 template <class TBase>
@@ -276,7 +309,45 @@ inline void Compressor<TBase>::init() {
     LookupTableFactory<float>::makeGenericExpTaper(64, attackFunctionParams, 0, 1, .05, 30);
     LookupTableFactory<float>::makeGenericExpTaper(64, releaseFunctionParams, 0, 1, 100, 1600);
     LookupTableFactory<float>::makeGenericExpTaper(64, thresholdFunctionParams, 0, 10, .1, 10);
+    myDescription = Compressor<TBase>::getDescription();
 }
+
+
+template <class TBase>
+inline void Compressor<TBase>::onNewPatch(int knownSchema) {
+#ifdef _CMP_SCHEMA2
+    bool needsUpdate = false;
+    if (knownSchema == 0) {
+        // If we don't know the schema, then it is either a 1.0 patch loaded, or
+        // it is a new instances. But if it's a new instance it won't have the same
+        // values as the old 1.0 defaults. So the only way this heuristic fails is if
+        // it were truly a 1.0 patch, but happened to have all defaults, and A and R edited
+        // to exactly the 2.0 defaults - not likely.
+        needsUpdate = true;
+        for (int i = 0; i < myDescription->getNumParams(); ++i) {
+            const float def = myDescription->getParam(i).def;
+            const float cur = Compressor<TBase>::params[i].value;
+            const bool same = (def == cur);
+            // SQINFO("p=%d def=%f cur=%f same = %d", i, def, cur, same);
+            if (!same) {
+                needsUpdate = false;
+            }
+        }
+    }
+    if (needsUpdate) {
+        float storedAttackParam = Compressor<TBase>::params[ATTACK_PARAM].value;
+        float attackTime = getSlowAttackFunction_1()(storedAttackParam);
+        float newAttackParam = getSlowAntiAttackFunction_2()(attackTime);
+        Compressor<TBase>::params[ATTACK_PARAM].value = newAttackParam;
+
+        float storedReleaseParam = Compressor<TBase>::params[ATTACK_PARAM].value;
+        float releaseTime = getSlowReleaseFunction_1()(storedReleaseParam);
+        float newReleaseParam = getSlowAntiReleaseFunction_2()(releaseTime);
+        Compressor<TBase>::params[ATTACK_PARAM].value = newReleaseParam;
+    }
+#endif
+}
+
 
 template <class TBase>
 inline float Compressor<TBase>::getGainReductionDb() const {
@@ -452,6 +523,18 @@ template <class TBase>
 inline IComposite::Config CompressorDescription<TBase>::getParam(int i) {
     Config ret(0, 1, 0, "");
     switch (i) {
+
+#ifdef _CMP_SCHEMA2
+        // these new values calculated with "maths" to give same times as before
+        case Compressor<TBase>::ATTACK_PARAM:
+            ret = {0, 1, .58336f, "Attack time"};
+            break;
+            // 200ms
+        case Compressor<TBase>::RELEASE_PARAM:
+            ret = {0, 1, .6395f, "Release time"};
+            break;
+
+#else
         case Compressor<TBase>::ATTACK_PARAM:
             // .8073 too low .8075 too much
             ret = {0, 1, .8074f, "Attack time"};
@@ -459,6 +542,7 @@ inline IComposite::Config CompressorDescription<TBase>::getParam(int i) {
         case Compressor<TBase>::RELEASE_PARAM:
             ret = {0, 1, .25f, "Release time"};
             break;
+#endif
         case Compressor<TBase>::THRESHOLD_PARAM:
             ret = {0, 10, 10, "Threshold"};
             break;
