@@ -219,6 +219,8 @@ int main(int argc, char** argv) {
         return 0;
     }
 
+    testRingBuffer();
+    testGateDelay();
     testCompCurves();
 
     // mode these up where while we work...
@@ -246,7 +248,7 @@ int main(int argc, char** argv) {
 
     testFlac();
     testADSRSampler();
-   
+
     testADSR();
 
     testWavThread();
@@ -263,7 +265,7 @@ int main(int argc, char** argv) {
     testOscSmoother();
 
     testAudioMath();
-    testRingBuffer();
+
     testGateTrigger();
     testSimpleQuantizer();
     testOnset();
@@ -271,7 +273,6 @@ int main(int argc, char** argv) {
 
     testBiquad();
     testACDetector();
-    testGateDelay();
 
     testSqStream();
     testSub();

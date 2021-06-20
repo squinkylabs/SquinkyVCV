@@ -4,6 +4,7 @@
 
 #include "RingBuffer.h"
 #include "SimdBlocks.h"
+#include "SqLog.h"
 
 /**
  *
@@ -19,14 +20,33 @@ public:
 
 private:
     SqRingBuffer<uint16_t, SIZE + 1> ringBuffer;
+    int gatesAddedToFrame = 0;
+    int gatesPulledFromFrame = 0;
+
+    uint16_t addBuffer = 0;
+    uint16_t getBuffer = 0;
 };
 
 template <int SIZE>
-void GateDelay<SIZE>::addGates(const float_4&) {
+void GateDelay<SIZE>::addGates(const float_4& fourGates) {
+    assert(gatesAddedToFrame < 4);
+    auto x = rack::simd::movemask(fourGates);
+    addBuffer |= (x << (gatesAddedToFrame * 4));
+    ++gatesAddedToFrame;
+    SQINFO("after add, num=%d val=%x", gatesAddedToFrame, addBuffer);
 }
 
 template <int SIZE>
 void GateDelay<SIZE>::commit() {
+    if (gatesAddedToFrame != 4) SQWARN("GateDelay not full");
+    if (gatesAddedToFrame != 4) SQWARN("GateDelay not all read");
+
+    ringBuffer.push(addBuffer);
+
+    gatesAddedToFrame = 0;
+    gatesPulledFromFrame = 0;
+    addBuffer = 0;
+    getBuffer = 0;
 }
 
 template <int SIZE>
