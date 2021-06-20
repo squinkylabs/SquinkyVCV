@@ -60,7 +60,9 @@ static std::map<std::string, Opcode> opcodes = {
     {"loop_mode", Opcode::LOOP_MODE},
     //   {"loop_continuous", Opcode::LOOP_CONTINUOUS},
     {"loop_start", Opcode::LOOP_START},
+    {"loopstart", Opcode::LOOP_START},  // synonym!
     {"loop_end", Opcode::LOOP_END},
+    {"loopend", Opcode::LOOP_END},  // synonym!
     {"sample", Opcode::SAMPLE},
     {"pan", Opcode::PAN},
     {"group", Opcode::GROUP},

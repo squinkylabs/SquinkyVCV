@@ -101,11 +101,13 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
         const float subIndex = float(cd.curFloatSampleOffset - (cd.frames - 3));
         assert(subIndex >= 1);
 
+#ifdef _LOG
         {
             // int x = CubicInterpolator<float>::getIntegerPart(float(1 + cd.curFloatSampleOffset));
             int x = CubicInterpolator<float>::getIntegerPart(subIndex);
             SQINFO("end buffer interp,  x=%d to %d", x - 1, x + 2);
         }
+#endif
         float ret = CubicInterpolator<float>::interpolate(cd.endBuffer, subIndex);
         cd.advancePointer(lfm);
         return ret * cd.vol;

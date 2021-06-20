@@ -588,10 +588,10 @@ public:
         SampMessage* smsg = static_cast<SampMessage*>(msg);
 
 #ifdef _ATOM
-        SQINFO("worker about to wait for sample access");
+        // SQINFO("worker about to wait for sample access");
         assert(smsg->sharedState);
         smsg->sharedState->uiw_requestAndWaitForSampleReload();
-        SQINFO("worker got sample access");
+       // SQINFO("worker got sample access");
 #endif
 
         // First thing we do it throw away the old patch data.
@@ -603,15 +603,15 @@ public:
 
         SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-        SQINFO("--- real sampler, calling goFile with %s", fullPath.toString().c_str());
+       // SQINFO("--- real sampler, calling goFile with %s", fullPath.toString().c_str());
         // now load it, and then return it.
         auto err = SParse::goFile(fullPath, inst);
 
-        SQINFO("about to compile");
+        //SQINFO("about to compile");
         // TODO: need a way for compiler to return error;
         SamplerErrorContext errc;
         CompiledInstrumentPtr cinst = err.empty() ? CompiledInstrument::make(errc, inst) : CompiledInstrument::make(err);
-        SQINFO("back from comp");
+       // SQINFO("back from comp");
         errc.dump();
         if (!cinst) {
             SQWARN("comp was null (should never happen)");
@@ -624,7 +624,7 @@ public:
 
         //  samplePath += cinst->getDefaultPath();
         samplePath.concat(cinst->getDefaultPath());
-        SQINFO("calling setWaves on %s", samplePath.toString().c_str());
+        //SQINFO("calling setWaves on %s", samplePath.toString().c_str());
         cinst->setWaves(waves, samplePath);
 
         WaveLoader::LoaderState loadedState;
@@ -643,7 +643,7 @@ public:
             }
         }
 
-        SQINFO("preparing to return cinst to caller, err=%d", cinst->isInError());
+        //SQINFO("preparing to return cinst to caller, err=%d", cinst->isInError());
         smsg->instrument = cinst;
         smsg->waves = loadedState == WaveLoader::LoaderState::Done ? waves : nullptr;
 
@@ -656,7 +656,7 @@ public:
             info->errorMessage = waves->lastError;
         }
 
-        SQINFO("****** loader thread returning %d", int(loadedState));
+        //SQINFO("****** loader thread returning %d", int(loadedState));
         sendMessageToClient(msg);
     }
 
