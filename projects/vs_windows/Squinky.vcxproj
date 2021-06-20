@@ -120,6 +120,7 @@
     <ClCompile Include="..\..\test\testCompressorII.cpp" />
     <ClCompile Include="..\..\test\testCompressorParamHolder.cpp" />
     <ClCompile Include="..\..\test\testFlac.cpp" />
+    <ClCompile Include="..\..\test\testGateDelay.cpp" />
     <ClCompile Include="..\..\test\testHeadingTracker.cpp" />
     <ClCompile Include="..\..\test\testSampComposite.cpp" />
     <ClCompile Include="..\..\test\testStreamer.cpp" />

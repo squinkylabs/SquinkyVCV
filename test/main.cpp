@@ -127,6 +127,7 @@ extern void testFlac();
 extern void testHeadingTracker();
 extern void do_gc();
 extern void testxLex();
+extern void testGateDelay();
 
 #if 0
 #include <iostream>
@@ -270,6 +271,7 @@ int main(int argc, char** argv) {
 
     testBiquad();
     testACDetector();
+    testGateDelay();
 
     testSqStream();
     testSub();
