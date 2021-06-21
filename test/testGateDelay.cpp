@@ -41,6 +41,13 @@ static void test1() {
     }
     del.commit();
 
+    for (i = 0; i < 4; ++i) {
+        del.addGates(SimdBlocks::maskTrue());
+        x = del.getGates();
+        simd_assertEQ(x, float_4::zero());
+    }
+    del.commit();
+
     //  assertEQ(float_4::mask()[1], float_4::mask()[0]);
     for (i = 0; i < 4; ++i) {
         del.addGates(SimdBlocks::maskFalse());
