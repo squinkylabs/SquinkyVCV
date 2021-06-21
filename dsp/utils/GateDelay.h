@@ -68,7 +68,7 @@ void GateDelay<SIZE>::commit() {
     getBuffer = ringBuffer.pop();
     SQINFO("gate commit pushed into ring, popped %x", getBuffer);
     SQINFO("Leaving commit\n");
-     ringBuffer._dump();
+    ringBuffer._dump();
 }
 
 __m128 movemask_inverse_alternative(int x) {
@@ -84,7 +84,7 @@ float_4 GateDelay<SIZE>::getGates() {
     assert(gatesPulledFromFrame < 4);
 
     float_4 ret = 0;
-    int retI = getBuffer >> (gatesPulledFromFrame);
+    int retI = getBuffer >> (gatesPulledFromFrame * 4);
     retI &= 0xf;
     SQINFO("in getGate int = %d", retI);
     auto temp = movemask_inverse_alternative(retI);
