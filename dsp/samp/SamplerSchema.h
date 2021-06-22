@@ -37,6 +37,8 @@ public:
         VOLUME,
         TUNE,
         OFFSET,
+        END,
+        OSCILLATOR,
         POLYPHONY,
         PITCH_KEYTRACK,
         AMP_VELTRACK,
@@ -64,7 +66,8 @@ public:
         LOOP_SUSTAIN,
         ATTACK,   // trigger=attack
         RELEASE,  // trigger= release
-
+        ON,
+        OFF,
         NONE
     };
 

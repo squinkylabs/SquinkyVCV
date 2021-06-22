@@ -34,29 +34,29 @@ private:
 // Turn the ring buffer into a delay line by pushing enough zeros into it
 template <int SIZE>
 GateDelay<SIZE>::GateDelay() {
-    SQINFO("ctor of gate delay here is buffer");
-    ringBuffer._dump();
+    // SQINFO("ctor of gate delay here is buffer");
+    // ringBuffer._dump();
     for (int i=0; i<SIZE; ++i) {
         ringBuffer.push(0);
-        SQINFO("ctor of gate dela pushed one here is buffer");
-        ringBuffer._dump();
+        // SQINFO("ctor of gate dela pushed one here is buffer");
+        //ringBuffer._dump();
     }
 }
 
 template <int SIZE>
 void GateDelay<SIZE>::addGates(const float_4& fourGates) {
-    SQINFO("enter add gate");
+    // SQINFO("enter add gate");
     assert(gatesAddedToFrame < 4);
     auto x = rack::simd::movemask(fourGates);
     addBuffer |= (x << (gatesAddedToFrame * 4));
     ++gatesAddedToFrame;
-    SQINFO("after add, num=%d val=%x", gatesAddedToFrame, addBuffer);
+    // SQINFO("after add, num=%d val=%x", gatesAddedToFrame, addBuffer);
 }
 
 template <int SIZE>
 void GateDelay<SIZE>::commit() {
-    SQINFO("enter commit, here is buffer: ");
-    ringBuffer._dump();
+    // SQINFO("enter commit, here is buffer: ");
+    //ringBuffer._dump();
     if (gatesAddedToFrame != 4) SQWARN("GateDelay not full");
     if (gatesAddedToFrame != 4) SQWARN("GateDelay not all read");
 
@@ -66,9 +66,9 @@ void GateDelay<SIZE>::commit() {
     gatesPulledFromFrame = 0;
     addBuffer = 0;
     getBuffer = ringBuffer.pop();
-    SQINFO("gate commit pushed into ring, popped %x", getBuffer);
-    SQINFO("Leaving commit\n");
-    ringBuffer._dump();
+    // SQINFO("gate commit pushed into ring, popped %x", getBuffer);
+    // SQINFO("Leaving commit\n");
+    //ringBuffer._dump();
 }
 
 __m128 movemask_inverse_alternative(int x) {
@@ -80,17 +80,17 @@ __m128 movemask_inverse_alternative(int x) {
 
 template <int SIZE>
 float_4 GateDelay<SIZE>::getGates() {
-    SQINFO("in get gate, pulled=%d", gatesPulledFromFrame);
+    // SQINFO("in get gate, pulled=%d", gatesPulledFromFrame);
     assert(gatesPulledFromFrame < 4);
 
     float_4 ret = 0;
     int retI = getBuffer >> (gatesPulledFromFrame * 4);
     retI &= 0xf;
-    SQINFO("in getGate int = %d", retI);
+    // SQINFO("in getGate int = %d", retI);
     auto temp = movemask_inverse_alternative(retI);
     ret = temp;
     gatesPulledFromFrame++;
-    SQINFO("get returning %s", toStr(ret).c_str());
+   //  SQINFO("get returning %s", toStr(ret).c_str());
     return ret;
 }
      

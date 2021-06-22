@@ -337,7 +337,7 @@ static void testParseLabel() {
 }
 
 static void testCompiledRegion() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 offset=200)foo");
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 offset=200 end=1234)foo");
     assertEQ(cr->keycenter, 96);
     assertEQ(cr->lovel, 1);
     assertEQ(cr->hivel, 22);
@@ -345,6 +345,8 @@ static void testCompiledRegion() {
     assertEQ(cr->hikey, 97);
     std::string expected = std::string("K18") + FilePath::nativeSeparator() + std::string("C7.pp.wav");
     assertEQ(cr->sampleFile.toString(), expected);
+    assertEQ(cr->loopData.offset, 200);
+    assertEQ(cr->loopData.end, 1234);
 
     // test a few defaults
     assertEQ(cr->volume, 0);
@@ -366,6 +368,7 @@ static void testCompiledRegionInherit() {
     assertEQ(cr->lokey, 95);
     assertEQ(cr->hikey, 97);
     assertEQ(cr->sampleFile.toString(), "K18\\C7.pp.wav");
+    assertEQ(cr->loopData.offset, 200);
 }
 
 static void testCompiledRegionKey() {
@@ -1459,6 +1462,57 @@ static void testCompileLoop() {
     assertEQ((int) region->loopData.loop_mode, (int) SamplerSchema::DiscreteValue::LOOP_CONTINUOUS);
 }
 
+static void testCompileLoop2() {
+    const char* data = (R"foo(
+          <group>oscillator=on
+          <region>sample=a offset=100 end=200
+          )foo");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+
+    assertEQ(errc.unrecognizedOpcodes.size(), 0);
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 12;
+    params.midiVelocity = 60;
+
+    bool didKS = false;
+    const CompiledRegion* region = ci->_pool().play(params, .5, didKS);
+    
+    assertEQ(region->loopData.offset, 100);
+    assertEQ(region->loopData.end, 200);
+    assertEQ(region->loopData.oscillator, true);
+ //   assertEQ((int) region->loopData.loop_mode, (int) SamplerSchema::DiscreteValue::LOOP_CONTINUOUS);
+}
+
+static void testCompileOscOff() {
+    const char* data = (R"foo(
+          <region>sample=a offset=100 end=200
+          )foo");
+      SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+
+    assertEQ(errc.unrecognizedOpcodes.size(), 0);
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 12;
+    params.midiVelocity = 60;
+
+    bool didKS = false;
+    const CompiledRegion* region = ci->_pool().play(params, .5, didKS);
+
+     assertEQ(region->loopData.oscillator, false);
+
+}
+
 void testx2() {
     assert(parseCount == 0);
     assert(compileCount == 0);
@@ -1542,6 +1596,8 @@ void testx2() {
     testCompileAmpVel();
     testCompileAmpegRelease();
     testCompileLoop();
+    testCompileLoop2();
+    testCompileOscOff();
 
     assertEQ(parseCount, 0);
     assertEQ(compileCount, 0);

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "FilePath.h"
-#include "SamplerSchema.h"
-#include "SqLog.h"
-
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "FilePath.h"
+#include "SamplerSchema.h"
+#include "SqLog.h"
 
 class CompiledRegion;
 class VoicePlayInfo;
@@ -32,13 +32,12 @@ extern int compileCount;
 class CompiledRegion {
 public:
     void addRegionInfo(SamplerSchema::KeysAndValuesPtr);
-    CompiledRegion(int ln) : lineNumber (ln) {
+    CompiledRegion(int ln) : lineNumber(ln) {
         // SQINFO("Compiled REgion def ctor %p", this);
         ++compileCount;
     }
     virtual ~CompiledRegion() { compileCount--; }
     void _dump(int depth) const;
-
 
     int velRange() const;
     int pitchRange() const;
@@ -67,7 +66,7 @@ public:
     int hikey = 127;
 
     int keycenter = 60;
-   
+
     int lovel = 1;
     int hivel = 127;
 
@@ -76,7 +75,7 @@ public:
     float hirand = 1;
 
     float amp_veltrack = 100;
-    float ampeg_release = .03f;         // correct default, not .001
+    float ampeg_release = .03f;  // correct default, not .001
 
     int lineNumber = -1;
 
@@ -101,41 +100,46 @@ public:
     /**
      * for key switching
      */
-    bool keySwitched = true;    // by default, normal regions are on
-  //  int sw_last = -1;         // the pitch that turns on this region
-    int sw_lolast = -1;         // the range of pitches that turn this region on
-    int sw_hilast = -1; 
+    bool keySwitched = true;  // by default, normal regions are on
+                              //  int sw_last = -1;         // the pitch that turns on this region
+    int sw_lolast = -1;       // the range of pitches that turn this region on
+    int sw_hilast = -1;
 
     int sw_lokey = -1;
-    int sw_hikey = -1;          // the range of pitches that are key-switches, not notes
-    int sw_default = -1;        // the keyswitch region to start with
+    int sw_hikey = -1;    // the range of pitches that are key-switches, not notes
+    int sw_default = -1;  // the keyswitch region to start with
     std::string sw_label;
 
     // cc stuff
     int hicc64 = 127;
     int locc64 = 0;
 
-    float volume = 0;           // volume change in db
-    int tune = 0;               // tuning offset in cents
+    float volume = 0;  // volume change in db
+    int tune = 0;      // tuning offset in cents
 
+    /**
+     * LoopData is broken out just to give a little structure.
+     * Note that not all the entires are strictly about looping, but 
+     * they are all about playing ranges of samples
+     */
     class LoopData {
     public:
-        bool operator == (const LoopData&) const;
+        bool operator==(const LoopData&) const;
         unsigned int offset = 0;
+        unsigned int end = 0;
         unsigned int loop_start = 0;
         unsigned int loop_end = 0;
         SamplerSchema::DiscreteValue loop_mode = SamplerSchema::DiscreteValue::NO_LOOP;
+        bool oscillator = false;
     };
 
     LoopData loopData;
 
     SamplerSchema::DiscreteValue trigger = SamplerSchema::DiscreteValue::NONE;
-    
+
     bool isKeyswitched() const {
         return keySwitched;
     }
-
-
 
     /**
      * Returns true if the settings in the region lead us to determine it
@@ -143,20 +147,20 @@ public:
      */
     bool shouldIgnore() const;
 
-
     /** 
      * should be called after everyone has called 
      * addRegionInfo
      */
-    void finalize();        
+    void finalize();
+
 protected:
     CompiledRegion(CompiledRegionPtr);
     CompiledRegion& operator=(const CompiledRegion&) = default;
 
 private:
-
     static void findValue(float& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
     static void findValue(int& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
+    static void findValue(bool& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
     static void findValue(unsigned int& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);
 
     static void findValue(std::string& returnValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode);

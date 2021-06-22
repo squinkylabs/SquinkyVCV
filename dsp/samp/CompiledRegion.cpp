@@ -30,6 +30,23 @@ void CompiledRegion::findValue(int& intValue, SamplerSchema::KeysAndValuesPtr in
     }
 }
 
+void CompiledRegion::findValue(bool& boolValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
+#if 0
+    for (auto x : *inputValues) {
+        SQINFO("in: %s, %s", x.first, x.second);
+    }
+#endif
+    assert(inputValues);
+    auto value = inputValues->get(opcode);
+    if (value) {
+        assert(value->type == SamplerSchema::OpcodeType::Discrete);
+        boolValue = (value->discrete == SamplerSchema::DiscreteValue::ON);
+        if ((value->discrete != SamplerSchema::DiscreteValue::ON) && (value->discrete != SamplerSchema::DiscreteValue::OFF)) {
+            SQWARN("on/off value unexpected: %s", value->discrete);
+        }
+    }
+}
+
 void CompiledRegion::findValue(unsigned int& intValue, SamplerSchema::KeysAndValuesPtr inputValues, SamplerSchema::Opcode opcode) {
     assert(inputValues);
     auto value = inputValues->get(opcode);
@@ -129,9 +146,11 @@ void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
     findValue(volume, values, SamplerSchema::Opcode::VOLUME);
 
     findValue(loopData.offset, values, SamplerSchema::Opcode::OFFSET);
+    findValue(loopData.end, values, SamplerSchema::Opcode::END);
     findValue(loopData.loop_start, values, SamplerSchema::Opcode::LOOP_START);
     findValue(loopData.loop_end, values, SamplerSchema::Opcode::LOOP_END);
     findValue(loopData.loop_mode, values, SamplerSchema::Opcode::LOOP_MODE);
+    findValue(loopData.oscillator, values, SamplerSchema::Opcode::OSCILLATOR);
 
     //SQINFO("leave addRegionInfo seqPos=%d seqLen=%d samp=%s trigger=%d", sequencePosition, sequenceLength, sampleFile.c_str(), trigger);
 }

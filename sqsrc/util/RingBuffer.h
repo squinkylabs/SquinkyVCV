@@ -59,6 +59,7 @@ inline void SqRingBuffer<uint16_t, 3>::_dump() {
 
 template <typename T, int SIZE>
 inline void SqRingBuffer<T, SIZE>::push(T value)
+
 {
     assert(!full());
     memory[inIndex] = value;

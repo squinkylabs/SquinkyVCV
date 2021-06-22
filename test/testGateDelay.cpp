@@ -22,8 +22,6 @@ static void test0() {
 }
 
 static void test1(float_4 data) {
-    SQINFO("");
-    SQINFO("------------ test1 ---------------");
     GateDelay<2> del;
     float_4 x;
     int i;
