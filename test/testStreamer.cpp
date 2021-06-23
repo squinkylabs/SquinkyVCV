@@ -212,8 +212,40 @@ static void testStreamValuesSub(TestValues& v) {
         v.s._assertValid();
     }
 
-    // we are looping, so we play forever.
     assertEQ(v.s._cd(v.channel).canPlay(), v.expectCanPlayAfter);
+}
+
+static void testStreamValueEnd() {
+    SQINFO("-- testStreamValuesEnd -- ");
+
+    float input[8] =  {1, 1, 1, 1, 1, 1, 1, 1};
+    float output[8] = {1, 1, 1, 1, 0, 0, 0, 0};
+    TestValues v;
+    v.channel = 1;
+    v.input = input;
+    v.expectedOutput = output;
+    v.sampleCount = 4;
+    v.expectedOutputSamples = 8;
+    v.loopData.end = 3;         // last sample we play
+
+    testStreamValuesSub(v);
+}
+
+static void testStreamValueOSc() {
+     SQINFO("-- testStreamValuesOsc -- ");
+
+    float input[4] =  {1, 2, 3, 4};
+    float output[12] = { 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4 };
+    TestValues v;
+    v.channel = 1;
+    v.input = input;
+    v.expectedOutput = output;
+    v.sampleCount = 4;
+    v.expectedOutputSamples = 12;
+    v.loopData.oscillator = true;
+    v.expectCanPlayAfter = true;
+
+    testStreamValuesSub(v);
 }
 
 static void testStreamValues() {
@@ -257,7 +289,6 @@ static void testStreamValuesOffset() {
     TestValues v;
     v.channel = 1;
     assertEQ(v.s._cd(v.channel).canPlay(), false);
-
 
     const int samples = 6;
     // TODO: need to separate how much data we have, vs. how many samples to run over?
@@ -448,6 +479,7 @@ void testStreamer() {
     testStreamXpose1();
     testBugCaseHighFreq();
     testStreamValuesOffset();
-
+    testStreamValueEnd();
+    testStreamValueOSc();
     testFixedPoint();
 }

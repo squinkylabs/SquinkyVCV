@@ -393,12 +393,20 @@ bool Streamer::blockEnvelopes() const {
     return channels[0].loopData.loop_mode == SamplerSchema::DiscreteValue::ONE_SHOT;
 }
 
-void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
+void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& inData) {
     ChannelData& cd = channels[chan];
     assert(0 == cd.curFloatSampleOffset);
 
+    CompiledRegion::LoopData& outData = channels[chan].loopData;
+    outData = inData;
+    if (inData.oscillator) {
+        outData.loop_start = 0;
+        outData.loop_end = cd.frames - 1;
+        outData.loop_mode = SamplerSchema::DiscreteValue::LOOP_CONTINUOUS;
+    }
+
     bool sqLooped = false;
-    switch (data.loop_mode) {
+    switch (outData.loop_mode) {
         case SamplerSchema::DiscreteValue::LOOP_CONTINUOUS:
         case SamplerSchema::DiscreteValue::LOOP_SUSTAIN:
             sqLooped = true;
@@ -407,20 +415,31 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
             break;
     }
 
+#if 0
     // assert(chan < 4 && chan >= 0);
     channels[chan].loopData = data;
+    if (data.oscillator) {
+        data.loop_start = 0;
+        data.loop_end = cd.frames - 1;
+        data.loop_mode = SamplerSchema::DiscreteValue::LOOP_CONTINUOUS;
+    }
+#endif
+
+    if (outData.end > 1) {
+        channels[chan].frames = std::min(outData.end + 1, channels[chan].frames);
+    }
     //channels[chan].loopActive = (data.offset != 0);
     bool valid = false;
-    if (data.loop_start || data.loop_end) {
+    if (outData.loop_start || outData.loop_end) {
         valid = true;
     }
-    if (data.loop_end < data.loop_start) {
+    if (outData.loop_end < outData.loop_start) {
         valid = false;
     }
-    if (data.loop_end >= cd.frames) {
+    if (outData.loop_end >= cd.frames) {
         valid = false;
     }
-    if ((data.loop_end > 0) && (data.loop_end <= data.loop_start)) {
+    if ((outData.loop_end > 0) && (outData.loop_end <= outData.loop_start)) {
         valid = false;
     }
     channels[chan].loopActive = valid && sqLooped;
@@ -432,7 +451,7 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
 
     // they should have called setSample right before
     assert(0 == cd.curFloatSampleOffset);
-    cd.curFloatSampleOffset = data.offset;
+    cd.curFloatSampleOffset = outData.offset;
 
     cd.offsetBuffer[0] = 0;
     cd.endBuffer[3] = 0;
@@ -442,7 +461,7 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& data) {
     }
 
     if (cd.loopActive) {
-        assert(cd.loopData.loop_end >= (cd.loopData.loop_start + 4));
+        assert(cd.loopData.loop_end >= (cd.loopData.loop_start + 3));
         for (int i = 0; i < 8; ++i) {
             if (i <= 3) {                                           // first four samples are from end of loop
                 const int endIndex = i + cd.loopData.loop_end - 3;  // where we get data to move
