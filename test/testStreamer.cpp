@@ -185,6 +185,7 @@ public:
     CompiledRegion::LoopData loopData;
     bool expectCanPlayAfter = false;
     unsigned int expectedOutputSamples = 0;
+    float transposeMult = 1;
 };
 
 static void testStreamValuesSub(TestValues& v) {
@@ -192,20 +193,21 @@ static void testStreamValuesSub(TestValues& v) {
         v.expectedOutputSamples = v.sampleCount;
     }
 
+   // assert(v.transposeMult == 1);
     assert(v.sampleCount);
     assert(v.skipSamples < v.sampleCount);
     assert(v.input && v.expectedOutput);
 
     v.s.setSample(v.channel, v.input, v.sampleCount);
     v.s.setLoopData(v.channel, v.loopData);
-    v.s.setTranspose(float_4(1));
+    v.s.setTranspose(float_4(v.transposeMult));
     assertEQ(v.s._cd(v.channel).canPlay(), true);
     v.s.channels[v.channel].curFloatSampleOffset += v.fractionalOffset;
     for (unsigned int i = 0; i < v.expectedOutputSamples; ++i) {
-        SQINFO("\ntop of test loop %d", i);
+      //  SQINFO("\ntop of test loop %d", i);
         v.s._assertValid();
         float_4 vx = v.s.step(0, false);
-        SQINFO("sample[%d] = %f", i, vx[v.channel]);
+     //   SQINFO("sample[%d] = %f", i, vx[v.channel]);
         if (i >= v.skipSamples) {
             assertClose(vx[v.channel], v.expectedOutput[i], .01);
         }
@@ -244,6 +246,30 @@ static void testStreamValueOSc() {
     v.expectedOutputSamples = 12;
     v.loopData.oscillator = true;
     v.expectCanPlayAfter = true;
+
+    testStreamValuesSub(v);
+}
+
+// This was assererting before
+static void testStreamValueOSc2() {
+     SQINFO("-- testStreamValuesOsc2 -- ");
+
+    // const int size = 2048;
+    // 
+    // 64 gives good failure
+     // 8 gives different failure
+    const int size = 8;
+    float input[size] =  {0};
+    float output[size] = {0};
+    TestValues v;
+    v.channel = 0;
+    v.input = input;
+    v.expectedOutput = output;
+    v.sampleCount = size;
+    v.expectedOutputSamples = size * 2;
+    v.loopData.oscillator = true;
+    v.expectCanPlayAfter = true;
+    v.transposeMult = 1.15f;
 
     testStreamValuesSub(v);
 }
@@ -481,5 +507,6 @@ void testStreamer() {
     testStreamValuesOffset();
     testStreamValueEnd();
     testStreamValueOSc();
+    testStreamValueOSc2();
     testFixedPoint();
 }

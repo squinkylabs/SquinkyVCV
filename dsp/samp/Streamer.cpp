@@ -52,7 +52,7 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
 
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
 #ifdef _LOG
-    SQINFO("in loop offset=%f", cd.curFloatSampleOffset);
+    SQINFO("in stepTranspose offset=%f cd=%p", cd.curFloatSampleOffset, &cd);
 #endif
     if (cd.loopActive && (cd.curFloatSampleOffset >= (cd.loopData.loop_end - 2))) {
         const int dataBufferOffset = 3 - cd.loopData.loop_end;
@@ -143,7 +143,8 @@ void Streamer::ChannelData::advancePointer(float lfm) {
 #endif
     }
 #ifdef _LOG
-    SQINFO("Leaving advancePointer, frames = %d, offset = %f", frames, curFloatSampleOffset);
+    SQINFO("Leaving advancePointer, frames = %d, offset = %f this=%p", frames, curFloatSampleOffset, this);
+    SQINFO("tmult = %f, lfm=%f", transposeMultiplier, lfm);
 #endif
     if (!loopActive) {
         // if (!CubicInterpolator<float>::canInterpolate(float(curFloatSampleOffset), frames)) {

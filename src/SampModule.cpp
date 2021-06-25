@@ -151,6 +151,12 @@ struct SampWidget : ModuleWidget {
             theMenu->addChild(spath);
         }
 #endif
+        {
+            SqMenuItem_BooleanParam2* delay = new SqMenuItem_BooleanParam2(module, Comp::TRIGGERDELAY_PARAM);
+            delay->text = "Trigger delay";
+            
+            theMenu->addChild(delay);
+        }
     }
 
     void step() override;

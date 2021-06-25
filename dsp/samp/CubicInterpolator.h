@@ -52,6 +52,7 @@ inline T CubicInterpolator<T>::interpolate(T offset, T y0, T y1, T y2, T y3) {
 }
 template <typename T>
 inline T CubicInterpolator<T>::interpolate(const T* data, T offset) {
+   // SQINFO("cubic int : int ofset=%f", offset );
     assert(offset >= 0);
     unsigned int delayTimeSamples = getIntegerPart(offset);
     assert(delayTimeSamples >= 1);

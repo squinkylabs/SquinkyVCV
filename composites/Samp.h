@@ -125,6 +125,7 @@ public:
 #endif
         VOLUME_PARAM,
         SCHEMA_PARAM,
+        TRIGGERDELAY_PARAM,
         NUM_PARAMS
     };
 
@@ -565,6 +566,9 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
             break;
         case Samp<TBase>::SCHEMA_PARAM:
             ret = {0, 10, 0, "SCHEMA"};
+            break;
+         case Samp<TBase>::TRIGGERDELAY_PARAM:
+            ret = {0, 1, 1, "TRIGGER DELAY"};
             break;
         default:
             assert(false);
