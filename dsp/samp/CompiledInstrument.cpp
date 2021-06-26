@@ -173,7 +173,7 @@ void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float re
     info.gain = velToGain(midiVelocity, regionVeltrack) * regionGainMult;
 }
 
-void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate) {
+void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate, bool isOscillator) {
     assert(sampleRate > 100);
     // first base pitch
     const int semiOffset = midiPitch - regionKeyCenter;
@@ -198,8 +198,19 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
 #endif
     }
 
-    // then sample rate correction
-    if (loader) {
+    if (!loader) {
+        return;
+    }
+
+    auto waveInfo = loader->getInfo(info.sampleIndex);
+    if (isOscillator) {
+        // treat waveform as once cycle of wavetable
+        float transpose = 261.626f * waveInfo->getTotalFrameCount() / sampleRate;
+        SQINFO("raw transpose ratio = %f", transpose);
+        info.transposeV =  PitchUtils::freqRatioToSemitone(transpose) / 12;
+        SQINFO("computed trans = %f", info.transposeV);
+    } else {
+        // transpose calculation for normal playback
         // do we need to adapt to changed sample rate?
         unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->getSampleRate();
         if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
@@ -227,7 +238,7 @@ bool CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
         info.sampleIndex = region->sampleIndex;
         info.valid = true;
         info.ampeg_release = region->ampeg_release;
-        getPlayPitch(info, params.midiPitch, region->keycenter, region->tune, loader, sampleRate);
+        getPlayPitch(info, params.midiPitch, region->keycenter, region->tune, loader, sampleRate, region->loopData.oscillator);
         getGain(info, params.midiVelocity, region->amp_veltrack, region->volume);
         info.loopData = region->loopData;
     }

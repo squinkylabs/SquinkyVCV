@@ -77,6 +77,7 @@ void Sampler4vx::updatePitch() {
     float_4 transposeAmt;
     for (int i = 0; i < 4; ++i) {
         transposeAmt[i] = PitchUtils::semitoneToFreqRatio(combinedCV[i]);
+      //  SQINFO("kb=%f combinedCV = %f giving xpose %f", pitchCVFromKeyboard[i], combinedCV[i], transposeAmt[i]);
     }
     player.setTranspose(transposeAmt);
 #if 0
@@ -87,6 +88,7 @@ void Sampler4vx::updatePitch() {
 }
 
 bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
+    SQINFO("note on, midid pitch = %d", midiPitch);
     assert(sampleRate > 100);
     if (!patch || !waves) {
         if (printErrors) {

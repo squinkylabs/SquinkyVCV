@@ -204,10 +204,10 @@ static void testStreamValuesSub(TestValues& v) {
     assertEQ(v.s._cd(v.channel).canPlay(), true);
     v.s.channels[v.channel].curFloatSampleOffset += v.fractionalOffset;
     for (unsigned int i = 0; i < v.expectedOutputSamples; ++i) {
-      //  SQINFO("\ntop of test loop %d", i);
+        // SQINFO("\ntop of test loop %d", i);
         v.s._assertValid();
         float_4 vx = v.s.step(0, false);
-     //   SQINFO("sample[%d] = %f", i, vx[v.channel]);
+        // SQINFO("sample[%d] = %f", i, vx[v.channel]);
         if (i >= v.skipSamples) {
             assertClose(vx[v.channel], v.expectedOutput[i], .01);
         }
@@ -234,7 +234,7 @@ static void testStreamValueEnd() {
 }
 
 static void testStreamValueOSc() {
-     SQINFO("-- testStreamValuesOsc -- ");
+    SQINFO("-- testStreamValuesOsc -- ");
 
     float input[4] =  {1, 2, 3, 4};
     float output[12] = { 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4 };
@@ -251,7 +251,7 @@ static void testStreamValueOSc() {
 }
 
 static void testStreamValueOSc2(int playRegionSize, float fractionalOffset, float transpose) {
-    const int buffSize = 100;
+    const int buffSize = 110;
     assert(playRegionSize < (buffSize - 4));
     assert(transpose > 0);
     assert(fractionalOffset >= 0);
@@ -274,8 +274,8 @@ static void testStreamValueOSc2(int playRegionSize, float fractionalOffset, floa
     v.transposeMult = transpose;
     v.input = buffer + 2;
     v.expectedOutput = expectedOutput;
-    v.sampleCount = playRegionSize * 3;
-    v.expectedOutputSamples = buffSize;
+    v.sampleCount = buffSize;
+    v.expectedOutputSamples = buffSize * 3;
     v.expectCanPlayAfter = true;
     v.loopData.oscillator = true;
 }
@@ -291,6 +291,10 @@ static void testStreamValueOSc2() {
         float frac = float(i) / 10;
         testStreamValueOSc2(11, frac, 1);
     }
+
+     testStreamValueOSc2(100, 0, 1.15f);
+     testStreamValueOSc2(64, 0, 1.15f);
+     testStreamValueOSc2(8, 0, 1.15f);
   
 }
 
@@ -298,13 +302,13 @@ static void testStreamValueOSc2() {
 static void testStreamValueOSc3() {
      SQINFO("-- testStreamValuesOsc3 -- ");
 
-    // const int size = 2048;
+    const int size = 2048;
     // 
     // 64 gives good failure
      // 8 gives different failure
-    const int size = 8;
+    // const int size = 8;
     float input[size] =  {0};
-    float output[size] = {0};
+    float output[size * 2] = {0};
     TestValues v;
     v.channel = 0;
     v.input = input;
@@ -533,6 +537,8 @@ static void testFixedPoint() {
 }
 
 void testStreamer() {
+    testStreamValueOSc3();
+
     testCubicInterp();
     testCubicInterpDouble();
     testCubicInterp2Double();

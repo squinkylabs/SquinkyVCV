@@ -7,6 +7,7 @@
 #include "SParse.h"
 #include "SamplerErrorContext.h"
 #include "SqLog.h"
+#include "WaveLoader.h"
 
 extern void testPlayInfoTinnyPiano();
 extern void testPlayInfoSmallPiano();
@@ -695,6 +696,66 @@ static void testPlayLoop() {
 
 }
 
+#if 0
+static void testPlayOsc() {
+    SQINFO("-- testPlayOsc --");
+    // for reference - normal pitch
+    {
+        const char* data = (R"foo(
+          <region>sample=a
+                key=60 
+          )foo");
+        SInstrumentPtr inst = std::make_shared<SInstrument>();
+        auto err = SParse::go(data, inst);
+
+        SamplerErrorContext errc;
+        auto cinst = CompiledInstrument::make(errc, inst);
+        assertEQ(errc.unrecognizedOpcodes.size(), 0);
+
+        WaveLoaderPtr w = std::make_shared<WaveLoader>();
+        w->_setTestMode(WaveLoader::Tests::DCOneSec);
+
+        VoicePlayInfo info;
+        VoicePlayParameter params;
+        params.midiPitch = 60;              // middle C
+        params.midiVelocity = 60;
+
+        cinst->play(info, params, w.get(), 44100);
+        SQINFO("normal play, transv = %f", info.transposeV);
+        assert(info.valid);
+    }
+
+    // now the test of loop
+    {
+        SQINFO("-- testPlayOsc (looped) --");
+        const char* data = (R"foo(
+          <region>sample=a oscillator=on
+          )foo");
+        SInstrumentPtr inst = std::make_shared<SInstrument>();
+        auto err = SParse::go(data, inst);
+
+        SamplerErrorContext errc;
+        auto cinst = CompiledInstrument::make(errc, inst);
+        assertEQ(errc.unrecognizedOpcodes.size(), 0);
+
+        WaveLoaderPtr w = std::make_shared<WaveLoader>();
+        w->_setTestMode(WaveLoader::Tests::Zero2048);
+
+        VoicePlayInfo info;
+        VoicePlayParameter params;
+        params.midiPitch = 60;              // middle C
+        params.midiVelocity = 60;
+
+        cinst->play(info, params, w.get(), 44100);
+        assert(info.valid);
+        SQINFO("loop play, transv = %f", info.transposeV);
+    }
+
+    assert(false);
+
+}
+#endif
+
 static void compileShouldFindMalformed(const char* input) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -769,6 +830,7 @@ void testx3() {
     testPlayOverlapPitch();
     testPlayOverlapRestore();
     testPlayLoop();
+    //testPlayOsc();
 
     assert(parseCount == 0);
     assert(compileCount == 0);

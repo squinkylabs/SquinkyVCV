@@ -26,7 +26,7 @@
  * 
  * mostly in testx3
  * testRegion...    test the CompiledRegion object itself
- * testPlay..   compiles and intsrument and plays it
+ * testPlay..   compiles an instrument and plays it
  * 
  * mostly in testx4
  * testFilePath.. test of the filePath object that is used a lot if SFZ Player

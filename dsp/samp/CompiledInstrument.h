@@ -137,8 +137,12 @@ private:
 
     /**
      * these helpers help fill in VoicePlayInfo
+     * for getPlayPitch 
+     * @param isOscillator if true we treat wave data as a single cycle
+     * @param sampleFrames only used if isOscillator is true
      */
-    static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate);
+
+    static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate, bool isOscillator);
     static void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack, float regionVolumeDb);
 
     bool playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate);

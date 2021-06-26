@@ -51,6 +51,7 @@ float_4 Streamer::step(float_4 fm, bool fmEnabled) {
 }
 
 float Streamer::stepTranspose(ChannelData& cd, float lfm) {
+    assert(cd.curFloatSampleOffset >= 0);
 #ifdef _LOG
     SQINFO("in stepTranspose offset=%f cd=%p", cd.curFloatSampleOffset, &cd);
 #endif
@@ -126,21 +127,32 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
 }
 
 void Streamer::ChannelData::advancePointer(float lfm) {
+#ifdef _LOG
+        SQINFO("enter advance, offset=%f, trans=%f", curFloatSampleOffset, transposeMultiplier);
+#endif
     curFloatSampleOffset += transposeMultiplier;
     curFloatSampleOffset += lfm;
 
     // don't let FM push it negative
     curFloatSampleOffset = std::max(0.0, curFloatSampleOffset);
 
-    if (loopActive && (curFloatSampleOffset > loopData.loop_end)) {
+    // original - fails osc3
+    //  if (loopActive && (curFloatSampleOffset > loopData.loop_end)) {
+    if (loopActive && (curFloatSampleOffset >= (loopData.loop_end + 1))) {
 #ifdef _LOG
-        SQINFO("in advance, offset was %f", curFloatSampleOffset);
+        SQINFO("in advance loop, offset was %f", curFloatSampleOffset);
+        SQINFO("  loop end=%d loop start = %d", loopData.loop_end, loopData.loop_start);
 #endif
+        // original way - failed osc3 test
         const int loopLength = loopData.loop_end - loopData.loop_start;
         curFloatSampleOffset -= (loopLength + 1);
+
+        // 2: try this instead, but then 4 does not wrap to zero, as it should
+        // curFloatSampleOffset -= (loopData.loop_end - loopData.loop_start);
 #ifdef _LOG
         SQINFO("after adjust: %f", curFloatSampleOffset);
 #endif
+        assert(curFloatSampleOffset >= 0);
     }
 #ifdef _LOG
     SQINFO("Leaving advancePointer, frames = %d, offset = %f this=%p", frames, curFloatSampleOffset, this);
@@ -339,6 +351,8 @@ void Streamer::clearSamples(int channel) {
 }
 
 void Streamer::setTranspose(float_4 amount) {
+    // SQINFO("Streamer::setTranspose %s", toStr(amount).c_str());
+
     // TODO: make more efficient!!
     for (int channel = 0; channel < 4; ++channel) {
         ChannelData& cd = channels[channel];
@@ -347,6 +361,13 @@ void Streamer::setTranspose(float_4 amount) {
         bool doTranspose = delta > .0001;  // TODO: is this in tune enough?
         cd.transposeEnabled = doTranspose;
         cd.transposeMultiplier = xpose;
+      //  SQINFO("set t=%f on ch%d", cd.transposeMultiplier, channel);
+#if 0 // debuging trap
+        if (xpose > 2) {
+            SQINFO("set t=%f on ch%d", cd.transposeMultiplier, channel);
+            assert(false);
+        }
+#endif
         assert(!std::isinf(cd.transposeMultiplier));
     }
 }
@@ -475,15 +496,15 @@ void Streamer::setLoopData(int chan, const CompiledRegion::LoopData& inData) {
     }
 #ifdef _LOG
     for (int i = 0; i < 4; ++i) {
-        SQINFO("offset[%d]=%f", i, cd.offsetBuffer[i]);
+        SQINFO("offset buffer[%d]=%f", i, cd.offsetBuffer[i]);
     }
     SQINFO("");
     for (int i = 0; i < 4; ++i) {
-        SQINFO("end[%d]=%f", i, cd.endBuffer[i]);
+        SQINFO("end buffer[%d]=%f", i, cd.endBuffer[i]);
     }
     SQINFO("");
     for (int i = 0; i < 8; ++i) {
-        SQINFO("loop_end[%d]=%f", i, cd.loopEndBuffer[i]);
+        SQINFO("loop_end buffer [%d]=%f", i, cd.loopEndBuffer[i]);
     }
     SQINFO("loopActive = %d, loop end = %d", channels[chan].loopActive, channels[chan].loopData.loop_end);
     SQINFO("offset = %d", channels[chan].loopData.offset);

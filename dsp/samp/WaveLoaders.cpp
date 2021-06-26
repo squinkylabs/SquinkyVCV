@@ -36,7 +36,7 @@ public:
 
 private:
     void convertToMono();
-    float* loadData(unsigned& numChannels);          // no format conversion or checking
+    float* loadData(unsigned& numChannels);  // no format conversion or checking
 };
 
 #ifdef ARCH_WIN
@@ -82,7 +82,6 @@ bool WaveFileLoader::load(std::string& errorMessage) {
     return true;
 }
 
-
 void WaveFileLoader::convertToMono() {
     uint64_t newBufferSize = 1 + totalFrameCount;
     void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
@@ -119,7 +118,7 @@ public:
 
             return true;
         }
-        errorMsg = "can't open " +  fp.getFilenamePart();
+        errorMsg = "can't open " + fp.getFilenamePart();
         return false;
     }
 
@@ -143,6 +142,9 @@ public:
             case WaveLoader::Tests::RampOneSec:
                 setupRamp(1);
                 break;
+            case WaveLoader::Tests::Zero2048:
+                setupLoop();
+                break;
             default:
                 assert(false);
         }
@@ -164,6 +166,15 @@ private:
         totalFrameCount = 44100 * seconds;
         for (uint64_t i = 0; i < totalFrameCount; ++i) {
             data[i] = float(i);
+        }
+    }
+    void setupLoop() {
+        const int size = 2048;
+        data = reinterpret_cast<float*>(DRWAV_MALLOC(size * sizeof(float)));
+        sampleRate = 44100;
+        totalFrameCount = size;
+        for (uint64_t i = 0; i < totalFrameCount; ++i) {
+            data[i] = 0;
         }
     }
     const WaveLoader::Tests _test = WaveLoader::Tests::None;
@@ -208,6 +219,7 @@ void WaveLoader::_setTestMode(Tests test) {
         case Tests::None:
             break;
         case Tests::RampOneSec:
+        case Tests::Zero2048:
         case Tests::DCTenSec:
         case Tests::DCOneSec: {
             finalInfo.push_back(wav);
