@@ -250,9 +250,53 @@ static void testStreamValueOSc() {
     testStreamValuesSub(v);
 }
 
-// This was assererting before
+static void testStreamValueOSc2(int playRegionSize, float fractionalOffset, float transpose) {
+    const int buffSize = 100;
+    assert(playRegionSize < (buffSize - 4));
+    assert(transpose > 0);
+    assert(fractionalOffset >= 0);
+    assert(fractionalOffset < 1);
+
+
+    float buffer[buffSize];
+    float expectedOutput[buffSize] = {0};
+    for (int i=0; i<buffSize; ++i) {
+        buffer[i] = 0;
+    }
+    buffer[0] = 1000;
+    buffer[1] = 2000;
+    buffer[2 + playRegionSize] = -3000;
+    buffer[3 + playRegionSize] = -9000;
+
+    TestValues v;
+    v.channel = 0;
+    v.fractionalOffset = fractionalOffset;
+    v.transposeMult = transpose;
+    v.input = buffer + 2;
+    v.expectedOutput = expectedOutput;
+    v.sampleCount = playRegionSize * 3;
+    v.expectedOutputSamples = buffSize;
+    v.expectCanPlayAfter = true;
+    v.loopData.oscillator = true;
+}
+
 static void testStreamValueOSc2() {
-     SQINFO("-- testStreamValuesOsc2 -- ");
+    SQINFO("-- testStreamValuesOsc2 -- ");
+    // first, no fractions
+    for (int i = 4; i < 12; ++i) {
+        testStreamValueOSc2(i, 0, 1);
+    }
+
+    for (int i = 0; i < 10; ++i) {
+        float frac = float(i) / 10;
+        testStreamValueOSc2(11, frac, 1);
+    }
+  
+}
+
+// This was assererting before
+static void testStreamValueOSc3() {
+     SQINFO("-- testStreamValuesOsc3 -- ");
 
     // const int size = 2048;
     // 
@@ -508,5 +552,6 @@ void testStreamer() {
     testStreamValueEnd();
     testStreamValueOSc();
     testStreamValueOSc2();
+    testStreamValueOSc3();
     testFixedPoint();
 }
