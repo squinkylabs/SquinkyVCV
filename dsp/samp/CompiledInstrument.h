@@ -61,8 +61,8 @@ class CompiledInstrument : public ISamplerPlayback {
 public:
     enum class Tests {
         None,
-        MiddleC,   // PLays sample 1 at midi pitch 60 rel = .6
-        MiddleC11,   // PLays sample 1 at midi pitch 60 rel = 1.1
+        MiddleC,    // PLays sample 1 at midi pitch 60 rel = .6
+        MiddleC11,  // PLays sample 1 at midi pitch 60 rel = 1.1
     };
 
     /**
@@ -103,6 +103,7 @@ public:
     static float velToGain(int midiVelocity, float veltrack);
 
     bool isInError() const { return _isInError; }
+
 private:
     RegionPool regionPool;
     Tests ciTestMode = Tests::None;
@@ -142,7 +143,11 @@ private:
      * @param sampleFrames only used if isOscillator is true
      */
 
-    static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate, bool isOscillator);
+    // static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate, bool isOscillator);
+
+    static void getPlayPitchNorm(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate);
+    static void  getPlayPitchOsc(VoicePlayInfo& info, int midiPitch, int tuneCents, WaveLoader* loader, float sampleRate);
+
     static void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack, float regionVolumeDb);
 
     bool playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate);

@@ -88,7 +88,7 @@ void Sampler4vx::updatePitch() {
 }
 
 bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
-    SQINFO("note on, midid pitch = %d", midiPitch);
+    // SQINFO("note on, midid pitch = %d", midiPitch);
     assert(sampleRate > 100);
     if (!patch || !waves) {
         if (printErrors) {
