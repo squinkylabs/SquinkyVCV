@@ -191,7 +191,7 @@ void  CompiledInstrument::getPlayPitchOsc(VoicePlayInfo& info, int midiPitch, in
     //  -.033 +.02
     // .035 almost perfect
     // .035 * 12 = .42
-    transposeVoltage -= .035;
+    transposeVoltage -= .035f;
    
     info.transposeV = transposeVoltage;
     // assert(false);

@@ -433,10 +433,11 @@ static void testSampOsc() {
         bool b = s->note_on(0, 60, 60, 44100);
         auto tr = s->_player()._transAmt(0);
         SQINFO("case 415: tr = %f", tr);
+        assertClose(tr, 11.858, .01);
     }
     SQINFO("**************** finish me ********************");
-    //assertClose(tr, 12.149888, .01);
-    assert(false);
+   
+   // assert(false);
 }
 
 static void testSampOffset() {
