@@ -18,7 +18,7 @@
  * Mostly in testxLex:
  * testLex... - any test of the lexer only.
  * 
- * mostly in text2.cpp
+ * mostly in testx2.cpp
  * testWaveLoader... - test of the save loader
  * testParseHeading...  specific parse tests around headings.
  * testCompiledRegion... mostly tests of the lower level compiled region struct
@@ -324,7 +324,7 @@ extern int compileCount;
 void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
-#if 1
+
     testParse1();
     testParseRegion();
     testParse2();
@@ -354,7 +354,6 @@ void testx() {
     // merge conflict here. does this work? a: it was deleted in main
     //testParseDX();
     testParseCurve();
-#endif
     testParseLineNumbers();
     assert(parseCount == 0);
 }

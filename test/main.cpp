@@ -128,6 +128,7 @@ extern void testHeadingTracker();
 extern void do_gc();
 extern void testxLex();
 extern void testGateDelay();
+extern void testRegionPrune();
 
 #if 0
 #include <iostream>
@@ -233,6 +234,7 @@ int main(int argc, char** argv) {
     testSimpleQuantizer();
     testFilterComposites();
 
+    testRegionPrune();      // TODO: move this laster
     testStreamer();
     testHeadingTracker();
     testxLex();
