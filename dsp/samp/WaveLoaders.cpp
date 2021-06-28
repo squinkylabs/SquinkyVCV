@@ -225,6 +225,7 @@ void WaveLoader::_setTestMode(Tests test) {
             finalInfo.push_back(wav);
             std::string err;
             const bool b = wav->load(err);
+            (void) b;
             assert(b);
             didLoad = true;
         } break;

@@ -30,7 +30,7 @@ float WaveLoader::getProgressPercent() const {
 }
 
 WaveLoader::LoaderState WaveLoader::loadNextFile() {
-    if (curLoadIndex >= filesToLoad.size()) {
+    if (curLoadIndex >= int(filesToLoad.size())) {
         return LoaderState::Done;
     }
 
@@ -48,7 +48,7 @@ WaveLoader::LoaderState WaveLoader::loadNextFile() {
 
     finalInfo.push_back(fileLoader);
     curLoadIndex++;
-    auto ret = curLoadIndex >= filesToLoad.size() ? LoaderState::Done : LoaderState::Progress;
+    auto ret = curLoadIndex >= int(filesToLoad.size()) ? LoaderState::Done : LoaderState::Progress;
     if (ret == LoaderState::Done) {
         didLoad = true;
     }

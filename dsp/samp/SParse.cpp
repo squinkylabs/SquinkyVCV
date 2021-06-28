@@ -44,7 +44,7 @@ std::string SParse::readFileIntoString(FILE* fp) {
     res.resize(size);
 
     const size_t numRead = fread(const_cast<char*>(res.data()), 1, size, fp);
-    if (numRead != long(size)) {
+    if (numRead != size_t(size)) {
         res.resize(numRead);
     }
     return res;
@@ -136,8 +136,6 @@ std::string SParse::matchHeadingGroups(SInstrumentPtr inst, SLexPtr lex) {
 // I think now this just needs to match a single heading
 
 SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
-    bool matchedOneHeading = false;
-
     SHeadingPtr theHeading;
   //  SQINFO("about to call match extln=%d", lex->next()->lineNumber);
     Result result = matchSingleHeading(lex, theHeading);

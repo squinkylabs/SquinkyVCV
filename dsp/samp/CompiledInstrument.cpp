@@ -92,6 +92,7 @@ public:
     std::vector<CompiledRegionPtr> regions;
 };
 
+#if 0
 static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions) {
     int x = 0;
     for (auto reg : inputRegions) {
@@ -99,6 +100,7 @@ static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions) {
         ++x;
     }
 }
+#endif
 
 void CompiledInstrument::_dump(int depth) const {
     regionPool._dump(depth);
@@ -388,19 +390,7 @@ void CompiledInstrument::expandAllKV(SamplerErrorContext& err, SInstrumentPtr in
     for (auto iter : inst->headings) {
         iter->compiledValues = SamplerSchema::compile(err, iter->values);
     }
-#if 0  // old stuff. merge conflict
 
-    inst->global.compiledValues = SamplerSchema::compile(err, inst->global.values);
-    inst->master.compiledValues = SamplerSchema::compile(err, inst->master.values);
-    //   inst->control.compiledValues = SamplerSchema::compile(inst->control.values);
-
-    for (auto group : inst->groups) {
-        group->compiledValues = SamplerSchema::compile(err, group->values);
-        for (auto region : group->regions) {
-            region->compiledValues = SamplerSchema::compile(err, region->values);
-        }
-    }
-#endif
     inst->wasExpanded = true;
 }
 

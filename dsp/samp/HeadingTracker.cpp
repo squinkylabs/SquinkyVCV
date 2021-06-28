@@ -44,7 +44,7 @@ HeadingTracker::HeadingTracker(const SHeadingList& hl) : headings(hl) {
 
     const int regionIndex = int(SHeading::Type::Region);
     // first fill the regions slots, if possible
-    for (int headingIndex = 0; headingIndex < headings.size(); ++headingIndex) {
+    for (int headingIndex = 0; headingIndex < int(headings.size()); ++headingIndex) {
         const SHeadingPtr heading = headings[headingIndex];
         if (heading->type == SHeading::Type::Region) {
             //const int index = int(SHeading::Type::Region);
@@ -60,9 +60,7 @@ HeadingTracker::HeadingTracker(const SHeadingList& hl) : headings(hl) {
 
     // new fill the non-region slots
     // iterate through every heading we have in order
-    //  const size_t headingIndexLimit = std::min(headings.size(), size_t(SHeading::Type::NUM_TYPES_INHERIT));
-    //  SQINFO("size=%d, limit=%d", headings.size(), headingIndexLimit);
-    for (int headingIndex = 0; headingIndex < headings.size(); ++headingIndex) {
+    for (int headingIndex = 0; headingIndex < int(headings.size()); ++headingIndex) {
         const SHeadingPtr heading = headings[headingIndex];
 
         // we have already done regions, so filter them out of the loop
@@ -94,7 +92,7 @@ void HeadingTracker::nextRegion() {
     // first, move to next region.
     const int regionIndex = int(SHeading::Type::Region);
     // const bool hadNext = nextHeadingsIndex[regionIndex] >= 0;
-    const int prevNextRegion = nextHeadingsIndex[regionIndex];
+    //const int prevNextRegion = nextHeadingsIndex[regionIndex];
 
     // move next to cur
     curHeadingsIndex[regionIndex] = nextHeadingsIndex[regionIndex];
@@ -103,7 +101,7 @@ void HeadingTracker::nextRegion() {
     const int curRegionHeadingIndex = curHeadingsIndex[regionIndex];
 
     // now that we have advanced region, let's think about moving up others
-    const size_t elements = int(SHeading::Type::NUM_TYPES_INHERIT);
+    const int elements = int(SHeading::Type::NUM_TYPES_INHERIT);
     for (int i = 0; i < elements; ++i) {
         // if we are a region parent
         if (i != regionIndex) {
@@ -126,7 +124,7 @@ void HeadingTracker::nextRegion() {
             int nextIndexCandidate = 1 + std::max(curRegionHeadingIndex, nextHeadingsIndex[iType]);
             nextHeadingsIndex[iType] = -1;  // clear it out before search
             for (bool done = false; !done; ++nextIndexCandidate) {
-                if (nextIndexCandidate >= headings.size()) {
+                if (nextIndexCandidate >= int(headings.size())) {
                     done = true;  // we ran out
                 } else {
                     auto type = headings[nextIndexCandidate]->type;
