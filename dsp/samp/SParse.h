@@ -54,6 +54,8 @@ public:
         NUM_TYPES_ALL
     };
 
+    SHeading() = delete;
+    SHeading(const SHeading&) = delete;
     SHeading(Type t, int lnNumber) : lineNumber(lnNumber), type(t) {
     }
     /**
@@ -72,7 +74,7 @@ public:
             SQINFO("key=%s val=%s", k->key.c_str(), k->value.c_str());
         }
     }
-    const int lineNumber = 0;
+const int lineNumber = 0;
     const Type type = {Type::Unknown};
 };
 

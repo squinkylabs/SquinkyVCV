@@ -36,7 +36,6 @@
  * testSampler4v... tests of the lower level sample playback class
  */
 
-
 static void testParse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
@@ -52,8 +51,6 @@ static void testParseRegion() {
     assertEQ(inst->headings.size(), 1);
     assertEQ(int(inst->headings[0]->type), int(SHeading::Type::Region));
 }
-
-
 
 static void testParse2() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -79,8 +76,6 @@ static void testParseLabel2() {
     assertEQ(err.find("extra tok"), 0);
 }
 
-
-
 static void testParseGroupAndValues() {
     const char* test = R"foo(<group>a=b<region>)foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -94,7 +89,6 @@ static void testParseGroupAndValues() {
     assertEQ(inst->headings[0]->values.size(), 1);
     assertEQ(inst->headings[1]->values.size(), 0);
 }
-
 
 static void testParseGlobal() {
     // SQINFO("---- start test parse global\n");
@@ -129,7 +123,6 @@ static void testParseComment() {
     assert(err.empty());
 }
 
-
 static void testParseGroups() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><region><region>", inst);
@@ -162,7 +155,6 @@ static void testParseGlobalWithData() {
     auto err = SParse::go("<global>ampeg_release=0.6<region>", inst);
     assert(err.empty());
 }
-
 
 static void testparse_piano1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -207,9 +199,8 @@ static void testParseSimpleDrum() {
     assertEQ((int)inst->headings[7]->type, (int)SHeading::Type::Region);
 }
 
-
-static void  testParseComplexDrum1() {
- const char* p = R"foo(
+static void testParseComplexDrum1() {
+    const char* p = R"foo(
 <group> volume=-29 amp_veltrack=100 loop_mode=one_shot key=54 group=2         // crash1Choke /////
 <region> sample=OH\crash1Choke_OH_F_1.wav 
 
@@ -229,7 +220,7 @@ static void  testParseComplexDrum1() {
     assertEQ(fp.getExtensionLC().size(), 3);
 }
 
-static void  testParseComplexDrum() {
+static void testParseComplexDrum() {
     const char* p = R"foo(
 <region>sample=OH\crash1Choke_OH_F_1.wav 
 <group>
@@ -246,7 +237,6 @@ static void  testParseComplexDrum() {
     FilePath fp(filePath);
     assertEQ(fp.getExtensionLC().size(), 3);
 }
-
 
 // make sure we dont' crash from parsing unused regions.
 static void testParseCurve() {
@@ -266,7 +256,6 @@ v127=1
     assertEQ(inst->headings.size(), 1);
     assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Curve);
 }
-
 
 // We aren't using these random ranges any more, but might as will keep alive.
 static void testRandomRange0() {
@@ -296,14 +285,46 @@ static void testRandomRange1() {
     assertEQ(test.size(), 3);
 }
 
+static void testParseLineNumbers() {
+const char* p = R"foo(
+// 1
+// 2
+// 3
+<group>
+// 5
+// 6
+<region>
+// 8
+<region>
+// 10
+// 11
+// 12
+// 13
+<region>
+// 15
+// 16
+// 17
+// 18
+// 19
+)foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(p, inst);
+    assert(err.empty());
+
+    assertEQ(inst->headings.size(), 4);
+    assertEQ(inst->headings[0]->lineNumber, 4);
+    assertEQ(inst->headings[1]->lineNumber, 7);
+    assertEQ(inst->headings[2]->lineNumber, 9);
+    assertEQ(inst->headings[3]->lineNumber, 14);
+}
 
 extern int compileCount;
-
 
 void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
-
+#if 1
     testParse1();
     testParseRegion();
     testParse2();
@@ -333,5 +354,7 @@ void testx() {
     // merge conflict here. does this work? a: it was deleted in main
     //testParseDX();
     testParseCurve();
+#endif
+    testParseLineNumbers();
     assert(parseCount == 0);
 }

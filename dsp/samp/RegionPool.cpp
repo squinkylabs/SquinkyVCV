@@ -350,7 +350,7 @@ bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion,
 
     bool stillBad = regionsOverlap(firstRegion, secondRegion);
     if (stillBad) {
-        SQINFO("unable to repair overlaps at  %d and %d", firstRegion->lineNumber, secondRegion->lineNumber);
+        SQINFO("unable to repair overlaps at  lines %d and %d", firstRegion->lineNumber, secondRegion->lineNumber);
 
         // If we can't repair, then restore everything,
         // This ensures that post-delete the remaining region will be intact.
@@ -376,9 +376,7 @@ void RegionPool::removeOverlaps() {
 #endif
     int removed = 0;
     if (regions.size() < 2) {
-        //printf("leaving early, not enough regions\n");
         return;
-        //return removed;
     }
     sortByPitchAndVelocity(regions);
 
@@ -399,6 +397,12 @@ void RegionPool::removeOverlaps() {
             const int secondPitchRange = second->hikey - second->lokey;
             if (firstPitchRange <= secondPitchRange) {
                 SQINFO("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
+        #if 0
+                SQINFO("here is one going away: ");
+                second->_dump(1);
+                SQINFO("here is one staying: ");
+                first->_dump(1);
+        #endif
 
                 // if we want to erase the second one, do that.
                 // it still points at first, but next iteration there will be a different next;

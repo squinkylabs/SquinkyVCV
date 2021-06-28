@@ -139,6 +139,7 @@ SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
     bool matchedOneHeading = false;
 
     SHeadingPtr theHeading;
+  //  SQINFO("about to call match extln=%d", lex->next()->lineNumber);
     Result result = matchSingleHeading(lex, theHeading);
     if (result.res == Result::ok && theHeading) {
         inst->headings.push_back(theHeading);
@@ -167,13 +168,13 @@ SHeading::Type getHeadingType(const std::string& s) {
 
 SParse::Result SParse::matchSingleHeading(SLexPtr lex, SHeadingPtr& outputHeading) {
     Result result;
-
     auto tok = lex->next();
     if (!tok) {
         result.res = Result::no_match;
         return result;
     }
 
+    const int startLineNumber = lex->next() ? lex->next()->lineNumber : 0;
     SHeading::Type headingType = getHeadingType(getTagName(tok));
     if (headingType == SHeading::Type::Unknown) {
         result.res = Result::no_match;
@@ -195,14 +196,7 @@ SParse::Result SParse::matchSingleHeading(SLexPtr lex, SHeadingPtr& outputHeadin
         return result;
     }
 
-    int lineNumber = 0;
-    if (lex->next()) {
-        lineNumber = lex->next()->lineNumber;
-    }
-    outputHeading = std::make_shared<SHeading>(headingType, lineNumber);
-
-    // it it's not a heading we know or care about, just drop the values
-
+    outputHeading = std::make_shared<SHeading>(headingType, startLineNumber);
     outputHeading->values = std::move(keysAndValues);
     return result;
 }

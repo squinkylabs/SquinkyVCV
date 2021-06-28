@@ -52,13 +52,6 @@ SLexPtr SLex::goCommon(SLex* lx, LexContextPtr ctx) {
 }
 
 void SLex::validateName(const std::string& name) {
-// TODO: now that file names can have spaces, we can't do this.
-// maybe we should check in the parser or compiler, where we know what's what?
-#if 0
-    for (char const& c : name) {
-        assert(!isspace(c));
-    }
-#endif
 }
 
 void SLex::validate() const {
@@ -486,7 +479,5 @@ bool SLex::handleIncludeFile(const std::string& relativeFileName) {
     curItem.clear();
     // 3 continue lexing
     state = State::Ready;
-    // SQINFO("back frm %s", fullPath.toString().c_str());
-
     return true;
 }

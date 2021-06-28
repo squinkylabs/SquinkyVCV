@@ -307,6 +307,8 @@ bool CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
     bool didKS = false;
     const CompiledRegion* region = regionPool.play(params, r, didKS);
     if (region) {
+        // SQINFO("playing new region:");
+        // region->_dump(1);
         info.sampleIndex = region->sampleIndex;
         info.valid = true;
         info.ampeg_release = region->ampeg_release;
