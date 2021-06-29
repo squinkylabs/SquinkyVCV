@@ -124,7 +124,7 @@ private:
     bool procNextChar(char c, char nextC = -1);
     bool procFreshChar(char c, char nextC = -1);
     bool procNextTagChar(char c);
-    bool procNextCommentChar(char c);
+    bool procNextCommentChar(char c, char nextC);
     bool procNextIncludeChar(char c);
     bool procEnd();
     bool procNextIdentifierChar(char c);
@@ -169,8 +169,14 @@ private:
         MatchingRhs,
     };
 
+    enum class CommentSubState {
+        MatchingRegularComment,
+        MatchingMultilineComment,
+    };
+
     IncludeSubState includeSubState = IncludeSubState::MatchingOpcode;
     DefineSubState defineSubState = DefineSubState::MatchingOpcode;
+    CommentSubState commentSubState = CommentSubState::MatchingRegularComment;
 
     int spaceCount = 0;
       LexContextPtr const context;
@@ -183,10 +189,13 @@ private:
     std::string defineValue;
 
     int currentIndex = 0;
+    int charactersToEat = 0;
 
     // internally it's zero based, but we make it one based for things we expose.
     int currentLine = 0;
 
     static void validateName(const std::string&);
     static SLexPtr goCommon(SLex* lx, LexContextPtr);
+
+    char getNextChar();
 };

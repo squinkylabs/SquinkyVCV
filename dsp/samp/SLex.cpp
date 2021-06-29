@@ -2,6 +2,7 @@
 #include "SLex.h"
 
 #include <assert.h>
+
 #include <fstream>
 
 #include "FilePath.h"
@@ -27,6 +28,12 @@ SLexPtr SLex::goRecurse(LexContextPtr context) {
     return goCommon(lx, context);
 }
 
+#if 0
+char SLex::getNextChar() {
+    const char nextC = (i >= (sContent.size() - 1)) ? -1 : sContent[i + 1];
+}
+#endif
+
 SLexPtr SLex::goCommon(SLex* lx, LexContextPtr ctx) {
     int count = 0;
     SLexPtr result(lx);
@@ -43,6 +50,9 @@ SLexPtr SLex::goCommon(SLex* lx, LexContextPtr ctx) {
         if (!ret) {
             return nullptr;
         }
+        i += lx->charactersToEat;
+        lx->charactersToEat = 0;
+
         ++count;
     }
 
@@ -105,7 +115,7 @@ bool SLex::procNextChar(char c, char nextC) {
         case State::InTag:
             return procNextTagChar(c);
         case State::InComment:
-            return procNextCommentChar(c);
+            return procNextCommentChar(c, nextC);
         case State::InInclude:
             return procNextIncludeChar(c);
         case State::InIdentifier:
@@ -275,10 +285,17 @@ bool SLex::procNextIncludeChar(char c) {
     return true;
 }
 
-bool SLex::procNextCommentChar(char c) {
-    if (c == 10 || c == 13) {
-        //inComment = false;
-        state = State::Ready;
+bool SLex::procNextCommentChar(char c, char nextC) {
+    if (commentSubState == CommentSubState::MatchingRegularComment) {
+        if (c == 10 || c == 13) {
+            //inComment = false;
+            state = State::Ready;
+        }
+    } else {
+        if ((c == '*') && (nextC == '/')) {
+            state = State::Ready;
+            charactersToEat++;
+        }
     }
     return true;
 }
@@ -292,8 +309,9 @@ bool SLex::procFreshChar(char c, char nextC) {
             state = State::InTag;
             return true;
         case '/':
-            if (nextC == '/') {
+            if (nextC == '/' || nextC == '*') {
                 state = State::InComment;
+                commentSubState = (nextC == '*') ? CommentSubState::MatchingMultilineComment : CommentSubState::MatchingRegularComment;
                 return true;
             }
             break;

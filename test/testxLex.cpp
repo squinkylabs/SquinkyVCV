@@ -92,6 +92,26 @@ static void testLexComment2() {
     assertEQ(pTag->tagName, "global");
 }
 
+static void testLexComment3() {
+    LexContextPtr ctx = std::make_shared<LexContext>("/*       */");
+    SLexPtr lex = SLex::go(ctx);
+    assert(lex);
+    lex->validate();
+    SQINFO("lex error %s", ctx->errorString().c_str());
+    lex->_dump();
+    assertEQ(lex->items.size(), 0);
+}
+
+static void testLexComment4() {
+    LexContextPtr ctx = std::make_shared<LexContext>("/*   \n    */");
+    SLexPtr lex = SLex::go(ctx);
+    assert(lex);
+    lex->validate();
+    SQINFO("lex error %s", ctx->errorString().c_str());
+    lex->_dump();
+    assertEQ(lex->items.size(), 0);
+}
+
 static void testLexMultiLineCommon(const char* data) {
     SLexPtr lex = SLex::go(data);
     assert(lex);
@@ -574,6 +594,8 @@ void testxLex() {
     testLexTrivialComment();
     testLexComment();
     testLexComment2();
+    testLexComment3();
+    testLexComment4();
     testLexMultiLine1();
     testLexMultiLine2();
     testLexGlobalWithData();

@@ -44,8 +44,40 @@ static void testNarrowPitchWins() {
     testSub("<region>lokey=c3 hikey=c4  sample=bad <region>key=c3 sample=good");
 }
 
+static void testReleaseSamples() {
+    testSub("<region>key=c3 trigger=release sample=bad <region>key=c3  sample=good");
+}
+
+static void testReleaseSamples2() {
+    testSub("<region>key=c3 trigger=attack sample=good <region>key=c3  sample=bad");
+}
+
+static void testDamperPedal() {
+    testSub("<region>key=c3  locc64=1 sample=bad <region>key=c3 sample=good");
+}
+
+static void testDamperPedal2() {
+    testSub("<region>key=c3 locc64=0 sample=good <region>key=c3 sample=bad");
+}
+static void testDoesntAdjustPitch() {
+    testSub("<region>lokey=c3 hikey=c4  sample=good <region>lokey=c4 hikey=c5 sample=bad");
+}
+
+ //testCompileGroupSub(R"foo(<group>trigger=attack)foo", false);
+
+/* TODO:
+ release samples pruned
+ damper pedal pruned
+ check for others
+*/
 void testRegionPrune() {
     test0();
     testFirstWins();
     testNarrowPitchWins();
+    testReleaseSamples();
+    testReleaseSamples2();
+    testDamperPedal();
+    
+    testDamperPedal2();
+    //testDoesntAdjustPitch();
 }
