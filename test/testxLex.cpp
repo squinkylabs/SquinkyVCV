@@ -97,8 +97,6 @@ static void testLexComment3() {
     SLexPtr lex = SLex::go(ctx);
     assert(lex);
     lex->validate();
-    SQINFO("lex error %s", ctx->errorString().c_str());
-    lex->_dump();
     assertEQ(lex->items.size(), 0);
 }
 
@@ -110,6 +108,20 @@ static void testLexComment4() {
     SQINFO("lex error %s", ctx->errorString().c_str());
     lex->_dump();
     assertEQ(lex->items.size(), 0);
+}
+
+static void testLexComment5() {
+    LexContextPtr ctx = std::make_shared<LexContext>("<region>/*  <region> \n <region>   */<region>");
+    SLexPtr lex = SLex::go(ctx);
+    assert(lex);
+    lex->validate();
+    assertEQ(lex->items.size(), 2);
+    for (int i = 0; i < 2; ++i) {
+        auto item = lex->items[i];
+        assert(item->itemType == SLexItem::Type::Tag);
+        auto tag = static_cast<SLexTag *>(item.get());
+        assertEQ(tag->tagName, "region");
+    }
 }
 
 static void testLexMultiLineCommon(const char* data) {
@@ -596,6 +608,7 @@ void testxLex() {
     testLexComment2();
     testLexComment3();
     testLexComment4();
+    testLexComment5();
     testLexMultiLine1();
     testLexMultiLine2();
     testLexGlobalWithData();
