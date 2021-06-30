@@ -2,6 +2,7 @@
 #include "asserts.h"
 #include "GateTrigger.h"
 #include "SchmidtTrigger.h"
+#include "SqSchmidtTrigger.h"
 #include "TriggerOutput.h"
 
 #include <stdio.h>
@@ -202,6 +203,28 @@ static void testGateTriggerResetNoResetLogic()
 
 }
 
+static void testSqSchmidt() {
+    SqSchmittTrigger s;
+
+    auto x = s.process(float_4(0));
+    assert(SimdBlocks::areMasksEqual(x, SimdBlocks::maskFalse()));
+
+    x = s.process(float_4(5));
+    assert(SimdBlocks::areMasksEqual(x, SimdBlocks::maskTrue()));
+
+    x = s.process(float_4(1.5));
+    assert(SimdBlocks::areMasksEqual(x, SimdBlocks::maskTrue()));
+
+    x = s.process(float_4(.9f));
+    assert(SimdBlocks::areMasksEqual(x, SimdBlocks::maskFalse()));
+
+    x = s.process(float_4(1.6f));
+    assert(SimdBlocks::areMasksEqual(x, SimdBlocks::maskFalse()));
+
+    x = s.process(float_4(2.1f));
+    assert(SimdBlocks::areMasksEqual(x, SimdBlocks::maskTrue()));
+}
+
 void testGateTrigger()
 {
     sc0();
@@ -215,5 +238,6 @@ void testGateTrigger()
 
     testGateTriggerResetWithResetLogic();
     testGateTriggerResetNoResetLogic();
+    testSqSchmidt();
 
 }
