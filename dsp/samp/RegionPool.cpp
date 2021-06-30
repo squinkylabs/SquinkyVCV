@@ -202,9 +202,12 @@ void RegionPool::fillRegionLookup() {
         assert(high >= low);
         assert(low >= 0);
 
-        // map this region to very key it contains
-        for (int i = low; i <= high; ++i) {
-            noteActivationLists_[i].push_back(region.get());
+        // map this region to every key it contains
+        // but don't do it if a crazy negative key slipped in here
+        if (low >= 0) {
+            for (int i = low; i <= high; ++i) {
+                noteActivationLists_[i].push_back(region.get());
+            }
         }
     }
 }

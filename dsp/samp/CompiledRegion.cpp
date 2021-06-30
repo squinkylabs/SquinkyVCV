@@ -179,12 +179,12 @@ bool CompiledRegion::shouldIgnore() const {
     if (dontIgnore) {
         // Ignore samples that only play with damper pedal.
         dontIgnore = (locc64 == 0);
-#if 0
-        if (!dontIgnore) {
-            SQINFO("discarding region for damper pedal");
-        }
-#endif
     }
+     if (dontIgnore) {
+        // Ignore non-playing regaions due to key < 0
+        dontIgnore = (hikey >= 0) && (lokey >= 0);
+    }
+
     return !dontIgnore;
 }
 
@@ -295,6 +295,7 @@ bool CompiledRegion::LoopData::operator == (const LoopData& l) const {
 }
 
 void CompiledRegion::_dump(int depth) const {
+    SQINFO("** dumping region from line %d", this->lineNumber);
     SQINFO("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d", isKeyswitched(), sw_lolast, sw_hilast);
     SQINFO("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
     SQINFO("lorand=%.2f hirand=%.2f\n", lorand, hirand);
