@@ -110,8 +110,56 @@ static void testMasksEqual() {
     assert(!SimdBlocks::areMasksEqual(f, x));
 }
 
+static void testSingle(int channel) {
+    assert(channel >= 0);
+    assert(channel < 16);
+
+    float_4 zeros[4]{0};
+    float_4 input[4]{0};
+    for (int i = 0; i < 4; ++i) {
+        simd_assertEQ(input[i], float_4(0));
+    }
+
+    const int bank = channel / 4;
+    const int subChannel = channel - bank * 4;
+    input[bank][subChannel] = SimdBlocks::maskTrue()[0];
+
+    GateDelay<5> del;
+
+    for (int i = 0; i < 4; ++i) {
+        del.addGates(input[i]);
+        auto x = del.getGates();
+        simd_assertEQ(x, float_4::zero());
+    }
+    del.commit();  // first clock
+
+    // 5 moer
+    for (int i = 0; i < 5; ++i) {
+        for (int i = 0; i < 4; ++i) {
+            del.addGates(zeros[i]);
+        }
+        del.commit();
+    }
+
+    float_4 data[4];
+    for (int i = 0; i < 4; ++i) {
+        data[i] = del.getGates();
+    }
+
+    for (int i = 0; i < 4; ++i) {
+        assert(SimdBlocks::areMasksEqual(data[i], input[i]));
+    }
+}
+
+static void testSingle() {
+    for (int i = 0; i < 16; ++i) {
+        testSingle(i);
+    }
+}
+
 void testGateDelay() {
     testMasksEqual();
     test0();
     test1();
+    testSingle();
 }
