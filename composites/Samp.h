@@ -470,6 +470,83 @@ inline int Samp<TBase>::quantize(float pitchCV) {
     return midiPitch;
 }
 
+
+#if 1       // new version with gate delat
+template <class TBase>
+inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
+    //   SQINFO("pin");
+    divn.step();
+
+    // is there some "off by one error" here?
+    assert(numBanks_n <= 4);
+
+    // Loop for all channels. Does gate detections, runs audio
+    for (int bank = 0; bank < numBanks_n; ++bank) {
+        // Step 1: gate processing. This doesn't have to run every sample, btw.
+        // prepare 4 gates. note that ADSR / Sampler4vx must see simd mask (0 or nan)
+        // but our logic needs to see numbers (we use 1 and 0).
+        Port& pGate = TBase::inputs[GATE_INPUT];
+        float_4 g = pGate.getVoltageSimd<float_4>(bank * 4);
+        float_4 gmask = trig->process(g);
+        simd_assertMask(gmask);
+       // float_4 gmask = (g > float_4(1));
+        float_4 gate4 = SimdBlocks::ifelse(gmask, float_4(1), float_4(0));  // isn't this pointless?
+        float_4 lgate4 = lastGate4[bank];
+
+        if (bank == 0) {
+            //      printf("samp, g4 = %s\n", toStr(gate4).c_str());
+        }
+
+        // main loop that processes gates and runs audio
+        for (int iSub = 0; iSub < 4; ++iSub) {
+            if (gate4[iSub] != lgate4[iSub]) {
+                if (gate4[iSub]) {
+                    assert(bank < 4);
+                    const int channel = iSub + bank * 4;
+                    const float pitchCV = TBase::inputs[PITCH_INPUT].getVoltage(channel);
+                    const int midiPitch = quantize(pitchCV);
+
+                    // if velocity not patched, use 64
+                    int midiVelocity = 64;
+                    if (TBase::inputs[VELOCITY_INPUT].isConnected()) {
+                        // if it's mono, just get first chan. otherwise get poly
+                        midiVelocity = int(TBase::inputs[VELOCITY_INPUT].getPolyVoltage(channel) * 12.7f);
+                        if (midiVelocity < 1) {
+                            midiVelocity = 1;
+                        }
+                    }
+                    const bool isKs = playback[bank].note_on(iSub, midiPitch, midiVelocity, args.sampleRate);
+                    if (isKs) {
+                        updateKeySwitch(midiPitch);
+                    }
+                    // printf("send note on to bank %d sub%d pitch %d\n", bank, iSub, midiPitch); fflush(stdout);
+                }
+            }
+        }
+
+        // Step 2: LFM processing
+        float_4 fm = float_4::zero();
+        if (lfmConnected_n) {
+            Port& pIn = TBase::inputs[LFM_INPUT];
+            Port& pDepth = TBase::inputs[LFMDEPTH_INPUT];
+            float_4 depth = pDepth.isConnected() ? pDepth.getPolyVoltageSimd<float_4>(bank * 4) : 10.f;
+            depth *= .1f;
+            float_4 rawInput = pIn.getPolyVoltageSimd<float_4>(bank * 4);
+            fm = rawInput * lfmGain_n * depth;
+            // SQINFO("read fm=%s, raw=%s", toStr(fm).c_str(), toStr(rawInput).c_str());
+        }
+
+        // Step 3: run the audio
+        auto output = playback[bank].step(gmask, args.sampleTime, fm, lfmConnected_n);
+        output *= taperedVolume_n;
+        TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
+        lastGate4[bank] = gate4;
+    }
+    //    SQINFO("pout");
+}
+
+#else           // Original version here
+
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     //   SQINFO("pin");
@@ -540,6 +617,7 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     }
     //    SQINFO("pout");
 }
+#endif
 
 template <class TBase>
 int SampDescription<TBase>::getNumParams() {
