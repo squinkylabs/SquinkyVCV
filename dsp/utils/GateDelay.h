@@ -71,7 +71,7 @@ void GateDelay<SIZE>::commit() {
     //ringBuffer._dump();
 }
 
-__m128 movemask_inverse_alternative(int x) {
+inline __m128 movemask_inverse_alternative(int x) {
      __m128i msk8421 = _mm_set_epi32(8, 4, 2, 1);
     __m128i x_bc = _mm_set1_epi32(x);
     __m128i t = _mm_and_si128(x_bc, msk8421);

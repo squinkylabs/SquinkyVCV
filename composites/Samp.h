@@ -7,6 +7,7 @@
 
 #include "CompiledInstrument.h"
 #include "Divider.h"
+#include "GateDelay.h"
 #include "IComposite.h"
 #include "InstrumentInfo.h"
 #include "LookupTable.h"
@@ -16,6 +17,7 @@
 #include "Sampler4vx.h"
 #include "SamplerErrorContext.h"
 #include "SamplerSharedState.h"
+#include "SqSchmidtTrigger.h"
 #include "SimdBlocks.h"
 #include "SqLog.h"
 #include "SqPort.h"
@@ -210,6 +212,8 @@ private:
     Sampler4vx playback[4];  // 16 voices of polyphony
                              // SInstrumentPtr instrument;
                              // WaveLoaderPtr waves;
+    GateDelay<5> gateDelays[4];
+    SqSchmittTrigger trig[4];
 
     // here we hold onto a reference to these so we can give it back
     // Actually, I think we reference some of these - should consider updating...
