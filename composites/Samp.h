@@ -82,6 +82,12 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
+ * ver2, with delay
+ * 16 NOTES         42.9
+ * 4 notes mod      13.8
+ * 4 notes no mod   12.7
+ *
+ * ver 1
  * 16 NOTES         35.4
  * 4 notes mod      10.3
  * 4 notes no mod   9.9
@@ -212,7 +218,7 @@ private:
     Sampler4vx playback[4];  // 16 voices of polyphony
                              // SInstrumentPtr instrument;
                              // WaveLoaderPtr waves;
-    GateDelay<5> gateDelays[4];
+    GateDelay<5> gateDelays;
     SqSchmittTrigger trig[4];
 
     // here we hold onto a reference to these so we can give it back
@@ -487,10 +493,12 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         // but our logic needs to see numbers (we use 1 and 0).
         Port& pGate = TBase::inputs[GATE_INPUT];
         float_4 g = pGate.getVoltageSimd<float_4>(bank * 4);
-        float_4 gmask = trig->process(g);
-        simd_assertMask(gmask);
+        float_4 gmaskIn = trig[bank].process(g);
+        simd_assertMask(gmaskIn);
+        gateDelays.addGates(gmaskIn);
+        float_4 gmaskOut = gateDelays.getGates();
        // float_4 gmask = (g > float_4(1));
-        float_4 gate4 = SimdBlocks::ifelse(gmask, float_4(1), float_4(0));  // isn't this pointless?
+        float_4 gate4 = SimdBlocks::ifelse(gmaskOut, float_4(1), float_4(0));  // isn't this pointless?
         float_4 lgate4 = lastGate4[bank];
 
         if (bank == 0) {
@@ -537,11 +545,12 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         }
 
         // Step 3: run the audio
-        auto output = playback[bank].step(gmask, args.sampleTime, fm, lfmConnected_n);
+        auto output = playback[bank].step(gmaskOut, args.sampleTime, fm, lfmConnected_n);
         output *= taperedVolume_n;
         TBase::outputs[AUDIO_OUTPUT].setVoltageSimd(output, bank * 4);
         lastGate4[bank] = gate4;
     }
+    gateDelays.commit();
     //    SQINFO("pout");
 }
 

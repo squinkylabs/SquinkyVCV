@@ -4,7 +4,7 @@
 
 #include "RingBuffer.h"
 #include "SimdBlocks.h"
-#include "SqLog.h"
+//#include "SqLog.h"
 
 /**
  *
@@ -16,7 +16,7 @@ class GateDelay {
 public:
     GateDelay();
     GateDelay(const GateDelay&) = delete;
-    const GateDelay& operator = (const GateDelay&) = delete;
+    const GateDelay& operator=(const GateDelay&) = delete;
     void addGates(const float_4&);
     void commit();
     float_4 getGates();
@@ -30,13 +30,12 @@ private:
     uint16_t getBuffer = 0;
 };
 
-
 // Turn the ring buffer into a delay line by pushing enough zeros into it
 template <int SIZE>
 GateDelay<SIZE>::GateDelay() {
     // SQINFO("ctor of gate delay here is buffer");
     // ringBuffer._dump();
-    for (int i=0; i<SIZE; ++i) {
+    for (int i = 0; i < SIZE; ++i) {
         ringBuffer.push(0);
         // SQINFO("ctor of gate dela pushed one here is buffer");
         //ringBuffer._dump();
@@ -57,8 +56,8 @@ template <int SIZE>
 void GateDelay<SIZE>::commit() {
     // SQINFO("enter commit, here is buffer: ");
     //ringBuffer._dump();
-    if (gatesAddedToFrame != 4) SQWARN("GateDelay not full");
-    if (gatesAddedToFrame != 4) SQWARN("GateDelay not all read");
+  //  if (gatesAddedToFrame != 4) SQWARN("GateDelay not full");
+  //  if (gatesAddedToFrame != 4) SQWARN("GateDelay not all read");
 
     ringBuffer.push(addBuffer);
 
@@ -72,7 +71,7 @@ void GateDelay<SIZE>::commit() {
 }
 
 inline __m128 movemask_inverse_alternative(int x) {
-     __m128i msk8421 = _mm_set_epi32(8, 4, 2, 1);
+    __m128i msk8421 = _mm_set_epi32(8, 4, 2, 1);
     __m128i x_bc = _mm_set1_epi32(x);
     __m128i t = _mm_and_si128(x_bc, msk8421);
     return _mm_castsi128_ps(_mm_cmpeq_epi32(msk8421, t));
@@ -90,7 +89,6 @@ float_4 GateDelay<SIZE>::getGates() {
     auto temp = movemask_inverse_alternative(retI);
     ret = temp;
     gatesPulledFromFrame++;
-   //  SQINFO("get returning %s", toStr(ret).c_str());
+    //  SQINFO("get returning %s", toStr(ret).c_str());
     return ret;
 }
-     
