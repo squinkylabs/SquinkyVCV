@@ -1,12 +1,10 @@
 
-#include "asserts.h"
-
 #include "CompiledInstrument.h"
-#include "SamplerErrorContext.h"
 #include "SInstrument.h"
 #include "SParse.h"
+#include "SamplerErrorContext.h"
+#include "asserts.h"
 
-   
 /**
  * @param patch is an entire patch, regions marked with sample=bad should be pruned,
  *          regions with sample=good should remain
@@ -14,7 +12,7 @@
 static void testSub(const char* patch) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-   // auto err = SParse::goFile(FilePath(patch), inst);
+    // auto err = SParse::goFile(FilePath(patch), inst);
     auto err = SParse::go(patch, inst);
     assert(err.empty());
 
@@ -88,11 +86,7 @@ static void testFirstWins() {
 }
 
 static void testNarrowPitchWins() {
-    testSub("<region>lokey=c3 hikey=c4  sample=bad <region>key=c3 sample=good");
-
-    // TODO: this should pass! bug? REGPRUNE
-    // quick look it seems like we try to delete a region, but it doesn't succeed??
-    //testSub2("key=c3", "lokey=c3 hikey=c4");
+    testSub2("lokey=c3 hikey=c4", "lokey=c3 hikey=d4");
 }
 
 static void testReleaseSamples() {
@@ -104,12 +98,10 @@ static void testDamperPedal() {
 
     testTie("key=c3 locc64=0", "key=c3");
     testSub2("key=c3", "key=c3  locc64=1");
-
 }
 
 static void testDoesntAdjustPitch() {
     testSub("<region>lokey=c3 hikey=c4  sample=good <region>lokey=c4 hikey=c5 sample=bad");
-
 }
 
 static void testNegativeKey() {
