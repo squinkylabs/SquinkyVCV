@@ -17,10 +17,10 @@
 #include "Sampler4vx.h"
 #include "SamplerErrorContext.h"
 #include "SamplerSharedState.h"
-#include "SqSchmidtTrigger.h"
 #include "SimdBlocks.h"
 #include "SqLog.h"
 #include "SqPort.h"
+#include "SqSchmidtTrigger.h"
 #include "ThreadClient.h"
 #include "ThreadServer.h"
 #include "ThreadSharedState.h"
@@ -236,6 +236,7 @@ private:
     int numChannels_n = 1;
     int numBanks_n = 1;
     bool lfmConnected_n = false;
+    bool triggerDelayEnabled_n = true;
     float_4 lfmGain_n = {0};
     float rawVolume_n = 0;
     float taperedVolume_n = 0;
@@ -380,6 +381,8 @@ inline void Samp<TBase>::step_n() {
         taperedVolume_n = 10 * LookupTable<float>::lookup(*audioTaperLookupParams, rawVolume_n / 100);
     }
 
+    triggerDelayEnabled_n = TBase::params[TRIGGERDELAY_PARAM].value > .5;
+
     servicePendingPatchRequest();
     serviceMessagesReturnedToComposite();
     serviceSampleReloadRequest();
@@ -476,8 +479,7 @@ inline int Samp<TBase>::quantize(float pitchCV) {
     return midiPitch;
 }
 
-
-#if 1       // new version with gate delat
+#if 1  // new version with gate delat
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
     //   SQINFO("pin");
@@ -494,10 +496,15 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         Port& pGate = TBase::inputs[GATE_INPUT];
         float_4 g = pGate.getVoltageSimd<float_4>(bank * 4);
         float_4 gmaskIn = trig[bank].process(g);
-        simd_assertMask(gmaskIn);
-        gateDelays.addGates(gmaskIn);
-        float_4 gmaskOut = gateDelays.getGates();
-       // float_4 gmask = (g > float_4(1));
+        float_4 gmaskOut;
+        if (triggerDelayEnabled_n) {
+            simd_assertMask(gmaskIn);
+            gateDelays.addGates(gmaskIn);
+            gmaskOut = gateDelays.getGates();
+        } else {
+            gmaskOut = gmaskIn;
+        }
+        // float_4 gmask = (g > float_4(1));
         float_4 gate4 = SimdBlocks::ifelse(gmaskOut, float_4(1), float_4(0));  // isn't this pointless?
         float_4 lgate4 = lastGate4[bank];
 
@@ -551,10 +558,9 @@ inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
         lastGate4[bank] = gate4;
     }
     gateDelays.commit();
-    //    SQINFO("pout");
 }
 
-#else           // Original version here
+#else  // Original version here
 
 template <class TBase>
 inline void Samp<TBase>::process(const typename TBase::ProcessArgs& args) {
@@ -658,7 +664,7 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
         case Samp<TBase>::SCHEMA_PARAM:
             ret = {0, 10, 0, "SCHEMA"};
             break;
-         case Samp<TBase>::TRIGGERDELAY_PARAM:
+        case Samp<TBase>::TRIGGERDELAY_PARAM:
             ret = {0, 1, 1, "TRIGGER DELAY"};
             break;
         default:
@@ -686,7 +692,7 @@ public:
         // SQINFO("worker about to wait for sample access");
         assert(smsg->sharedState);
         smsg->sharedState->uiw_requestAndWaitForSampleReload();
-       // SQINFO("worker got sample access");
+        // SQINFO("worker got sample access");
 #endif
 
         // First thing we do it throw away the old patch data.
@@ -698,7 +704,7 @@ public:
 
         SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-       // SQINFO("--- real sampler, calling goFile with %s", fullPath.toString().c_str());
+        // SQINFO("--- real sampler, calling goFile with %s", fullPath.toString().c_str());
         // now load it, and then return it.
         auto err = SParse::goFile(fullPath, inst);
 
@@ -706,7 +712,7 @@ public:
         // TODO: need a way for compiler to return error;
         SamplerErrorContext errc;
         CompiledInstrumentPtr cinst = err.empty() ? CompiledInstrument::make(errc, inst) : CompiledInstrument::make(err);
-       // SQINFO("back from comp");
+        // SQINFO("back from comp");
         errc.dump();
         if (!cinst) {
             SQWARN("comp was null (should never happen)");
