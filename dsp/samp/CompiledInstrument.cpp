@@ -185,18 +185,8 @@ void  CompiledInstrument::getPlayPitchOsc(VoicePlayInfo& info, int midiPitch, in
     const float targetFreq = 261.626f * ratio / 32;
     const float transposeMult = (targetFreq / baseFreq);
 
-//  0 gives 30 cents sharp
     float transposeVoltage = PitchUtils::freqRatioToSemitone(transposeMult) / 12.f;
-    // - .1 way flat
-    // 0 sharp
-    // -.03 60 + .05
-    //  -.033 +.02
-    // .035 almost perfect
-    // .035 * 12 = .42
-    transposeVoltage -= .035f;
-   
     info.transposeV = transposeVoltage;
-    // assert(false);
 }
 
 void CompiledInstrument::getPlayPitchNorm(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate) {
@@ -243,61 +233,6 @@ void CompiledInstrument::getPlayPitchNorm(VoicePlayInfo& info, int midiPitch, in
     }
 }
 
-#if 0
-void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate, bool isOscillator) {
-    assert(sampleRate > 100);
-    // first base pitch
-    const int semiOffset = midiPitch - regionKeyCenter;
-    if (semiOffset == 0 && tuneCents == 0) {
-        info.needsTranspose = false;
-#ifdef _SAMPFM
-        info.transposeV = 0;
-#else
-        info.transposeAmt = 1;
-#endif
-    }
-    else {
-        info.needsTranspose = true;
-        // maybe in the future we could do this in the v/8 domain?
-
-        const float tuneSemiOffset = float(semiOffset) + float(tuneCents) / 100;
-#ifdef _SAMPFM
-        const float offsetCV = tuneSemiOffset / 12.f;
-        info.transposeV = offsetCV;
-#else
-        const float pitchMul = float(std::pow(2, tuneSemiOffset / 12.0));
-        info.transposeAmt = pitchMul;
-#endif
-    }
-
-    if (!loader) {
-        return;
-    }
-
-    auto waveInfo = loader->getInfo(info.sampleIndex);
-    if (isOscillator) {
-        // treat waveform as once cycle of wavetable
-        float transpose = 261.626f * waveInfo->getTotalFrameCount() / sampleRate;
-        SQINFO("raw transpose ratio = %f", transpose);
-        info.transposeV = PitchUtils::freqRatioToSemitone(transpose) / 12;
-        SQINFO("computed trans = %f", info.transposeV);
-    }
-    else {
-        // transpose calculation for normal playback
-        // do we need to adapt to changed sample rate?
-        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->getSampleRate();
-        if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
-            info.needsTranspose = true;
-#ifdef _SAMPFM
-            info.transposeV += PitchUtils::freqRatioToSemitone(float(waveSampleRate) / sampleRate) / 12.f;
-#else
-            info.transposeAmt *= sampleRate / float(waveSampleRate);
-#endif
-        }
-    }
-}
-
-#endif
 bool CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
     assert(sampleRate > 100);
     if (ciTestMode != Tests::None) {
