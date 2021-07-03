@@ -433,6 +433,49 @@ static void testCompileInst0() {
     assertNE(info.sampleIndex, 0);
 }
 
+#include <stdio.h>
+#include <sys/stat.h>
+
+static void testCompileInstLinNumbers() {
+    printf("\n-- testCompileInstLinNumbers\n");
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+#if 0
+
+#if 0
+    // this is wrong, gives region on line 2, but shoudl be 3
+    const char* content = R"foo(<control>
+ hint_ram_based=1
+<region>
+ lokey=60 hikey=64
+ loop_mode=loop_continuous)foo";
+#endif
+const char* content = R"foo(<region>
+lokey=60 hikey=64
+loop_mode=loop_continuous)foo";
+
+    auto err = SParse::go(content, inst);
+#else
+    FilePath fp("d:\\samples\\warren_b\\U20 Electric Grand sf2\\U20 E Grand.sfz");
+    auto err = SParse::goFile(fp, inst);
+
+#endif
+    SQINFO("err: %s", err.c_str());
+    assert(err.empty());
+   
+
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr i = CompiledInstrument::make(errc, inst);
+    // assert(errc.empty());
+
+    auto pool = i->_pool();
+    pool._dump(0);
+  //  assertEQ(pool.size(), 2);
+    assert(false);
+
+}
+
 static void testCompileInst1() {
     printf("\n-- test comp inst 1\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -1516,6 +1559,7 @@ static void testCompileOscOff() {
 void testx2() {
     assert(parseCount == 0);
     assert(compileCount == 0);
+   
     testWaveLoader0();
     testWaveLoader1Wav();
     testWaveLoader1Flac();
@@ -1598,6 +1642,7 @@ void testx2() {
     testCompileLoop();
     testCompileLoop2();
     testCompileOscOff();
+    // testCompileInstLinNumbers();
 
     assertEQ(parseCount, 0);
     assertEQ(compileCount, 0);

@@ -32,7 +32,9 @@ extern int compileCount;
 class CompiledRegion {
 public:
     void addRegionInfo(SamplerSchema::KeysAndValuesPtr);
-    CompiledRegion(int ln) : lineNumber(ln) {
+
+    // line numbers here are one based, but coming in are zero
+    CompiledRegion(int ln) : lineNumber(ln + 1) {
         // SQINFO("Compiled REgion def ctor %p", this);
         ++compileCount;
     }
@@ -77,7 +79,7 @@ public:
     float amp_veltrack = 100;
     float ampeg_release = .03f;  // correct default, not .001
 
-    int lineNumber = -1;
+    int lineNumber = -1;  // one based
 
     /** valid sample index starts at 1
      */

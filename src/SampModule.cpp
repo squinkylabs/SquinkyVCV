@@ -65,10 +65,11 @@ public:
 private:
 };
 
-const char* sfzpath = "sfzpath";
+const char* sfzpath_ = "sfzpath";
+const char* schema_ = "schema";
 
 void SampModule::dataFromJson(json_t* rootJ) {
-    json_t* pathJ = json_object_get(rootJ, sfzpath);
+    json_t* pathJ = json_object_get(rootJ, sfzpath_);
     if (pathJ) {
         const char* path = json_string_value(pathJ);
         std::string sPath(path);
@@ -79,8 +80,9 @@ void SampModule::dataFromJson(json_t* rootJ) {
 json_t* SampModule::dataToJson() {
     json_t* rootJ = json_object();
     if (!lastSampleSetLoaded.empty()) {
-        json_object_set_new(rootJ, sfzpath, json_string(lastSampleSetLoaded.c_str()));
+        json_object_set_new(rootJ, sfzpath_, json_string(lastSampleSetLoaded.c_str()));
     }
+    json_object_set_new(rootJ, schema_, json_integer(2));
     return rootJ;
 }
 

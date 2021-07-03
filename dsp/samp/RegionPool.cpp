@@ -80,6 +80,10 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
             foundRegion = region;
         }
     }
+    if (foundRegion) {
+        SQINFO("play found region");
+        foundRegion->_dump(0);
+    }
     return foundRegion;
 }
 
@@ -122,7 +126,7 @@ void RegionPool::sortByPitchAndVelocity(std::vector<CompiledRegionPtr>& array) {
 
 // new one, for new parser
 bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
-#if 1   // new parser. merge conflict here
+#if 1  // new parser. merge conflict here
     HeadingTracker ht(in->headings);
 
     // SQINFO("---- buildCompiledTree with %d regions", in->headings.size());
@@ -143,7 +147,7 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
         cReg->finalize();
         // SQINFO("one more region from headings");
         //cReg->_dump(0);
-        // 
+        //
         if (!cReg->shouldIgnore()) {
             //SQINFO("not ignoring");
             maybeAddToKeyswitchList(cReg);
@@ -177,6 +181,14 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
 
         ht.nextRegion();
     }
+
+#if 0
+    SQINFO("regions before fixup ");
+    for (auto region : regions) {
+        region->_dump(0);
+
+    }
+#endif
 
     bool bRet = fixupCompiledTree();
     fillRegionLookup();
@@ -341,7 +353,7 @@ bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion,
     // if regions are good now, then stop
     if (!regionsOverlap(firstRegion, secondRegion)) {
 #ifdef _LOGOV
-        SQINFO("overlap, repaired using %s", velLessOverlap ? "vel" : "pitch"  );
+        SQINFO("overlap, repaired using %s", velLessOverlap ? "vel" : "pitch");
 #endif
         return false;
     }
@@ -354,6 +366,10 @@ bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion,
     bool stillBad = regionsOverlap(firstRegion, secondRegion);
     if (stillBad) {
         SQINFO("unable to repair overlaps at  lines %d and %d", firstRegion->lineNumber, secondRegion->lineNumber);
+        SQINFO(" First region:");
+        firstRegion->_dump(1);
+        SQINFO(" second region:");
+        secondRegion->_dump(1);
 
         // If we can't repair, then restore everything,
         // This ensures that post-delete the remaining region will be intact.
@@ -400,12 +416,12 @@ void RegionPool::removeOverlaps() {
             const int secondPitchRange = second->hikey - second->lokey;
             if (firstPitchRange <= secondPitchRange) {
                 SQINFO("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
-        #if 0
+#if 0
                 SQINFO("here is one going away: ");
                 second->_dump(1);
                 SQINFO("here is one staying: ");
                 first->_dump(1);
-        #endif
+#endif
 
                 // if we want to erase the second one, do that.
                 // it still points at first, but next iteration there will be a different next;

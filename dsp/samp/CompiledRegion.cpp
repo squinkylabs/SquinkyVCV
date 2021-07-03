@@ -295,11 +295,11 @@ bool CompiledRegion::LoopData::operator == (const LoopData& l) const {
 }
 
 void CompiledRegion::_dump(int depth) const {
-    SQINFO("** dumping region from line %d", this->lineNumber);
+    SQINFO("** dumping region from line %d (one based)", this->lineNumber);
+    SQINFO("lokey=%d hikey=%d center=%d lovel=%d hivel=%d", lokey, hikey, keycenter, lovel, hivel);
+    SQINFO("sample=%s tune=%d", sampleFile.toString().c_str(), tune);
     SQINFO("isKeyswitched=%d, sw_lolast=%d sw_hilast=%d", isKeyswitched(), sw_lolast, sw_hilast);
     SQINFO("seq switched = %d seqCtr = %d, seqLen=%d, seqPos=%d", sequenceSwitched, sequenceCounter, sequenceLength, sequencePosition);
-    SQINFO("lorand=%.2f hirand=%.2f\n", lorand, hirand);
-    SQINFO("lokey=%d hikey=%d center=%d lovel=%d hivel=%d", lokey, hikey, keycenter, lovel, hivel);
-    SQINFO("sample=%s", sampleFile.toString().c_str());
+    SQINFO("lorand=%.2f hirand=%.2f", lorand, hirand);
     SQINFO("");
 }
