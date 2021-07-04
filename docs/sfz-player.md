@@ -16,11 +16,13 @@ SFZ Instruments, for the uninitiated, are sample libraries. They are usually fre
 
 Because SFZ files are simple text files, and the SFZ format is well documented, it is also easy to make your own SFZ instruments. All you need are some sample files and a text editor.
 
+See the links at the bottom for more information.
+
 ## Using the player
 
 You must patch something to the V/Oct input and the Gate input, otherwise you won't get any sound. A typical minimal starting patch would use VCV MIDI-CV, SFZ player and an audio output module. Patch the V/OCT, GATE, and VEL outputs from the MIDI-CV to SFZ Player. Patch the output of SFZ player to the audio output. Select a convenient keyboard from the MIDI-CV module, and set the polyphony to 4 (or whatever you like).
 
-You must also load an SFZ instrument. See the section below on where to get one, if you do not already have any. Bring up the context menu by right clicking on the SFZ Player and select "Load sample file". You should see the main display at the top begin to load files. This can be instantaneous to tens of seconds, depending on how large the sample library is. When everything loads correctly the display will show you the name of the SFZ Instrument, and the range of pitches over which it responds.
+You must also load an SFZ instrument. See the section below on where to get one, if you do not already have any. Bring up the context menu by right clicking on the SFZ Player and select "Load SFZ file". You should see the main display at the top begin to load files. This can be instantaneous to tens of seconds, depending on how large the sample library is. When everything loads correctly the display will show you the name of the SFZ Instrument, and the range of pitches over which it responds.
 
 At this point you would be able to play on the keyboard and have it respond like a typical sampler. If something goes wrong, there will be an error message in the main display.
 
@@ -48,9 +50,19 @@ Controls:
 
 * Depth. Linear FM modulation depth.
 
+Context menu:
+
+* SFZ Player manual. All of our modules have a direct link to the documentation for the manual.
+* Load SFZ file. Opens a file picker dialog to let you select an SFZ.
+* Trigger delay controls the 5 sample delay on the gate input. Best to leave it on in most cases
+
+
 ## Where to find SFZ
 
 You will need to download some SFZ instrument to get any sound. There are many out there - here are just a few of them. The following are popular and work well with SFZ player. All are free.
+
+**Virtual Playing Orchestra**: http://virtualplaying.com/virtual-playing-orchestra/
+The standard "go-to" collection of orchestral instruments.
 
 **Versilian Studios**: https://vis.versilstudios.com/index.html
 Many free SFZ and many reasonably prices ones. They have two must have collections:
@@ -66,7 +78,7 @@ The **Salamander drum** kit is also a popular instrument. https://archive.org/de
 
 Just using the free instruments listed above will give you a lot of useful and good sounding instruments. But there are an enormous number of them out there if you are willing to do a little web searching.
 
-With just the two Versilian collections you will have huge number of sampled instruments.
+With just one orchestral collection you will have huge number of sampled instruments.
 
 ## Plays a subset of SFZ
 

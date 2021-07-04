@@ -125,14 +125,14 @@ struct SampWidget : ModuleWidget {
     void appendContextMenu(Menu* theMenu) override {
         ::rack::ui::MenuLabel* spacerLabel = new ::rack::ui::MenuLabel();
         theMenu->addChild(spacerLabel);
-        ManualMenuItem* manual = new ManualMenuItem("Samp manual", helpUrl);
+        ManualMenuItem* manual = new ManualMenuItem("SFZ Player manual", helpUrl);
         theMenu->addChild(manual);
 
         {
             SqMenuItem* sfile = new SqMenuItem(
                 []() { return false; },
                 [this]() { this->loadSamplerFile(); });
-            sfile->text = "Load Sample file";
+            sfile->text = "Load SFZ file";
             theMenu->addChild(sfile);
         }
 #if 0 // debug menu for build toolchain issue

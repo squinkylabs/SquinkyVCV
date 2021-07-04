@@ -61,7 +61,6 @@ static std::map<std::string, Opcode> opcodes = {
     {"ampeg_release", Opcode::AMPEG_RELEASE},
     {"amp_release", Opcode::AMPEG_RELEASE},  // synonym
     {"loop_mode", Opcode::LOOP_MODE},
-    //   {"loop_continuous", Opcode::LOOP_CONTINUOUS},
     {"loop_start", Opcode::LOOP_START},
     {"loopstart", Opcode::LOOP_START},  // synonym!
     {"loop_end", Opcode::LOOP_END},
