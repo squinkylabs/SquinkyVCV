@@ -105,7 +105,7 @@ bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     params.midiVelocity = midiVelocity;
     const bool didKS = patch->play(patchInfo, params, waves.get(), sampleRate);
     if (!patchInfo.valid) {
-        SQINFO("could not get play info pitch %d vel%d", midiPitch, midiVelocity);
+        // SQINFO("could not get play info pitch %d vel%d", midiPitch, midiVelocity);
         player.clearSamples(channel);
         return didKS;
     }

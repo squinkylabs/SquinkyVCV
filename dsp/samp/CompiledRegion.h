@@ -35,7 +35,6 @@ public:
 
     // line numbers here are one based, but coming in are zero
     CompiledRegion(int ln) : lineNumber(ln + 1) {
-        // SQINFO("Compiled REgion def ctor %p", this);
         ++compileCount;
     }
     virtual ~CompiledRegion() { compileCount--; }

@@ -190,6 +190,7 @@ int main(int argc, char** argv) {
             printf("%s is not a valid command line argument\n", arg.c_str());
         }
     }
+    // grey code tests
     // do_gc();
 #ifdef _PERF
     runPerf = true;

@@ -169,111 +169,6 @@ void Streamer::ChannelData::advancePointer(float lfm) {
     }
 }
 
-#if 0  // second version
-float Streamer::stepTranspose(ChannelData& cd, float lfm) {
-    float ret = 0;
-
-    // first try interp in place
-    if (CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
-        //  unsigned int delayTimeSamples = getIntegerPart(offset);
-        {
-            int x = CubicInterpolator<float>::getIntegerPart(float(cd.curFloatSampleOffset));
-            SQINFO("interp, case 1 linear x=%d to %d", x-1, x+2);
-        }
-        ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
-    } else if (cd.curFloatSampleOffset < cd.frames) {
-        // OK, can't in place, but we can still do it
-        if (cd.curFloatSampleOffset < 1) {
-            // interp from sample before start, add a zero
-            const float y0 = 0;
-            const float y1 = cd.data[0];
-            const float y2 = cd.data[1];
-            const float y3 = cd.data[2];
-            SQINFO("interp case 2");
-            ret = CubicInterpolator<float>::interpolate(float(cd.curFloatSampleOffset), y0, y1, y2, y3);
-
-        } else {
-            // for now, we only know three kinds of interp:
-            // normal in-place, insert zero at the end, and put two zeros at the end
-            //assert(false);
-            unsigned int index = CubicInterpolator<float>::getIntegerPart(float(cd.curFloatSampleOffset));
-            const float y0 = cd.data[index - 1];
-            const float y1 = cd.data[index];
-            float y2 = 0;
-            float y3 = 0;
-            if (cd.curFloatSampleOffset + 1 < cd.frames) {
-                y2 = cd.data[index + 1];
-            }
-            SQINFO("interp, case 3");
-            ret = CubicInterpolator<float>::interpolate(float(cd.curFloatSampleOffset), y0, y1, y2, y3);
-        }
-
-    } else {
-        cd.arePlaying = false;
-        return 0;
-    }
-
-    // advance the sample offset
-    cd.curFloatSampleOffset += cd.transposeMultiplier;
-    cd.curFloatSampleOffset += lfm;
-
-    // don't let FM push it negative
-    cd.curFloatSampleOffset = std::max(0.0, cd.curFloatSampleOffset);
-
-    if (cd.loopActive) {
-        if (cd.loopData.loop_end && cd.curFloatSampleOffset > cd.loopData.loop_end) {
-            const unsigned int loop_length = cd.loopData.loop_end - cd.loopData.loop_start;
-            cd.curFloatSampleOffset -= loop_length;
-            SQINFO("loop wrap, set offset to %d", cd.curFloatSampleOffset);
-        }
-    }
-
-    // this is a dumb criteria. should be "if past end"
-    if (!CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
-        cd.arePlaying = false;
-    }
-
-    return ret * cd.vol;
-}
-#endif
-
-#if 0  // first version
-float Streamer::stepTranspose(ChannelData& cd, float lfm) {
-    float ret = 0;
-    
-    // first try to interpolate in place
-    if (CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
-        if (!cd.arePlaying) {
-            SQWARN("why are we playing a streamer not started? pl=%d, fo=%f, io=%d", cd.arePlaying, cd.curFloatSampleOffset, cd.curIntegerSampleOffset);
-            assert(false);
-        }
-
-#ifdef _INTERP
-        ret = CubicInterpolator<float>::interpolate(cd.data, float(cd.curFloatSampleOffset));
-#else
-        a b
-            size_t index = cd.curFloatSampleOffset;
-        ret = cd.data[index];
-#endif
-        // advance the sample offset
-        cd.curFloatSampleOffset += cd.transposeMultiplier;
-        cd.curFloatSampleOffset += lfm;
-
-        // don't let FM push it negative
-        cd.curFloatSampleOffset = std::max(0.0, cd.curFloatSampleOffset);
-    }
-    else {
-        assert(false);
-    }
-
-    if (!CubicInterpolator<float>::canInterpolate(float(cd.curFloatSampleOffset), cd.frames)) {
-        cd.arePlaying = false;
-    }
-
-    return ret * cd.vol;
-}
-#endif
-
 float Streamer::stepNoTranspose(ChannelData& cd) {
     assert(false);
     float ret = 0;
@@ -311,24 +206,14 @@ void Streamer::setSample(int whichChannel, const float* data, int totalFrames) {
     assert(whichChannel < 4);
     ChannelData& cd = channels[whichChannel];
     if (totalFrames < 4) {
+        if (!data) {
+            cd.data = data;
+            cd.frames = totalFrames;
+        }
         assert(totalFrames == 0);
         return;
     }
-#if 0
-    SQINFO("Streamer::setSample data = %p frames=%d", data, totalFrames);
-    if (totalFrames > 100) {
-        for (int i = 0; i < 10; ++i) SQINFO("s[%d]=%f", i, data[i]);
-    }
-#endif
-    // temporary validity test
-#if 0  // ndef NDEBUG
-    // SQINFO("st::setSample(%d) siz=%d", channel, f);
-    for (int i = 0; i < totalFrames; ++i) {
-        const float x = data[i];
-        assert(x <= 1);
-        assert(x >= -1);
-    }
-#endif
+
     cd.data = data;
     cd.frames = totalFrames;
     cd.arePlaying = true;  // this variable doesn't mean much, but???

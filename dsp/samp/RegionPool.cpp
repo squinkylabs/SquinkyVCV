@@ -80,10 +80,12 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
             foundRegion = region;
         }
     }
+#if 0
     if (foundRegion) {
         SQINFO("play found region");
         foundRegion->_dump(0);
     }
+#endif
     return foundRegion;
 }
 
@@ -366,10 +368,12 @@ bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion,
     bool stillBad = regionsOverlap(firstRegion, secondRegion);
     if (stillBad) {
         SQINFO("unable to repair overlaps at  lines %d and %d", firstRegion->lineNumber, secondRegion->lineNumber);
+    #if 0
         SQINFO(" First region:");
         firstRegion->_dump(1);
         SQINFO(" second region:");
         secondRegion->_dump(1);
+    #endif
 
         // If we can't repair, then restore everything,
         // This ensures that post-delete the remaining region will be intact.
