@@ -78,16 +78,18 @@ using Opcode = SamplerSchema::Opcode;
 
 void CompiledRegion::addRegionInfo(SamplerSchema::KeysAndValuesPtr values) {
 
-    //---------------- key related values
-    findValue(lokey, values, SamplerSchema::Opcode::LO_KEY);
-    findValue(hikey, values, SamplerSchema::Opcode::HI_KEY);
-
+    // first look for key opcode
     int key = -1;
     findValue(key, values, SamplerSchema::Opcode::KEY);
     if (key >= 0) {
+        // expand it to all the things
         lokey = hikey = keycenter = key;
     }
-    // TODO: only do this if key not set?
+
+    //---------------- key related values
+    // these will override anything found under key, and that's ok
+    findValue(lokey, values, SamplerSchema::Opcode::LO_KEY);
+    findValue(hikey, values, SamplerSchema::Opcode::HI_KEY);
     findValue(keycenter, values, SamplerSchema::Opcode::PITCH_KEYCENTER);
 
     //---------------------------------------------velocity

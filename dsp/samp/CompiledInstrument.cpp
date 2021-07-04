@@ -39,6 +39,8 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
     addSampleIndexes();
     deriveInfo();
     assert(info);
+    SQINFO("dump from end of compile");
+    _dump(0);
     return true;
 }
 
@@ -256,6 +258,8 @@ bool CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
         }
         getGain(info, params.midiVelocity, region->amp_veltrack, region->volume);
         info.loopData = region->loopData;
+    } else {
+       // SQINFO("not playing region at p=%d v=%d", params.midiPitch, params.midiVelocity);
     }
     return didKS;
 }

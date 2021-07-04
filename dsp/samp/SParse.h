@@ -34,7 +34,9 @@ using SKeyValueList = std::vector<SKeyValuePairPtr>;
 // A heading represents any heading, including regions and groups
 class SHeading {
 public:
-    void _dump() const { dumpKeysAndValues(values); }
+    void _dump() const { 
+        SQINFO("dump heading from line %d", lineNumber+1);
+        dumpKeysAndValues(values); }
     enum class Type {
         Region,
         Group,
