@@ -29,25 +29,17 @@ At this point you would be able to play on the keyboard and have it respond like
 CV Inputs:
 
 * V/Oct. A polyphonic pitch input that follow the VCV voltage standard of 0V = C4. The polyphony of the V/Oct input will determine the overall polyphony of SFZ Player.
-
 * Gate. A polyphonic gate input that turns the notes on and off. Below 1 V is considered "off" and over 1 V is "on".
-
 * Vel. Polyphonic Velocity input. Unipolar, where 0 V is MIDI velocity zero, and 10V is MIDI Velocity 127. Individual SFZ instruments will use velocity in different ways. A very common one is to use velocity for choosing different samples. Controlling volume is also common.
-
 * FM. An exponential pitch modulation input. May be used for vibrato, pitch bend, or more creative uses. The associated attenuverter will scale the range of this input. Input may be thought of as bipolar, where 0v will be no change, positive voltage will shift pitch up, and negative will shift pitch down.
-
 * LFM. A true "through zero" linear FM. This allows unusual effects where the sample is the "carrier" and the signal on the LFM input is the "modulator". This signal is usually an audio rate signal. It can be considered bipolar, but since (like everyone else) we use phase modulation rather than frequency modulation it doesn't really matter - any DC on the input will not be audible.
-
 * Depth. An optional CV that controls the depth of the LFM. Think of it as an optional VCA on the LFM input. A typical use would be to route in an ADSR to control the amount of FM. This signal is unipolar. 0V is off, and +10 V is fully on. When nothing is plugged in it is as if 10 volts were applied - no change.
 
 Controls:
 
 * Pitch. Tunes SFZ player over a 10 octave range. Normally you will use small pitch offsets for fine tuning. It would be a "special effect" to move the pitch of a sample by as much as an octave.
-
 * Vol. Overall master volume control.
-
 * Pitch Trim. An atternuverter that scales the FM input before adding it to the pitch knob.
-
 * Depth. Linear FM modulation depth.
 
 Context menu:
@@ -55,7 +47,6 @@ Context menu:
 * SFZ Player manual. All of our modules have a direct link to the documentation for the manual.
 * Load SFZ file. Opens a file picker dialog to let you select an SFZ.
 * Trigger delay controls the 5 sample delay on the gate input. Best to leave it on in most cases
-
 
 ## Where to find SFZ
 
@@ -88,7 +79,11 @@ The result for the user is that any given SFZ instrument may play perfectly, poo
 
 ## RAM usage
 
-Like most VCV samplers, this module loads all of the sample data into RAM. But It is not uncommon for an SFZ file to have a gigabyte or more of sample data. When we load up the sample data, we convert it to mono, and convert it to 32-bit floating point format. Since many SFZ use 24 bit data and are stereo, this means that the amount or memory used is roughly in the ballpark of the total size of all the samples. So, use your operating system to find out how big all that data is. If you try to load a patch whose data is larger than the total amount or RAM in your computer, something bad will happen. VCV might become very slow and laggy, and audio might drop out. It may even make VCV unresponsive. If that happens, force quit.
+Like most VCV samplers, this module loads all of the sample data into RAM. Becuase SFZ player does not use "disk streaming" it always works, and there are no fiddly settings for disk cache size.
+
+But it is not uncommon for an SFZ file to have a gigabyte or more of sample data. When we load up the sample data, we convert it to mono, and convert it to 32-bit floating point format. Since many SFZ use 24 bit data and are stereo, this means that the amount or memory used is roughly in the ballpark of the total size of all the samples. So, use your operating system to find out how big all that data is. If you try to load a patch whose data is larger than the total amount or RAM in your computer, something bad will happen. VCV might become very slow and laggy, and audio might drop out. It may even make VCV unresponsive. If that happens, force quit.
+
+On the other hand, computers today tend to have 16 or even 32 GB of RAM. Which leaves quite a lot for loading large sample banks.
 
 ## Links
 

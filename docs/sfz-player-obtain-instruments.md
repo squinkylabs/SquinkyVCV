@@ -30,6 +30,6 @@ For every free SFZ Instrument you might find, there are many, many free sample s
 
 It is quite common for people to hand craft their own SFZ files to go along with some other collection of free samples. They might do this because they don't like the original mappings, or perhaps there were no SFZ mappings.
 
-In out limited experience these are often too complex for SFZ Player to play, that that isn't always the case.
+In our limited experience these are often too complex for SFZ Player to play, that that isn't always the case.
 
 There are a bunch here: https://github.com/sfzinstruments/mappings
