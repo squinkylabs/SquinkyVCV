@@ -37,7 +37,8 @@ CV Inputs:
 
 Controls:
 
-* Pitch. Tunes SFZ player over a 10 octave range. Normally you will use small pitch offsets for fine tuning. It would be a "special effect" to move the pitch of a sample by as much as an octave.
+* Pitch. Tunes SFZ Player over a 2 octave range.
+* Octave. Tunes SF Player by octaves over a 10 octave range.
 * Vol. Overall master volume control.
 * Pitch Trim. An atternuverter that scales the FM input before adding it to the pitch knob.
 * Depth. Linear FM modulation depth.
