@@ -6,6 +6,7 @@
 #include "GenerativeTriggerGenerator.h"
 #include "ObjectCache.h"
 #include "TriggerOutput.h"
+#include "IComposite.h"
 
 namespace rack {
 namespace engine {
@@ -13,6 +14,13 @@ struct Module;
 }
 }  // namespace rack
 using Module = ::rack::engine::Module;
+
+template <class TBase>
+class GMRDescription : public IComposite {
+public:
+    Config getParam(int i) override;
+    int getNumParams() override;
+};
 
 /**
  */
@@ -31,6 +39,7 @@ public:
     void init();
 
     enum ParamIds {
+        DUMMY_PARAM,
         NUM_PARAMS
     };
 
@@ -48,9 +57,17 @@ public:
         NUM_LIGHTS
     };
 
+        /** Implement IComposite
+     */
+    static std::shared_ptr<IComposite> getDescription() {
+        return std::make_shared<GMRDescription<TBase>>();
+    }
+
     /**
      * Main processing entry point. Called every sample
      */
+
+    // TODO: process
     void step() override;
 
 private:
@@ -80,4 +97,25 @@ inline void GMR<TBase>::step() {
     }
     outputProcessing.go(outClock);
     TBase::outputs[TRIGGER_OUTPUT].setVoltage(outputProcessing.get(), 0);
+}
+
+
+template <class TBase>
+int GMRDescription<TBase>::getNumParams() {
+    return GMR<TBase>::NUM_PARAMS;
+}
+
+template <class TBase>
+inline IComposite::Config GMRDescription<TBase>::getParam(int i) {
+ //   const float numWaves = (float)Basic<TBase>::Waves::END;
+ //   const float defWave = (float)Basic<TBase>::Waves::SIN;
+    Config ret(0, 1, 0, "");
+    switch (i) {
+        case GMR<TBase>::DUMMY_PARAM:
+        ret = { 0, 1, 0, "dummy" };
+        break;
+        default:
+            assert(false);
+    }
+    return ret;
 }

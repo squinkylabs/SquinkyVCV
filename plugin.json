@@ -285,6 +285,15 @@
 			  ]
 		},
 		{
+			"slug": "squinkylabs-gmr",
+			"name": "Test",
+			"disabled": false,
+			"description": "gmr test",
+			"tags": [
+
+			  ]
+		},
+		{
 			"slug": "squinkylabs-testmodel",
 			"name": "Test",
 			"disabled": true,
