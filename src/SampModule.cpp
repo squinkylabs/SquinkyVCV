@@ -43,11 +43,6 @@ public:
     void setSamplePath(const std::string& s) {
         samp->setSamplePath_UI(s);
     }
-#ifndef _KS2
-    void setKeySwitch(int pitch) {
-        samp->setKeySwitch_UI(pitch);
-    }
-#endif
 
     float getProgressPct() {
         return samp->getProgressPct();
@@ -63,7 +58,53 @@ public:
     std::string lastSampleSetLoaded;
 
 private:
+    void addParams();
 };
+
+SampModule::SampModule() {
+    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
+    samp = std::make_shared<Comp>(this);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    //SqHelper::setupParams(icomp, this);
+    addParams();
+
+    onSampleRateChange();
+    samp->init();
+}
+
+class SemitoneQuantity : public rack::engine::ParamQuantity {
+public:
+    std::string getDisplayValueString() override {
+        auto value = getValue() * 12;
+        SqStream str;
+        str.precision(2);
+        str.add(value);
+        str.add(" semitones");
+        return str.str();
+    }
+
+    void setDisplayValueString(std::string s) override {
+        float val = ::atof(s.c_str());
+        val /= 12.f;
+        ParamQuantity::setValue(val);
+    }
+};
+
+void SampModule::addParams() {
+    std::shared_ptr<IComposite> comp = Comp::getDescription();
+    const int n = comp->getNumParams();
+    for (int i = 0; i < n; ++i) {
+        auto param = comp->getParam(i);
+        std::string paramName(param.name);
+        switch (i) {
+            case Comp::PITCH_PARAM:
+            this->configParam<SemitoneQuantity>(i, param.min, param.max, param.def, paramName);
+                break;
+            default:
+                this->configParam(i, param.min, param.max, param.def, paramName);
+        }
+    }
+}
 
 const char* sfzpath_ = "sfzpath";
 const char* schema_ = "schema";
@@ -97,15 +138,7 @@ bool SampModule::isNewInstrument() {
 void SampModule::onSampleRateChange() {
 }
 
-SampModule::SampModule() {
-    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
-    samp = std::make_shared<Comp>(this);
-    std::shared_ptr<IComposite> icomp = Comp::getDescription();
-    SqHelper::setupParams(icomp, this);
 
-    onSampleRateChange();
-    samp->init();
-}
 
 void SampModule::process(const ProcessArgs& args) {
     samp->process(args);
@@ -191,9 +224,7 @@ struct SampWidget : ModuleWidget {
     SampModule* _module;
 
     std::vector<InstrumentInfo::PitchRange> keySwitchForIndex;
-#ifndef _KS2
-    int lastKeySwitchSent = -1;
-#endif
+
 
     /************************************************************************************** 
      * Stuff related to UI state and implementing it
@@ -431,11 +462,7 @@ void SampWidget::loadSamplerFile() {
     printf("load sampler got %s\n", pathC);
     fflush(stdout);
 
-    //FATAL("finish file load");
     if (pathC) {
-#ifndef _KS2
-        lastKeySwitchSent = -1;
-#endif
         this->requestNewSampleSet(FilePath(pathC));
         nextUIState = State::Loading;
     }
@@ -559,7 +586,7 @@ void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp)
         module,
         Comp::PITCH_PARAM));
 
-    addParam(SqHelper::createParam<Blue30Knob>(
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
         icomp,
         Vec(57, 219),
         module,

@@ -195,12 +195,6 @@ public:
         SQWARN("Samp::setSamplePath unused");
     }
 
-#ifndef _KS2
-    void setKeySwitch_UI(int ks) {
-        _nextKeySwitchRequest = ks;
-    }
-#endif
-
     bool _sampleLoaded() {
         return _isSampleLoaded;
     }
@@ -214,6 +208,8 @@ public:
     void _setupPerfTest();
 
     void suppressErrors();
+
+   // static std::pair<float, float> pitchToOctaveAndSemi(float pitch);
 
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
@@ -257,11 +253,8 @@ private:
     bool _isSampleLoaded = false;
     std::atomic<bool> _isNewInstrument = {false};
 
-#ifdef _KS2
+
     int lastServicedKeyswitchValue = {-1};
-#else
-    std::atomic<int> _nextKeySwitchRequest = {-1};
-#endif
 
     bool lastGate = false;  // just for test now
 
@@ -283,6 +276,8 @@ private:
     void serviceFMMod();
 
     void updateKeySwitch(int midiPitch);
+    void serviceSchema();
+    
     // server thread stuff
     // void servicePatchLoader();
 };
@@ -391,7 +386,7 @@ inline void Samp<TBase>::step_n() {
     serviceFMMod();
 }
 
-#ifdef _KS2
+
 template <class TBase>
 inline void Samp<TBase>::serviceKeySwitch() {
     const int val = int(std::round(TBase::params[DUMMYKS_PARAM].value));
@@ -406,18 +401,23 @@ template <class TBase>
 inline void Samp<TBase>::updateKeySwitch(int midiPitch) {
     TBase::params[DUMMYKS_PARAM].value = float(midiPitch);
 }
-#else
+
 template <class TBase>
-inline void Samp<TBase>::serviceKeySwitch() {
-    if (_nextKeySwitchRequest >= 1) {
-        int midiPitch = _nextKeySwitchRequest;
-        _nextKeySwitchRequest = -1;
-        // we can send it to any sampler: ks is global
-        // can also use fake vel and fake sr
-        playback[0].note_on(0, midiPitch, 64, 44100.f);
+inline void Samp<TBase>::serviceSchema() {
+    const int schema =  int( std::round(TBase::params[SCHEMA_PARAM].value));
+    if (schema == 0) {
+        //SQINFO("loaded old schema, pitch = %f, octave = %f", TBase::params[PITCH_PARAM].value + TBase::params[OCTAVE_PARAM].value);
+        TBase::params[SCHEMA_PARAM].value = 1;
+
+        float patchOffset = TBase::params[PITCH_PARAM].value;
+        float octave = std::round(patchOffset);
+        float semi = patchOffset - octave;
+
+        TBase::params[PITCH_PARAM].value = semi;
+        TBase::params[OCTAVE_PARAM].value = octave + 4;     // now octave 4 is what old 0 was
+
     }
 }
-#endif
 
 template <class TBase>
 inline void Samp<TBase>::serviceFMMod() {
@@ -430,9 +430,12 @@ inline void Samp<TBase>::serviceFMMod() {
     depth = LookupTable<float>::lookup(*audioTaperLookupParams, depth);
     lfmGain_n = float_4(depth);  // store as a float_4, since that's what we want in process();
 
+    
+    serviceSchema();
+
     //------------------ now Exp FM -----------
     // this one is -5 to +5
-    const float_4 expPitchOffset = TBase::params[PITCH_PARAM].value;
+    const float_4 expPitchOffset = TBase::params[PITCH_PARAM].value + TBase::params[OCTAVE_PARAM].value - 4;
 
     // this one is -1 to +1
     const float pitchCVTrimRaw = TBase::params[PITCH_TRIM_PARAM].value;
@@ -646,7 +649,7 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
     switch (i) {
 #ifdef _SAMPFM
         case Samp<TBase>::PITCH_PARAM:
-            ret = {-5, 5, 0, "Pitch"};
+            ret = {-1, 1, 0, "Pitch"};
             break;
         case Samp<TBase>::PITCH_TRIM_PARAM:
             ret = {-1, 1, 0, "Pitch trim"};
