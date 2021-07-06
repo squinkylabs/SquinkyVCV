@@ -4,13 +4,14 @@
 
 SFZ Player fixes and enhancements:
 
-* Support for `offset` and `end` makes many SFZ instruments play a little better.
-* gate is delayed by default to avoid catching the wrong pitch (suggestion from Frozen Wasteland).
-* Support for looping make many more samples of analog synths play much better.
-* Support for non-standard multiline comments lets sound fonts converted by Sforzando load.
-* Small bugs fixed in SFZ parser.
+* Support for `offset` and `end` makes many SFZ instruments play a little better. [[GitHub issue]](https://github.com/squinkylabs/SquinkyVCV/issues/212)
+* Gate is delayed by default to avoid catching the wrong pitch (suggestion from Frozen Wasteland).
+* Support for looping makes many more samples of analog synths play much better.
+* Support for non-standard multiline comments lets sound fonts converted by Sforzando load in SFZ Player.
+* Small bugs fixed in SFZ parser for file paths.
 * Bug fixed where deeply nested include files would not load.
 * Bugs fixed in interpreting group, global and master headings.
+* Fixed bug interpreting some pitches, causing dropout in a small number of instruments.
 
 ## 10.0.20
 

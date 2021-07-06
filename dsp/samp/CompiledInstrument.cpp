@@ -39,8 +39,8 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
     addSampleIndexes();
     deriveInfo();
     assert(info);
-    SQINFO("dump from end of compile");
-    _dump(0);
+    // SQINFO("dump from end of compile");
+    // _dump(0);
     return true;
 }
 

@@ -122,7 +122,7 @@ float Streamer::stepTranspose(ChannelData& cd, float lfm) {
             //SQINFO("loop wrap, set offset to %d", cd.curFloatSampleOffset);
         }
     }
-    assert(false);
+    SQINFO("Stream defaul case offset=%f, total=%d", cd.curFloatSampleOffset, cd.frames);
     return 0;
 }
 

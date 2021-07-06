@@ -465,12 +465,8 @@ void SampWidget::getRootFolder() {
 const float dx = 38;
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
-    float jacksY = 319;
-  //  float jacksY0 = jacksY - 50;
-    float jacksX = 16;
-  //  float jacksDx = 40;
-  //  float labelY = jacksY - 25;
-  //  float labelY0 = jacksY0 - 25;
+    float jacksY = 320;
+    float jacksX = 11.5;
 #ifdef _LAB
     addLabel(
         Vec(jacksX + 5 * dx - 5, labelY),
@@ -516,7 +512,7 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
         "FM");
 #endif
     addInput(createInput<PJ301MPort>(
-        Vec(83, jacksY),
+        Vec(59.5, jacksY),
         module,
         Comp::FM_INPUT));
     //  LFM_INPUT
@@ -526,7 +522,7 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
         "LFM");
 #endif
     addInput(createInput<PJ301MPort>(
-        Vec(133, jacksY),
+        Vec(155.5, jacksY),
         module,
         Comp::LFM_INPUT));
 #ifdef _LAB
@@ -535,19 +531,12 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
         "Dpth");
 #endif
     addInput(createInput<PJ301MPort>(
-        Vec(133, 270),
+        Vec(155.5, 270),
         module,
         Comp::LFMDEPTH_INPUT));
 }
 
 void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp) {
-  //  float knobsY = 200;
-  //  float knobsX = 173 - 46;
-
-   // float labelDy = 25;
-  //  float labelY = knobsY - labelDy;
-
-  //  float knobsY2 = knobsY + 40;
 
 #ifdef _LAB
     addLabel(
@@ -556,7 +545,7 @@ void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp)
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(196, 219),
+        Vec(201, 219),
         module,
         Comp::VOLUME_PARAM));
 #ifdef _LAB
@@ -566,9 +555,15 @@ void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp)
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(80, 219),
+        Vec(105, 219),
         module,
         Comp::PITCH_PARAM));
+
+    addParam(SqHelper::createParam<Blue30Knob>(
+        icomp,
+        Vec(57, 219),
+        module,
+        Comp::OCTAVE_PARAM));
 #ifdef _LAB
     addLabel(
         Vec(knobsX - 6 + 1 * dx, labelY),
@@ -576,13 +571,13 @@ void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp)
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(130, 219),
+        Vec(153, 219),
         module,
         Comp::LFM_DEPTH_PARAM));
 
     addParam(SqHelper::createParam<SqTrimpot24>(
         icomp,
-        Vec(83, 270),
+        Vec(60, 270),
         module,
         Comp::PITCH_TRIM_PARAM));
 }
@@ -610,10 +605,12 @@ SampWidget::SampWidget(SampModule* module) {
     addKnobs(module, icomp);
 
     // screws
+#if 0
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+#endif
 }
 
 static void shouldFindMalformed(const char* input) {
