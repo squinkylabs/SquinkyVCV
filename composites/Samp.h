@@ -406,7 +406,7 @@ template <class TBase>
 inline void Samp<TBase>::serviceSchema() {
     const int schema =  int( std::round(TBase::params[SCHEMA_PARAM].value));
     if (schema == 0) {
-        //SQINFO("loaded old schema, pitch = %f, octave = %f", TBase::params[PITCH_PARAM].value + TBase::params[OCTAVE_PARAM].value);
+        // SQINFO("loaded old schema, pitch = %f, octave = %f", TBase::params[PITCH_PARAM].value + TBase::params[OCTAVE_PARAM].value);
         TBase::params[SCHEMA_PARAM].value = 1;
 
         float patchOffset = TBase::params[PITCH_PARAM].value;
@@ -666,7 +666,7 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
             ret = {0, 100, 50, "Volume"};
             break;
         case Samp<TBase>::SCHEMA_PARAM:
-            ret = {0, 10, 0, "SCHEMA"};
+            ret = {0, 10, 1, "SCHEMA"};
             break;
         case Samp<TBase>::TRIGGERDELAY_PARAM:
             ret = {0, 1, 1, "TRIGGER DELAY"};
