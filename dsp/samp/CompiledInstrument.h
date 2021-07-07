@@ -12,16 +12,16 @@
 
 class FilePath;
 class SInstrument;
-class SRegion;
+// class SRegion;
 class WaveLoader;
-class SGroup;
+//class SGroup;
 class SamplerErrorContext;
 class InstrumentInfo;
 
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
-using SRegionPtr = std::shared_ptr<SRegion>;
+//using SRegionPtr = std::shared_ptr<SRegion>;
 using WaveLoaderPtr = std::shared_ptr<WaveLoader>;
-using SGroupPtr = std::shared_ptr<SGroup>;
+//using SGroupPtr = std::shared_ptr<SGroup>;
 using CompiledInstrumentPtr = std::shared_ptr<class CompiledInstrument>;
 using InstrumentInfoPtr = std::shared_ptr<InstrumentInfo>;
 /**
@@ -61,8 +61,8 @@ class CompiledInstrument : public ISamplerPlayback {
 public:
     enum class Tests {
         None,
-        MiddleC,   // PLays sample 1 at midi pitch 60 rel = .6
-        MiddleC11,   // PLays sample 1 at midi pitch 60 rel = 1.1
+        MiddleC,    // PLays sample 1 at midi pitch 60 rel = .6
+        MiddleC11,  // PLays sample 1 at midi pitch 60 rel = 1.1
     };
 
     /**
@@ -95,7 +95,7 @@ public:
     static void expandAllKV(SamplerErrorContext&, SInstrumentPtr);
 
     int removeOverlaps(std::vector<CompiledRegionPtr>&);
-    const RegionPool& _pool() { return regionPool; }
+    RegionPool& _pool() { return regionPool; }
     InstrumentInfoPtr getInfo() { return info; }
 
     static float velToGain1(int midiVelocity, float veltrack);
@@ -103,6 +103,7 @@ public:
     static float velToGain(int midiVelocity, float veltrack);
 
     bool isInError() const { return _isInError; }
+
 private:
     RegionPool regionPool;
     Tests ciTestMode = Tests::None;
@@ -131,14 +132,22 @@ private:
 
     /** Returns wave index
      */
-    int addSampleFile(const std::string& s);
+    int addSampleFile(const FilePath& s);
     void addSampleIndexes();
     void deriveInfo();
 
     /**
      * these helpers help fill in VoicePlayInfo
+     * for getPlayPitch 
+     * @param isOscillator if true we treat wave data as a single cycle
+     * @param sampleFrames only used if isOscillator is true
      */
-    static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate);
+
+    // static void getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate, bool isOscillator);
+
+    static void getPlayPitchNorm(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate);
+    static void  getPlayPitchOsc(VoicePlayInfo& info, int midiPitch, int tuneCents, WaveLoader* loader, float sampleRate);
+
     static void getGain(VoicePlayInfo& info, int midiVelocity, float regionVeltrack, float regionVolumeDb);
 
     bool playTestMode(VoicePlayInfo&, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate);

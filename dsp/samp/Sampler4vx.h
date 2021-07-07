@@ -51,6 +51,9 @@ private:
 
 class Sampler4vx {
 public:
+    Sampler4vx() = default;
+    Sampler4vx(const Sampler4vx&) = delete;
+    
     // returns true if caused a key switch
     bool note_on(int channel, int midiPitch, int midiVelocity, float sampleRate);
 
@@ -88,6 +91,8 @@ public:
     float _transAmt(int channel) const;
 
     void suppressErrors() { printErrors = false; }
+
+    const Streamer& _player() const { return player; } 
 private:
     CompiledInstrumentPtr patch;
     WaveLoaderPtr waves;

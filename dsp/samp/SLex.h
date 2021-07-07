@@ -1,15 +1,20 @@
 #pragma once
 
-#include "SamplerSchema.h"
-#include "SqLog.h"
-
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "SamplerSchema.h"
+#include "SqLog.h"
+
 class FilePath;
 class SLex;
+class LexContext;
 using SLexPtr = std::shared_ptr<SLex>;
+using LexContextPtr = std::shared_ptr<LexContext>;
+
+
+///////////////////////////// declarations for the lexer tokens (items) /////////////////////////////////////
 
 class SLexItem {
 public:
@@ -35,33 +40,67 @@ public:
     SLexEqual(int line) : SLexItem(Type::Equal, line) {}
 };
 
+inline std::string removeTrailingSpace(const std::string& s) {
+    const std::string whitespace = " \t";
+    const auto strEnd = s.find_last_not_of(whitespace);
+    return s.substr(0, strEnd + 1);
+}
+
 class SLexIdentifier : public SLexItem {
 public:
     SLexIdentifier(const SLexIdentifier&) = delete;
-    SLexIdentifier(const std::string sName, int line) : SLexItem(Type::Identifier, line), idName(sName) {}
-    const std::string idName;
+
+    /**
+     * Trailing space it removed from the name.
+     * This was done for a bug where spaces after a file name were getting added to the extension,
+     * but it's good in general. No ident has trailing spaces.
+     */
+    SLexIdentifier(const std::string sName, int line) : SLexItem(Type::Identifier, line), idName(removeTrailingSpace(sName)) {
+        if (!idName.empty()) {
+            assert(idName.back() != ' ');
+            assert(idName.back() != '\t');
+        }
+    }
+    std::string idName;
 };
 
 using SLexItemPtr = std::shared_ptr<SLexItem>;
 
+
+//////////////////////////////////////////// Lexer proper ////////////////////////////////////////////////
+
 class SLex {
 public:
+
     /**
+     * This factory should only be called to make the top level Lexer. It should not be used
+     * internally to recurse into a new file.
+     * 
      * @param sContent is the input data to analyze (typically the contents of an SFZ file).
      * @param errorTest is in out parameter for returning lexing errors.
      * @param includeDepth is passed when lexing recursively for #include resolution.
+     * @param yourFilePath is the full path to the file that sContentCame from.
+     * 
+     * These optional params should be passed for "real" code, but they are not required for a lot of unit test code.
+     * 
      * @returns lexer full of tokens, or null if error
      */
-  
-    static SLexPtr go(const std::string& sContent, std::string* errorText = nullptr, int includeDepth = 0, const FilePath* yourFilePath = nullptr);
-    SLex(std::string* errorText, int includeDepth, const FilePath* yourFilePath);
+
+    static SLexPtr go(LexContextPtr context);        // full featured factory
+    static SLexPtr go(const std::string& sContent);  // limited one, just for test
+
+    /**
+     * This is the factory for "child" lexers while processing includes
+     */
+    static SLexPtr goRecurse(LexContextPtr ctx);
+
     std::vector<SLexItemPtr> items;
     SLexItemPtr next() {
         return currentIndex < int(items.size()) ? items[currentIndex] : nullptr;
     }
+
     void consume() {
         currentIndex++;
-        // printf("after lex::consume, index = %d\n", currentIndex);
     }
     void _dump() const;
     int _index() const {
@@ -69,23 +108,29 @@ public:
     }
     void validate() const;
 
+    SLex(const SLex&) = delete;
+    const SLex& operator=(const SLex&) = delete;
+
 private:
-   
-    // return true if no error
-    // the functions that take a second argument expect it to either be
-    // the next character, or -1 for "none" or "not known"
+    SLex(std::string* errorText, int includeDepth, const FilePath* rootFilePath);       // old legacy one
+    SLex(LexContextPtr);                        // new spiffy one
+    const std::string debugString;
+
+    /**
+     * Return true if no error.
+     * The functions that take a second argument expect it to either be
+     * the next character, or -1 for "none" or "not known"
+     */
     bool procNextChar(char c, char nextC = -1);
     bool procFreshChar(char c, char nextC = -1);
     bool procNextTagChar(char c);
-    bool procNextCommentChar(char c);
+    bool procNextCommentChar(char c, char nextC);
     bool procNextIncludeChar(char c);
     bool procEnd();
     bool procNextIdentifierChar(char c);
     bool procEqualsSignInIdentifier();
     bool procStateNextDefineChar(char c);
     bool procStateNextHashChar(char c);
-
-
 
     bool error(const std::string&);
     bool handleIncludeFile(const std::string&);
@@ -111,9 +156,11 @@ private:
         MatchingFileName
     };
 
-    // #define a b
-    // a is lhs, b is rhs
-    // match: opcode, space, lhs, space2, rhs
+    /**
+     *  #define a b
+     * a is lhs, b is rhs
+     * match: opcode, space, lhs, space2, rhs
+     */
     enum class DefineSubState {
         MatchingOpcode,
         MatchingSpace,
@@ -122,22 +169,33 @@ private:
         MatchingRhs,
     };
 
+    enum class CommentSubState {
+        MatchingRegularComment,
+        MatchingMultilineComment,
+    };
+
     IncludeSubState includeSubState = IncludeSubState::MatchingOpcode;
     DefineSubState defineSubState = DefineSubState::MatchingOpcode;
+    CommentSubState commentSubState = CommentSubState::MatchingRegularComment;
 
     int spaceCount = 0;
-    
+      LexContextPtr const context;
+
     std::string curItem;
     bool lastIdentifierIsString = false;
-    std::string* const outErrorStringPtr;
-    const FilePath* const myFilePath;
-    const int includeRecursionDepth;
+    bool lastCharWasForwardSlash = false;
+
+    std::string defineVarName;
+    std::string defineValue;
 
     int currentIndex = 0;
+    int charactersToEat = 0;
 
     // internally it's zero based, but we make it one based for things we expose.
     int currentLine = 0;
 
-
     static void validateName(const std::string&);
+    static SLexPtr goCommon(SLex* lx, LexContextPtr);
+
+    char getNextChar();
 };

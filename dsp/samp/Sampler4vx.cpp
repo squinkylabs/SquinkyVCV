@@ -29,11 +29,13 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime, const float_4& 
     sampleTime_ = sampleTime;
     if (patch && waves) {
         simd_assertMask(gates);
-
-        float_4 envelopes = adsr.step(gates, sampleTime);
         float_4 samples = player.step(lfm, lfmEnabled);
-        // apply envelope and boost level
-        return envelopes * samples * _outputGain();
+        samples *= _outputGain();
+        if (!player.blockEnvelopes()) {
+            float_4 envelopes = adsr.step(gates, sampleTime);
+            samples *= envelopes;
+        }
+        return samples;
     } else {
         return 0;
     }
@@ -66,11 +68,16 @@ float_4 Sampler4vx::step(const float_4& gates, float sampleTime) {
 
 void Sampler4vx::updatePitch() {
     // TODO: get rid of all this crazy semitone/ocatve stuff!!
+    assert(!std::isinf(pitchCVFromKeyboard[0]));
+    assert(!std::isinf(pitchCVFromKeyboard[1]));
+    assert(!std::isinf(pitchCVFromKeyboard[2]));
+    assert(!std::isinf(pitchCVFromKeyboard[3]));
 
     float_4 combinedCV = fmCV * 12 + pitchCVFromKeyboard;
     float_4 transposeAmt;
     for (int i = 0; i < 4; ++i) {
         transposeAmt[i] = PitchUtils::semitoneToFreqRatio(combinedCV[i]);
+      //  SQINFO("kb=%f combinedCV = %f giving xpose %f", pitchCVFromKeyboard[i], combinedCV[i], transposeAmt[i]);
     }
     player.setTranspose(transposeAmt);
 #if 0
@@ -81,6 +88,8 @@ void Sampler4vx::updatePitch() {
 }
 
 bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sampleRate) {
+    // SQINFO("note on, midid pitch = %d", midiPitch);
+    assert(sampleRate > 100);
     if (!patch || !waves) {
         if (printErrors) {
             SQDEBUG("4vx not intit");
@@ -96,7 +105,7 @@ bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     params.midiVelocity = midiVelocity;
     const bool didKS = patch->play(patchInfo, params, waves.get(), sampleRate);
     if (!patchInfo.valid) {
-        SQINFO("could not get play info pitch %d vel%d", midiPitch, midiVelocity);
+        // SQINFO("could not get play info pitch %d vel%d", midiPitch, midiVelocity);
         player.clearSamples(channel);
         return didKS;
     }
@@ -104,18 +113,20 @@ bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     WaveLoader::WaveInfoPtr waveInfo = waves->getInfo(patchInfo.sampleIndex);
     assert(waveInfo->isValid());
 #if 0
-    SQINFO("played file=%s", waveInfo->getFileName().c_str());
+    SQINFO("played pitch=%d vel=%d file=%s", midiPitch, midiVelocity, waveInfo->getFileName().c_str());
 #endif
 
     player.setSample(channel, waveInfo->getData(), int(waveInfo->getTotalFrameCount()));
+    player.setLoopData(channel, patchInfo.loopData);
     player.setGain(channel, patchInfo.gain);
 
     // I don't think this test cares what we set the player too
 
 #ifdef _SAMPFM
-
+    assert(!std::isinf(patchInfo.transposeV));
     const float transposeCV = patchInfo.transposeV * 12;
     pitchCVFromKeyboard[channel] = transposeCV;
+    assert(!std::isinf(transposeCV));
     updatePitch();
 #if 0  // old way
     const float transposeCV = patchInfo.transposeV * 12 + 12 * fmCV[channel];
@@ -137,7 +148,7 @@ bool Sampler4vx::note_on(int channel, int midiPitch, int midiVelocity, float sam
     player.setTranspose(channel, patchInfo.needsTranspose, patchInfo.transposeAmt);
 #endif
 
-   // std::string sample = waveInfo->fileName.getFilenamePart();
+    // std::string sample = waveInfo->fileName.getFilenamePart();
     // SQINFO("play vel=%d pitch=%d gain=%f samp=%s", midiVelocity, midiPitch, patchInfo.gain, sample.c_str());
 
     // this is a little messed up - the adsr should really have independent

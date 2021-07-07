@@ -6,12 +6,10 @@
 #include <array>
 
 class CompiledRegion;
-class CompiledGroup;
 class SInstrument;
 class VoicePlayParameter;
 
 using CompiledRegionPtr = std::shared_ptr<CompiledRegion>;
-using CompiledGroupPtr = std::shared_ptr<CompiledGroup>;
 using SInstrumentPtr = std::shared_ptr<SInstrument>;
 
 class RegionPool {
@@ -30,6 +28,7 @@ public:
 
     void _dump(int depth) const;
     void _getAllRegions(std::vector<CompiledRegionPtr>&) const;
+    size_t size() const { return regions.size(); }
     static void sortByVelocity(std::vector<CompiledRegionPtr>&);
     static void sortByPitch(std::vector<CompiledRegionPtr>&);
     static void sortByPitchAndVelocity(std::vector<CompiledRegionPtr>&);
@@ -59,7 +58,6 @@ private:
     void fillRegionLookup();
     void removeOverlaps();
     void maybeAddToKeyswitchList(CompiledRegionPtr);
- //   static bool checkPitchAndVel(const VoicePlayParameter& params, const CompiledRegion* region, float random);
     static bool shouldRegionPlayNow(const VoicePlayParameter& params, const CompiledRegion* region, float random);
 
     /**
@@ -67,7 +65,6 @@ private:
      * If overlap can be corrected, regions will be tweaked and false will be returned;
      */
     static bool evaluateOverlapsAndAttemptRepair( CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
-    //static bool evaluateOverlapsAndAttemptRepairOnce( CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
     static bool attemptOverlapRepairWithVel(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
     static bool attemptOverlapRepairWithPitch(CompiledRegionPtr firstRegion, CompiledRegionPtr secondRegion);
 };

@@ -132,6 +132,7 @@ std::function<double(double)> CompCurves::_getContinuousCurve(const CompCurves::
             const double yDb = dbSlope * xdb;
 
             const double xTest = AudioMath::gainFromDb(xdb);
+            (void) xTest;
             assertClose(x, xTest, .000001);
             const double gain = AudioMath::gainFromDb(yDb) / x;
 
@@ -243,7 +244,7 @@ CompCurves::makeSplineMiddle(const Recipe& r) {
         double yGainDb = NonUniformLookupTable<double>::lookup(*firstTableParam, vInDb);
         double yGainVolts = AudioMath::gainFromDb(yGainDb);
 
-        double yOutDebug = yGainVolts * vInVolts;
+      //  double yOutDebug = yGainVolts * vInVolts;
       
         NonUniformLookupTable<double>::addPoint(*params, vInVolts, yGainVolts);
 

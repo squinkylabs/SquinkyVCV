@@ -1,6 +1,8 @@
 #pragma once
 #include <assert.h>
 
+#include "SqLog.h"
+
 /**
  * A simple ring buffer.
  * Template arguments are for numeric type stored, and for size.
@@ -31,6 +33,8 @@ public:
     bool full() const;
     bool empty() const;
 
+    void _dump();
+
 private:
     T memory[SIZE];
     bool couldBeFull = false;           // full and empty are ambiguous, both are in--out
@@ -43,8 +47,19 @@ private:
     void advance(int &p);
 };
 
+template <>
+inline void SqRingBuffer<uint16_t, 3>::_dump() {
+    SQINFO("*** ring buffer dump.");
+    SQINFO("in=%d out=%d", inIndex, outIndex);
+    for (int i = 0; i < 3; ++i) {
+        SQINFO("buffer[%d] = %x", i, memory[i]);
+    }
+}
+
+
 template <typename T, int SIZE>
 inline void SqRingBuffer<T, SIZE>::push(T value)
+
 {
     assert(!full());
     memory[inIndex] = value;

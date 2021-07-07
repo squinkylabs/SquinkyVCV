@@ -25,7 +25,7 @@ static void testSampler() {
     const int channel = 0;
     const int midiPitch = 60;
     const int midiVel = 60;
-    s.note_on(channel, midiPitch, midiVel, 0);
+    s.note_on(channel, midiPitch, midiVel, 44100.f);
 
     float_4 x = s.step(0, 1.f / 44100.f, 0, false);
     assert(x[0] == 0);
@@ -62,19 +62,12 @@ static void testSamplerRealSound() {
     assert(x[0] != 0);
 }
 
-// CompiledInstrument::Tests::MiddleC
-// WaveLoader::Tests::DCOneSec
-std::shared_ptr<Sampler4vx> makeTest(CompiledInstrument::Tests citest, WaveLoader::Tests wltest) {
+std::shared_ptr<Sampler4vx> makeTestSampler4vx2(CompiledInstrumentPtr cinst, WaveLoader::Tests wltest) {
     std::shared_ptr<Sampler4vx> s = std::make_shared<Sampler4vx>();
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();
-
-    SamplerErrorContext errc;
-    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
     WaveLoaderPtr w = std::make_shared<WaveLoader>();
     w->_setTestMode(wltest);
-
-    cinst->_setTestMode(citest);  // I don't know what this test mode does now, but probably not enough?
 
     WaveLoader::WaveInfoPtr info = w->getInfo(1);
     assert(info->isValid());
@@ -86,14 +79,34 @@ std::shared_ptr<Sampler4vx> makeTest(CompiledInstrument::Tests citest, WaveLoade
     return s;
 }
 
+std::shared_ptr<Sampler4vx> makeTestSampler4vx2(const char* pSFZ, WaveLoader::Tests wltest) {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(pSFZ, inst);
+
+    SamplerErrorContext errc;
+    auto cinst = CompiledInstrument::make(errc, inst);
+    assertEQ(errc.unrecognizedOpcodes.size(), 0);
+    return makeTestSampler4vx2(cinst, wltest);
+}
+
+std::shared_ptr<Sampler4vx> makeTestSampler4vx(CompiledInstrument::Tests citest, WaveLoader::Tests wltest) {
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
+    cinst->_setTestMode(citest);
+
+    return makeTestSampler4vx2(cinst, wltest);
+}
+
 // This mostly tests that the test infrastructure works.
-static void testSamplerTestOutput() {
-    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
+static void testSampler4vxTestOutput() {
+    auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
     const int channel = 0;
     const int midiPitch = 60;
     const int midiVel = 60;
-    s->note_on(channel, midiPitch, midiVel, 0);
+    s->note_on(channel, midiPitch, midiVel, 44100);
 
     const float sampleTime = 1.f / 44100.f;
     const float_4 gates = SimdBlocks::maskTrue();
@@ -105,7 +118,7 @@ static void testSamplerTestOutput() {
 
 using ProcFunc = std::function<float()>;
 
-static unsigned measureAttack(ProcFunc f, float threshold) {
+static unsigned sampler4vxMeasureAttack(ProcFunc f, float threshold) {
     unsigned int ret = 0;
     float x = f();
     // assert (x < .5);
@@ -121,7 +134,7 @@ static unsigned measureAttack(ProcFunc f, float threshold) {
     return ret;
 }
 
-static unsigned measureRelease(ProcFunc f, float threshold) {
+static unsigned sampler4vxMeasureRelease(ProcFunc f, float threshold) {
     unsigned int ret = 0;
     float x = f();
     // assert (x > .5);
@@ -135,8 +148,8 @@ static unsigned measureRelease(ProcFunc f, float threshold) {
     return ret;
 }
 
-static void testSamplerAttack() {
-    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
+static void testSampler4vxAttack() {
+    auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
     const int channel = 0;
     const int midiPitch = 60;
@@ -145,19 +158,17 @@ static void testSamplerAttack() {
     const float sampleTime = 1.f / 44100.f;
     float_4 lowGates = float_4::zero();
     s->step(lowGates, sampleTime, 0, false);
-    s->note_on(channel, midiPitch, midiVel, 0);
+    s->note_on(channel, midiPitch, midiVel, 44100);
 
     float_4 gates = SimdBlocks::maskTrue();
     ProcFunc lambda = [s, &gates, sampleTime] {
-      
-
         const float_4 x = s->step(gates, sampleTime, 0, false);
         return x[0];
     };
 
-    const auto attackSamples = measureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
+    const auto attackSamples = sampler4vxMeasureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
 
-    // default for attack is 1 ms
+    // default for attack is 1 ms (no it isn't)
     const int expectedAttack = 44100 / 1000;
     assertClosePct(attackSamples, expectedAttack, 10);
 }
@@ -169,13 +180,13 @@ static void prime(std::shared_ptr<Sampler4vx> s) {
     s->step(zero, sampleTime, 0, false);
 }
 
-static void testSamplerRelease() {
-    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
+static void testSampler4vxRelease() {
+    auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
     const int channel = 0;
     const int midiPitch = 60;
     const int midiVel = 60;
-    s->note_on(channel, midiPitch, midiVel, 0);
+    s->note_on(channel, midiPitch, midiVel, 44100);
     prime(s);  // probably no needed, but  a few quiet ones to start
 
     float_4 gates = SimdBlocks::maskTrue();
@@ -186,12 +197,11 @@ static void testSamplerRelease() {
         return x[0];
     };
 
-    auto attackSamples = measureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
+    auto attackSamples = sampler4vxMeasureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
     gates = SimdBlocks::maskFalse();
     const float minus85Db = (float)AudioMath::gainFromDb(-85);
     const float releaseMeasureThreshold = minus85Db * Sampler4vx::_outputGain()[0];
-    const auto releaseSamples = measureRelease(lambda, releaseMeasureThreshold);
-
+    const auto releaseSamples = sampler4vxMeasureRelease(lambda, releaseMeasureThreshold);
 
     // .6 is what Tests::MiddleC uses for release
     const float f = .6 * 44100.f;
@@ -200,12 +210,12 @@ static void testSamplerRelease() {
 
 // this one should have a 1.1 second release
 static void testSamplerRelease2() {
-    auto s = makeTest(CompiledInstrument::Tests::MiddleC11, WaveLoader::Tests::DCTenSec);
+    auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC11, WaveLoader::Tests::DCTenSec);
 
     const int channel = 0;
     const int midiPitch = 60;
     const int midiVel = 60;
-    s->note_on(channel, midiPitch, midiVel, 0);
+    s->note_on(channel, midiPitch, midiVel, 44100);
 
     float_4 gates = SimdBlocks::maskTrue();
     ProcFunc lambda = [s, &gates] {
@@ -215,12 +225,12 @@ static void testSamplerRelease2() {
         return x[0];
     };
 
-    auto attackSamples = measureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
+    auto attackSamples = sampler4vxMeasureAttack(lambda, .95f * Sampler4vx::_outputGain()[0]);
     gates = SimdBlocks::maskFalse();
 
     const float minus85Db = (float)AudioMath::gainFromDb(-85);
     const float releaseMeasureThreshold = minus85Db * Sampler4vx::_outputGain()[0];
-    const auto releaseSamples = measureRelease(lambda, releaseMeasureThreshold);
+    const auto releaseSamples = sampler4vxMeasureRelease(lambda, releaseMeasureThreshold);
 
     const float f = 1.1f * 44100.f;
     assertClosePct(releaseSamples, f, 10);
@@ -262,10 +272,8 @@ static void testSamplerEnd() {
 }
 #endif
 
-// no longer valide since no env at end
-// perhaps could be re-written
-static void testSampleRetrigger() {
-    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
+static void testSampler4vxRetrigger() {
+    auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
     prime(s);
 
     const int channel = 0;
@@ -285,13 +293,13 @@ static void testSampleRetrigger() {
     const float minus85Db = (float)AudioMath::gainFromDb(-85);
     const float releaseMeasureThreshold = minus85Db * Sampler4vx::_outputGain()[0];
 
-    auto attackSamples = measureAttack(lambda, .99f * Sampler4vx::_outputGain()[0]);
+    auto attackSamples = sampler4vxMeasureAttack(lambda, .99f * Sampler4vx::_outputGain()[0]);
 
     // don't lower the gate, just let it end
     // masure when it starts to go down
-    const auto releaseSamples = measureRelease(lambda, .95f * Sampler4vx::_outputGain()[0]);
+    const auto releaseSamples = sampler4vxMeasureRelease(lambda, .95f * Sampler4vx::_outputGain()[0]);
     // and finish
-    const auto releaseSamples2 = measureRelease(lambda, releaseMeasureThreshold);
+    const auto releaseSamples2 = sampler4vxMeasureRelease(lambda, releaseMeasureThreshold);
 
     const float f = .6 * 44100.f;
     assertClosePct(releaseSamples2, f, 10);
@@ -300,16 +308,17 @@ static void testSampleRetrigger() {
     for (int i = 0; i < 4; ++i) {
         prime(s);                                    // send it a  few gate low to reset the ADSR
         s->note_on(channel, midiPitch, midiVel, 0);  // and re-trigger
-        auto attackSamplesNext = measureAttack(lambda, .99f * Sampler4vx::_outputGain()[0]);
+        auto attackSamplesNext = sampler4vxMeasureAttack(lambda, .99f * Sampler4vx::_outputGain()[0]);
         assertEQ(attackSamplesNext, attackSamples);
 
-        const auto releaseSamplesNext = measureRelease(lambda, .95f * Sampler4vx::_outputGain()[0]);
+        const auto releaseSamplesNext = sampler4vxMeasureRelease(lambda, .95f * Sampler4vx::_outputGain()[0]);
         // and finish
-        const auto releaseSamplesNext2 = measureRelease(lambda, releaseMeasureThreshold);
+        const auto releaseSamplesNext2 = sampler4vxMeasureRelease(lambda, releaseMeasureThreshold);
         assertEQ(releaseSamplesNext2, releaseSamples2);
     }
 }
 
+// tests the semitone quantizer
 static void testSampQantizer() {
     using Comp = Samp<TestComposite>;
 
@@ -354,13 +363,13 @@ static void testSampBuilds() {
 }
 
 static void testSampPitch0(int channel) {
-    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
+    auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
 
-   // const int channel = 0;
+    // const int channel = 0;
     const int midiPitch = 60;
     const int midiVel = 60;
-    s->note_on(channel, midiPitch, midiVel, 0);
-    const bool isTrans= s->_isTransposed(channel);
+    s->note_on(channel, midiPitch, midiVel, 44100);
+    const bool isTrans = s->_isTransposed(channel);
     const float transAmt = s->_transAmt(channel);
 
     assert(!isTrans);
@@ -368,15 +377,14 @@ static void testSampPitch0(int channel) {
 }
 
 static void testSampPitch1(int channel) {
-    auto s = makeTest(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
+    auto s = makeTestSampler4vx(CompiledInstrument::Tests::MiddleC, WaveLoader::Tests::DCOneSec);
     const int midiPitch = 60;
     const int midiVel = 60;
 
-
-    s->note_on(channel, midiPitch, midiVel, 0);
+    s->note_on(channel, midiPitch, midiVel, 44100);
 
     float_4 mod = float_4::zero();
-    mod[channel] = 1;               // let's go up an octabe (1V/8)
+    mod[channel] = 1;  // let's go up an octabe (1V/8)
     s->setExpFM(mod);
     for (int i = 0; i < 4; ++i) {
         const bool isTrans = s->_isTransposed(i);
@@ -388,21 +396,174 @@ static void testSampPitch1(int channel) {
     }
 }
 
-
 static void testSampPitch() {
     for (int i = 0; i < 4; ++i) {
         testSampPitch0(i);
         testSampPitch1(i);
     }
-    
+}
+
+static void testSampOsc() {
+    SQINFO("-- testSampOsc (looped) --");
+    {
+        const char* data = (R"foo(
+            <region>sample=a 
+            lokey=c3
+            hikey=c5 
+            pitch_keycenter=c4
+          )foo");
+        std::shared_ptr<Sampler4vx> s = makeTestSampler4vx2(data, WaveLoader::Tests::Zero2048);
+        bool b = s->note_on(0, 60, 60, 44100);
+        auto tr = s->_player()._transAmt(0);
+        SQINFO("norm 60 tr = %f", tr);
+
+        s->note_on(0, 60+12, 60, 44100);
+        tr = s->_player()._transAmt(0);
+        SQINFO("norm 60+12 tr = %f", tr);
+
+         s->note_on(0, 60-12, 60, 44100);
+        tr = s->_player()._transAmt(0);
+        SQINFO("norm 60+-12 tr = %f", tr);
+    }
+    {
+        const char* data = (R"foo(
+          <region>sample=a oscillator=on
+          )foo");
+        std::shared_ptr<Sampler4vx> s = makeTestSampler4vx2(data, WaveLoader::Tests::Zero2048);
+        bool b = s->note_on(0, 60, 60, 44100);
+        auto tr = s->_player()._transAmt(0);
+        SQINFO("case 415: tr = %f", tr);
+        assertClose(tr, 12.15, .01);
+    }
+}
+
+static void testSampOffset() {
+    std::shared_ptr<Sampler4vx> s = std::make_shared<Sampler4vx>();
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst;
+    WaveLoaderPtr w = std::make_shared<WaveLoader>();
+    w->_setTestMode(WaveLoader::Tests::RampOneSec);
+
+    const char* test = R"foo(
+        <region>
+        sample=r1
+        offset=4321
+    )foo";
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto perr = SParse::go(test, inst);
+    assert(perr.empty());
+
+    SamplerErrorContext cerr;
+    auto ci = CompiledInstrument::make(cerr, inst);
+    assert(ci);
+
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 60;
+
+    Sampler4vx samp;
+    samp.setLoader(w);
+    samp.setPatch(ci);
+
+    VoicePlayInfo info;
+    ci->play(info, params, nullptr, 44100);
+    assertEQ(info.loopData.offset, 4321);
+    SQINFO("foo");
+
+    samp.note_on(0, 60, 60, 44100);
+    const Streamer& player = samp._player();
+    assertEQ(player.channels[0].loopData.offset, 4321);
+    assertEQ(player.channels[0].loopActive, false);
+}
+
+static void testOneShot(bool oneShot) {
+    SQINFO("--- testOneShot(%d)", oneShot);
+    //std::shared_ptr<Sampler4vx> s = std::make_shared<Sampler4vx>();
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr cinst;
+    WaveLoaderPtr w = std::make_shared<WaveLoader>();
+    w->_setTestMode(WaveLoader::Tests::DCOneSec);
+
+    const char* testNorm = R"foo(
+        <region>
+        ampeg_release=.001
+        sample=r1
+    )foo";
+
+    const char* testOneShot = R"foo(
+        <region>
+        sample=r1
+        ampeg_release=.001
+        loop_mode=one_shot
+    )foo";
+
+    const char* test = oneShot ? testOneShot : testNorm;
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto perr = SParse::go(test, inst);
+    assert(perr.empty());
+
+    SamplerErrorContext cerr;
+    auto ci = CompiledInstrument::make(cerr, inst);
+    assert(ci);
+
+    VoicePlayParameter params;
+    params.midiPitch = 60;
+    params.midiVelocity = 60;
+
+    Sampler4vx samp;
+    samp.setLoader(w);
+    samp.setPatch(ci);
+
+    VoicePlayInfo info;
+    //  ci->play(info, params, w.get(), 44100.f);
+    const int channel = 0;
+    const int midiPitch = 60;
+    const int midiVel = 60;
+    samp.note_on(channel, midiPitch, midiVel, 44100);
+
+    auto gates = SimdBlocks::maskTrue();
+    const float sampleTime = 1.f / 44100.f;
+    float_4 lfm = SimdBlocks::maskFalse();
+
+    float largest = 0;
+    for (int i = 0; i < 200; ++i) {
+        auto x = samp.step(gates, sampleTime, lfm, false);
+        //SQINFO("x = %f", x[0]);
+        largest = std::max(x[0], largest);
+    }
+    SQINFO("larges was %f", largest);
+    // while playing, should have something
+    assert(largest > .2);
+
+    // takes gates low, pump a little
+    SQINFO("gates go low now");
+    gates = SimdBlocks::maskFalse();
+    for (int i = 0; i < 200; ++i) {
+        auto x = samp.step(gates, sampleTime, lfm, false);
+    }
+
+    // now see if playing
+    largest = 0;
+    for (int i = 0; i < 200; ++i) {
+        auto x = samp.step(gates, sampleTime, lfm, false);
+        largest = std::max(x[0], largest);
+    }
+    SQINFO("largest was %f", largest);
+    const bool wasSignal = largest > .01f;
+    assertEQ(wasSignal, oneShot);
 }
 
 void testx5() {
+#if 1
     testSampler();
-    testSamplerTestOutput();
+    testSampler4vxTestOutput();
 
-    testSamplerRelease();
-    testSamplerAttack();   
+    testSampler4vxRelease();
+    testSampler4vxAttack();
     // no working any more
     //testSamplerRealSound();
     testSamplerRelease2();
@@ -410,6 +571,10 @@ void testx5() {
     testSampBuilds();
 
     testSampPitch();
+    testSampOffset();
+#endif
 
-    // testSampleRetrigger();      // now write a test for retriggering played out voice
+    testSampOsc();
+    testOneShot(false);
+    testOneShot(true);
 }

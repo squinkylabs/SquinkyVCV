@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <memory>
@@ -7,9 +8,17 @@
 #include "SamplerSchema.h"
 #include "SqLog.h"
 
+class SLex;
+class SLexItem;
+class SInstrument;
+using SLexPtr = std::shared_ptr<SLex>;
+using SLexItemPtr = std::shared_ptr<SLexItem>;
+using SInstrumentPtr = std::shared_ptr<SInstrument>;
+
 extern int parseCount;
 class FilePath;
 
+//---------------------------------------------
 class SKeyValuePair {
 public:
     SKeyValuePair(const std::string& k, const std::string& v) : key(k), value(v) { ++parseCount; }
@@ -21,63 +30,70 @@ public:
 using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>;
 using SKeyValueList = std::vector<SKeyValuePairPtr>;
 
-// A heading represents a <global> simiar
-// It doesn't have much, other than a list of value
+//-----------------------------------------------------
+// A heading represents any heading, including regions and groups
 class SHeading {
 public:
-    SKeyValueList values;
-    SamplerSchema::KeysAndValuesPtr compiledValues;
-    static void dumpKeysAndValues(const SKeyValueList& v);
-    int lineNumber = 0;
-};
+    void _dump() const { 
+        SQINFO("dump heading from line %d", lineNumber+1);
+        dumpKeysAndValues(values); }
+    enum class Type {
+        Region,
+        Group,
+        Global,
+        Control,
+        Master,
+        // This is kind of a hack, but...
+        // All headings are sort of treated the same, but not all of
+        // them are inherited by regions. So ATM, all of the types above
+        // DO participate in inheritance, and the ones below do not.
+        NUM_TYPES_INHERIT = Master + 1,
+        Curve,
+        Effect,
+        Midi,
+        Sample,
+        Unknown,
+        NUM_TYPES_ALL
+    };
 
-class SRegion {
-public:
-    // TODO: process cb contents
-    SRegion(int line, const SHeading& controlBlockContents) : lineNumber(line) {
-        ++parseCount;
-        values.insert(values.end(), controlBlockContents.values.begin(), controlBlockContents.values.end());
+    SHeading() = delete;
+    SHeading(const SHeading&) = delete;
+    SHeading(Type t, int lnNumber) : lineNumber(lnNumber), type(t) {
     }
-    ~SRegion() { --parseCount; }
-    SRegion(const SRegion&) = delete;
+    /**
+     * Parsing populates values with the opcodes found while parsing
+     */
     SKeyValueList values;
+
+    /**
+     * A step in compiling is turning values into compiledValues.
+     * This is fairly mechanical, and driven from SamperSchema
+     */
     SamplerSchema::KeysAndValuesPtr compiledValues;
-    const int lineNumber = 0;
-    void _dump();
-};
-using SRegionPtr = std::shared_ptr<SRegion>;
-using SRegionList = std::vector<SRegionPtr>;
-
-// Groups have a list of values
-// and they usually have children.
-// they are a type of heading, but they are special
-class SGroup : public SHeading {
-public:
-    SGroup(int line) : lineNumber(line) {}
-    SGroup() = delete;
-
-    SRegionList regions;
-    const int lineNumber;
-    void _dump();
+    static void dumpKeysAndValues(const SKeyValueList& v) {
+        SQINFO("-- keys and vals:");
+        for (auto k : v) {
+            SQINFO("key=%s val=%s", k->key.c_str(), k->value.c_str());
+        }
+    }
+const int lineNumber = 0;
+    const Type type = {Type::Unknown};
 };
 
-using SGroupPtr = std::shared_ptr<SGroup>;
-using SGroupList = std::vector<SGroupPtr>;
+using SHeadingPtr = std::shared_ptr<SHeading>;
+using SHeadingList = std::vector<SHeadingPtr>;
 
-class SLex;
-class SLexItem;
-class SInstrument;
-using SLexPtr = std::shared_ptr<SLex>;
-using SLexItemPtr = std::shared_ptr<SLexItem>;
-using SInstrumentPtr = std::shared_ptr<SInstrument>;
-
+//-------------------------------------------
 class SParse {
 public:
     static std::string go(const std::string& s, SInstrumentPtr);
     static std::string goFile(const FilePath& filePath, SInstrumentPtr);
-   
 
 private:
+    static FILE* openFile(const FilePath& fp);
+    static std::string readFileIntoString(FILE* fp);
+    static std::string goCommon(const std::string& sContent, SInstrumentPtr outParsedInstrument, const FilePath& fullPathToSFZ);
+
     class Result {
     public:
         std::string errorMessage;
@@ -89,30 +105,11 @@ private:
         Res res = Res::ok;
     };
 
-    //static std::shared_ptr<std::ifstream> open(const FilePath& fp);
-
-    static FILE* openFile(const FilePath& fp);
-    static std::string readFileIntoString(FILE* fp);
-    static std::string goCommon(const std::string& sContent, SInstrumentPtr outParsedInstrument, const FilePath* fullPathToSFZ);
-
-    /* What is a "heading"?
-     * it's something that can modify following regions: group, control, etc...
-     * we will treat these all pretty much the same
-     */
-
-    static std::string matchRegions(SRegionList&, SLexPtr, const SHeading& controlBlock);
-    static Result matchRegion(SRegionList&, SLexPtr, const SHeading& controlBlock);
-
-    //  static std::string matchHeadings(SInstrumentPtr, SLexPtr lex);
-    // a"heading group" is a series of headings followed by all regions that belong to it
-    static std::string matchHeadingGroups(SInstrumentPtr, SLexPtr lex);
-
+    // a"heading group" is a series of headings, where a region is also a heading
+    static std::string matchHeadingGroups(SInstrumentPtr, SLexPtr);
     static Result matchHeadingGroup(SInstrumentPtr, SLexPtr);
-    //  static std::string matchHeadingsOrRegions(SInstrumentPtr, SLexPtr lex);
 
-    // return.second is true it heading it a group
-    static std::pair<Result, bool> matchSingleHeading(SInstrumentPtr, SLexPtr);
-
+    static Result matchSingleHeading(SLexPtr lex, SHeadingPtr& outputHeading);
     static std::string matchKeyValuePairs(SKeyValueList&, SLexPtr);
     static Result matchKeyValuePair(SKeyValueList&, SLexPtr);
 

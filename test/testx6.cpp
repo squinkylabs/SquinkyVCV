@@ -6,6 +6,7 @@
 #include "asserts.h"
 
 static CompiledInstrumentPtr makeTest(const std::string& data) {
+    // there we some merge activity here...
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
     assert(err.empty());
@@ -69,7 +70,7 @@ static void testGlobalAmpeg() {
     assertEQ(creg->ampeg_release, 1);
 }
 
-// tests 1 ms default of ampeg_release
+// tests 30 ms default of ampeg_release
 static void testDefaultAmpeg() {
     const char* data = R"foo(<global>
         <group>
@@ -87,17 +88,19 @@ static void testDefaultAmpeg() {
 
 // test we prune release group
 static void testRemoveRelease() {
+    SQINFO("----- testRemoveRelease");
     const char* data = R"foo(<global>
         <region>sample=b key=1
         <group>trigger=release
         <region>sample=a key=2
          )foo";
     auto inst = makeTest(data);
+    // inst->_dump(0);
     std::vector<CompiledRegionPtr> regions;
     inst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);
     CompiledRegionPtr creg = regions[0];
-    assertEQ(creg->sampleFile, "b");
+    assertEQ(creg->sampleFile.toString(), "b");
 }
 
 // test we prune release regions
@@ -111,7 +114,7 @@ static void testRemoveRelease2() {
     inst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);
     CompiledRegionPtr creg = regions[0];
-    assertEQ(creg->sampleFile, "a");
+    assertEQ(creg->sampleFile.toString(), "a");
 }
 
 static void testHicc() {

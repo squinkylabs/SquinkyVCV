@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "CompiledRegion.h"
 #include "SimdBlocks.h"
 #include "SqLog.h"
 
@@ -11,16 +12,17 @@
  */
 class Streamer {
 public:
-   // Streamer();
+    Streamer() = default;
+    Streamer(const Streamer&) = delete;
     void setSample(int chan, const float* data, int frames);
-  //  void setTranspose(int chan, bool doTranspose, float amount);
+    void setLoopData(int chan, const CompiledRegion::LoopData& data);
+
 
     /**
      * set the instantaneous pitch.
      * @param amount is the ratio, so 1 means no transpose.
      */
     void setTranspose(float_4 amount);
-    bool canPlay(int chan);
     void clearSamples();
     void clearSamples(int channel);
     void setGain(int chan, float gain);
@@ -33,16 +35,30 @@ public:
 
     bool _isTransposed(int channel) const;
     float _transAmt(int channel) const;
+    bool blockEnvelopes() const;
+ 
 
 public:
     class ChannelData {
     public:
+        /*
+         * buffer that holds the first three samples, in case we are offset.
+         * 0, s0, s1, s2
+         */
+        float offsetBuffer[4] = {0};  
+
+        /*
+         *  buffer that hold the last three samples
+         *   sn-2, sn-1, sn, 0
+         */   
+        float endBuffer[4] = {0};          
+        float loopEndBuffer[8] = {0};
         const float* data = nullptr;
-        int frames = 0;
+        unsigned int frames = 0;
 
         float vol = 1;  // this will go away when we have envelopes
 
-        int curIntegerSampleOffset = 0;
+        unsigned int curIntegerSampleOffset = 0;
         bool arePlaying = false;
 
         /* If curFloatSampleOffset is a float we build up error and it 
@@ -50,17 +66,26 @@ public:
          * and just use the float for the fraction, but I have a feeling that 
          * just using a double is simpler and faster.
          */
-        double curFloatSampleOffset = 0;   
-        
+        double curFloatSampleOffset = 0;
+
         bool transposeEnabled = false;
         float transposeMultiplier = 1;
         float gain = 1;
+        CompiledRegion::LoopData loopData;
+
+        /**
+         * true if playback needs to look at loop data. 
+         */
+        bool loopActive = false;
 
         void _dump() const;
+        void advancePointer(float lfm);
+        bool canPlay() const;
     };
     ChannelData channels[4];
 
     float stepNoTranspose(ChannelData&);
     float stepTranspose(ChannelData&, const float lfm);
 
+    const ChannelData& _cd(int channel) const;
 };

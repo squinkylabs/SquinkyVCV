@@ -1,19 +1,18 @@
 #pragma once
 
+#include <memory>
+
 #include "GateTrigger.h"
 #include "MidiTrack.h"
 #include "MidiVoice.h"
 #include "MidiVoiceAssigner.h"
 #include "SqPort.h"
 
-#include <memory>
-
 class IMidiPlayerHost4;
 class MidiSong4;
 class MidiTrack;
 
 // #define _MLOG
-
 
 /**
  * input port usage
@@ -58,7 +57,6 @@ public:
     int getSection() const;
     void setNextSectionRequest(int section);
 
-
     int getNextSectionRequest() const;
     void setRunningStatus(bool running);
     bool _getRunningStatus() const;
@@ -84,14 +82,11 @@ public:
      */
     int getCurrentRepetition();
 
-    class MidiVoiceAssigner& _getVoiceAssigner()
-    {
+    class MidiVoiceAssigner& _getVoiceAssigner() {
         return voiceAssigner;
     }
 
 private:
-    
-   
     std::shared_ptr<IMidiPlayerHost4> host;
 
     /**
@@ -101,7 +96,6 @@ private:
     const int constTrackIndex = 0;
 
     CVInputMode cvInputMode = CVInputMode::Poly;
-
 
     /**
      * Variables around voice state
@@ -115,14 +109,14 @@ private:
      * VCV Input port for the CV input for track
      */
     SqInput* input = nullptr;
-    
+
     /**
      * Schmidt triggers for various CV input channels
      */
     GateTrigger nextSectionTrigger;
     GateTrigger prevSectionTrigger;
 
-    SqParam* immediateParam = nullptr;        // not imp yet
+    SqParam* immediateParam = nullptr;  // not imp yet
 
     /**
      * This is the song UI sets directly and uses for UI purposes.
@@ -141,7 +135,7 @@ private:
      * Sometimes we need to know if we are playing.
      * This started as an experiment - is it still used?
      */
-    bool isPlaying = false;    
+    bool isPlaying = false;
 
     bool pollForNoteOff(double metricTime);
     void setupToPlayFirstTrackSection();

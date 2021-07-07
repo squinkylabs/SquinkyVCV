@@ -27,6 +27,9 @@ using Value = SamplerSchema::Value;
 //#define _LOGOV
 
 bool CompiledInstrument::compile(const SInstrumentPtr in) {
+    // SQINFO("dump parse from CompiledInstrument::compile");
+    // in->_dump();
+
     assert(in->wasExpanded);
     bool ret = regionPool.buildCompiledTree(in);
     if (!ret) {
@@ -36,6 +39,8 @@ bool CompiledInstrument::compile(const SInstrumentPtr in) {
     addSampleIndexes();
     deriveInfo();
     assert(info);
+    // SQINFO("dump from end of compile");
+    // _dump(0);
     return true;
 }
 
@@ -89,6 +94,7 @@ public:
     std::vector<CompiledRegionPtr> regions;
 };
 
+#if 0
 static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions) {
     int x = 0;
     for (auto reg : inputRegions) {
@@ -96,12 +102,14 @@ static void dumpRegions(const std::vector<CompiledRegionPtr>& inputRegions) {
         ++x;
     }
 }
+#endif
 
 void CompiledInstrument::_dump(int depth) const {
     regionPool._dump(depth);
 }
 
-int CompiledInstrument::addSampleFile(const std::string& s) {
+int CompiledInstrument::addSampleFile(const FilePath& fp) {
+    std::string s = fp.toString();
     int ret = 0;
     auto it = relativeFilePaths.find(s);
     if (it != relativeFilePaths.end()) {
@@ -169,7 +177,22 @@ void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float re
     info.gain = velToGain(midiVelocity, regionVeltrack) * regionGainMult;
 }
 
-void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate) {
+
+void  CompiledInstrument::getPlayPitchOsc(VoicePlayInfo& info, int midiPitch, int tuneCents, WaveLoader* loader, float sampleRate) {
+    //   float transpose = 261.626f * waveInfo->getTotalFrameCount() / sampleRate;
+    auto waveInfo = loader->getInfo(info.sampleIndex);
+    const float baseFreq = sampleRate /  waveInfo->getTotalFrameCount();
+
+    auto ratio = PitchUtils::semitoneToFreqRatio(float(midiPitch));  
+    const float targetFreq = 261.626f * ratio / 32;
+    const float transposeMult = (targetFreq / baseFreq);
+
+    float transposeVoltage = PitchUtils::freqRatioToSemitone(transposeMult) / 12.f;
+    info.transposeV = transposeVoltage;
+}
+
+void CompiledInstrument::getPlayPitchNorm(VoicePlayInfo& info, int midiPitch, int regionKeyCenter, int tuneCents, WaveLoader* loader, float sampleRate) {
+    // assert(sampleRate > 100);
     // first base pitch
     const int semiOffset = midiPitch - regionKeyCenter;
     if (semiOffset == 0 && tuneCents == 0) {
@@ -182,6 +205,7 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
     } else {
         info.needsTranspose = true;
         // maybe in the future we could do this in the v/8 domain?
+
         const float tuneSemiOffset = float(semiOffset) + float(tuneCents) / 100;
 #ifdef _SAMPFM
         const float offsetCV = tuneSemiOffset / 12.f;
@@ -192,22 +216,27 @@ void CompiledInstrument::getPlayPitch(VoicePlayInfo& info, int midiPitch, int re
 #endif
     }
 
-    // then sample rate correction
-    if (loader) {
-        // do we need to adapt to changed sample rate?
-        unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->getSampleRate();
-        if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
-            info.needsTranspose = true;
+    if (!loader) {
+        return;
+    }
+
+    auto waveInfo = loader->getInfo(info.sampleIndex);
+
+    // transpose calculation for normal playback
+    // do we need to adapt to changed sample rate?
+    unsigned int waveSampleRate = loader->getInfo(info.sampleIndex)->getSampleRate();
+    if (!AudioMath::closeTo(sampleRate, waveSampleRate, 1)) {
+        info.needsTranspose = true;
 #ifdef _SAMPFM
-            info.transposeV += PitchUtils::freqRatioToSemitone(float(waveSampleRate) / sampleRate) / 12.f;
+        info.transposeV += PitchUtils::freqRatioToSemitone(float(waveSampleRate) / sampleRate) / 12.f;
 #else
-            info.transposeAmt *= sampleRate / float(waveSampleRate);
+        info.transposeAmt *= sampleRate / float(waveSampleRate);
 #endif
-        }
     }
 }
 
 bool CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& params, WaveLoader* loader, float sampleRate) {
+    assert(sampleRate > 100);
     if (ciTestMode != Tests::None) {
         return playTestMode(info, params, loader, sampleRate);
     }
@@ -217,11 +246,20 @@ bool CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
     bool didKS = false;
     const CompiledRegion* region = regionPool.play(params, r, didKS);
     if (region) {
+        // SQINFO("playing new region:");
+        // region->_dump(1);
         info.sampleIndex = region->sampleIndex;
         info.valid = true;
         info.ampeg_release = region->ampeg_release;
-        getPlayPitch(info, params.midiPitch, region->keycenter, region->tune, loader, sampleRate);
+        if (region->loopData.oscillator) {
+            getPlayPitchOsc(info, params.midiPitch, region->tune, loader, sampleRate);
+        } else {
+            getPlayPitchNorm(info, params.midiPitch, region->keycenter, region->tune, loader, sampleRate);
+        }
         getGain(info, params.midiVelocity, region->amp_veltrack, region->volume);
+        info.loopData = region->loopData;
+    } else {
+       // SQINFO("not playing region at p=%d v=%d", params.midiPitch, params.midiVelocity);
     }
     return didKS;
 }
@@ -287,16 +325,11 @@ void CompiledInstrument::setWaves(WaveLoaderPtr loader, const FilePath& rootPath
 
 void CompiledInstrument::expandAllKV(SamplerErrorContext& err, SInstrumentPtr inst) {
     assert(!inst->wasExpanded);
-    inst->global.compiledValues = SamplerSchema::compile(err, inst->global.values);
-    inst->master.compiledValues = SamplerSchema::compile(err, inst->master.values);
-    //   inst->control.compiledValues = SamplerSchema::compile(inst->control.values);
 
-    for (auto group : inst->groups) {
-        group->compiledValues = SamplerSchema::compile(err, group->values);
-        for (auto region : group->regions) {
-            region->compiledValues = SamplerSchema::compile(err, region->values);
-        }
+    for (auto iter : inst->headings) {
+        iter->compiledValues = SamplerSchema::compile(err, iter->values);
     }
+
     inst->wasExpanded = true;
 }
 
