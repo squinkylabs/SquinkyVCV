@@ -3,8 +3,13 @@
 
 static void test0() {
     StochasticNote n(StochasticNote::Durations::half);
-    StochasticNote n2(StochasticNote::Durations::half, StochasticNote::Tuples::triplet);
-    (void)n;
+    assertEQnp(n.duration, StochasticNote::Durations::half);
+    assertEQnp(n.tuple, StochasticNote::Tuples::none);
+
+    StochasticNote n2(StochasticNote::Durations::eighth, StochasticNote::Tuples::triplet);
+    assertEQnp(n2.duration, StochasticNote::Durations::eighth);
+    assertEQnp(n2.tuple, StochasticNote::Tuples::triplet);
+   
 }
 
 void testStochasticGrammar2() {

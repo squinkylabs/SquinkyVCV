@@ -28,9 +28,10 @@ public:
     StochasticNote(const StochasticNote&) = delete;
     const StochasticNote& operator=(const StochasticNote&) = delete;
 
-private:
     const Durations duration;
     const Tuples tuple;
+private:
+   
 };
 
 inline
