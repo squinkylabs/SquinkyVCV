@@ -22,6 +22,7 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::SAMPLE, OpcodeType::String},
     {Opcode::AMPEG_RELEASE, OpcodeType::Float},
     {Opcode::LOOP_MODE, OpcodeType::Discrete},
+    {Opcode::OSCILLATOR, OpcodeType::Discrete},
     //  {Opcode::LOOP_CONTINUOUS, OpcodeType::}
     {Opcode::PITCH_KEYCENTER, OpcodeType::Int},
     {Opcode::LOOP_START, OpcodeType::Int},
@@ -32,6 +33,7 @@ static std::map<Opcode, OpcodeType> keyType = {
     {Opcode::VOLUME, OpcodeType::Float},
     {Opcode::TUNE, OpcodeType::Int},
     {Opcode::OFFSET, OpcodeType::Int},
+    {Opcode::END, OpcodeType::Int},
     {Opcode::POLYPHONY, OpcodeType::Int},
     {Opcode::PITCH_KEYTRACK, OpcodeType::Int},
     {Opcode::AMP_VELTRACK, OpcodeType::Float},
@@ -57,10 +59,12 @@ static std::map<std::string, Opcode> opcodes = {
     {"lorand", Opcode::LO_RAND},
     {"pitch_keycenter", Opcode::PITCH_KEYCENTER},
     {"ampeg_release", Opcode::AMPEG_RELEASE},
+    {"amp_release", Opcode::AMPEG_RELEASE},  // synonym
     {"loop_mode", Opcode::LOOP_MODE},
-    //   {"loop_continuous", Opcode::LOOP_CONTINUOUS},
     {"loop_start", Opcode::LOOP_START},
+    {"loopstart", Opcode::LOOP_START},  // synonym!
     {"loop_end", Opcode::LOOP_END},
+    {"loopend", Opcode::LOOP_END},  // synonym!
     {"sample", Opcode::SAMPLE},
     {"pan", Opcode::PAN},
     {"group", Opcode::GROUP},
@@ -68,6 +72,8 @@ static std::map<std::string, Opcode> opcodes = {
     {"volume", Opcode::VOLUME},
     {"tune", Opcode::TUNE},
     {"offset", Opcode::OFFSET},
+    {"end", Opcode::END},
+    {"oscillator", Opcode::OSCILLATOR},
     {"polyphony", Opcode::POLYPHONY},
     {"pitch_keytrack", Opcode::PITCH_KEYTRACK},
     {"amp_veltrack", Opcode::AMP_VELTRACK},
@@ -92,10 +98,15 @@ static std::map<std::string, DiscreteValue> discreteValues = {
     {"no_loop", DiscreteValue::NO_LOOP},
     {"one_shot", DiscreteValue::ONE_SHOT},
     {"attack", DiscreteValue::ATTACK},
+    {"on", DiscreteValue::ON},
+    {"off", DiscreteValue::OFF},
+    // why are these all the same? I dont remember
     {"release", DiscreteValue::RELEASE},
     {"first", DiscreteValue::RELEASE},
     {"legato", DiscreteValue::RELEASE},
-    {"release_key", DiscreteValue::RELEASE}};
+    {"release_key", DiscreteValue::RELEASE}
+
+};
 
 DiscreteValue SamplerSchema::translated(const std::string& s) {
     auto it = discreteValues.find(s);

@@ -112,6 +112,7 @@ extern void testx3();
 extern void testx4();
 extern void testx5();
 extern void testx6();
+extern void testx7();
 extern void testADSR();
 extern void testADSRSampler();
 extern void testWavThread();
@@ -123,7 +124,11 @@ extern void testCompressorParamHolder();
 extern void testStreamer();
 extern void testSampComposite();
 extern void testFlac();
+extern void testHeadingTracker();
 extern void do_gc();
+extern void testxLex();
+extern void testGateDelay();
+extern void testRegionPrune();
 
 #if 0
 #include <iostream>
@@ -185,7 +190,8 @@ int main(int argc, char** argv) {
             printf("%s is not a valid command line argument\n", arg.c_str());
         }
     }
-   // do_gc();
+    // grey code tests
+    // do_gc();
 #ifdef _PERF
     runPerf = true;
 #ifndef NDEBUG
@@ -208,12 +214,15 @@ int main(int argc, char** argv) {
 
     if (runPerf) {
         initPerf();
-        perfTest2();
         perfTest3();
+        perfTest2();
+
         perfTest();
         return 0;
     }
-    
+
+    testRingBuffer();
+    testGateDelay();
     testCompCurves();
 
     // mode these up where while we work...
@@ -222,24 +231,26 @@ int main(int argc, char** argv) {
     testCompressorII();
     testCompressorParamHolder();
     testCompressor();
-   
 
     testSimpleQuantizer();
     testFilterComposites();
 
-    testFlac();
-    testADSRSampler();
+    testRegionPrune();      // TODO: move this laster
     testStreamer();
-
-    testx4();  
+    testHeadingTracker();
+    testxLex();
     testx();
     testx2();
     testx3();
-
+    testx4();
     testx5();
     testx6();
+    testx7();
 
     testSampComposite();
+
+    testFlac();
+    testADSRSampler();
 
     testADSR();
 
@@ -257,8 +268,9 @@ int main(int argc, char** argv) {
     testOscSmoother();
 
     testAudioMath();
-    testRingBuffer();
+
     testGateTrigger();
+    testSimpleQuantizer();
     testOnset();
     testOnset2();
 
@@ -269,8 +281,6 @@ int main(int argc, char** argv) {
     testSub();
     simd_testBiquad();
     testWVCO();
-
-
 
     testSimpleQuantizer();
 

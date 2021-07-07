@@ -5,413 +5,38 @@
 #include "FilePath.h"
 #include "RandomRange.h"
 #include "SInstrument.h"
-#include "SLex.h"
 #include "SParse.h"
 #include "SqLog.h"
 #include "asserts.h"
-//#include "pugixml.hpp"
-
-#if 0
-static void testx0() {
-    pugi::xml_document doc;
-    pugi::xml_parse_result result = doc.load_file("fale_path.xml");
-    auto status = result.status;
-    int x = 5;
-    assertEQ(status, pugi::xml_parse_status::status_file_not_found);
-}
-#endif
-
-static void testx1() {
-    SLexPtr lex = SLex::go("<global>");
-    assert(lex);
-    lex->validate();
-    assertEQ(lex->items.size(), 1);
-    assert(lex->items[0]->itemType == SLexItem::Type::Tag);
-    SLexTag* ptag = static_cast<SLexTag*>(lex->items[0].get());
-    assertEQ(ptag->tagName, "global");
-}
-
-static void testx2() {
-    SLexPtr lex = SLex::go("=");
-    assert(lex);
-    lex->validate();
-    assertEQ(lex->items.size(), 1);
-    assert(lex->items[0]->itemType == SLexItem::Type::Equal);
-}
-
-static void testx3() {
-    SLexPtr lex = SLex::go("qrst");
-    assert(lex);
-    lex->validate();
-    assertEQ(lex->items.size(), 1);
-    assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
-    SLexIdentifier* pid = static_cast<SLexIdentifier*>(lex->items[0].get());
-    assertEQ(pid->idName, "qrst");
-}
-
-static void testxKVP() {
-    SLexPtr lex = SLex::go("abc=def");
-    assert(lex);
-    lex->validate();
-    assertEQ(lex->items.size(), 3);
-    assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
-    SLexIdentifier* pid = static_cast<SLexIdentifier*>(lex->items[0].get());
-    assertEQ(pid->idName, "abc");
-
-    assert(lex->items[1]->itemType == SLexItem::Type::Equal);
-
-    assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
-    pid = static_cast<SLexIdentifier*>(lex->items[2].get());
-    assertEQ(pid->idName, "def");
-}
-
-static void testxKVP2() {
-    SLexPtr lex = SLex::go("ampeg_release=0.6");
-    assert(lex);
-    lex->validate();
-    assertEQ(lex->items.size(), 3);
-    assert(lex->items[0]->itemType == SLexItem::Type::Identifier);
-    SLexIdentifier* pid = static_cast<SLexIdentifier*>(lex->items[0].get());
-    assertEQ(pid->idName, "ampeg_release");
-
-    assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
-    pid = static_cast<SLexIdentifier*>(lex->items[2].get());
-    assertEQ(pid->idName, "0.6");
-}
-
-static void testLexComment() {
-    SLexPtr lex = SLex::go("// comment\n<global>");
-    assert(lex);
-    lex->validate();
-    assertEQ(lex->items.size(), 1);
-    assert(lex->items[0]->itemType == SLexItem::Type::Tag);
-    SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
-    assertEQ(pTag->tagName, "global");
-    assertEQ(pTag->lineNumber, 1);
-}
-
-static void testLexComment2() {
-    SLexPtr lex = SLex::go("// comment\n//comment\n\n<global>\n\n");
-    assert(lex);
-    lex->validate();
-    assertEQ(lex->items.size(), 1);
-    assert(lex->items[0]->itemType == SLexItem::Type::Tag);
-    SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
-    assertEQ(pTag->tagName, "global");
-}
-
-static void testLexMultiLineCommon(const char* data) {
-    SLexPtr lex = SLex::go(data);
-    assert(lex);
-    lex->validate();
-    assertEQ(lex->items.size(), 3);
-
-    assert(lex->items[0]->itemType == SLexItem::Type::Tag);
-    SLexTag* pTag = static_cast<SLexTag*>(lex->items[0].get());
-    assertEQ(pTag->tagName, "one");
-    assertEQ(pTag->lineNumber, 0);
-
-    assert(lex->items[1]->itemType == SLexItem::Type::Tag);
-    pTag = static_cast<SLexTag*>(lex->items[1].get());
-    assertEQ(pTag->tagName, "two");
-    assertEQ(pTag->lineNumber, 1);
-
-    assert(lex->items[2]->itemType == SLexItem::Type::Tag);
-    pTag = static_cast<SLexTag*>(lex->items[2].get());
-    assertEQ(pTag->tagName, "three");
-    assertEQ(pTag->lineNumber, 2);
-}
-
-static void testLexMultiLine1() {
-    testLexMultiLineCommon("<one>\n<two>\n<three>");
-}
-
-static void testLexMultiLine2() {
-    testLexMultiLineCommon(R"(<one>
-    <two>
-    <three>)");
-}
-
-static void testLexGlobalWithData() {
-    SLexPtr lex = SLex::go("<global>ampeg_release=0.6<region>");
-    assert(lex);
-    lex->validate();
-    assertEQ(lex->items.size(), 5);
-    assert(lex->items.back()->itemType == SLexItem::Type::Tag);
-    SLexTag* tag = static_cast<SLexTag*>(lex->items.back().get());
-    assertEQ(tag->tagName, "region");
-}
-
-static void testLexTwoRegions() {
-    SLexPtr lex = SLex::go("<region><region>");
-    assert(lex);
-    lex->validate();
-
-    assertEQ(lex->items.size(), 2);
-    assert(lex->items.back()->itemType == SLexItem::Type::Tag);
-    SLexTag* tag = static_cast<SLexTag*>(lex->items.back().get());
-    assertEQ(tag->tagName, "region");
-}
-
-static void testLexTwoKeys() {
-    SLexPtr lex = SLex::go("a=b\nc=d");
-    assert(lex);
-    lex->validate();
-
-    assertEQ(lex->items.size(), 6);
-    assert(lex->items.back()->itemType == SLexItem::Type::Identifier);
-    SLexIdentifier* id = static_cast<SLexIdentifier*>(lex->items.back().get());
-    assertEQ(id->idName, "d");
-}
-
-static void testLexTwoKeysOneLine() {
-    SLexPtr lex = SLex::go("a=b c=d");
-    assert(lex);
-    lex->validate();
-
-    assertEQ(lex->items.size(), 6);
-    assert(lex->items.back()->itemType == SLexItem::Type::Identifier);
-    SLexIdentifier* id = static_cast<SLexIdentifier*>(lex->items.back().get());
-    assertEQ(id->idName, "d");
-}
-
-static void testLexTwoRegionsWithKeys() {
-    SLexPtr lex = SLex::go("<region>a=b\nc=d<region>q=w\ne=r");
-    assert(lex);
-    lex->validate();
-
-    assertEQ(lex->items.size(), 14);
-    assert(lex->items.back()->itemType == SLexItem::Type::Identifier);
-    SLexIdentifier* id = static_cast<SLexIdentifier*>(lex->items.back().get());
-    assertEQ(id->idName, "r");
-}
-
-static void testLexMangledId() {
-    SLexPtr lex = SLex::go("<abd\ndef>");
-    assert(!lex);
-}
-
-static void testLex4() {
-    auto lex = SLex::go("<group><region><region><group><region.");
-    assert(!lex);
-}
-
-static void testLex5() {
-    auto lex = SLex::go("\n<group>");
-    assert(lex);
-    lex->validate();
-    SLexTag* tag = static_cast<SLexTag*>(lex->items.back().get());
-    assertEQ(tag->tagName, "group");
-}
-
-static void testLexSpaces() {
-    auto lex = SLex::go("\nsample=a b c");
-    assert(lex);
-    lex->validate();
-    SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
-    assertEQ(fname->idName, "a b c");
-}
 
 /**
- * tests lexing of things like "sample=foo a=b"
- * test string is expected to have a sample- and x=y
+ * Naming conventions for SFZ tests.
+ * mostly in testx:
+
+ * testParse... - general parsing test.
+
+ * Mostly in testxLex:
+ * testLex... - any test of the lexer only.
+ * 
+ * mostly in testx2.cpp
+ * testWaveLoader... - test of the save loader
+ * testParseHeading...  specific parse tests around headings.
+ * testCompiledRegion... mostly tests of the lower level compiled region struct
+ * testCompile.... and test that goes all the way to a compiled instrument
+ * 
+ * mostly in testx3
+ * testRegion...    test the CompiledRegion object itself
+ * testPlay..   compiles an instrument and plays it
+ * 
+ * mostly in testx4
+ * testFilePath.. test of the filePath object that is used a lot if SFZ Player
+ * testSchema... test of the SamplerSchema class.
+ * 
+ * mostly in testx5
+ * testSampler4v... tests of the lower level sample playback class
  */
-static void testLexSpaces2Sub(const std::string& testString, const std::string& expectedFileName) {
-    auto lex = SLex::go(testString);
-    assert(lex);
-    lex->validate();
-    SLexIdentifier* lastid = static_cast<SLexIdentifier*>(lex->items.back().get());
-    assertEQ(lastid->idName, "y");
-    const auto num = lex->items.size();
-    assert(lex->items[num - 2]->itemType == SLexItem::Type::Equal);
-    assert(lex->items[num - 3]->itemType == SLexItem::Type::Identifier);
-    SLexIdentifier* xident = static_cast<SLexIdentifier*>(lex->items[num - 3].get());
-    assertEQ(xident->idName, "x");
 
-    SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items[num - 4].get());
-    assertEQ(fname->idName, expectedFileName);
-}
-
-static void testLexSpaces2a() {
-    testLexSpaces2Sub("sample=abc x=y", "abc");
-}
-
-static void testLexSpaces2b() {
-    testLexSpaces2Sub("sample=abc  x=y", "abc");
-}
-
-static void testLexSpaces2c() {
-    testLexSpaces2Sub("sample=a b c    x=y", "a b c");
-}
-
-static void testLexSpaces2d() {
-    const char* pAllDrum = R"foo(sample=a
-//comm
-    x = y
-)foo";
-    testLexSpaces2Sub(pAllDrum, "a");
-}
-static void testLexSpaces2() {
-    testLexSpaces2a();
-    testLexSpaces2b();
-    testLexSpaces2c();
-    testLexSpaces2d();
-}
-
-static void testLexLabel() {
-    std::string str("\nsw_label=abc def ghi");
-    auto lex = SLex::go(str);
-    assert(lex);
-    lex->validate();
-    SLexIdentifier* fname = static_cast<SLexIdentifier*>(lex->items.back().get());
-    assertEQ(fname->idName, "abc def ghi");
-}
-
-#include <fstream>
-static void testLexMarimba2() {
-    std::string path("d:\\samples\\test\\PatchArena_marimba.sfz");
-
-    std::ifstream t(path);
-    if (!t.good()) {
-        printf("can't open file\n");
-        assert(false);
-        return;
-    }
-
-    std::string str((std::istreambuf_iterator<char>(t)),
-                    std::istreambuf_iterator<char>());
-    if (str.empty()) {
-        assert(false);
-        return;
-    }
-
-    auto lex = SLex::go(str);
-
-    assert(lex);
-    lex->validate();
-    assertEQ(lex->items.size(), 1001);
-    // assert(false);
-}
-
-static void testLexMarimba() {
-    std::string str("<region> trigger=attack  pitch_keycenter=36 lokey=36 hikey=36 sample=PatchArena_marimba-036-c1.wav\r\n\r\n");
-    auto lex = SLex::go(str);
-    assert(lex);
-    lex->validate();
-    const size_t items = lex->items.size();
-    assert(items == 16);
-}
-
-static void testLexIncludeMalformed() {
-    std::string str("#includ \"abc\"");
-    std::string err;
-    auto lex = SLex::go(str, &err);
-    assert(!lex);
-    assert(!err.empty());
-    assertEQ(err, "Malformed #include at line 1");
-}
-
-static void testLexIncludeBadFile() {
-    std::string str("#include \"abc\"");
-    std::string err;
-    FilePath fp("fake");
-    auto lex = SLex::go(str, &err, 0, &fp);
-
-    assert(!err.empty());
-    assertEQ(err, "Can't open abc included at line 1");
-
-    // this should error out, as "abc" can't be opened.
-    assert(!lex);
-}
-
-// This uses a "real" sfz on disk
-static void testLexIncludeSuccess() {
-    FilePath filePath(R"foo(D:\samples\test\test-include.sfz)foo");
-    std::ifstream t(filePath.toString());
-    assert(t.good());
-
-    std::string sContent((std::istreambuf_iterator<char>(t)),
-                         std::istreambuf_iterator<char>());
-
-    std::string err;
-    auto lex = SLex::go(sContent, &err, 0, &filePath);
-
-    assert(lex && err.empty());
-
-    assertEQ(lex->items.size(), 3);
-    assertEQ(int(lex->items[0]->itemType), int(SLexItem::Type::Tag));
-    assertEQ(int(lex->items[1]->itemType), int(SLexItem::Type::Tag));
-    assertEQ(int(lex->items[2]->itemType), int(SLexItem::Type::Tag));
-}
-
-// can we parse a simple define?
-static void testLexDefineSuccess() {
-    std::string content(R"foo(#define A 22)foo");
-    std::string err;
-    auto lex = SLex::go(content, &err, 0);
-
-    assert(lex && err.empty());
-    assertEQ(lex->items.size(), 0);
-}
-
-static void testLexDefineSuccess2() {
-    std::string content(R"foo(a=b #define A 22 c=d)foo");
-    std::string err;
-    auto lex = SLex::go(content, &err, 0);
-
-    assert(lex && err.empty());
-    assertEQ(lex->items.size(), 6);
-}
-
-static void testLexDefineSuccess3() {
-    std::string content(R"foo(
-<control>
-default_path=Soft String Spurs Samples/
-
-label_cc$MW=MW ($MW)
-)foo");
-    std::string err;
-    auto lex = SLex::go(content, &err, 0);
-
-    assert(lex && err.empty());
-    assertEQ(lex->items.size(), 7);
-}
-
-#if 0
-static void testLexDefineFail() {
-    std::string content(R"foo(#define A x=y)foo");
-    std::string err;
-    
-    auto lex = SLex::go(content, &err, 0);
-
-    assert(!lex && !err.empty());
-
-}
-#endif
-
-static void testLexLabel2() {
-    auto lex = SLex::go("label_cc7=Master Vol\nsample=\"abc def\"");
-    assert(lex);
-    assertEQ(lex->items.size(), 6);
-}
-
-static void testLexNewLine() {
-    auto lex = SLex::go("sample=BS DX7 Bright Bow-000-084-c5.wav\r\n");
-    assert(lex);
-    assertEQ(lex->items.size(), 3);
-}
-
-//
-static void testLexMacPath() {
-    auto lex = SLex::go("sample=/abs/path.wav");
-    assert(lex);
-    assertEQ(lex->items.size(), 3);
-    assert(lex->items[2]->itemType == SLexItem::Type::Identifier);
-    SLexIdentifier* ident = static_cast<SLexIdentifier*>(lex->items[2].get());
-    assertEQ(ident->idName, "/abs/path.wav");
-}
-
-static void testparse1() {
+static void testParse1() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
 
     auto err = SParse::go("random-text", inst);
@@ -422,21 +47,21 @@ static void testParseRegion() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>", inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 1);
-    assertEQ(inst->groups[0]->regions.size(), 1);
+
+    assertEQ(inst->headings.size(), 1);
+    assertEQ(int(inst->headings[0]->type), int(SHeading::Type::Region));
 }
 
-static void testparse2() {
+static void testParse2() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<region>pitch_keycenter=24", inst);
     assert(err.empty());
 
-    assertEQ(inst->groups.size(), 1);
-    SGroupPtr group = inst->groups[0];
-    assert(group->values.empty());
-    assertEQ(group->regions.size(), 1);
-    SRegionPtr region = group->regions[0];
-    assertEQ(region->values.size(), 1);
+    assertEQ(inst->headings.size(), 1);
+
+    SHeadingPtr region = inst->headings[0];
+    assertEQ(int(region->type), int(SHeading::Type::Region));
+
     SKeyValuePairPtr kv = region->values[0];
     assertEQ(kv->key, "pitch_keycenter");
     assertEQ(kv->value, "24");
@@ -451,62 +76,18 @@ static void testParseLabel2() {
     assertEQ(err.find("extra tok"), 0);
 }
 
-static void testParseMutliControls() {
-    // SQINFO("--- start testParseMutliControls");
-
-    const char* test = R"foo(
-        <control>
-        default_path=a
-        <region>
-        sample=r1
-        <control>
-        default_path=b
-        <region>
-        sample=r2
-    )foo";
-
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
-    auto err = SParse::go(test, inst);
-    assert(err.empty());
-
-    // we should end up with two regions in two groups
-    // we always make a new group when we hit a new heading,
-    // in this case <control>
-    assertEQ(inst->groups.size(), 2);
-    assertEQ(inst->groups[0]->regions.size(), 1);
-    assertEQ(inst->groups[1]->regions.size(), 1);
-
-    // each regions should have the 'sample' key, as well as the 'default_path' key
-
-    SKeyValueList kv = inst->groups[0]->regions[0]->values;
-    assertEQ(kv.size(), 2);
-
-    assertEQ(kv[0]->key, "default_path");
-    assertEQ(kv[0]->value, "a");
-    assertEQ(kv[1]->key, "sample");
-    assertEQ(kv[1]->value, "r1");
-    //
-    kv = inst->groups[1]->regions[0]->values;
-    assertEQ(kv.size(), 2);
-    assertEQ(kv[0]->key, "default_path");
-    assertEQ(kv[0]->value, "b");
-    assertEQ(kv[1]->key, "sample");
-    assertEQ(kv[1]->value, "r2");
-}
-
 static void testParseGroupAndValues() {
-    //SQINFO("---- start testParseGroupAndValues");
-    //   const char* test = R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo";
     const char* test = R"foo(<group>a=b<region>)foo";
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(test, inst);
     assert(err.empty());
 
-    assertEQ(inst->groups.size(), 1);
-    assertEQ(inst->groups[0]->regions.size(), 1);
+    assertEQ(inst->headings.size(), 2);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
 
-    assertEQ(inst->groups[0]->values.size(), 1);
-    assertEQ(inst->groups[0]->regions[0]->values.size(), 0);
+    assertEQ(inst->headings[0]->values.size(), 1);
+    assertEQ(inst->headings[1]->values.size(), 0);
 }
 
 static void testParseGlobal() {
@@ -516,8 +97,8 @@ static void testParseGlobal() {
     // no regions - that's not legal, but we make up groups if there aren't any,
     // so we don't consider it an error.
     assert(err.empty());
-    assert(inst->groups.size() == 1);
-    assert(inst->groups[0]->regions.empty());
+    assertEQ(inst->headings.size(), 1);
+    assertEQ(int(inst->headings[0]->type), int(SHeading::Type::Global));
 }
 
 static void testParseGlobalGroupAndRegion() {
@@ -552,14 +133,21 @@ static void testParseTwoGroupsA() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><group>", inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 2);
+    assertEQ(inst->headings.size(), 2);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Group);
 }
 
 static void testParseTwoGroupsB() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<group><region><region><group><region>", inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 2);
+    assertEQ(inst->headings.size(), 5);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[2]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[3]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[4]->type, (int)SHeading::Type::Region);
 }
 
 static void testParseGlobalWithData() {
@@ -600,7 +188,54 @@ static void testParseSimpleDrum() {
 
     auto err = SParse::go(p, inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 2);
+    assertEQ(inst->headings.size(), 8);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[2]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[3]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[4]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[5]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[6]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[7]->type, (int)SHeading::Type::Region);
+}
+
+static void testParseComplexDrum1() {
+    const char* p = R"foo(
+<group> volume=-29 amp_veltrack=100 loop_mode=one_shot key=54 group=2         // crash1Choke /////
+<region> sample=OH\crash1Choke_OH_F_1.wav 
+
+<group> volume=-19 amp_veltrack=95 ampeg_release=0.6 key=55 loop_mode=one_shot lovel=1 hivel=59 off_mode=normal off_by=2		// crash1 ////5 Samples Random!
+<region> sample=OH\crash1_OH_P_1.wav lorand=0 hirand=0.2
+)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(p, inst);
+    assert(err.empty());
+    assertEQ(inst->headings.size(), 4);
+
+    assertEQ(int(inst->headings[1]->type), int(SHeading::Type::Region));
+    auto region = inst->headings[1];
+    assertEQ(region->values.size(), 1);
+    std::string filePath = region->values[0]->value;
+    FilePath fp(filePath);
+    assertEQ(fp.getExtensionLC().size(), 3);
+}
+
+static void testParseComplexDrum() {
+    const char* p = R"foo(
+<region>sample=OH\crash1Choke_OH_F_1.wav 
+<group>
+)foo";
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(p, inst);
+    assert(err.empty());
+    assertEQ(inst->headings.size(), 2);
+
+    assertEQ(int(inst->headings[0]->type), int(SHeading::Type::Region));
+    auto region = inst->headings[0];
+    assertEQ(region->values.size(), 1);
+    std::string filePath = region->values[0]->value;
+    FilePath fp(filePath);
+    assertEQ(fp.getExtensionLC().size(), 3);
 }
 
 // make sure we dont' crash from parsing unused regions.
@@ -617,10 +252,12 @@ v127=1
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(p, inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 1);       // we should just have the one group
-    assertEQ(inst->groups[0]->regions.size(), 0);   // no regions
+
+    assertEQ(inst->headings.size(), 1);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Curve);
 }
 
+// We aren't using these random ranges any more, but might as will keep alive.
 static void testRandomRange0() {
     RandomRange<float> r(0);
     r.addRange(.33f);
@@ -648,16 +285,39 @@ static void testRandomRange1() {
     assertEQ(test.size(), 3);
 }
 
-#if 0 // deleted this file
-static void testParseDX() {
-    SInstrumentPtr inst = std::make_shared<SInstrument>();
+static void testParseLineNumbers() {
+const char* p = R"foo(
+// 1
+// 2
+// 3
+<group>
+// 5
+// 6
+<region>
+// 8
+<region>
+// 10
+// 11
+// 12
+// 13
+<region>
+// 15
+// 16
+// 17
+// 18
+// 19
+)foo";
 
-    // maybe need to compile this...
-    auto err = SParse::goFile(FilePath("D:\\samples\\__test\\BS-DX7-Bright-Bow.sfz"), inst);
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(p, inst);
     assert(err.empty());
-    assertEQ(inst->groups.size(), 1);
+
+    assertEQ(inst->headings.size(), 4);
+    assertEQ(inst->headings[0]->lineNumber, 4);
+    assertEQ(inst->headings[1]->lineNumber, 7);
+    assertEQ(inst->headings[2]->lineNumber, 9);
+    assertEQ(inst->headings[3]->lineNumber, 14);
 }
-#endif
 
 extern int compileCount;
 
@@ -665,48 +325,17 @@ void testx() {
     assertEQ(compileCount, 0);
     assert(parseCount == 0);
 
-    //testx0();
-    testx1();
-    testx2();
-    testx3();
-    testxKVP();
-    testxKVP2();
-    testLexComment();
-    testLexComment2();
-    testLexMultiLine1();
-    testLexMultiLine2();
-    testLexGlobalWithData();
-    testLexTwoRegions();
-    testLexTwoKeys();
-    testLexTwoKeysOneLine();
-    testLexTwoRegionsWithKeys();
-    testLexMangledId();
-    testLex4();
-    testLex5();
-    testLexSpaces();
-    testLexSpaces2();
-    testLexLabel();
-    testLexMarimba();
-    testLexIncludeMalformed();
-    testLexIncludeBadFile();
-    testLexIncludeSuccess();
-    testLexDefineSuccess();
-    testLexDefineSuccess2();
-    testLexDefineSuccess3();
-    //  testLexDefineFail();
-    testLexLabel2();
-    testLexNewLine();
-    testLexMacPath();
-
-    testparse1();
+    testParse1();
     testParseRegion();
-    testparse2();
+    testParse2();
     testParseGlobal();
+
     testParseGlobalAndRegion();
     testParseGlobalGroupAndRegion();
+
     testParseComment();
     testParseGroups();
-    testParseMutliControls();
+
     testParseGroupAndValues();
     testParseLabel2();
 
@@ -714,13 +343,17 @@ void testx() {
     testParseTwoGroupsA();
     testParseTwoGroupsB();
     testparse_piano1();
+
     // testparse_piano2b();
     testparse_piano2();
     testParseSimpleDrum();
+    testParseComplexDrum();
     testRandomRange0();
     testRandomRange1();
-   // testParseDX();
-    testParseCurve();
 
+    // merge conflict here. does this work? a: it was deleted in main
+    //testParseDX();
+    testParseCurve();
+    testParseLineNumbers();
     assert(parseCount == 0);
 }

@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "SqLog.h"
+
 class SKeyValuePair;
 class SamplerErrorContext;
 using SKeyValuePairPtr = std::shared_ptr<SKeyValuePair>;
@@ -24,25 +26,26 @@ public:
         HI_VEL,
         LO_VEL,
         AMPEG_RELEASE,
-     //   LOOP_CONTINUOUS,
         LOOP_MODE,
         LOOP_START,
         LOOP_END,
         PITCH_KEYCENTER,
-        SAMPLE,
+        SAMPLE,                     // 10
         PAN,
         GROUP,  // group is opcode as well at tag
         TRIGGER,
         VOLUME,
         TUNE,
         OFFSET,
+        END,
+        OSCILLATOR,
         POLYPHONY,
         PITCH_KEYTRACK,
         AMP_VELTRACK,
-        KEY,
+        KEY,                        // 20
         LO_RAND,
         HI_RAND,
-        SEQ_LENGTH,
+        SEQ_LENGTH,                 // 23
         SEQ_POSITION,
         DEFAULT_PATH,
         SW_LABEL,
@@ -63,7 +66,8 @@ public:
         LOOP_SUSTAIN,
         ATTACK,   // trigger=attack
         RELEASE,  // trigger= release
-
+        ON,
+        OFF,
         NONE
     };
 
@@ -86,6 +90,26 @@ public:
         DiscreteValue discrete;
         std::string string;
         OpcodeType type;
+
+        void _dump() {
+
+            switch(type) {
+                case OpcodeType::Int:
+                    SQINFO("int: %d", numericInt);
+                    break;
+                 case OpcodeType::Float:
+                    SQINFO("flt: %f", numericFloat);
+                    break;
+                 case OpcodeType::Discrete:
+                    SQINFO("disc: %d", discrete);
+                    break;
+                 case OpcodeType::String:
+                    SQINFO("str: %d", string.c_str());
+                    break;
+                default:
+                    assert(false);
+            }
+        }
     };
 
     using ValuePtr = std::shared_ptr<Value>;
@@ -109,6 +133,13 @@ public:
                 return nullptr;
             }
             return it->second;
+        }
+
+        void _dump() {
+            for (auto x : data) {
+                SQINFO("key=%d val=", x.first);
+                x.second->_dump();
+            }
         }
 
     private:

@@ -61,6 +61,7 @@ inline float_4 ADSRSampler::step(const float_4& gates, float sampleTime) {
 
     // Adjust env
     env += (target - env) * lambda * sampleTime;
+    // SQINFO("adsr step env[0] = %f", env[0]);
 
     // Turn off attacking state if envelope is HIGH
     attacking = SimdBlocks::ifelse(env >= 1.f, float_4::zero(), attacking);
@@ -73,8 +74,12 @@ inline float_4 ADSRSampler::step(const float_4& gates, float sampleTime) {
 }
 
 inline void ADSRSampler::setLambda(float_4& output, float inputSec) {
+  //  inputSec = std::max(inputSec, .0001f);
+  
     // was 10, but was too slow
     float x = 10.f / inputSec;
+    assert(!std::isinf(x));
+  //  SQINFO("set lambda using input sec %f x =%f", inputSec, x);
     float_4 x4(x);
     output = x4;
 }

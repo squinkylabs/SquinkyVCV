@@ -43,11 +43,6 @@ public:
     void setSamplePath(const std::string& s) {
         samp->setSamplePath_UI(s);
     }
-#ifndef _KS2
-    void setKeySwitch(int pitch) {
-        samp->setKeySwitch_UI(pitch);
-    }
-#endif
 
     float getProgressPct() {
         return samp->getProgressPct();
@@ -63,12 +58,59 @@ public:
     std::string lastSampleSetLoaded;
 
 private:
+    void addParams();
 };
 
-const char* sfzpath = "sfzpath";
+SampModule::SampModule() {
+    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
+    samp = std::make_shared<Comp>(this);
+    std::shared_ptr<IComposite> icomp = Comp::getDescription();
+    //SqHelper::setupParams(icomp, this);
+    addParams();
+
+    onSampleRateChange();
+    samp->init();
+}
+
+class SemitoneQuantity : public rack::engine::ParamQuantity {
+public:
+    std::string getDisplayValueString() override {
+        auto value = getValue() * 12;
+        SqStream str;
+        str.precision(2);
+        str.add(value);
+        str.add(" semitones");
+        return str.str();
+    }
+
+    void setDisplayValueString(std::string s) override {
+        float val = ::atof(s.c_str());
+        val /= 12.f;
+        ParamQuantity::setValue(val);
+    }
+};
+
+void SampModule::addParams() {
+    std::shared_ptr<IComposite> comp = Comp::getDescription();
+    const int n = comp->getNumParams();
+    for (int i = 0; i < n; ++i) {
+        auto param = comp->getParam(i);
+        std::string paramName(param.name);
+        switch (i) {
+            case Comp::PITCH_PARAM:
+            this->configParam<SemitoneQuantity>(i, param.min, param.max, param.def, paramName);
+                break;
+            default:
+                this->configParam(i, param.min, param.max, param.def, paramName);
+        }
+    }
+}
+
+const char* sfzpath_ = "sfzpath";
+const char* schema_ = "schema";
 
 void SampModule::dataFromJson(json_t* rootJ) {
-    json_t* pathJ = json_object_get(rootJ, sfzpath);
+    json_t* pathJ = json_object_get(rootJ, sfzpath_);
     if (pathJ) {
         const char* path = json_string_value(pathJ);
         std::string sPath(path);
@@ -79,8 +121,9 @@ void SampModule::dataFromJson(json_t* rootJ) {
 json_t* SampModule::dataToJson() {
     json_t* rootJ = json_object();
     if (!lastSampleSetLoaded.empty()) {
-        json_object_set_new(rootJ, sfzpath, json_string(lastSampleSetLoaded.c_str()));
+        json_object_set_new(rootJ, sfzpath_, json_string(lastSampleSetLoaded.c_str()));
     }
+    json_object_set_new(rootJ, schema_, json_integer(2));
     return rootJ;
 }
 
@@ -95,15 +138,7 @@ bool SampModule::isNewInstrument() {
 void SampModule::onSampleRateChange() {
 }
 
-SampModule::SampModule() {
-    config(Comp::NUM_PARAMS, Comp::NUM_INPUTS, Comp::NUM_OUTPUTS, Comp::NUM_LIGHTS);
-    samp = std::make_shared<Comp>(this);
-    std::shared_ptr<IComposite> icomp = Comp::getDescription();
-    SqHelper::setupParams(icomp, this);
 
-    onSampleRateChange();
-    samp->init();
-}
 
 void SampModule::process(const ProcessArgs& args) {
     samp->process(args);
@@ -123,14 +158,14 @@ struct SampWidget : ModuleWidget {
     void appendContextMenu(Menu* theMenu) override {
         ::rack::ui::MenuLabel* spacerLabel = new ::rack::ui::MenuLabel();
         theMenu->addChild(spacerLabel);
-        ManualMenuItem* manual = new ManualMenuItem("Samp manual", helpUrl);
+        ManualMenuItem* manual = new ManualMenuItem("SFZ Player manual", helpUrl);
         theMenu->addChild(manual);
 
         {
             SqMenuItem* sfile = new SqMenuItem(
                 []() { return false; },
                 [this]() { this->loadSamplerFile(); });
-            sfile->text = "Load Sample file";
+            sfile->text = "Load SFZ file";
             theMenu->addChild(sfile);
         }
 #if 0 // debug menu for build toolchain issue
@@ -151,6 +186,12 @@ struct SampWidget : ModuleWidget {
             theMenu->addChild(spath);
         }
 #endif
+        {
+            SqMenuItem_BooleanParam2* delay = new SqMenuItem_BooleanParam2(module, Comp::TRIGGERDELAY_PARAM);
+            delay->text = "Trigger delay";
+            
+            theMenu->addChild(delay);
+        }
     }
 
     void step() override;
@@ -183,9 +224,7 @@ struct SampWidget : ModuleWidget {
     SampModule* _module;
 
     std::vector<InstrumentInfo::PitchRange> keySwitchForIndex;
-#ifndef _KS2
-    int lastKeySwitchSent = -1;
-#endif
+
 
     /************************************************************************************** 
      * Stuff related to UI state and implementing it
@@ -423,11 +462,7 @@ void SampWidget::loadSamplerFile() {
     printf("load sampler got %s\n", pathC);
     fflush(stdout);
 
-    //FATAL("finish file load");
     if (pathC) {
-#ifndef _KS2
-        lastKeySwitchSent = -1;
-#endif
         this->requestNewSampleSet(FilePath(pathC));
         nextUIState = State::Loading;
     }
@@ -457,12 +492,8 @@ void SampWidget::getRootFolder() {
 const float dx = 38;
 
 void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp) {
-    float jacksY = 319;
-    float jacksY0 = jacksY - 50;
-    float jacksX = 16;
-  //  float jacksDx = 40;
-    float labelY = jacksY - 25;
-    float labelY0 = jacksY0 - 25;
+    float jacksY = 320;
+    float jacksX = 11.5;
 #ifdef _LAB
     addLabel(
         Vec(jacksX + 5 * dx - 5, labelY),
@@ -508,7 +539,7 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
         "FM");
 #endif
     addInput(createInput<PJ301MPort>(
-        Vec(83, jacksY),
+        Vec(59.5, jacksY),
         module,
         Comp::FM_INPUT));
     //  LFM_INPUT
@@ -518,7 +549,7 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
         "LFM");
 #endif
     addInput(createInput<PJ301MPort>(
-        Vec(133, jacksY),
+        Vec(155.5, jacksY),
         module,
         Comp::LFM_INPUT));
 #ifdef _LAB
@@ -527,19 +558,12 @@ void SampWidget::addJacks(SampModule* module, std::shared_ptr<IComposite> icomp)
         "Dpth");
 #endif
     addInput(createInput<PJ301MPort>(
-        Vec(133, 270),
+        Vec(155.5, 270),
         module,
         Comp::LFMDEPTH_INPUT));
 }
 
 void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp) {
-    float knobsY = 200;
-    float knobsX = 173 - 46;
-
-    float labelDy = 25;
-    float labelY = knobsY - labelDy;
-
-    float knobsY2 = knobsY + 40;
 
 #ifdef _LAB
     addLabel(
@@ -548,7 +572,7 @@ void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp)
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(196, 219),
+        Vec(201, 219),
         module,
         Comp::VOLUME_PARAM));
 #ifdef _LAB
@@ -558,9 +582,15 @@ void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp)
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(80, 219),
+        Vec(105, 219),
         module,
         Comp::PITCH_PARAM));
+
+    addParam(SqHelper::createParam<Blue30SnapKnob>(
+        icomp,
+        Vec(57, 219),
+        module,
+        Comp::OCTAVE_PARAM));
 #ifdef _LAB
     addLabel(
         Vec(knobsX - 6 + 1 * dx, labelY),
@@ -568,13 +598,13 @@ void SampWidget::addKnobs(SampModule* module, std::shared_ptr<IComposite> icomp)
 #endif
     addParam(SqHelper::createParam<Blue30Knob>(
         icomp,
-        Vec(130, 219),
+        Vec(153, 219),
         module,
         Comp::LFM_DEPTH_PARAM));
 
     addParam(SqHelper::createParam<SqTrimpot24>(
         icomp,
-        Vec(83, 270),
+        Vec(60, 270),
         module,
         Comp::PITCH_TRIM_PARAM));
 }
@@ -602,10 +632,12 @@ SampWidget::SampWidget(SampModule* module) {
     addKnobs(module, icomp);
 
     // screws
+#if 0
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
     addChild(createWidget<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
     addChild(createWidget<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
+#endif
 }
 
 static void shouldFindMalformed(const char* input) {

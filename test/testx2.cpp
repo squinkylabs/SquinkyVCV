@@ -96,7 +96,7 @@ static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) {
     VoicePlayParameter params;
     params.midiPitch = 60;
     params.midiVelocity = 60;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     int minSampleIndex = 200;
     int maxSampleIndex = -200;
@@ -105,7 +105,7 @@ static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) {
             info.valid = false;
             params.midiPitch = pitch;
             params.midiVelocity = vel;
-            cinst->play(info, params, nullptr, 0);
+            cinst->play(info, params, nullptr, 44100);
             assert(info.valid);
             assert(info.canPlay());
             minSampleIndex = std::min(minSampleIndex, info.sampleIndex);
@@ -116,11 +116,11 @@ static void testPlayInfo(const char* patch, const std::vector<int>& velRanges) {
     // VoicePlayParameter params;
     params.midiPitch = 20;
     params.midiVelocity = 60;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     params.midiPitch = 109;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     assert(minSampleIndex == 1);
@@ -202,7 +202,6 @@ static void testCIKeysAndValuesNotesUC() {
     testCIKeysAndValues("C0", 12 * (0 + 1));
     testCIKeysAndValues("C-1", 12 * (-1 + 1));
     testCIKeysAndValues("C-2", 12 * (-2 + 1));
-
 }
 
 static void testCIKeysAndValuesNotesSharp() {
@@ -211,7 +210,7 @@ static void testCIKeysAndValuesNotesSharp() {
     testCIKeysAndValues("d#4", expectedPitch);
 }
 
-static void testParseGlobalAndRegionCompiled() {
+static void testParseHeadingGlobalAndRegionCompiled() {
     printf("start test parse global\n");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><region>", inst);
@@ -221,16 +220,18 @@ static void testParseGlobalAndRegionCompiled() {
     CompiledInstrument::expandAllKV(errc, inst);
     assert(errc.empty());
 
-    assert(inst->global.compiledValues);
-    assertEQ(inst->global.compiledValues->_size(), 0);
+    assertEQ(inst->headings.size(), 2);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Global);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
 
-    SGroupPtr group = inst->groups[0];
-    assert(group);
-    assert(group->compiledValues);
-    assertEQ(group->compiledValues->_size(), 0);
+    assert(inst->headings[0]->compiledValues);
+    assertEQ(inst->headings[0]->compiledValues->_size(), 0);
+
+    assert(inst->headings[1]->compiledValues);
+    assertEQ(inst->headings[1]->compiledValues->_size(), 0);
 }
 
-static void testParseGlobalWithKVAndRegionCompiled() {
+static void testParseHeadingGlobalWithKVAndRegionCompiled() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global>hikey=57<region>", inst);
 
@@ -239,18 +240,22 @@ static void testParseGlobalWithKVAndRegionCompiled() {
     CompiledInstrument::expandAllKV(errc, inst);
     assert(errc.empty());
 
-    assert(inst->global.compiledValues);
-    assertEQ(inst->global.compiledValues->_size(), 1);
-    auto val = inst->global.compiledValues->get(SamplerSchema::Opcode::HI_KEY);
+    assertEQ(inst->headings.size(), 2);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Global);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
+
+    assert(inst->headings[0]->compiledValues);
+    assertEQ(inst->headings[0]->compiledValues->_size(), 1);
+    auto val = inst->headings[0]->compiledValues->get(SamplerSchema::Opcode::HI_KEY);
     assertEQ(val->numericInt, 57);
 
-    SGroupPtr group = inst->groups[0];
-    assert(group);
-    assert(group->compiledValues);
-    assertEQ(group->compiledValues->_size(), 0);
+    //  SGroupPtr group = inst->groups[0];
+    //  assert(group);
+    assert(inst->headings[1]->compiledValues);
+    assertEQ(inst->headings[1]->compiledValues->_size(), 0);
 }
 
-static void testParseGlobalWitRegionKVCompiled() {
+static void testParseHeadingGlobalWitRegionKVCompiled() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go("<global><region><region>lokey=57<region>", inst);
 
@@ -259,28 +264,29 @@ static void testParseGlobalWitRegionKVCompiled() {
     CompiledInstrument::expandAllKV(errc, inst);
     assert(errc.empty());
 
-    assert(inst->global.compiledValues);
-    assertEQ(inst->global.compiledValues->_size(), 0);
+    assertEQ(inst->headings.size(), 4);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Global);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[2]->type, (int)SHeading::Type::Region);
+    assertEQ((int)inst->headings[3]->type, (int)SHeading::Type::Region);
 
-    SGroupPtr group = inst->groups[0];
-    assert(group);
-    assert(group->compiledValues);
-    assertEQ(group->compiledValues->_size(), 0);
+    assert(inst->headings[0]->compiledValues);
+    assert(inst->headings[1]->compiledValues);
+    assert(inst->headings[2]->compiledValues);
+    assert(inst->headings[3]->compiledValues);
 
-    assertEQ(group->regions.size(), 3);
-    SRegionPtr r = group->regions[0];
-    assertEQ(r->compiledValues->_size(), 0);
-    r = group->regions[2];
-    assertEQ(r->compiledValues->_size(), 0);
-    r = group->regions[1];
-    assertEQ(r->compiledValues->_size(), 1);
+    assertEQ(inst->headings[0]->compiledValues->_size(), 0);
+    assertEQ(inst->headings[1]->compiledValues->_size(), 0);
+    assertEQ(inst->headings[2]->compiledValues->_size(), 1);
+    assertEQ(inst->headings[3]->compiledValues->_size(), 0);
 
-    auto val = r->compiledValues->get(SamplerSchema::Opcode::LO_KEY);
+    //  assertEQ(inst->headings[2]->compiledValues->get(SamplerSchema::Opcode::LO_KEY), 57);
+
+    auto val = inst->headings[2]->compiledValues->get(SamplerSchema::Opcode::LO_KEY);
     assertEQ(val->numericInt, 57);
 }
 
-static void testParseControl() {
-    SQINFO("------------- testParseControl");
+static void testParseHeadingControl() {
     const char* data = R"foo(<control>
         default_path=Woodwinds\Bassoon\stac\
         <global>ampeg_attack=0.001 ampeg_release=3 ampeg_dynamic=1 volume=0
@@ -290,26 +296,15 @@ static void testParseControl() {
         <region>sample=PSBassoon_A1_v1_rr1.wav lokey=43 hikey=46 pitch_keycenter=45 lovel=1 hivel=62 volume=12
         )foo";
 
-    SQINFO("took out random group. does that still work?");
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
     assert(err.empty());
 
-    assertEQ(inst->groups.size(), 1);
-    assertEQ(inst->groups[0]->regions.size(), 1);
-
-    auto gp = inst->groups[0];
-    auto rg = inst->groups[0]->regions[0];
-#if 0
-    SRegionPtr region = inst->groups[0]->regions[0];
-
-    bool foundSample = false;
-    std::string sample;
-    for (int i = 0; i < region.values.size(); ++i) {
-        SKeyValuePairPtr kv = region->values[i];
-        if (kb->key == "sample")
-    }
-#endif
+    assertEQ(inst->headings.size(), 4);
+    assertEQ((int)inst->headings[0]->type, (int)SHeading::Type::Control);
+    assertEQ((int)inst->headings[1]->type, (int)SHeading::Type::Global);
+    assertEQ((int)inst->headings[2]->type, (int)SHeading::Type::Group);
+    assertEQ((int)inst->headings[3]->type, (int)SHeading::Type::Region);
 
     SamplerErrorContext errc;
     CompiledInstrumentPtr cinst = CompiledInstrument::make(errc, inst);
@@ -318,12 +313,12 @@ static void testParseControl() {
     cinst->_pool()._getAllRegions(regions);
     assertEQ(regions.size(), 1);
     CompiledRegionPtr creg = regions[0];
-    SQINFO("IN test, creg = %p\n", creg.get());
     assertEQ(creg->lokey, 43);
     // TODO: does this test work?
 }
 
 static void testParseInclude() {
+    SQINFO("------ testParseInclude");
     const char* data = R"foo(<global>bend_up=1200
         bend_down=-1200
         #include "vc_arco_sus_map.sfz")foo";
@@ -339,6 +334,82 @@ static void testParseLabel() {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
     assert(err.empty());
+}
+
+static void testCompiledRegion() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 offset=200 end=1234)foo");
+    assertEQ(cr->keycenter, 96);
+    assertEQ(cr->lovel, 1);
+    assertEQ(cr->hivel, 22);
+    assertEQ(cr->lokey, 95);
+    assertEQ(cr->hikey, 97);
+    std::string expected = std::string("K18") + FilePath::nativeSeparator() + std::string("C7.pp.wav");
+    assertEQ(cr->sampleFile.toString(), expected);
+    assertEQ(cr->loopData.offset, 200);
+    assertEQ(cr->loopData.end, 1234);
+
+    // test a few defaults
+    assertEQ(cr->volume, 0);
+    assertEQ(cr->tune, 0);
+}
+
+static void testCompiledRegionAddedOpcodes() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=a key=64 tune=11 volume=-13)foo");
+
+    assertEQ(cr->tune, 11);
+    assertEQ(cr->volume, -13);
+}
+
+static void testCompiledRegionInherit() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo");
+    assertEQ(cr->keycenter, 96);
+    assertEQ(cr->lovel, 1);
+    assertEQ(cr->hivel, 22);
+    assertEQ(cr->lokey, 95);
+    assertEQ(cr->hikey, 97);
+    assertEQ(cr->sampleFile.toString(), "K18\\C7.pp.wav");
+    assertEQ(cr->loopData.offset, 200);
+}
+
+static void testCompiledRegionKey() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>key=32)foo");
+    assertEQ(cr->lokey, 32);
+    assertEQ(cr->hikey, 32);
+    assertEQ(cr->keycenter, 32);
+}
+
+static void testCompiledRegionVel() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hivel=12)foo");
+    assertEQ(cr->lovel, 1);
+    assertEQ(cr->hivel, 12);
+}
+
+static void testCompiledRegionVel2() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>lovel=71)foo");
+    assertEQ(cr->lovel, 71);
+    assertEQ(cr->hivel, 127);
+}
+
+static void testCompiledRegionVel3() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hivel=59 lovel=29)foo");
+    assertEQ(cr->lovel, 29);
+    assertEQ(cr->hivel, 59);
+}
+
+static void testCompiledRegionsRand() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hirand=.7 lorand=.29)foo");
+    assertEQ(cr->hirand, .7f);
+    assertEQ(cr->lorand, .29f);
+}
+
+static void testCompiledRegionSeqIndex1() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>seq_position=11)foo");
+    assertEQ(cr->sequencePosition, 11);
+}
+
+static void testCompiledRegionSeqIndex2() {
+    CompiledRegionPtr cr = st::makeRegion(R"foo(<group>seq_position=11<region>)foo");
+    assertEQ(cr->sequencePosition, 11);
 }
 
 static void testCompileInst0() {
@@ -357,9 +428,52 @@ static void testCompileInst0() {
     assert(!info.valid);
     params.midiPitch = 50;
     params.midiVelocity = 60;
-    i->play(info, params, nullptr, 0);
+    i->play(info, params, nullptr, 44100);
     assert(info.valid);  // this will fail until we implement a real compiler
     assertNE(info.sampleIndex, 0);
+}
+
+#include <stdio.h>
+#include <sys/stat.h>
+
+static void testCompileInstLinNumbers() {
+    printf("\n-- testCompileInstLinNumbers\n");
+
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+#if 0
+
+#if 0
+    // this is wrong, gives region on line 2, but shoudl be 3
+    const char* content = R"foo(<control>
+ hint_ram_based=1
+<region>
+ lokey=60 hikey=64
+ loop_mode=loop_continuous)foo";
+#endif
+const char* content = R"foo(<region>
+lokey=60 hikey=64
+loop_mode=loop_continuous)foo";
+
+    auto err = SParse::go(content, inst);
+#else
+    FilePath fp("d:\\samples\\warren_b\\U20 Electric Grand sf2\\U20 E Grand.sfz");
+    auto err = SParse::goFile(fp, inst);
+
+#endif
+    SQINFO("err: %s", err.c_str());
+    assert(err.empty());
+   
+
+
+    SamplerErrorContext errc;
+    CompiledInstrumentPtr i = CompiledInstrument::make(errc, inst);
+    // assert(errc.empty());
+
+    auto pool = i->_pool();
+    pool._dump(0);
+  //  assertEQ(pool.size(), 2);
+    assert(false);
+
 }
 
 static void testCompileInst1() {
@@ -378,7 +492,7 @@ static void testCompileInst1() {
     VoicePlayParameter params;
     params.midiPitch = 60;
     params.midiVelocity = 60;
-    i->play(info, params, nullptr, 0);
+    i->play(info, params, nullptr, 44100);
     assert(info.valid);  // this will fail until we implement a real compiler
     assertNE(info.sampleIndex, 0);
 }
@@ -400,22 +514,21 @@ static void testCompileOverlap() {
     params.midiPitch = 60;
     params.midiVelocity = 2;
 
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertNE(info.sampleIndex, 0);
     assertEQ(info.needsTranspose, false);
 
     params.midiPitch = 61;
     params.midiVelocity = 100;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(!info.valid);
     params.midiPitch = 59;
     params.midiVelocity = 12;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(!info.valid);
 }
-
-static void testTranspose1() {
+static void testCompileTranspose1() {
     printf("\nstarting on transpose 1\n");
     auto inst = std::make_shared<SInstrument>();
     auto err = SParse::go(R"foo(<region> sample=K18\D#1.pp.wav lovel=1 hivel=65 lokey=26 hikey=28 pitch_keycenter=27)foo", inst);
@@ -432,7 +545,7 @@ static void testTranspose1() {
     VoicePlayParameter params;
     params.midiPitch = 26;
     params.midiVelocity = 64;
-    cinst->play(info, params, nullptr, 0);
+    cinst->play(info, params, nullptr, 44100);
     assert(info.valid);
     assert(info.needsTranspose);
 #ifdef _SAMPFM
@@ -488,106 +601,36 @@ static void testCompileCrash2() {
     assert(!info.valid);
 }
 
-static void testCompiledRegion() {
-    SQINFO("---- starting testCompiledRegion");
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 offset=200)foo");
-    assertEQ(cr->keycenter, 96);
-    assertEQ(cr->lovel, 1);
-    assertEQ(cr->hivel, 22);
-    assertEQ(cr->lokey, 95);
-    assertEQ(cr->hikey, 97);
-    std::string expected = std::string("K18") + FilePath::nativeSeparator() + std::string("C7.pp.wav");
-    assertEQ(cr->sampleFile, expected);
-
-    // test a few defaults
-    assertEQ(cr->volume, 0);
-    assertEQ(cr->tune, 0);
-}
-
-static void testCompiledRegionAddedOpcodes() {
-    SQINFO("---- starting testCompiledRegionAddedOpcodes");
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>sample=a key=64 tune=11 volume=-13)foo");
-
-    assertEQ(cr->tune, 11);
-    assertEQ(cr->volume, -13);
-}
-
-static void testCompiledRegionInherit() {
-    SQINFO("---- starting testCompiledRegionInherit");
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<group>sample=K18\C7.pp.wav lovel=1 hivel=22 lokey=95 hikey=97 pitch_keycenter=96 tune=10 offset=200<region>)foo");
-    assertEQ(cr->keycenter, 96);
-    assertEQ(cr->lovel, 1);
-    assertEQ(cr->hivel, 22);
-    assertEQ(cr->lokey, 95);
-    assertEQ(cr->hikey, 97);
-    assertEQ(cr->sampleFile, "K18\\C7.pp.wav");
-}
-
-static void testCompiledRegionKey() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>key=32)foo");
-    assertEQ(cr->lokey, 32);
-    assertEQ(cr->hikey, 32);
-    assertEQ(cr->keycenter, 32);
-}
-
-static void testCompiledRegionVel() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hivel=12)foo");
-    assertEQ(cr->lovel, 1);
-    assertEQ(cr->hivel, 12);
-}
-
-static void testCompiledRegionVel2() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>lovel=71)foo");
-    assertEQ(cr->lovel, 71);
-    assertEQ(cr->hivel, 127);
-}
-
-static void testCompiledRegionVel3() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hivel=59 lovel=29)foo");
-    assertEQ(cr->lovel, 29);
-    assertEQ(cr->hivel, 59);
-}
-
-static void testCompiledRegionsRand() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>hirand=.7 lorand=.29)foo");
-    assertEQ(cr->hirand, .7f);
-    assertEQ(cr->lorand, .29f);
-}
-
-static void testCompiledRegionSeqIndex1() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<region>seq_position=11)foo");
-    assertEQ(cr->sequencePosition, 11);
-}
-
-static void testCompiledRegionSeqIndex2() {
-    CompiledRegionPtr cr = st::makeRegion(R"foo(<group>seq_position=11<region>)foo");
-    assertEQ(cr->sequencePosition, 11);
-}
-static void testCompiledGroupSub(const char* data, bool shouldIgnore) {
+static void testCompileGroupSub(const char* data, bool shouldIgnore) {
     SInstrumentPtr inst = std::make_shared<SInstrument>();
     auto err = SParse::go(data, inst);
 
-    SGroupPtr group = inst->groups[0];
+    assertEQ(inst->headings.size(), 1);
+    assert(inst->headings[0]->type == SHeading::Type::Group);
+
+    SHeadingPtr group = inst->headings[0];
     SamplerErrorContext errc;
     CompiledInstrument::expandAllKV(errc, inst);
     assert(errc.empty());
 
     assert(inst->wasExpanded);
 
-    CompiledGroupPtr cr = std::make_shared<CompiledGroup>(group);
+    //  CompiledGroupPtr cr = std::make_shared<CompiledGroup>(group);
+    CompiledRegionPtr cr = std::make_shared<CompiledRegion>(100);
+    cr->addRegionInfo(group->compiledValues);
     assertEQ(cr->shouldIgnore(), shouldIgnore);
 }
 
-static void testCompiledGroup0() {
-    testCompiledGroupSub(R"foo(<group>)foo", false);
+static void testCompileGroup0() {
+    testCompileGroupSub(R"foo(<group>)foo", false);
 }
 
-static void testCompiledGroup1() {
-    testCompiledGroupSub(R"foo(<group>trigger=attack)foo", false);
+static void testCompileGroup1() {
+    testCompileGroupSub(R"foo(<group>trigger=attack)foo", false);
 }
 
-static void testCompiledGroup2() {
-    testCompiledGroupSub(R"foo(<group>trigger=release)foo", true);
+static void testCompileGroup2() {
+    testCompileGroupSub(R"foo(<group>trigger=release)foo", true);
 }
 
 static void testCompileMutliControls() {
@@ -665,7 +708,7 @@ static void testCompileTreeOne() {
     VoicePlayParameter params;
     params.midiPitch = 60;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100.f);
     assert(info.valid);
 }
 
@@ -700,11 +743,21 @@ static void testCompileKey() {
 
     SamplerErrorContext errc;
     auto ci = CompiledInstrument::make(errc, inst);
+    //assertEQ(inst->headings.size(), 1);
+    // SHeadingPtr region = inst->headings[0];
+
     VoicePlayInfo info;
     VoicePlayParameter params;
     params.midiPitch = 12;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+
+    bool didKS = false;
+    const CompiledRegion* region = ci->_pool().play(params, .5, didKS);
+    assertEQ(region->lokey, 12);
+    assertEQ(region->hikey, 12);
+    assertEQ(region->keycenter, 12);
+
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.needsTranspose, false);
 }
@@ -725,27 +778,27 @@ static void testCompileMultiPitch() {
     VoicePlayParameter params;
     params.midiPitch = 9;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     params.midiPitch = 21;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     params.midiPitch = 0;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     params.midiPitch = 127;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     params.midiPitch = 11;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.needsTranspose, false);
 
@@ -756,7 +809,7 @@ static void testCompileMultiPitch() {
     // pitch 12 requires a semitone up in this region
     params.midiPitch = 12;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
 
     assertEQ(info.needsTranspose, true);
@@ -769,7 +822,7 @@ static void testCompileMultiPitch() {
     // Pitch 10 requies a semiton down
     params.midiPitch = 10;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
 #ifdef _SAMPFM
@@ -780,7 +833,7 @@ static void testCompileMultiPitch() {
 
     params.midiPitch = 13;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
     assertEQ(info.sampleIndex, 2);
@@ -788,7 +841,7 @@ static void testCompileMultiPitch() {
     // pitch 20 is up 2 semi in this region
     params.midiPitch = 20;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.needsTranspose, true);
     assertEQ(info.sampleIndex, 3);
@@ -817,12 +870,12 @@ static void testCompileMultiVel() {
     VoicePlayParameter params;
     params.midiPitch = 11;
     params.midiVelocity = 60;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     params.midiPitch = 10;
     params.midiVelocity = 1;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.sampleIndex, 1);
 }
@@ -854,63 +907,63 @@ static void testCompileMulPitchAndVelSimple() {
     VoicePlayParameter params;
     params.midiPitch = 10;
     params.midiVelocity = 1;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 10;
     params.midiVelocity = 21;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 10;
     params.midiVelocity = 91;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 20;
     params.midiVelocity = 1;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 20;
     params.midiVelocity = 21;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 20;
     params.midiVelocity = 91;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 30;
     params.midiVelocity = 1;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 30;
     params.midiVelocity = 21;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 30;
     params.midiVelocity = 91;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
@@ -941,14 +994,14 @@ static void testCompileMulPitchAndVelComplex1() {
     VoicePlayParameter params;
     params.midiPitch = 10;
     params.midiVelocity = 20;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 20;
     params.midiVelocity = 22;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
@@ -980,19 +1033,19 @@ static void testCompileAmpegRelease() {
     params.midiVelocity = 127;
 
     // inherited
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.ampeg_release, 50);
 
     // set directly
     params.midiPitch = 30;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.ampeg_release, 10);
 
     // default
     params.midiPitch = 20;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.ampeg_release, .03f);
 }
@@ -1021,31 +1074,31 @@ static void testCompileAmpVel() {
     // velrack = 100
     params.midiPitch = 30;
     params.midiVelocity = 127;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.gain, 1);
 
     params.midiVelocity = 64;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertClose(info.gain, .25f, .01f);
 
     // veltrack = 0
     params.midiPitch = 40;
     params.midiVelocity = 127;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.gain, 1);
 
     params.midiVelocity = 1;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertEQ(info.gain, 1);
 
     // default. veltrack should be 100
     params.midiPitch = 20;
     params.midiVelocity = 64;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertClose(info.gain, .25f, .01f);
 
@@ -1053,7 +1106,7 @@ static void testCompileAmpVel() {
     // vel = 64
     params.midiPitch = 10;
     params.midiVelocity = 64;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertClose(info.gain, .63, .01f);  // number gotten from known-good.
                                         // but at least it's > .25 and < 1
@@ -1087,32 +1140,32 @@ static void testCompileMulPitchAndVelComplex2() {
     VoicePlayParameter params;
     params.midiPitch = 10;
     params.midiVelocity = 20;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 10;
     params.midiVelocity = 27;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 
     params.midiPitch = 10;
     params.midiVelocity = 91;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
     params.midiPitch = 10;
     params.midiVelocity = 95;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     sampleIndicies.insert(info.sampleIndex);
 }
 
-static void testGroupInherit() {
+static void testCompileGroupInherit() {
     const char* data = R"foo(
         //snare =====================================
         <group> amp_veltrack=98 key=40 loop_mode=one_shot lovel=101 hivel=127  // snare1 /////
@@ -1129,30 +1182,31 @@ static void testGroupInherit() {
     VoicePlayParameter params;
     params.midiPitch = 40;
     params.midiVelocity = 120;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
 
     params.midiPitch = 41;
     params.midiVelocity = 120;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(!info.valid);
 
-    // This doesn't work, becuase we don't have exclusive velocity zones.
+    // This doesn't work, because we don't have exclusive velocity zones.
+    // update - yes we do.
     // ci->play(info, 40, 100);
     // assert(!info.valid);
 }
 
 static void testCompileSimpleDrum() {
-    printf("\n\n----- testCompileSimpleDrum\n");
+    printf("\n\n\n\n\\n\n------------- testCompileSimpleDrum -----------------------------\n");
     const char* data = R"foo(
         //snare =====================================
-        <group> amp_veltrack=98 key=40 loop_mode=one_shot lovel=101 hivel=127  // snare1 /////
+        <group> amp_veltrack=98 key=40 loop_mode=one_shot lovel=101 hivel=127 sample=g1
         <region> sample=a lorand=0 hirand=0.3
         <region> sample=b lorand=0.3 hirand=0.6
         <region> sample=c lorand=0.6 hirand=1.0
 
         //snareStick =====================================
-        <group> amp_veltrack=98 volume=-11 key=41 loop_mode=one_shot lovel=1 hivel=127 seq_length=3 
+        <group> amp_veltrack=98 volume=-11 key=41 loop_mode=one_shot lovel=1 hivel=127 seq_length=3 sample=g2
         <region> sample=d seq_position=1
         <region> sample=e seq_position=2
         <region> sample=f seq_position=3
@@ -1163,9 +1217,12 @@ static void testCompileSimpleDrum() {
 
     SamplerErrorContext errc;
     auto ci = CompiledInstrument::make(errc, inst);
-    // SQINFO("dumping drum patch");
-    // ci->_dump(0);
-    //  SQINFO("done with dump");
+
+    //SQINFO("dumping drum patch");
+    //ci->_dump(0);
+    //SQINFO("done with dump");
+
+    assertEQ(ci->_pool().size(), 6);
     VoicePlayInfo info;
 
     std::set<int> waves;
@@ -1173,7 +1230,7 @@ static void testCompileSimpleDrum() {
         VoicePlayParameter params;
         params.midiPitch = 40;
         params.midiVelocity = 110;
-        ci->play(info, params, nullptr, 0);
+        ci->play(info, params, nullptr, 44100);
 
         assert(info.valid);
         assert(info.sampleIndex > 0);
@@ -1186,22 +1243,20 @@ static void testCompileSimpleDrum() {
     waves.clear();
     assertEQ(waves.size(), 0);
 
-    SQWARN("--- done with rand, now seq");
-
     VoicePlayParameter params;
     params.midiPitch = 41;
     params.midiVelocity = 64;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     waves.insert(info.sampleIndex);
 
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     waves.insert(info.sampleIndex);
 
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
     assert(info.valid);
     assertGE(info.sampleIndex, 1);
     waves.insert(info.sampleIndex);
@@ -1251,11 +1306,10 @@ static void testComp(const std::string& path) {
     VoicePlayParameter params;
     params.midiPitch = 40;
     params.midiVelocity = 110;
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
 }
 
 static void testCompileBassoon() {
-    SQINFO("testCompileBassoon");
     testComp(R"foo(D:\samples\VSCO-2-CE-1.1.0\VSCO-2-CE-1.1.0\BassoonStac.sfz)foo");
 }
 
@@ -1352,8 +1406,6 @@ static void testSampleRate() {
 
     CompiledRegionPtr cr1 = st::makeRegion(R"foo(<region>sample=a key=60 seq_position=200)foo");
 
-    //  SimpleVoicePlayer(CompiledRegionPtr reg, int midiPitch, int sampleIndex) :
-
     SimpleVoicePlayer simplePlayer(cr1, 60, 1);
 
     VoicePlayInfo info;
@@ -1384,12 +1436,12 @@ static void testSampleRate() {
     assertClose(info.transposeV, yy, .0001);
 
 #else
-    assertClose(info.transposeAmt, expectedTranspose, .01);
+    a b
+        assertClose(info.transposeAmt, expectedTranspose, .01);
 #endif
 }
 
 static void testPlayVolumeAndTune() {
-    SQINFO("---- starting testCompiledRegionAddedOpcodes");
     const char* data = (R"foo(<region>sample=a key=44 tune=11 volume=-13)foo");
 
     SInstrumentPtr inst = std::make_shared<SInstrument>();
@@ -1406,7 +1458,7 @@ static void testPlayVolumeAndTune() {
     params.midiVelocity = 127;
 
     // play with not wave and sr??
-    ci->play(info, params, nullptr, 0);
+    ci->play(info, params, nullptr, 44100);
 
     const float expectedGain = float(AudioMath::gainFromDb(-13));
 
@@ -1426,38 +1478,105 @@ static void testPlayVolumeAndTune() {
 #endif
 }
 
+static void testCompileLoop() {
+    const char* data = (R"foo(
+          <group>loop_mode=loop_continuous
+          <region>sample=a offset=100 loop_start=1234 loop_end=4567
+          )foo");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+
+    assertEQ(errc.unrecognizedOpcodes.size(), 0);
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 12;
+    params.midiVelocity = 60;
+
+    bool didKS = false;
+    const CompiledRegion* region = ci->_pool().play(params, .5, didKS);
+    
+    assertEQ(region->loopData.offset, 100);
+    assertEQ(region->loopData.loop_start, 1234);
+    assertEQ(region->loopData.loop_end, 4567);
+    assertEQ((int) region->loopData.loop_mode, (int) SamplerSchema::DiscreteValue::LOOP_CONTINUOUS);
+}
+
+static void testCompileLoop2() {
+    const char* data = (R"foo(
+          <group>oscillator=on
+          <region>sample=a offset=100 end=200
+          )foo");
+    SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+
+    assertEQ(errc.unrecognizedOpcodes.size(), 0);
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 12;
+    params.midiVelocity = 60;
+
+    bool didKS = false;
+    const CompiledRegion* region = ci->_pool().play(params, .5, didKS);
+    
+    assertEQ(region->loopData.offset, 100);
+    assertEQ(region->loopData.end, 200);
+    assertEQ(region->loopData.oscillator, true);
+ //   assertEQ((int) region->loopData.loop_mode, (int) SamplerSchema::DiscreteValue::LOOP_CONTINUOUS);
+}
+
+static void testCompileOscOff() {
+    const char* data = (R"foo(
+          <region>sample=a offset=100 end=200
+          )foo");
+      SInstrumentPtr inst = std::make_shared<SInstrument>();
+    auto err = SParse::go(data, inst);
+
+    SamplerErrorContext errc;
+    auto ci = CompiledInstrument::make(errc, inst);
+
+    assertEQ(errc.unrecognizedOpcodes.size(), 0);
+
+    VoicePlayInfo info;
+    VoicePlayParameter params;
+    params.midiPitch = 12;
+    params.midiVelocity = 60;
+
+    bool didKS = false;
+    const CompiledRegion* region = ci->_pool().play(params, .5, didKS);
+
+     assertEQ(region->loopData.oscillator, false);
+
+}
+
 void testx2() {
     assert(parseCount == 0);
     assert(compileCount == 0);
+   
     testWaveLoader0();
     testWaveLoader1Wav();
     testWaveLoader1Flac();
 
     testWaveLoader2();
     testWaveLoaderNot44();
+
     testPlayInfo();
-
-    // put here just for now
-    testCompileMutliControls();
-
-    // printf("fix testStreamXpose2\n");
-    //testStreamXpose2();
 
     testCIKeysAndValues();
     testCIKeysAndValuesNotesLC();
     testCIKeysAndValuesNotesUC();
     testCIKeysAndValuesNotesSharp();
-    testParseGlobalAndRegionCompiled();
-    testParseGlobalWithKVAndRegionCompiled();
-    testParseGlobalWitRegionKVCompiled();
-    testParseControl();
-    testParseLabel();
 
-    // can't parse these yet
-    testParseInclude();
-
-    testCompileCrash();
-    testCompileCrash2();
+    testParseHeadingGlobalAndRegionCompiled();
+    testParseHeadingGlobalWithKVAndRegionCompiled();
+    testParseHeadingGlobalWitRegionKVCompiled();
 
     testCompiledRegion();
     testCompiledRegionAddedOpcodes();
@@ -1469,14 +1588,10 @@ void testx2() {
     testCompiledRegionsRand();
     testCompiledRegionSeqIndex1();
     testCompiledRegionSeqIndex2();
-    testCompileAmpVel();
-    testCompileAmpegRelease();
 
-    testCompiledGroup0();
-    testCompiledGroup1();
-    testCompiledGroup2();
-
-    testCompileMutliControls();
+    testCompileGroup0();
+    testCompileGroup1();
+    testCompileGroup2();
 
     // Let' put lots of very basic compilation tests here
     testCompileTreeOne();
@@ -1489,26 +1604,46 @@ void testx2() {
     testCompileMulPitchAndVelComplex2();
     testCompileGroupProbability();
     testCompileBassoon();
-    testGroupInherit();
-    assertEQ(compileCount, 0);
+    testCompileGroupInherit();
+
+    // put here just for now
+    testCompileMutliControls();
+
+    // printf("fix testStreamXpose2\n");
+    //testStreamXpose2();
+
+    testCompileCrash();
+    testCompileCrash2();
 
     assertEQ(compileCount, 0);
 
     testCompileSort();
-
     testCompileInst0();
     testCompileInst1();
     testCompileOverlap();
 
     testLoadWavesPiano();
 
-    testTranspose1();
+    testCompileTranspose1();
     testSampleRate();
     testPlayVolumeAndTune();
 
 #ifdef _SFZ_RANDOM
     testCompileSimpleDrum();
+#else
+    assert(false);
 #endif
+    testParseHeadingControl();
+    testParseLabel();
+    testParseInclude();
+
+    testCompileAmpVel();
+    testCompileAmpegRelease();
+    testCompileLoop();
+    testCompileLoop2();
+    testCompileOscOff();
+    // testCompileInstLinNumbers();
+
     assertEQ(parseCount, 0);
     assertEQ(compileCount, 0);
 }

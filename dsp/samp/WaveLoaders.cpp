@@ -21,7 +21,7 @@ protected:
     uint64_t totalFrameCount = 0;
 
     // Who owns this data? I think I should own it, and delete it myself. I do,
-    // but should I transer ownership to outer object?
+    // but should I transfer ownership to outer object?
     // Or maybe I should keep it and outer caller gets it to play?
     float* data = nullptr;
     const FilePath fp;
@@ -36,7 +36,7 @@ public:
 
 private:
     void convertToMono();
-    float* loadData(unsigned& numChannels);          // no format conversion or checking
+    float* loadData(unsigned& numChannels);  // no format conversion or checking
 };
 
 #ifdef ARCH_WIN
@@ -82,10 +82,7 @@ bool WaveFileLoader::load(std::string& errorMessage) {
     return true;
 }
 
-
 void WaveFileLoader::convertToMono() {
-    //  SQINFO("convert to mono. file=%s channels=%d totalFrameCount=%d", fileName.getFilenamePart().c_str(), numChannels, totalFrameCount);
-    //  const int origChannels = numChannels;
     uint64_t newBufferSize = 1 + totalFrameCount;
     void* x = DRWAV_MALLOC(newBufferSize * sizeof(float));
     float* dest = reinterpret_cast<float*>(x);
@@ -102,7 +99,6 @@ void WaveFileLoader::convertToMono() {
         dest[outputIndex] = monoSampleValue;
     }
 
-    //  SQINFO("leaving, not total frames = %d", totalFrameCount);
     DRWAV_FREE(data);
     data = dest;
 }
@@ -122,7 +118,7 @@ public:
 
             return true;
         }
-        errorMsg = "can't open " +  fp.getFilenamePart();
+        errorMsg = "can't open " + fp.getFilenamePart();
         return false;
     }
 
@@ -143,6 +139,12 @@ public:
             case WaveLoader::Tests::DCTenSec:
                 setupDC(10);
                 break;
+            case WaveLoader::Tests::RampOneSec:
+                setupRamp(1);
+                break;
+            case WaveLoader::Tests::Zero2048:
+                setupLoop();
+                break;
             default:
                 assert(false);
         }
@@ -156,6 +158,23 @@ private:
         totalFrameCount = 44100 * seconds;
         for (uint64_t i = 0; i < totalFrameCount; ++i) {
             data[i] = 1;
+        }
+    }
+    void setupRamp(int seconds) {
+        data = reinterpret_cast<float*>(DRWAV_MALLOC(44100 * seconds * sizeof(float)));
+        sampleRate = 44100;
+        totalFrameCount = 44100 * seconds;
+        for (uint64_t i = 0; i < totalFrameCount; ++i) {
+            data[i] = float(i);
+        }
+    }
+    void setupLoop() {
+        const int size = 2048;
+        data = reinterpret_cast<float*>(DRWAV_MALLOC(size * sizeof(float)));
+        sampleRate = 44100;
+        totalFrameCount = size;
+        for (uint64_t i = 0; i < totalFrameCount; ++i) {
+            data[i] = 0;
         }
     }
     const WaveLoader::Tests _test = WaveLoader::Tests::None;
@@ -195,19 +214,19 @@ WaveLoader::WaveInfoPtr WaveLoader::loaderFactory(const FilePath& file) {
 }
 
 void WaveLoader::_setTestMode(Tests test) {
-    //  _testMode = test;
     WaveInfoPtr wav = std::make_shared<TestFileLoader>(FilePath(), test);
     switch (test) {
         case Tests::None:
             break;
+        case Tests::RampOneSec:
+        case Tests::Zero2048:
         case Tests::DCTenSec:
         case Tests::DCOneSec: {
-            // auto info = std::make_shared<TestFileLoader>(FilePath(), test);
             finalInfo.push_back(wav);
             std::string err;
             const bool b = wav->load(err);
+            (void) b;
             assert(b);
-            //   addNextSample(info);
             didLoad = true;
         } break;
         default:

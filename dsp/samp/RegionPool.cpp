@@ -3,11 +3,12 @@
 #include "RegionPool.h"
 
 #include "CompiledRegion.h"
+#include "HeadingTracker.h"
 #include "SInstrument.h"
 #include "SParse.h"
 #include "SamplerPlayback.h"
 
-// #define _LOGOV
+//#define _LOGOV
 
 // checks to see if the region is playable
 bool RegionPool::shouldRegionPlayNow(const VoicePlayParameter& params, const CompiledRegion* region, float random) {
@@ -79,6 +80,12 @@ const CompiledRegion* RegionPool::play(const VoicePlayParameter& params, float r
             foundRegion = region;
         }
     }
+#if 0
+    if (foundRegion) {
+        SQINFO("play found region");
+        foundRegion->_dump(0);
+    }
+#endif
     return foundRegion;
 }
 
@@ -119,7 +126,36 @@ void RegionPool::sortByPitchAndVelocity(std::vector<CompiledRegionPtr>& array) {
     });
 }
 
+// new one, for new parser
 bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
+#if 1  // new parser. merge conflict here
+    HeadingTracker ht(in->headings);
+
+    // SQINFO("---- buildCompiledTree with %d regions", in->headings.size());
+    // Enumerate all the parsed regions
+    while (ht.getCurrent(SHeading::Type::Region)) {
+        // here we know current describes a region
+        auto curRegion = ht.getCurrent(SHeading::Type::Region);
+        CompiledRegionPtr cReg = std::make_shared<CompiledRegion>(curRegion->lineNumber);
+
+        // now add in all the parents
+        for (int typeIndex = int(SHeading::Type::NUM_TYPES_INHERIT) - 1; typeIndex >= int(SHeading::Type::Region); typeIndex--) {
+            SHeading::Type type = SHeading::Type(typeIndex);
+            auto nextParent = ht.getCurrent(type);
+            if (nextParent) {
+                cReg->addRegionInfo(nextParent->compiledValues);
+            }
+        }
+        cReg->finalize();
+        // SQINFO("one more region from headings");
+        //cReg->_dump(0);
+        //
+        if (!cReg->shouldIgnore()) {
+            //SQINFO("not ignoring");
+            maybeAddToKeyswitchList(cReg);
+            if (cReg->sw_default >= 0) {
+                currentSwitch_ = cReg->sw_default;
+#else
     for (auto group : in->groups) {
         auto cGroup = std::make_shared<CompiledGroup>(group);
         if (!cGroup->shouldIgnore()) {
@@ -139,9 +175,23 @@ bool RegionPool::buildCompiledTree(const SInstrumentPtr in) {
                     }
                     regions.push_back(cReg);
                 }
+#endif
             }
+            // SQINFO("adding");
+            regions.push_back(cReg);
         }
+
+        ht.nextRegion();
     }
+
+#if 0
+    SQINFO("regions before fixup ");
+    for (auto region : regions) {
+        region->_dump(0);
+
+    }
+#endif
+
     bool bRet = fixupCompiledTree();
     fillRegionLookup();
     return bRet;
@@ -166,9 +216,12 @@ void RegionPool::fillRegionLookup() {
         assert(high >= low);
         assert(low >= 0);
 
-        // map this region to very key it contains
-        for (int i = low; i <= high; ++i) {
-            noteActivationLists_[i].push_back(region.get());
+        // map this region to every key it contains
+        // but don't do it if a crazy negative key slipped in here
+        if (low >= 0) {
+            for (int i = low; i <= high; ++i) {
+                noteActivationLists_[i].push_back(region.get());
+            }
         }
     }
 }
@@ -191,7 +244,7 @@ bool RegionPool::attemptOverlapRepairWithVel(CompiledRegionPtr firstRegion, Comp
         }
         //assert(firstRegion->lovel <= secondRegion->lovel);  // sorted
         if (firstRegion->lovel > secondRegion->lovel) {
-             SQWARN("in overlap vel, first=%d second=%d  ilnes %d,%d", firstRegion->lovel, secondRegion->lovel, firstRegion->lineNumber, secondRegion->lineNumber);
+            SQWARN("in overlap vel, first=%d second=%d  ilnes %d,%d", firstRegion->lovel, secondRegion->lovel, firstRegion->lineNumber, secondRegion->lineNumber);
             return true;
         }
         while (velOverlap.first) {
@@ -273,17 +326,20 @@ bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion,
     const int lv2 = secondRegion->lovel;
 
 #ifdef _LOGOV
-    printf("overlap comparing line %d with %d\n", firstRegion->lineNumber, secondRegion->lineNumber);
-    printf("  first pitch=%d,%d, vel=%d,%d\n", firstRegion->lokey, firstRegion->hikey, firstRegion->lovel, firstRegion->hivel);
-    printf("  second pitch=%d,%d, vel=%d,%d\n", firstRegion->lokey, secondRegion->hikey, secondRegion->lovel, secondRegion->hivel);
+    SQINFO("overlap comparing line %d with %d", firstRegion->lineNumber, secondRegion->lineNumber);
+    SQINFO("  first pitch=%d,%d, vel=%d,%d", firstRegion->lokey, firstRegion->hikey, firstRegion->lovel, firstRegion->hivel);
+    SQINFO("  second pitch=%d,%d, vel=%d,%d", firstRegion->lokey, secondRegion->hikey, secondRegion->lovel, secondRegion->hivel);
 
-    printf("  first sw_ range=%d, %d. second=%d, %d", firstRegion->sw_lolast, firstRegion->sw_hilast, secondRegion->sw_lolast, secondRegion->sw_hilast);
-    printf("  overlap pitch = %d, overlap vel = %d\n", firstRegion->overlapsPitch(*secondRegion), firstRegion->overlapsVelocity(*secondRegionn));
+    SQINFO("  first sw_ range=%d, %d. second=%d, %d", firstRegion->sw_lolast, firstRegion->sw_hilast, secondRegion->sw_lolast, secondRegion->sw_hilast);
+    SQINFO("  overlap pitch = %d, overlap vel = %d", firstRegion->overlapsPitch(*secondRegion), firstRegion->overlapsVelocity(*secondRegion));
 #endif
 
     // If there is no overlap, then everything is fine.
     // Can keep and use regions as they are
     if (!regionsOverlap(firstRegion, secondRegion)) {
+#ifdef _LOGOV
+        SQINFO("no overlap, do nothing");
+#endif
         return false;
     }
 
@@ -298,6 +354,9 @@ bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion,
 
     // if regions are good now, then stop
     if (!regionsOverlap(firstRegion, secondRegion)) {
+#ifdef _LOGOV
+        SQINFO("overlap, repaired using %s", velLessOverlap ? "vel" : "pitch");
+#endif
         return false;
     }
 
@@ -308,7 +367,13 @@ bool RegionPool::evaluateOverlapsAndAttemptRepair(CompiledRegionPtr firstRegion,
 
     bool stillBad = regionsOverlap(firstRegion, secondRegion);
     if (stillBad) {
-        SQINFO("unable to repair overlaps at  %d and %d", firstRegion->lineNumber, secondRegion->lineNumber);
+        SQINFO("unable to repair overlaps at  lines %d and %d", firstRegion->lineNumber, secondRegion->lineNumber);
+    #if 0
+        SQINFO(" First region:");
+        firstRegion->_dump(1);
+        SQINFO(" second region:");
+        secondRegion->_dump(1);
+    #endif
 
         // If we can't repair, then restore everything,
         // This ensures that post-delete the remaining region will be intact.
@@ -334,13 +399,9 @@ void RegionPool::removeOverlaps() {
 #endif
     int removed = 0;
     if (regions.size() < 2) {
-        //printf("leaving early, not enough regions\n");
         return;
-        //return removed;
     }
     sortByPitchAndVelocity(regions);
-
-
 
     using iterator = std::vector<CompiledRegionPtr>::iterator;
     for (iterator it = regions.begin(); it != regions.end();) {
@@ -359,6 +420,12 @@ void RegionPool::removeOverlaps() {
             const int secondPitchRange = second->hikey - second->lokey;
             if (firstPitchRange <= secondPitchRange) {
                 SQINFO("about to erase region from %d based on conflict from %d\n", second->lineNumber, first->lineNumber);
+#if 0
+                SQINFO("here is one going away: ");
+                second->_dump(1);
+                SQINFO("here is one staying: ");
+                first->_dump(1);
+#endif
 
                 // if we want to erase the second one, do that.
                 // it still points at first, but next iteration there will be a different next;

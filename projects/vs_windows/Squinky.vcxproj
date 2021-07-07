@@ -31,6 +31,8 @@
     <ClCompile Include="..\..\dsp\samp\CompiledRegion.cpp" />
     <ClCompile Include="..\..\dsp\samp\FilePath.cpp" />
     <ClCompile Include="..\..\dsp\samp\FlacReader.cpp" />
+    <ClCompile Include="..\..\dsp\samp\HeadingTracker.cpp" />
+    <ClCompile Include="..\..\dsp\samp\LexContext.cpp" />
     <ClCompile Include="..\..\dsp\samp\RegionPool.cpp" />
     <ClCompile Include="..\..\dsp\samp\Sampler4vx.cpp" />
     <ClCompile Include="..\..\dsp\samp\SamplerPlayback.cpp" />
@@ -118,6 +120,9 @@
     <ClCompile Include="..\..\test\testCompressorII.cpp" />
     <ClCompile Include="..\..\test\testCompressorParamHolder.cpp" />
     <ClCompile Include="..\..\test\testFlac.cpp" />
+    <ClCompile Include="..\..\test\testGateDelay.cpp" />
+    <ClCompile Include="..\..\test\testHeadingTracker.cpp" />
+    <ClCompile Include="..\..\test\testRegionPrune.cpp" />
     <ClCompile Include="..\..\test\testSampComposite.cpp" />
     <ClCompile Include="..\..\test\testStreamer.cpp" />
     <ClCompile Include="..\..\test\testWavThread.cpp" />
@@ -220,6 +225,8 @@
     <ClCompile Include="..\..\test\testx4.cpp" />
     <ClCompile Include="..\..\test\testx5.cpp" />
     <ClCompile Include="..\..\test\testx6.cpp" />
+    <ClCompile Include="..\..\test\testx7.cpp" />
+    <ClCompile Include="..\..\test\testxLex.cpp" />
     <ClCompile Include="..\..\util\SqLog.cpp" />
   </ItemGroup>
   <ItemGroup>
