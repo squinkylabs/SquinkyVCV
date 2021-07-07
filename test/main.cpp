@@ -38,6 +38,7 @@ extern void testGateTrigger();
 extern void testAnalyzer();
 extern void testFilter();
 extern void testStochasticGrammar();
+extern void testStochasticGrammar2();
 extern void testGMR();
 extern void testLowpassFilter();
 extern void testPoly();
@@ -235,9 +236,8 @@ int main(int argc, char** argv) {
     testSimpleQuantizer();
     testFilterComposites();
 
-    testRegionPrune();      // TODO: move this laster
-    testStreamer();
-    testHeadingTracker();
+    testStochasticGrammar2();
+
     testxLex();
     testx();
     testx2();
@@ -246,7 +246,9 @@ int main(int argc, char** argv) {
     testx5();
     testx6();
     testx7();
-
+    testStreamer();
+    testHeadingTracker();
+    testRegionPrune(); 
     testSampComposite();
 
     testFlac();

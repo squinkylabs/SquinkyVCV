@@ -124,6 +124,7 @@
     <ClCompile Include="..\..\test\testHeadingTracker.cpp" />
     <ClCompile Include="..\..\test\testRegionPrune.cpp" />
     <ClCompile Include="..\..\test\testSampComposite.cpp" />
+    <ClCompile Include="..\..\test\testStochasticGrammar2.cpp" />
     <ClCompile Include="..\..\test\testStreamer.cpp" />
     <ClCompile Include="..\..\test\testWavThread.cpp" />
     <ClCompile Include="..\..\test\testx3.cpp" />
