@@ -16,6 +16,7 @@ static void testNoteDuration(const StochasticNote::Durations dur, double expecte
     StochasticNote n(dur);
     assertEQ(n.timeDuration(), expectedDur);
 }
+
 static void testNoteDurations() {
     testNoteDuration(StochasticNote::Durations::half, .5);
     testNoteDuration(StochasticNote::Durations::quarter, .25);
@@ -26,11 +27,11 @@ static void testNoteDurations() {
 
 static void test1() {
     StochasticProductionRuleEntryPtr entry = StochasticProductionRuleEntry::make();
-    entry->rhsProducedNotes.push_back(StochasticNote::Durations::quarter);
-    entry->rhsProducedNotes.push_back(StochasticNote::Durations::quarter);
+    entry->rhsProducedNotes.push_back(StochasticNote::Durations::eighth);
+    entry->rhsProducedNotes.push_back(StochasticNote::Durations::eighth);
     entry->probabilty = .1;
 
-    StochasticProductionRule rule(StochasticNote::Durations::half);
+    StochasticProductionRule rule(StochasticNote::Durations::quarter);
     rule.addEntry(entry);
 }
 

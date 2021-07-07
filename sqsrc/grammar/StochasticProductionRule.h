@@ -27,7 +27,11 @@ public:
 
 inline double 
 StochasticProductionRuleEntry::duration() const {
-    return .5;
+    double ret = 0;
+    for (auto note : rhsProducedNotes) {
+        ret += note.timeDuration();
+    }
+    return ret;
 }
 
 /**

@@ -16,7 +16,7 @@ struct Module;
 using Module = ::rack::engine::Module;
 
 template <class TBase>
-class GMRDescription : public IComposite {
+class GMR2Description : public IComposite {
 public:
     Config getParam(int i) override;
     int getNumParams() override;
@@ -25,11 +25,11 @@ public:
 /**
  */
 template <class TBase>
-class GMR : public TBase {
+class GMR2 : public TBase {
 public:
-    GMR(Module* module) : TBase(module), inputClockProcessing(true) {
+    GMR2(Module* module) : TBase(module), inputClockProcessing(true) {
     }
-    GMR() : TBase(), inputClockProcessing(true) {
+    GMR2() : TBase(), inputClockProcessing(true) {
     }
     void setSampleRate(float rate) {
         reciprocalSampleRate = 1 / rate;
@@ -78,7 +78,7 @@ private:
 };
 
 template <class TBase>
-inline void GMR<TBase>::init() {
+inline void GMR2<TBase>::init() {
     StochasticGrammarDictionary::Grammar grammar = StochasticGrammarDictionary::getGrammar(0);
     gtg = std::make_shared<GenerativeTriggerGenerator>(
         AudioMath::random(),
@@ -88,7 +88,7 @@ inline void GMR<TBase>::init() {
 }
 
 template <class TBase>
-inline void GMR<TBase>::step() {
+inline void GMR2<TBase>::step() {
     bool outClock = false;
     float inClock = TBase::inputs[CLOCK_INPUT].getVoltage(0);
     inputClockProcessing.go(inClock);
@@ -100,17 +100,17 @@ inline void GMR<TBase>::step() {
 }
 
 template <class TBase>
-int GMRDescription<TBase>::getNumParams() {
-    return GMR<TBase>::NUM_PARAMS;
+int GMR2Description<TBase>::getNumParams() {
+    return GMR2<TBase>::NUM_PARAMS;
 }
 
 template <class TBase>
-inline IComposite::Config GMRDescription<TBase>::getParam(int i) {
+inline IComposite::Config GMR2Description<TBase>::getParam(int i) {
     //   const float numWaves = (float)Basic<TBase>::Waves::END;
     //   const float defWave = (float)Basic<TBase>::Waves::SIN;
     Config ret(0, 1, 0, "");
     switch (i) {
-        case GMR<TBase>::DUMMY_PARAM:
+        case GMR2<TBase>::DUMMY_PARAM:
             ret = {0, 1, 0, "dummy"};
             break;
         default:

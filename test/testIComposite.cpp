@@ -1,57 +1,50 @@
-#include "TestComposite.h"
-#include "Blank.h"
-#include "ChaosKitty.h"
-#include "CHB.h"
-#include "ColoredNoise.h"
+#include <set>
 
+#include "Basic.h"
+#include "Blank.h"
+#include "CHB.h"
+#include "ChaosKitty.h"
+#include "ColoredNoise.h"
+#include "Compressor.h"
+#include "Compressor2.h"
+#include "DividerX.h"
+#include "DrumTrigger.h"
+#include "F2_Poly.h"
+#include "Filt.h"
 #include "FrequencyShifter.h"
 #include "FunVCOComposite.h"
+#include "GMR.h"
+#include "GMR2.h"
+#include "Gray.h"
 #include "LFN.h"
 #include "LFNB.h"
-#include "Filt.h"
-#include "DrumTrigger.h"
-#include "Gray.h"
-#include "Mix8.h"
 #include "Mix4.h"
+#include "Mix8.h"
 #include "MixM.h"
 #include "MixStereo.h"
+#include "Samp.h"
 #include "Seq.h"
 #include "Seq4.h"
 #include "Shaper.h"
 #include "Slew4.h"
+#include "Sub.h"
 #include "Super.h"
 #include "TestComposite.h"
 #include "Tremolo.h"
 #include "VocalAnimator.h"
 #include "VocalFilter.h"
-#include "daveguide.h"
-#include "DividerX.h"
-#include "F2_Poly.h"
-#include "Samp.h"
-#include "GMR.h"
-
-
 #include "WVCO.h"
-#include "Basic.h"
-#include "Compressor.h"
-#include "Compressor2.h"
-
-#include "Sub.h"
-
 #include "asserts.h"
-#include <set>
-
+#include "daveguide.h"
 
 template <class Comp>
-inline static void test()
-{
+inline static void test() {
     std::shared_ptr<IComposite> comp = Comp::getDescription();
 
     std::set<std::string> names;
     assertEQ(comp->getNumParams(), Comp::NUM_PARAMS);
     assertGT(comp->getNumParams(), 0);
-    for (int i = 0; i < comp->getNumParams(); ++i)
-    {
+    for (int i = 0; i < comp->getNumParams(); ++i) {
         auto config = comp->getParam(i);
         assertLT(config.min, config.max);
         assertLE(config.def, config.max);
@@ -67,8 +60,7 @@ inline static void test()
     }
 }
 
-void testIComposite()
-{
+void testIComposite() {
     test<FunVCOComposite<TestComposite>>();
     test<LFN<TestComposite>>();
     test<VocalFilter<TestComposite>>();
@@ -81,7 +73,7 @@ void testIComposite()
     test<Tremolo<TestComposite>>();
     test<Super<TestComposite>>();
     test<ColoredNoise<TestComposite>>();
-//    test<EV3<TestComposite>>();
+    //    test<EV3<TestComposite>>();
     test<FrequencyShifter<TestComposite>>();
     test<VocalAnimator<TestComposite>>();
     test<Blank<TestComposite>>();
@@ -105,5 +97,5 @@ void testIComposite()
     test<F2_Poly<TestComposite>>();
     test<Samp<TestComposite>>();
     test<GMR<TestComposite>>();
-
+    test<GMR2<TestComposite>>();
 }

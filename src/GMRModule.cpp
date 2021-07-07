@@ -4,7 +4,7 @@
 #include "WidgetComposite.h"
 
 #ifdef _GMR
-#include "GMR.h"
+#include "GMR2.h"
 #include "ctrl/SqHelper.h"
 
 #include "ctrl/SqMenuItem.h"
@@ -12,7 +12,7 @@
 #include "ctrl/SqWidgets.h"
 
 
-using Comp = GMR<WidgetComposite>;
+using Comp = GMR2<WidgetComposite>;
 
 /**
  */
