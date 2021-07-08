@@ -27,7 +27,9 @@ public:
         addRule(rule);
     }
 
+    size_t size() const { return rules.size(); }
 private:
+// DO WE REALLY NEED MULTIMAP? maybe in future?
     // TODO: make unordered work
     //  std::unordered_multimap<StochasticNote, StochasticProductionRulePtr> map;
     std::multimap<StochasticNote, StochasticProductionRulePtr> rules;

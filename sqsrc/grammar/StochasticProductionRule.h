@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SqLog.h"
 #include "StochasticNote.h"
 
 #include "asserts.h"
@@ -25,10 +26,12 @@ public:
         return std::make_shared<StochasticProductionRuleEntry>();
     }
 
-    bool isValid() const { return probabilty > 0 && probabilty <= 1; }
+    bool isValid() const { return probabilty > 0 && probabilty <= 1 && !rhsProducedNotes.empty(); }
 
     // TODO: make this int?
     double duration() const;
+
+    void _dump() const;
 };
 
 inline double 
@@ -39,6 +42,15 @@ StochasticProductionRuleEntry::duration() const {
     }
     return ret;
 }
+
+inline void 
+StochasticProductionRuleEntry::_dump() const {
+    SQINFO("Entry p=%f notes:");
+    for (auto note : rhsProducedNotes) {
+        SQINFO("  note %d", note.duration);
+    }
+}
+
 
 /**
  *
@@ -63,7 +75,6 @@ public:
     };
 
     StochasticProductionRule(const StochasticNote& n);
-
     StochasticProductionRule() = delete;
     StochasticProductionRule(const StochasticProductionRule&) = delete;
     const StochasticProductionRule& operator = (const StochasticProductionRule&) = delete;
@@ -83,12 +94,15 @@ public:
    // static void evaluate(EvaluationState& es, const StochasticNote& note);
     static void evaluate(EvaluationState& es, const StochasticProductionRulePtr);
     const StochasticNote lhs;
+
+    static bool isGrammarValid(const StochasticGrammar& grammar);
+    bool isRuleValid() const;
+    void _dump() const;
 private:
-//std::vector<StochasticNote>
- //   static int _evaluateRule(const StochasticProductionRule& rule, float random);
     static std::vector<StochasticNote>*  _evaluateRule(const StochasticProductionRule& rule, float random);
-   // const StochasticNote lhs;
     std::vector<StochasticProductionRuleEntryPtr> entries;
+
+    static bool isGrammarValidSub(const StochasticGrammar& grammar, StochasticProductionRulePtr nextRule, int& rulesHit);
 };
 
 inline

@@ -48,17 +48,11 @@ public:
 
     void writeSymbol(const StochasticNote& sym) override
     {
-       // assert(false);
-      //  keys.push_back(key);
         notes.push_back(sym);
     }
 
     size_t getNumSymbols()
     {
-        //printf("final keys: ");
-       // for (size_t i = 0; i< keys.size(); ++i) printf("%s, ", ProductionRuleKeys::toString(keys[i]));
-       // printf("\n");
-      //  return (int)keys.size();
         return notes.size();
     }
 private:
@@ -68,17 +62,16 @@ private:
 
 
 static StochasticGrammar getGrammar() {
- //   assert(false);
- //   return StochasticGrammar();
     StochasticGrammar gmr;
 
-
     auto rootRule = std::make_shared<StochasticProductionRule>(StochasticDisplayNote(StochasticDisplayNote::Durations::half));
+    assert(rootRule->isRuleValid());
     auto entry = StochasticProductionRuleEntry::make();
     entry->rhsProducedNotes.push_back(StochasticNote(StochasticDisplayNote::Durations::quarter));
     entry->rhsProducedNotes.push_back(StochasticNote(StochasticDisplayNote::Durations::quarter));
     entry->probabilty = .5;
     rootRule->addEntry(entry);
+    assert(rootRule->isRuleValid());
     gmr.addRootRule(rootRule);
    // auto rule = std::make_shared<StochasticProductionRule>(StochasticNote(StochasticNote::Durations::half));
 
@@ -89,23 +82,14 @@ static StochasticGrammar getGrammar() {
 //static void testGrammarSub(INITFN f)
 static void testGrammarSub(const StochasticGrammar* grammar)
 {
-#if 1
-   // GKEY init = f();
-    // TODO: put something in this grammar
-   //     std::vector<StochasticProductionRulePtr> grammar;
-
-
-
-            // TODO: can we make a verion of is grammar valid? I think so
-  //  bool b = ProductionRule::isGrammarValid(rules, numRules, init);
-  //  assert(b);
+   bool b = StochasticProductionRule::isGrammarValid(*grammar);
+   assert(b);
 
     TestEvaluator es(AudioMath::random());
     es.grammar = grammar;
 
     StochasticProductionRule::evaluate(es, es.grammar->getRootRule());   
     assert(es.getNumSymbols() > 0);
-#endif
 }
 
 static void testGrammar1() {

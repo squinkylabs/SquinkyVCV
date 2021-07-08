@@ -1,12 +1,12 @@
 
 #include "StochasticProductionRule.h"
 
+#include "SqLog.h"
 #include "StochasticGrammar2.h"
 
 //  static std::vector<StochasticNote>&  _evaluateRule(const StochasticProductionRule& rule, float random);
 std::vector<StochasticNote>* StochasticProductionRule::_evaluateRule(const StochasticProductionRule& rule, float random) {
     assert(random >= 0 && random <= 1);
-
 
     for (auto it = rule.entries.begin(); it != rule.entries.end(); ++it) {
         //printf("prob[%d] is %d\n", i,  rule.entries[i].probability);
@@ -41,7 +41,7 @@ void StochasticProductionRule::evaluate(EvaluationState& es, const StochasticPro
         //printf("production rule #%d terminated\n", ruleToEval);
         //printf("rule terminated! execute code %s\n",  ProductionRuleKeys::toString(code));
 
-      //  assert(false);  /// what do we do now? below is old
+        //  assert(false);  /// what do we do now? below is old
         es.writeSymbol(ruleToEval->lhs);
     } else {
         //printf("production rule #%d expanded to %d\n", ruleToEval, result);
@@ -61,4 +61,76 @@ void StochasticProductionRule::evaluate(EvaluationState& es, const StochasticPro
         }
         //printf("done expanding %d\n
     }
+}
+
+bool StochasticProductionRule::isRuleValid() const {
+    if (this->lhs.duration < 1) {
+        SQINFO("zero duration rule");
+        return false;
+    }
+    assert(false);
+    return false;
+}
+
+void StochasticProductionRule::_dump() const {
+    assert(this);
+    SQINFO("dump rule, lhs dur=%d", this->lhs.duration);
+    for (auto entry : this->entries) {
+       // StochasticProductionRuleEntryPtr e = entry;
+        entry->_dump();
+    }
+    
+}
+
+bool StochasticProductionRule::isGrammarValidSub(const StochasticGrammar& grammar, StochasticProductionRulePtr rule, int& rulesHit) {
+    assert(rule);
+
+    SQINFO("enteer sub rule = %p", rule.get());
+    if (!rule->isRuleValid()) {
+        SQINFO("invalid rule");
+        rule->_dump();
+        return false;
+    }
+    rulesHit++;
+    auto& entries = rule->entries;
+    for (auto entry : entries) {
+        auto notes = entry->rhsProducedNotes;
+        for (auto note : notes) {
+            auto nextRule = grammar.getRule(note);
+            if (!nextRule) {
+                SQINFO("found a note with no rule");
+                return false;
+            }
+            if (nextRule.get() == rule.get()) {
+                SQINFO("grammar has loop");
+                return false;
+            }
+            if (!isGrammarValidSub(grammar, nextRule, rulesHit)) {
+                SQINFO("found a bad rule");
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool StochasticProductionRule::isGrammarValid(const StochasticGrammar& grammar) {
+    auto nextRule = grammar.getRootRule();
+    if (!nextRule) {
+        SQINFO("grammar has no root");
+        return false;
+    }
+
+    int rulesHit = 1;
+    bool ok = isGrammarValidSub(grammar, nextRule, rulesHit);
+    if (!ok) {
+        return false;
+    }
+
+    if (rulesHit != grammar.size()) {
+        SQINFO("didn't hit all rules");
+        return false;
+    }
+
+    return true;
 }
