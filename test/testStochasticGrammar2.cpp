@@ -1,37 +1,40 @@
+#include "StochasticGrammar2.h"
 #include "StochasticNote.h"
 #include "StochasticProductionRule.h"
 #include "asserts.h"
 
 static void test0() {
-    StochasticNote n(StochasticNote::Durations::half);
-    assertEQnp(n.duration, StochasticNote::Durations::half);
-    assertEQnp(n.tuple, StochasticNote::Tuples::none);
+    StochasticDisplayNote n(StochasticDisplayNote::Durations::half);
+    assertEQnp(n.duration, StochasticDisplayNote::Durations::half);
+    assertEQnp(n.tuple, StochasticDisplayNote::Tuples::none);
 
-    StochasticNote n2(StochasticNote::Durations::eighth, StochasticNote::Tuples::triplet);
-    assertEQnp(n2.duration, StochasticNote::Durations::eighth);
-    assertEQnp(n2.tuple, StochasticNote::Tuples::triplet);
+    StochasticDisplayNote n2(StochasticDisplayNote::Durations::eighth, StochasticDisplayNote::Tuples::triplet);
+    assertEQnp(n2.duration, StochasticDisplayNote::Durations::eighth);
+    assertEQnp(n2.tuple, StochasticDisplayNote::Tuples::triplet);
 }
 
-static void testNoteDuration(const StochasticNote::Durations dur, double expectedDur) {
-    StochasticNote n(dur);
+static void testNoteDuration(const StochasticDisplayNote::Durations dur, double expectedDur) {
+    StochasticDisplayNote n(dur);
     assertEQ(n.timeDuration(), expectedDur);
 }
 
 static void testNoteDurations() {
-    testNoteDuration(StochasticNote::Durations::half, .5);
-    testNoteDuration(StochasticNote::Durations::quarter, .25);
-    testNoteDuration(StochasticNote::Durations::eighth, .125);
-    testNoteDuration(StochasticNote::Durations::sixteenth, .25 * .25);
-    testNoteDuration(StochasticNote::Durations::thirtysecond, .5 * .25 * .25);
+    testNoteDuration(StochasticDisplayNote::Durations::half, .5);
+    testNoteDuration(StochasticDisplayNote::Durations::quarter, .25);
+    testNoteDuration(StochasticDisplayNote::Durations::eighth, .125);
+    testNoteDuration(StochasticDisplayNote::Durations::sixteenth, .25 * .25);
+    testNoteDuration(StochasticDisplayNote::Durations::thirtysecond, .5 * .25 * .25);
 }
 
 static void test1() {
     StochasticProductionRuleEntryPtr entry = StochasticProductionRuleEntry::make();
-    entry->rhsProducedNotes.push_back(StochasticNote::Durations::eighth);
-    entry->rhsProducedNotes.push_back(StochasticNote::Durations::eighth);
+    entry->rhsProducedNotes.push_back(StochasticNote(StochasticDisplayNote::Durations::eighth));
+    entry->rhsProducedNotes.push_back(StochasticNote(StochasticDisplayNote::Durations::eighth));
     entry->probabilty = .1;
 
-    StochasticProductionRule rule(StochasticNote::Durations::quarter);
+    StochasticDisplayNote dn = StochasticDisplayNote::Durations::quarter;
+    StochasticNote n(dn);
+    StochasticProductionRule rule(n);
     rule.addEntry(entry);
 }
 
@@ -43,30 +46,54 @@ public:
     {
     }
 
-    void writeSymbol(int fakeKey) override
+    void writeSymbol(const StochasticNote& sym) override
     {
+       // assert(false);
       //  keys.push_back(key);
+        notes.push_back(sym);
     }
 
-    int getNumSymbols()
+    size_t getNumSymbols()
     {
         //printf("final keys: ");
        // for (size_t i = 0; i< keys.size(); ++i) printf("%s, ", ProductionRuleKeys::toString(keys[i]));
        // printf("\n");
       //  return (int)keys.size();
-        return 0;
+        return notes.size();
     }
 private:
-   // std::vector<GKEY> keys;
+    std::vector<StochasticNote> notes;
 };
 
 
+
+static StochasticGrammar getGrammar() {
+ //   assert(false);
+ //   return StochasticGrammar();
+    StochasticGrammar gmr;
+
+
+    auto rootRule = std::make_shared<StochasticProductionRule>(StochasticDisplayNote(StochasticDisplayNote::Durations::half));
+    auto entry = StochasticProductionRuleEntry::make();
+    entry->rhsProducedNotes.push_back(StochasticNote(StochasticDisplayNote::Durations::quarter));
+    entry->rhsProducedNotes.push_back(StochasticNote(StochasticDisplayNote::Durations::quarter));
+    entry->probabilty = .5;
+    rootRule->addEntry(entry);
+    gmr.addRootRule(rootRule);
+   // auto rule = std::make_shared<StochasticProductionRule>(StochasticNote(StochasticNote::Durations::half));
+
+
+    return gmr;
+}
+
 //static void testGrammarSub(INITFN f)
-static void testGrammarSub()
+static void testGrammarSub(const StochasticGrammar* grammar)
 {
 #if 1
    // GKEY init = f();
-        std::vector<StochasticProductionRulePtr> grammar;
+    // TODO: put something in this grammar
+   //     std::vector<StochasticProductionRulePtr> grammar;
+
 
 
             // TODO: can we make a verion of is grammar valid? I think so
@@ -74,12 +101,17 @@ static void testGrammarSub()
   //  assert(b);
 
     TestEvaluator es(AudioMath::random());
-    es.rules = &grammar;
+    es.grammar = grammar;
 
-    StochasticProductionRule::evaluate(es, 0);      // assume first rule is root
-
+    StochasticProductionRule::evaluate(es, es.grammar->getRootRule());   
     assert(es.getNumSymbols() > 0);
 #endif
+}
+
+static void testGrammar1() {
+    auto grammar = getGrammar();
+    testGrammarSub(&grammar);
+
 }
 
 
@@ -87,5 +119,6 @@ void testStochasticGrammar2() {
     test0();
     testNoteDurations();
     test1();
-    testGrammarSub();
+    testGrammar1();
+    
 }

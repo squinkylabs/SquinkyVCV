@@ -19,7 +19,8 @@ public:
     {
     }
 
-    void writeSymbol(int fakeGKey) override
+   // void writeSymbol(int fakeGKey) override
+    void writeSymbol(const StochasticNote& note) override
     {
         // first: write out a trigger at "current delay"
         _buf->evt = TriggerSequencer::TRIGGER;
@@ -50,9 +51,9 @@ private:
 class GenerativeTriggerGenerator2
 {
 public:
-    GenerativeTriggerGenerator2(AudioMath::RandomUniformFunc r, std::vector<StochasticProductionRulePtr>* rules) :
+    GenerativeTriggerGenerator2(AudioMath::RandomUniformFunc r, const StochasticGrammar* grammar) :
         _r(r),
-        _rules(rules)
+        _grammar(grammar)
    //     _numRules(numRules),
    //     _initKey(initialState)
     {
@@ -66,9 +67,9 @@ public:
     }
 
 
-    void setGrammar(std::vector<StochasticProductionRulePtr>* rules)
+    void setGrammar(const StochasticGrammar* grammar)
     {
-        _rules = rules;
+        _grammar = grammar;
     //    _numRules = numRules;
      //   _initKey = initialState;
     }
@@ -90,14 +91,15 @@ private:
     TriggerSequencer * _seq;
     TriggerSequencer::Event _data[33];
     AudioMath::RandomUniformFunc _r;
-    std::vector<StochasticProductionRulePtr>* _rules;
+    const StochasticGrammar* _grammar;
+  //  std::vector<StochasticProductionRulePtr>* _rules;
   //  int _numRules;
    // GKEY _initKey;
     //
     void generate()
     {
         GTGEvaluator2 es(_r, _data);
-        es.rules = _rules;
+        es.grammar = _grammar;
      //   es.numRules = _numRules;
         StochasticProductionRule::evaluate(es, 0);      // let's assume 0 is the initial key
 

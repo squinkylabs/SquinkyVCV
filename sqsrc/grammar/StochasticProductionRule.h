@@ -8,6 +8,8 @@
 
 class StochasticProductionRuleEntry;
 class StochasticProductionRule;
+class StochasticGrammar;
+
 using StochasticProductionRuleEntryPtr = std::shared_ptr< StochasticProductionRuleEntry>;
 using StochasticProductionRulePtr = std::shared_ptr<StochasticProductionRule>;
 
@@ -24,6 +26,8 @@ public:
     }
 
     bool isValid() const { return probabilty > 0 && probabilty <= 1; }
+
+    // TODO: make this int?
     double duration() const;
 };
 
@@ -31,7 +35,7 @@ inline double
 StochasticProductionRuleEntry::duration() const {
     double ret = 0;
     for (auto note : rhsProducedNotes) {
-        ret += note.timeDuration();
+        ret += note.duration;
     }
     return ret;
 }
@@ -48,11 +52,12 @@ public:
         EvaluationState(AudioMath::RandomUniformFunc xr) : r(xr)
         {
         }
+        const StochasticGrammar* grammar = nullptr;
         // evaluation state needs access to all the rules
-        std::vector<StochasticProductionRulePtr>* rules = nullptr;     // from old stuff??
+      //  std::vector<StochasticProductionRulePtr>* rules = nullptr;     // from old stuff??
        // int numRules;
         AudioMath::RandomUniformFunc r;		//random number generator to use 
-        virtual void writeSymbol(int fakeGKEY)
+        virtual void writeSymbol(const StochasticNote& sym)
         {
         }
     };
@@ -75,10 +80,14 @@ public:
      * @param es has all the stuff in it, including all the rules
      * @param ruleToEval is the index of a prcduction rule in es to expand.
      **/
-    static void evaluate(EvaluationState& es, int ruleToEval);
-
-private:
+   // static void evaluate(EvaluationState& es, const StochasticNote& note);
+    static void evaluate(EvaluationState& es, const StochasticProductionRulePtr);
     const StochasticNote lhs;
+private:
+//std::vector<StochasticNote>
+ //   static int _evaluateRule(const StochasticProductionRule& rule, float random);
+    static std::vector<StochasticNote>*  _evaluateRule(const StochasticProductionRule& rule, float random);
+   // const StochasticNote lhs;
     std::vector<StochasticProductionRuleEntryPtr> entries;
 };
 
@@ -89,7 +98,7 @@ StochasticProductionRule::StochasticProductionRule(const StochasticNote& n) : lh
 inline void 
 StochasticProductionRule::addEntry(StochasticProductionRuleEntryPtr entry) {
     assert(entry->isValid());
-    assertEQ(entry->duration(), lhs.timeDuration());
+    assertEQ(entry->duration(), lhs.duration);
     entries.push_back(entry);
 }
 

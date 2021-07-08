@@ -1,7 +1,26 @@
 
 #pragma once
 
+class StochasticDisplayNote;
 class StochasticNote {
+public:
+    StochasticNote(int dur) : duration(dur) {}
+
+    // convenience constructor for existing tests
+    StochasticNote(const StochasticDisplayNote& n);
+    static const int ppq;
+    const int duration;
+
+    bool operator < (const StochasticNote& other) const;
+private:
+
+};
+
+/**
+ * I did this first. Now I won't want to use it as my funcdamental note type.
+ * But it might be useful later.
+ */
+class StochasticDisplayNote {
 public:
     enum class Durations {
         whole,
@@ -19,9 +38,12 @@ public:
         setputlet
     };
 
-    StochasticNote(Durations, Tuples);
-    StochasticNote(Durations);
-    StochasticNote() = delete;
+    StochasticDisplayNote(Durations, Tuples);
+    StochasticDisplayNote(Durations);
+    StochasticDisplayNote() = delete;
+
+  //  bool operator == (const StochasticNote& other) const;
+  //  size_t hash()const;
 
     // these copy constructors and such are ok, but let's
     // disable them unless we need them.
@@ -39,13 +61,13 @@ public:
 private:
 };
 
-inline StochasticNote::StochasticNote(Durations d, Tuples t) : duration(d), tuple(t) {
+inline StochasticDisplayNote::StochasticDisplayNote(Durations d, Tuples t) : duration(d), tuple(t) {
 }
 
-inline StochasticNote::StochasticNote(Durations d) : duration(d), tuple(Tuples::none) {
+inline StochasticDisplayNote::StochasticDisplayNote(Durations d) : duration(d), tuple(Tuples::none) {
 }
 
-inline double StochasticNote::timeDuration() const {
+inline double StochasticDisplayNote::timeDuration() const {
     double ret = 0;
     switch (duration) {
         case Durations::half:
