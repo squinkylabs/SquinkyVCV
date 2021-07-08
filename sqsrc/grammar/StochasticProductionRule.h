@@ -5,6 +5,7 @@
 
 #include "asserts.h"
 #include <memory>
+#include <set>
 #include <vector>
 
 class StochasticProductionRuleEntry;
@@ -27,16 +28,13 @@ public:
     }
 
     bool isValid() const { return probabilty > 0 && probabilty <= 1 && !rhsProducedNotes.empty(); }
-
-    // TODO: make this int?
-    double duration() const;
-
+    int duration() const;
     void _dump() const;
 };
 
-inline double 
+inline int 
 StochasticProductionRuleEntry::duration() const {
-    double ret = 0;
+    int ret = 0;
     for (auto note : rhsProducedNotes) {
         ret += note.duration;
     }
@@ -102,16 +100,19 @@ private:
     static std::vector<StochasticNote>*  _evaluateRule(const StochasticProductionRule& rule, float random);
     std::vector<StochasticProductionRuleEntryPtr> entries;
 
-    static bool isGrammarValidSub(const StochasticGrammar& grammar, StochasticProductionRulePtr nextRule, int& rulesHit);
+    static bool isGrammarValidSub(const StochasticGrammar& grammar, StochasticProductionRulePtr nextRule, std::set<size_t> & rulesHit);
 };
 
 inline
 StochasticProductionRule::StochasticProductionRule(const StochasticNote& n) : lhs(n) {
+    assert(lhs.duration > 0);
+    SQINFO("ctor of rule, pased %d, have %d", n.duration, lhs.duration);
 }
 
 inline void 
 StochasticProductionRule::addEntry(StochasticProductionRuleEntryPtr entry) {
     assert(entry->isValid());
+    SQINFO("add Entry, dur of ent = %d", entry->duration());
     assertEQ(entry->duration(), lhs.duration);
     entries.push_back(entry);
 }

@@ -1,15 +1,18 @@
 
 #pragma once
 
+#include <assert.h>
+
 class StochasticDisplayNote;
 class StochasticNote {
 public:
-    StochasticNote(int dur) : duration(dur) {}
-
-    // convenience constructor for existing tests
-    StochasticNote(const StochasticDisplayNote& n);
+    StochasticNote(int dur) : duration(dur) { assert(duration > 1); }
     static const int ppq;
     const int duration;
+
+    static StochasticNote half() { return StochasticNote(ppq*2);}
+    static StochasticNote quarter()  { return StochasticNote(ppq); }
+    static StochasticNote eighth() { return StochasticNote(ppq / 2);}
 
     bool operator < (const StochasticNote& other) const;
 private:

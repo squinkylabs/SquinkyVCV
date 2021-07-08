@@ -4,9 +4,11 @@
 #include "SqLog.h"
 #include "StochasticGrammar2.h"
 
-//  static std::vector<StochasticNote>&  _evaluateRule(const StochasticProductionRule& rule, float random);
+#include <set>
+
 std::vector<StochasticNote>* StochasticProductionRule::_evaluateRule(const StochasticProductionRule& rule, float random) {
     assert(random >= 0 && random <= 1);
+    assert(&rule != nullptr);
 
     for (auto it = rule.entries.begin(); it != rule.entries.end(); ++it) {
         //printf("prob[%d] is %d\n", i,  rule.entries[i].probability);
@@ -22,6 +24,7 @@ std::vector<StochasticNote>* StochasticProductionRule::_evaluateRule(const Stoch
 
 //  static void evaluate(EvaluationState& es, int ruleToEval);
 void StochasticProductionRule::evaluate(EvaluationState& es, const StochasticProductionRulePtr ruleToEval) {
+    assert(ruleToEval);
     // copied over stuff from old one
     //printf("\n evaluate called on rule #%d\n", ruleToEval);
     //  StochasticProductionRulePtr rule = (*es.rules)[ruleToEval];
@@ -57,7 +60,12 @@ void StochasticProductionRule::evaluate(EvaluationState& es, const StochasticPro
         //
         for (auto note : *result) {
             //printf("expanding rule #%d with %d\n", ruleToEval, *p);
-            evaluate(es, es.grammar->getRule(note));
+            auto rule = es.grammar->getRule(note);
+            if (!rule) {
+                SQINFO("leaving on terminal %d", note.duration);
+                return;
+            }
+            evaluate(es, rule);
         }
         //printf("done expanding %d\n
     }
@@ -68,8 +76,19 @@ bool StochasticProductionRule::isRuleValid() const {
         SQINFO("zero duration rule");
         return false;
     }
-    assert(false);
-    return false;
+    for (auto entry : entries) {
+        if (!entry->isValid()) {
+            SQINFO("bad entry");
+            entry->isValid();
+            return false;
+        }
+        if (entry->duration() != lhs.duration) {
+            SQINFO("entry mismatch %d vs %d", lhs.duration, entry->duration());
+            return false;
+        }
+    }
+
+    return true;
 }
 
 void StochasticProductionRule::_dump() const {
@@ -82,7 +101,7 @@ void StochasticProductionRule::_dump() const {
     
 }
 
-bool StochasticProductionRule::isGrammarValidSub(const StochasticGrammar& grammar, StochasticProductionRulePtr rule, int& rulesHit) {
+bool StochasticProductionRule::isGrammarValidSub(const StochasticGrammar& grammar, StochasticProductionRulePtr rule, std::set<size_t>& rulesHit) {
     assert(rule);
 
     SQINFO("enteer sub rule = %p", rule.get());
@@ -91,15 +110,17 @@ bool StochasticProductionRule::isGrammarValidSub(const StochasticGrammar& gramma
         rule->_dump();
         return false;
     }
-    rulesHit++;
+   // rulesHit++;
+   size_t x = (size_t)(void *)rule.get();
+   rulesHit.insert(x);
     auto& entries = rule->entries;
     for (auto entry : entries) {
         auto notes = entry->rhsProducedNotes;
         for (auto note : notes) {
             auto nextRule = grammar.getRule(note);
             if (!nextRule) {
-                SQINFO("found a note with no rule");
-                return false;
+                SQINFO("found a note entry with no rule %d. must be a terminal", note.duration);
+                return true;
             }
             if (nextRule.get() == rule.get()) {
                 SQINFO("grammar has loop");
@@ -121,14 +142,15 @@ bool StochasticProductionRule::isGrammarValid(const StochasticGrammar& grammar) 
         return false;
     }
 
-    int rulesHit = 1;
+    std::set<size_t> rulesHit;
+   // int rulesHit = 1;
     bool ok = isGrammarValidSub(grammar, nextRule, rulesHit);
     if (!ok) {
         return false;
     }
 
-    if (rulesHit != grammar.size()) {
-        SQINFO("didn't hit all rules");
+    if (rulesHit.size() != grammar.size()) {
+        SQINFO("didn't hit all rules g=%d found%d", grammar.size(), rulesHit);
         return false;
     }
 

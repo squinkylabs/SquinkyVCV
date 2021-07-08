@@ -28,14 +28,15 @@ static void testNoteDurations() {
 
 static void test1() {
     StochasticProductionRuleEntryPtr entry = StochasticProductionRuleEntry::make();
-    entry->rhsProducedNotes.push_back(StochasticNote(StochasticDisplayNote::Durations::eighth));
-    entry->rhsProducedNotes.push_back(StochasticNote(StochasticDisplayNote::Durations::eighth));
+    entry->rhsProducedNotes.push_back(StochasticNote::eighth());
+    entry->rhsProducedNotes.push_back(StochasticNote::eighth());
     entry->probabilty = .1;
+    assert(entry->isValid());
 
-    StochasticDisplayNote dn = StochasticDisplayNote::Durations::quarter;
-    StochasticNote n(dn);
-    StochasticProductionRule rule(n);
+
+    StochasticProductionRule rule(StochasticNote::quarter());
     rule.addEntry(entry);
+    assert(rule.isRuleValid());
 }
 
 
@@ -64,11 +65,11 @@ private:
 static StochasticGrammar getGrammar() {
     StochasticGrammar gmr;
 
-    auto rootRule = std::make_shared<StochasticProductionRule>(StochasticDisplayNote(StochasticDisplayNote::Durations::half));
+    auto rootRule = std::make_shared<StochasticProductionRule>(StochasticNote::half());
     assert(rootRule->isRuleValid());
     auto entry = StochasticProductionRuleEntry::make();
-    entry->rhsProducedNotes.push_back(StochasticNote(StochasticDisplayNote::Durations::quarter));
-    entry->rhsProducedNotes.push_back(StochasticNote(StochasticDisplayNote::Durations::quarter));
+    entry->rhsProducedNotes.push_back(StochasticNote::quarter());
+    entry->rhsProducedNotes.push_back(StochasticNote::quarter());
     entry->probabilty = .5;
     rootRule->addEntry(entry);
     assert(rootRule->isRuleValid());
