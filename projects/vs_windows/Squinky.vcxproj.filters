@@ -786,6 +786,9 @@
     <ClCompile Include="..\..\test\testStochasticGrammar2.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\sqsrc\grammar\StochasticProductionRule.cpp">
+      <Filter>Source Files\sqsrc\grammar</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

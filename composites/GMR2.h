@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "GenerativeTriggerGenerator.h"
+#include "GenerativeTriggerGenerator2.h"
 #include "IComposite.h"
 #include "ObjectCache.h"
 #include "TriggerOutput.h"
@@ -72,7 +72,7 @@ public:
 
 private:
     float reciprocalSampleRate = 0;
-    std::shared_ptr<GenerativeTriggerGenerator> gtg;
+    std::shared_ptr<GenerativeTriggerGenerator2> gtg;
     GateTrigger inputClockProcessing;
     TriggerOutput outputProcessing;
 };

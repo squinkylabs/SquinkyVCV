@@ -35,8 +35,57 @@ static void test1() {
     rule.addEntry(entry);
 }
 
+
+class TestEvaluator : public StochasticProductionRule::EvaluationState
+{
+public:
+    TestEvaluator(AudioMath::RandomUniformFunc xr) : StochasticProductionRule::EvaluationState(xr)
+    {
+    }
+
+    void writeSymbol(int fakeKey) override
+    {
+      //  keys.push_back(key);
+    }
+
+    int getNumSymbols()
+    {
+        //printf("final keys: ");
+       // for (size_t i = 0; i< keys.size(); ++i) printf("%s, ", ProductionRuleKeys::toString(keys[i]));
+       // printf("\n");
+      //  return (int)keys.size();
+        return 0;
+    }
+private:
+   // std::vector<GKEY> keys;
+};
+
+
+//static void testGrammarSub(INITFN f)
+static void testGrammarSub()
+{
+#if 1
+   // GKEY init = f();
+        std::vector<StochasticProductionRulePtr> grammar;
+
+
+            // TODO: can we make a verion of is grammar valid? I think so
+  //  bool b = ProductionRule::isGrammarValid(rules, numRules, init);
+  //  assert(b);
+
+    TestEvaluator es(AudioMath::random());
+    es.rules = &grammar;
+
+    StochasticProductionRule::evaluate(es, 0);      // assume first rule is root
+
+    assert(es.getNumSymbols() > 0);
+#endif
+}
+
+
 void testStochasticGrammar2() {
     test0();
     testNoteDurations();
     test1();
+    testGrammarSub();
 }
