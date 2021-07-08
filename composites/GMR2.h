@@ -60,7 +60,7 @@ public:
     /** Implement IComposite
      */
     static std::shared_ptr<IComposite> getDescription() {
-        return std::make_shared<GMRDescription<TBase>>();
+        return std::make_shared<GMR2Description<TBase>>();
     }
 
     /**
@@ -80,7 +80,7 @@ private:
 template <class TBase>
 inline void GMR2<TBase>::init() {
     StochasticGrammarDictionary::Grammar grammar = StochasticGrammarDictionary::getGrammar(0);
-    gtg = std::make_shared<GenerativeTriggerGenerator>(
+    gtg = std::make_shared<GenerativeTriggerGenerator2>(
         AudioMath::random(),
         grammar.rules,
         grammar.numRules,

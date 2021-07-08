@@ -363,8 +363,8 @@ int main(int argc, char** argv) {
 
     testFilter();
 
-    testStochasticGrammar();
-    testGMR();
+    //testStochasticGrammar();
+   // testGMR();
 
     // after testing all the components, test composites.
     testTremolo();

@@ -46,6 +46,7 @@ void StochasticProductionRule::evaluate(EvaluationState& es, const StochasticPro
 
         //  assert(false);  /// what do we do now? below is old
         es.writeSymbol(ruleToEval->lhs);
+        SQINFO("evaulate found terminal, writing");
     } else {
         //printf("production rule #%d expanded to %d\n", ruleToEval, result);
 
@@ -58,16 +59,19 @@ void StochasticProductionRule::evaluate(EvaluationState& es, const StochasticPro
         //  ProductionRuleKeys::breakDown(result, buffer);
         //   for (GKEY * p = buffer; *p != sg_invalid; ++p) {
         //
+        SQINFO("expanding %d into %d notes", ruleToEval->lhs.duration, result->size());
         for (auto note : *result) {
             //printf("expanding rule #%d with %d\n", ruleToEval, *p);
+         
             auto rule = es.grammar->getRule(note);
             if (!rule) {
-                SQINFO("leaving on terminal %d", note.duration);
-                return;
+                SQINFO("found a terminal in the results  %d", note.duration);
+                es.writeSymbol(note);
             }
-            evaluate(es, rule);
+            else {
+                evaluate(es, rule);
+            }
         }
-        //printf("done expanding %d\n
     }
 }
 

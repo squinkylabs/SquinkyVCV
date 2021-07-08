@@ -83,12 +83,14 @@ static StochasticGrammar getGrammar() {
 //static void testGrammarSub(INITFN f)
 static void testGrammarSub(const StochasticGrammar* grammar)
 {
+    SQINFO("--- test Grammar sub ----");
    bool b = StochasticProductionRule::isGrammarValid(*grammar);
    assert(b);
 
     TestEvaluator es(AudioMath::random());
     es.grammar = grammar;
 
+    SQINFO("--- test Grammar sub evaluating----");
     StochasticProductionRule::evaluate(es, es.grammar->getRootRule());   
     assert(es.getNumSymbols() > 0);
 }

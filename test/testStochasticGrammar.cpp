@@ -473,6 +473,7 @@ static void gtg1()
 
 void testStochasticGrammar()
 {
+    assert(false);      // obsolete
     test0();
     testAllKeys();
 
