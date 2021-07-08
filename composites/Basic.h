@@ -160,7 +160,10 @@ private:
     processFunction updatePitchFunc = &Basic<TBase>::nullFunc;
 
     void _updatePwm();
-    __attribute__((flatten)) void _updatePitch();
+#ifndef _MSC_VER
+    __attribute__((flatten))
+#endif
+    void _updatePitch();
     void _updatePitchNoFM();
     void updateBasePitch();
     void updateBasePwm();

@@ -98,6 +98,9 @@
     <ClCompile Include="..\..\sqsrc\clock\ClockMult.cpp" />
     <ClCompile Include="..\..\sqsrc\delay\FractionalDelay.cpp" />
     <ClCompile Include="..\..\sqsrc\grammar\StochasticGrammar.cpp" />
+    <ClCompile Include="..\..\sqsrc\grammar\StochasticGrammar2.cpp" />
+    <ClCompile Include="..\..\sqsrc\grammar\StochasticNote.cpp" />
+    <ClCompile Include="..\..\sqsrc\grammar\StochasticProductionRule.cpp" />
     <ClCompile Include="..\..\sqsrc\thread\ThreadClient.cpp" />
     <ClCompile Include="..\..\sqsrc\thread\ThreadServer.cpp" />
     <ClCompile Include="..\..\sqsrc\thread\ThreadSharedState.cpp" />
@@ -124,6 +127,7 @@
     <ClCompile Include="..\..\test\testHeadingTracker.cpp" />
     <ClCompile Include="..\..\test\testRegionPrune.cpp" />
     <ClCompile Include="..\..\test\testSampComposite.cpp" />
+    <ClCompile Include="..\..\test\testStochasticGrammar2.cpp" />
     <ClCompile Include="..\..\test\testStreamer.cpp" />
     <ClCompile Include="..\..\test\testWavThread.cpp" />
     <ClCompile Include="..\..\test\testx3.cpp" />

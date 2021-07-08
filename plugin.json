@@ -285,6 +285,15 @@
 			  ]
 		},
 		{
+			"slug": "squinkylabs-gmr",
+			"name": "gmr",
+			"disabled": false,
+			"description": "gmr",
+			"manualUrl": "https://github.com/squinkylabs/SquinkyVCV/blob/main/docs/compressor2.md",
+			"tags": [
+			  ]
+		},
+		{
 			"slug": "squinkylabs-testmodel",
 			"name": "Test",
 			"disabled": true,

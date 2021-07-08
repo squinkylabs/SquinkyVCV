@@ -36,6 +36,7 @@ inline bool isMask(float_4 m)
 //#define assert(_Expression) ((void)0)
 
 #define assertEQ(_Experssion1, _Expression2) ((void)0)
+#define assertEQnp(_Experssion1, _Expression2) ((void)0)
 #define assertNE(_Experssion1, _Expression2) ((void)0)
 #define assertLE(_Experssion1, _Expression2) ((void)0)
 #define assertLT(_Experssion1, _Expression2) ((void)0)
@@ -67,6 +68,11 @@ inline bool isMask(float_4 m)
     assert(false); }
 
 #define assertEQ(actual, expected) assertEQEx(actual, expected, "")
+
+// if the params are unprintable, you need to use this
+#define assertEQnp(actual, expected) if (actual != expected) { \
+    std::cout << "assertEq failed" << std::endl << std::flush; \
+     assert(false); }
 
 #define assertNEEx(actual, expected, msg) if (actual == expected) { \
     std::cout << "assertNE failed " << msg << " did not expect >" << \

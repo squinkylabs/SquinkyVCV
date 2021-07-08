@@ -783,6 +783,18 @@
     <ClCompile Include="..\..\test\testRegionPrune.cpp">
       <Filter>Source Files\test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\test\testStochasticGrammar2.cpp">
+      <Filter>Source Files\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqsrc\grammar\StochasticProductionRule.cpp">
+      <Filter>Source Files\sqsrc\grammar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqsrc\grammar\StochasticGrammar2.cpp">
+      <Filter>Source Files\sqsrc\grammar</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\sqsrc\grammar\StochasticNote.cpp">
+      <Filter>Source Files\sqsrc\grammar</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\dsp\third-party\falco\DspFilter.h">

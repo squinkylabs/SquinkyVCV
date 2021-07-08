@@ -61,7 +61,7 @@ static void testSchemaUpdate(float oldPitch, float newOctave, float newPitch) {
     assertLE(fraction, .5);
     assertGE(fraction, -.5);
 
-    assertEQ(comp.params[Comp::SCHEMA_PARAM].value, 1)  
+    assertEQ(comp.params[Comp::SCHEMA_PARAM].value, 1);
     assertEQ(octave, newOctave);
 
     assertClose(fraction, newPitch, .0001);
