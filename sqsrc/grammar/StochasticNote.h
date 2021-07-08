@@ -45,14 +45,6 @@ public:
     StochasticDisplayNote(Durations);
     StochasticDisplayNote() = delete;
 
-  //  bool operator == (const StochasticNote& other) const;
-  //  size_t hash()const;
-
-    // these copy constructors and such are ok, but let's
-    // disable them unless we need them.
-    // StochasticNote(const StochasticNote&) = delete;
-    // const StochasticNote& operator=(const StochasticNote&) = delete;
-
     const Durations duration;
     const Tuples tuple;
 

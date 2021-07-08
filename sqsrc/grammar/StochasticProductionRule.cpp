@@ -11,10 +11,8 @@ std::vector<StochasticNote>* StochasticProductionRule::_evaluateRule(const Stoch
     assert(&rule != nullptr);
 
     for (auto it = rule.entries.begin(); it != rule.entries.end(); ++it) {
-        //printf("prob[%d] is %d\n", i,  rule.entries[i].probability);
         StochasticProductionRuleEntryPtr entry = *it;
         if (entry->probabilty >= random) {
-            //printf("rule fired on code abs val=%d\n", code);
             return &entry->rhsProducedNotes;
         }
     }
@@ -22,47 +20,18 @@ std::vector<StochasticNote>* StochasticProductionRule::_evaluateRule(const Stoch
     return nullptr;
 }
 
-//  static void evaluate(EvaluationState& es, int ruleToEval);
 void StochasticProductionRule::evaluate(EvaluationState& es, const StochasticProductionRulePtr ruleToEval) {
     assert(ruleToEval);
-    // copied over stuff from old one
-    //printf("\n evaluate called on rule #%d\n", ruleToEval);
-    //  StochasticProductionRulePtr rule = (*es.rules)[ruleToEval];
-    // StochasticProductionRulePtr rule = es.grammar->getRule(ruleToEval);
+    assert(ruleToEval->isRuleValid());
 
-#ifdef _MSC_VER
-    // TODO: implement is valid?
-    //  assert(rule._isValid(ruleToEval));
-#endif
-    //
-    // _evaluateRule(*rule, es.r());
-    //  GKEY result = _evaluateRule(rule, es.r());
     auto result = _evaluateRule(*ruleToEval, es.r());
     if (!result)  // request to terminate recursion
     {
-        //  GKEY code = ruleToEval;		// our "real" terminal code is our table index
-        //printf("production rule #%d terminated\n", ruleToEval);
-        //printf("rule terminated! execute code %s\n",  ProductionRuleKeys::toString(code));
-
-        //  assert(false);  /// what do we do now? below is old
         es.writeSymbol(ruleToEval->lhs);
         SQINFO("evaulate found terminal, writing");
     } else {
-        //printf("production rule #%d expanded to %d\n", ruleToEval, result);
-
-        // need to expand,then eval all of the expanded codes
-
-        //  GKEY buffer[ProductionRuleKeys::bufferSize];
-        // TOOD: reasonable size
-        //  StochasticNote buffer[10];
-
-        //  ProductionRuleKeys::breakDown(result, buffer);
-        //   for (GKEY * p = buffer; *p != sg_invalid; ++p) {
-        //
         SQINFO("expanding %d into %d notes", ruleToEval->lhs.duration, result->size());
-        for (auto note : *result) {
-            //printf("expanding rule #%d with %d\n", ruleToEval, *p);
-         
+        for (auto note : *result) {         
             auto rule = es.grammar->getRule(note);
             if (!rule) {
                 SQINFO("found a terminal in the results  %d", note.duration);
@@ -114,7 +83,7 @@ bool StochasticProductionRule::isGrammarValidSub(const StochasticGrammar& gramma
         rule->_dump();
         return false;
     }
-   // rulesHit++;
+
    size_t x = (size_t)(void *)rule.get();
    rulesHit.insert(x);
     auto& entries = rule->entries;
@@ -147,7 +116,6 @@ bool StochasticProductionRule::isGrammarValid(const StochasticGrammar& grammar) 
     }
 
     std::set<size_t> rulesHit;
-   // int rulesHit = 1;
     bool ok = isGrammarValidSub(grammar, nextRule, rulesHit);
     if (!ok) {
         return false;

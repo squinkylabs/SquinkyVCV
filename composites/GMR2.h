@@ -79,12 +79,11 @@ private:
 
 template <class TBase>
 inline void GMR2<TBase>::init() {
-    StochasticGrammarDictionary::Grammar grammar = StochasticGrammarDictionary::getGrammar(0);
+   // StochasticGrammarDictionary::Grammar grammar = StochasticGrammarDictionary::getGrammar(0);
+    StochasticGrammarPtr grammar = StochasticGrammar::getDemoGrammar();
     gtg = std::make_shared<GenerativeTriggerGenerator2>(
         AudioMath::random(),
-        grammar.rules,
-        grammar.numRules,
-        grammar.firstRule);
+        grammar);
 }
 
 template <class TBase>

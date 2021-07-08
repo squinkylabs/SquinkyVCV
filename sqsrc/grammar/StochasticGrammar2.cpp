@@ -20,3 +20,9 @@ void StochasticGrammar::addRule(StochasticProductionRulePtr rule) {
     std::pair<StochasticNote, StochasticProductionRulePtr> value(n, rule);
     rules.insert(value);
 }
+
+
+StochasticGrammarPtr StochasticGrammar::getDemoGrammar() {
+    SQINFO("getting fake grammar");
+    return std::make_shared<StochasticGrammar>();
+}

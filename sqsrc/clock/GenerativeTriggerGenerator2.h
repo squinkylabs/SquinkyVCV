@@ -2,6 +2,7 @@
 
 #include "AudioMath.h"
 #include "StochasticProductionRule.h"
+#include "StochasticGrammar2.h"
 #include "TriggerSequencer.h"
 
 
@@ -51,11 +52,9 @@ private:
 class GenerativeTriggerGenerator2
 {
 public:
-    GenerativeTriggerGenerator2(AudioMath::RandomUniformFunc r, const StochasticGrammar* grammar) :
+    GenerativeTriggerGenerator2(AudioMath::RandomUniformFunc r, StochasticGrammarPtr grammar) :
         _r(r),
         _grammar(grammar)
-   //     _numRules(numRules),
-   //     _initKey(initialState)
     {
         _data[0].delay = 0;
         _data[0].evt = TriggerSequencer::END;
@@ -67,7 +66,7 @@ public:
     }
 
 
-    void setGrammar(const StochasticGrammar* grammar)
+    void setGrammar(StochasticGrammarPtr grammar)
     {
         _grammar = grammar;
     //    _numRules = numRules;
@@ -91,16 +90,11 @@ private:
     TriggerSequencer * _seq;
     TriggerSequencer::Event _data[33];
     AudioMath::RandomUniformFunc _r;
-    const StochasticGrammar* _grammar;
-  //  std::vector<StochasticProductionRulePtr>* _rules;
-  //  int _numRules;
-   // GKEY _initKey;
-    //
+    StochasticGrammarPtr _grammar;      // who owns this? bts
     void generate()
     {
         GTGEvaluator2 es(_r, _data);
         es.grammar = _grammar;
-     //   es.numRules = _numRules;
         StochasticProductionRule::evaluate(es, 0);      // let's assume 0 is the initial key
 
         es.writeEnd();

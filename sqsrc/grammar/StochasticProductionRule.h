@@ -14,7 +14,7 @@ class StochasticGrammar;
 
 using StochasticProductionRuleEntryPtr = std::shared_ptr< StochasticProductionRuleEntry>;
 using StochasticProductionRulePtr = std::shared_ptr<StochasticProductionRule>;
-
+using StochasticGrammarPtr = std::shared_ptr<StochasticGrammar>;
 /**
  * 
  */
@@ -62,10 +62,7 @@ public:
         EvaluationState(AudioMath::RandomUniformFunc xr) : r(xr)
         {
         }
-        const StochasticGrammar* grammar = nullptr;
-        // evaluation state needs access to all the rules
-      //  std::vector<StochasticProductionRulePtr>* rules = nullptr;     // from old stuff??
-       // int numRules;
+        StochasticGrammarPtr grammar;
         AudioMath::RandomUniformFunc r;		//random number generator to use 
         virtual void writeSymbol(const StochasticNote& sym)
         {

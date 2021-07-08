@@ -8,8 +8,11 @@
 
 class StochasticProductionRule;
 class StochasticNote;
+class StochasticGrammar;
 
 using StochasticProductionRulePtr = std::shared_ptr<StochasticProductionRule>;
+using StochasticGrammarPtr = std::shared_ptr<StochasticGrammar>;
+
 /**
  * class that holds an entire grammar
  */
@@ -27,6 +30,8 @@ public:
         addRule(rule);
     }
 
+    static StochasticGrammarPtr getDemoGrammar();
+
     size_t size() const { return rules.size(); }
 private:
 // DO WE REALLY NEED MULTIMAP? maybe in future?
@@ -35,3 +40,4 @@ private:
     std::multimap<StochasticNote, StochasticProductionRulePtr> rules;
     StochasticProductionRulePtr rootRule;
 };
+
