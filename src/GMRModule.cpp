@@ -11,6 +11,8 @@
 #include "ctrl/SqTooltips.h"
 #include "ctrl/SqWidgets.h"
 
+#include "grammar/GrammarRulePanel.h"
+
 
 using Comp = GMR2<WidgetComposite>;
 
@@ -94,36 +96,23 @@ GMRWidget::GMRWidget(GMRModule * module)
     }
     #endif
 
-    /*
-      addInput(createInput<PJ301MPort>(
-        Vec(jackX, jackY + 0 * dy),
-        module,
-        Comp::PWM_INPUT));
-        */
+
+    const Vec gmrPos = Vec(10, 10);
+    const Vec gmrSize = Vec(110, 340);
+    GrammarRulePanel* p = new GrammarRulePanel(gmrPos, gmrSize);
+    addChild(p);
 
     addInput(createInput<PJ301MPort>(
-        Vec(40, 200), 
+        Vec(40, 340), 
         module,
         Comp::CLOCK_INPUT));
     addOutput(createOutput<PJ301MPort>(
-        Vec(40, 300), 
+        Vec(90, 340), 
         module,
         Comp::TRIGGER_OUTPUT));
-
-
-    // screws
-    #if 0
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, 0)));
-    addChild(Widget::create<ScrewSilver>(Vec(RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    addChild(Widget::create<ScrewSilver>(Vec(box.size.x - 2 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT - RACK_GRID_WIDTH)));
-    #endif
 }
 
-// Model *modelBasicModule = createModel<BasicModule, BasicWidget>("squinkylabs-basic");
-
 Model *modelGMRModule = createModel<GMRModule, GMRWidget>("squinkylabs-gmr");
-   
 
 #endif
 
