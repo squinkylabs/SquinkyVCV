@@ -20,7 +20,7 @@ inline void
 FakeScreen::draw(const DrawArgs &args) {
     auto vg = args.vg;
 
-    nvgScissor(vg, 0, 0, this->box.size.x, this->box.size.y);
+  //  nvgScissor(vg, 0, 0, this->box.size.x, this->box.size.y);
 
     NVGcolor color = which ? nvgRGB(0xf0, 0, 0) : nvgRGB(0, 0xf0, 0);
     SqGfx::filledRect(
@@ -30,7 +30,7 @@ FakeScreen::draw(const DrawArgs &args) {
         0,
         this->box.size.x,
         this->box.size.y);
-    OpaqueWidget::draw(args);
+   
 
     if (which) {
         SqGfx::drawText2(vg, 5, 15, "RED ONE", 18, SqHelper::COLOR_BLACK);
@@ -39,4 +39,5 @@ FakeScreen::draw(const DrawArgs &args) {
         SqGfx::drawText2(vg, 5, 15, "GREEN ONE", 18, SqHelper::COLOR_SQUINKY);
         SqGfx::drawText2(vg, 5, 40, "GREEN ONE line 2", 18, SqHelper::COLOR_SQUINKY);
     }
+     OpaqueWidget::draw(args);
 }

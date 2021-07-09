@@ -50,8 +50,6 @@ GMRModule::GMRModule()
     SqHelper::setupParams(icomp, this); 
     grammar = StochasticGrammar::getDemoGrammar();
 
-  //  SqTooltips::changeParamQuantity<WaveformParamQuantity>(this, Comp::WAVEFORM_PARAM);
-
     onSampleRateChange();
     comp->init();
 }
@@ -94,7 +92,7 @@ GMRWidget::GMRWidget(GMRModule * module)
     const Vec gmrPos = Vec(0, 0);
     const Vec gmrSize = Vec(135, 340);
  //   GrammarRulePanel* p = new GrammarRulePanel(gmrPos, gmrSize, module->grammar, module);
-    Widget* p = new FakeScreen(gmrPos, gmrSize, true);
+    Widget* p = new ScreenHolder(gmrPos, gmrSize);
     addChild(p);
 
     addInput(createInput<PJ301MPort>(
