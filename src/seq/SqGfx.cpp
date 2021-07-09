@@ -84,7 +84,6 @@ void SqGfx::drawText(NVGcontext *vg, float x, float y, const char* text, int siz
  void SqGfx::drawText2(NVGcontext *vg, float x, float y, const char* text, int size, NVGcolor color) {
     int f = ::rack::appGet()->window->uiFont->handle;
 
-    // It's a hack to hard code color. Change it later.
     nvgFillColor(vg, color);
     nvgFontFaceId(vg, f);
     nvgFontSize(vg, size);

@@ -22,8 +22,8 @@ GrammarRulePanel::GrammarRulePanel(const Vec &pos, const Vec &size, StochasticGr
 
     p->box.size.x = 50;  // width
     p->box.size.y = 22;
-    p->box.pos.x = 20;
-    p->box.pos.y = 20;
+    p->box.pos.x = 30;
+    p->box.pos.y = 30;
 
     p->text = "LP";
     p->setLabels({"LP", "BP", "HP", "N"});
@@ -56,16 +56,8 @@ void GrammarRulePanel::draw(const DrawArgs &args) {
         0,
         this->box.size.x,
         this->box.size.y);
-#if 0
-    SqGfx::filledRect(
-        vg,
-        UIPrefs::NOTE_COLOR,
-        0, 0,
-        10, 10);
-#endif
-
     SqStream str;
     str.add(ruleDuration);
-    SqGfx::drawText2(vg, 5, 15, str.str().c_str(), 14, SqHelper::COLOR_WHITE);
+    SqGfx::drawText2(vg, 5, 15, str.str().c_str(), 12, SqHelper::COLOR_WHITE);
     OpaqueWidget::draw(args);
 }
