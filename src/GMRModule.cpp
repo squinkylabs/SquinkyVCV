@@ -30,6 +30,7 @@ public:
     void onSampleRateChange() override;
 
     std::shared_ptr<Comp> comp;
+    StochasticGrammarPtr grammar;
 private:
 };
 
@@ -45,6 +46,7 @@ GMRModule::GMRModule()
     comp = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
+    grammar = StochasticGrammar::getDemoGrammar();
 
   //  SqTooltips::changeParamQuantity<WaveformParamQuantity>(this, Comp::WAVEFORM_PARAM);
 
@@ -99,7 +101,7 @@ GMRWidget::GMRWidget(GMRModule * module)
 
     const Vec gmrPos = Vec(10, 10);
     const Vec gmrSize = Vec(110, 340);
-    GrammarRulePanel* p = new GrammarRulePanel(gmrPos, gmrSize);
+    GrammarRulePanel* p = new GrammarRulePanel(gmrPos, gmrSize, module->grammar);
     addChild(p);
 
     addInput(createInput<PJ301MPort>(

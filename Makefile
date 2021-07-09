@@ -53,6 +53,7 @@ SOURCES += $(wildcard midi/**/*.cpp)
 SOURCES += $(wildcard src/third-party/*.cpp)
 SOURCES += $(wildcard src/seq/*.cpp)
 SOURCES += $(wildcard src/kbd/*.cpp)
+SOURCES += $(wildcard src/grammar/*.cpp)
 SOURCES += $(wildcard dsp/third-party/flac/src/*.c)
 # SOURCES += dsp/third-party/flac/src/*.c
 
