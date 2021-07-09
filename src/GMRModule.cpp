@@ -88,20 +88,10 @@ GMRWidget::GMRWidget(GMRModule * module)
 {
     setModule(module);
     SqHelper::setPanel(this, "res/blank_panel.svg");
-#if 0
-    box.size = Vec(6 * RACK_GRID_WIDTH, RACK_GRID_HEIGHT);
-    {
-        SVGPanel *panel = new SVGPanel();
-        panel->box.size = box.size;
-        panel->setBackground(SVG::load(SqHelper::assetPlugin(pluginInstance, "res/blank_panel.svg")));
-        addChild(panel);
-    }
-    #endif
-
 
     const Vec gmrPos = Vec(10, 10);
     const Vec gmrSize = Vec(110, 340);
-    GrammarRulePanel* p = new GrammarRulePanel(gmrPos, gmrSize, module->grammar);
+    GrammarRulePanel* p = new GrammarRulePanel(gmrPos, gmrSize, module->grammar, module);
     addChild(p);
 
     addInput(createInput<PJ301MPort>(

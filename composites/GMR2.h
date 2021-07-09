@@ -39,7 +39,12 @@ public:
     void init();
 
     enum ParamIds {
-        DUMMY_PARAM,
+        DUMMY_PARAM1,
+        DUMMY_PARAM2,
+        DUMMY_PARAM3,
+        DUMMY_PARAM4,
+        DUMMY_PARAM5,
+        DUMMY_PARAM6,
         NUM_PARAMS
     };
 
@@ -79,7 +84,7 @@ private:
 
 template <class TBase>
 inline void GMR2<TBase>::init() {
-   // StochasticGrammarDictionary::Grammar grammar = StochasticGrammarDictionary::getGrammar(0);
+    // StochasticGrammarDictionary::Grammar grammar = StochasticGrammarDictionary::getGrammar(0);
     StochasticGrammarPtr grammar = StochasticGrammar::getDemoGrammar();
     gtg = std::make_shared<GenerativeTriggerGenerator2>(
         AudioMath::random(),
@@ -105,12 +110,25 @@ int GMR2Description<TBase>::getNumParams() {
 
 template <class TBase>
 inline IComposite::Config GMR2Description<TBase>::getParam(int i) {
-    //   const float numWaves = (float)Basic<TBase>::Waves::END;
-    //   const float defWave = (float)Basic<TBase>::Waves::SIN;
     Config ret(0, 1, 0, "");
     switch (i) {
-        case GMR2<TBase>::DUMMY_PARAM:
-            ret = {0, 1, 0, "dummy"};
+        case GMR2<TBase>::DUMMY_PARAM1:
+            ret = {0, 1, 0, "dummy1"};
+            break;
+        case GMR2<TBase>::DUMMY_PARAM2:
+            ret = {0, 1, 0, "dummy2"};
+            break;
+        case GMR2<TBase>::DUMMY_PARAM3:
+            ret = {0, 1, 0, "dummy3"};
+            break;
+        case GMR2<TBase>::DUMMY_PARAM4:
+            ret = {0, 1, 0, "dummy4"};
+            break;
+        case GMR2<TBase>::DUMMY_PARAM5:
+            ret = {0, 1, 0, "dummy5"};
+            break;
+        case GMR2<TBase>::DUMMY_PARAM6:
+            ret = {0, 1, 0, "dummy6"};
             break;
         default:
             assert(false);
