@@ -19,5 +19,8 @@ public:
     GrammarRulePanel(const Vec &pos, const Vec &size, StochasticGrammarPtr grammar, Module* module);
     void draw(const DrawArgs &args) override;
 private:
-    Module* module;
+   
+    StochasticGrammarPtr grammar;
+     Module* module;
+    int ruleDuration = 0;
 };

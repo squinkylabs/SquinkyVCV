@@ -24,6 +24,8 @@ public:
         onChange(e);
     }
 
+    
+
     using NotificationCallback = std::function<void(int index)>;
     void setNotificationCallback(NotificationCallback);
 
@@ -81,7 +83,7 @@ inline void PopupMenuParamWidget::onChange(const ::rack::event::Change &e) {
         float value = this->paramQuantity->getValue();
         index = optionalValueToIndexFunction(value);
     }
-    // INFO("PopupMenuParamWidget::onChange raw index = %d", index);
+
     if (!labels.empty()) {
         if (index < 0 || index >= (int)labels.size()) {
             WARN("onChange: index is outside label ranges is %d", index);

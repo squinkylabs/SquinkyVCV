@@ -13,5 +13,5 @@ public:
     static void border(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h);
     static void hBorder(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h);
     static void vBorder(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h);
-
+    static void drawText2(NVGcontext *vg, float x, float y, const char* text, int size, NVGcolor color);
 };

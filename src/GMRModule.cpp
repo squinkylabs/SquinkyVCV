@@ -89,8 +89,8 @@ GMRWidget::GMRWidget(GMRModule * module)
     setModule(module);
     SqHelper::setPanel(this, "res/blank_panel.svg");
 
-    const Vec gmrPos = Vec(10, 10);
-    const Vec gmrSize = Vec(110, 340);
+    const Vec gmrPos = Vec(0, 0);
+    const Vec gmrSize = Vec(135, 340);
     GrammarRulePanel* p = new GrammarRulePanel(gmrPos, gmrSize, module->grammar, module);
     addChild(p);
 

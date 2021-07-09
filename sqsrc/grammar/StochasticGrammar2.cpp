@@ -6,7 +6,6 @@
 StochasticProductionRulePtr StochasticGrammar::getRule(const StochasticNote& n) const {
     auto it = rules.find(n);
     return (it == rules.end()) ? nullptr : it->second;
-   
 }
 
 StochasticProductionRulePtr StochasticGrammar::getRootRule() const {
@@ -23,6 +22,17 @@ void StochasticGrammar::addRule(StochasticProductionRulePtr rule) {
 
 
 StochasticGrammarPtr StochasticGrammar::getDemoGrammar() {
-    SQINFO("getting fake grammar");
-    return std::make_shared<StochasticGrammar>();
+    // TODO: should this be a singleton?
+    auto grammar = std::make_shared<StochasticGrammar>();
+
+    auto rootRule = std::make_shared<StochasticProductionRule>(StochasticNote::half());
+    assert(rootRule->isRuleValid());
+    auto entry = StochasticProductionRuleEntry::make();
+    entry->rhsProducedNotes.push_back(StochasticNote::quarter());
+    entry->rhsProducedNotes.push_back(StochasticNote::quarter());
+    entry->probabilty = .5;
+    rootRule->addEntry(entry);
+    assert(rootRule->isRuleValid());
+    grammar->addRootRule(rootRule);
+    return grammar;
 }
