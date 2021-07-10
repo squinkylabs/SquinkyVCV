@@ -12,8 +12,8 @@
 #include "ctrl/SqWidgets.h"
 
 #include "grammar/GrammarRulePanel.h"
-#include "grammar/ScreenHolder.h"
-#include "grammar/FakeScreen.h"
+#include "grammar/GMRScreenHolder.h"
+// #include "grammar/FakeScreen.h"
 
 
 using Comp = GMR2<WidgetComposite>;
@@ -87,12 +87,12 @@ struct GMRWidget : ModuleWidget
 GMRWidget::GMRWidget(GMRModule * module)
 {
     setModule(module);
-    SqHelper::setPanel(this, "res/blank_panel.svg");
+    SqHelper::setPanel(this, "res/gmr_panel.svg");
 
     const Vec gmrPos = Vec(0, 0);
     const Vec gmrSize = Vec(135, 340);
  //   GrammarRulePanel* p = new GrammarRulePanel(gmrPos, gmrSize, module->grammar, module);
-    Widget* p = new ScreenHolder(gmrPos, gmrSize);
+    Widget* p = new GMRScreenHolder(gmrPos, gmrSize);
     addChild(p);
 
     addInput(createInput<PJ301MPort>(

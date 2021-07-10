@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../Squinky.hpp"      // pulls in rack headers
+#include "../ctrl/SqHelper.h"
 #include "../seq/sqGfx.h"
 
 class FakeScreen : public OpaqueWidget {

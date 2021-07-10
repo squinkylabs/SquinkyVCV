@@ -1,19 +1,8 @@
-#pragma once
 
-#include "FakeScreen.h"
+#include "GMRScreenHolder.h"
 
-class ScreenHolder : public OpaqueWidget {
-public:
-    ScreenHolder(const Vec &pos, const Vec &size);
-    void draw(const DrawArgs &args) override;
 
-private:
-    FakeScreen *child1 = nullptr;
-    FakeScreen *child2 = nullptr;
-    float childPos = .25;
-};
-
-inline ScreenHolder::ScreenHolder(const Vec &pos, const Vec &size) {
+GMRScreenHolder::GMRScreenHolder(const Vec &pos, const Vec &size) {
     this->box.pos = pos;
     this->box.size = size;
 
@@ -22,8 +11,8 @@ inline ScreenHolder::ScreenHolder(const Vec &pos, const Vec &size) {
     child2 = new FakeScreen(pos, size, true);
 }
 
-inline void
-ScreenHolder::draw(const DrawArgs &args) {
+void
+GMRScreenHolder::draw(const DrawArgs &args) {
     auto vg = args.vg;
     nvgScissor(vg, 0, 0, this->box.size.x, this->box.size.y);
 
