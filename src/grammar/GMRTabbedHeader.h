@@ -19,4 +19,11 @@ private:
     void drawLineUnderTabs(NVGcontext *);
     void drawTabText(NVGcontext *);
 
+    void onButton(const event::Button& e) override;
+
+    std::vector<std::string> labels;
+    std::vector<float> labelPositions;
+
+    int x2index(float x) const;
+    float index2x(int index) const;
 };

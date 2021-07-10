@@ -10,7 +10,7 @@ GMRScreenHolder::GMRScreenHolder(const Vec &pos, const Vec &size) {
     header->box.pos.x = 0;
     header->box.pos.y = 0;
     header->box.size.x = this->box.size.x;
-    header->box.size.y = 40;
+    header->box.size.y = 24;
 
     this->addChild(header);
     // Vec pos2(40, 10);
