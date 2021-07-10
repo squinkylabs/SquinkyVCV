@@ -2,6 +2,8 @@
 
 #include "../Squinky.hpp"
 
+struct NVGcontext;
+
 using FontPtr = std::shared_ptr<Font>;
 
 class GMRTabbedHeader  : public OpaqueWidget {
@@ -13,5 +15,8 @@ public:
 private:
     FontPtr regFont;
     FontPtr boldFont;
+
+    void drawLineUnderTabs(NVGcontext *);
+    void drawTabText(NVGcontext *);
 
 };

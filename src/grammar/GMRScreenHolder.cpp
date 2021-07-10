@@ -24,7 +24,7 @@ void GMRScreenHolder::draw(const DrawArgs &args) {
     auto vg = args.vg;
 
     nvgScissor(vg, 0, 0, this->box.size.x, this->box.size.y);
-
+#if 0
     const NVGcolor color = nvgRGBAf(1, 0, 0, .1);
     SqGfx::filledRect(
         vg,
@@ -33,6 +33,7 @@ void GMRScreenHolder::draw(const DrawArgs &args) {
         0,
         this->box.size.x,
         this->box.size.y);
+#endif
 
     OpaqueWidget::draw(args);
 }
