@@ -1,19 +1,48 @@
 
 #include "GMRScreenHolder.h"
-
+#include "GMRTabbedHeader.h"
 
 GMRScreenHolder::GMRScreenHolder(const Vec &pos, const Vec &size) {
     this->box.pos = pos;
     this->box.size = size;
 
-   // Vec pos2(40, 10);
+    auto header = new GMRTabbedHeader();
+    header->box.pos.x = 0;
+    header->box.pos.y = 0;
+    header->box.size.x = this->box.size.x;
+    header->box.size.y = 40;
+
+    this->addChild(header);
+    // Vec pos2(40, 10);
+#if 0
     child1 = new FakeScreen(pos, size, false);
     child2 = new FakeScreen(pos, size, true);
+#endif
 }
 
+void GMRScreenHolder::draw(const DrawArgs &args) {
+    auto vg = args.vg;
+
+    nvgScissor(vg, 0, 0, this->box.size.x, this->box.size.y);
+
+    const NVGcolor color = nvgRGBAf(1, 0, 0, .1);
+    SqGfx::filledRect(
+        vg,
+        color,
+        0,
+        0,
+        this->box.size.x,
+        this->box.size.y);
+
+    OpaqueWidget::draw(args);
+}
+
+#if 0  // old experiment, still has useful transition work
 void
 GMRScreenHolder::draw(const DrawArgs &args) {
     auto vg = args.vg;
+
+
     nvgScissor(vg, 0, 0, this->box.size.x, this->box.size.y);
 
     childPos += .002;
@@ -59,3 +88,4 @@ GMRScreenHolder::draw(const DrawArgs &args) {
 
     OpaqueWidget::draw(args);
 }
+#endif

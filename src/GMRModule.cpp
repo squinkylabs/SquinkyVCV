@@ -89,8 +89,10 @@ GMRWidget::GMRWidget(GMRModule * module)
     setModule(module);
     SqHelper::setPanel(this, "res/gmr_panel.svg");
 
+ //   SQINFO("init width = %f", this->box.size.x);
+    // make the active area almost full size, but don't cover up the jacks
     const Vec gmrPos = Vec(0, 0);
-    const Vec gmrSize = Vec(135, 340);
+    const Vec gmrSize = Vec(this->box.size.x, 335);
  //   GrammarRulePanel* p = new GrammarRulePanel(gmrPos, gmrSize, module->grammar, module);
     Widget* p = new GMRScreenHolder(gmrPos, gmrSize);
     addChild(p);
