@@ -44,13 +44,38 @@ void GMRTabbedHeader::drawLineUnderTabs(NVGcontext* vg) {
     float h = underlineThickness;
     SqGfx::filledRect(vg, unselectedColor, x, y, w, h);
 
-    x = 7;
-    w = 30;
+   // SQINFO("make draw line aware of size");
+    auto pos = labelPositions[currentTab];
+    x = pos.first;
+    w = pos.second;
     y = tabUnderline;
     h = underlineThickness;
     SqGfx::filledRect(vg, highlighColor, x, y, w, h);
 }
 
+
+
+void GMRTabbedHeader::drawTabText(NVGcontext* vg) {
+ //   const int n = 3;
+ //   float x = 10;
+    const float y = textBaseline;
+  //  const char* labels[n] = {"Main", "Whole", "Half"};
+
+  //  for (auto label : labels) {
+    for (int i = 0; i < int(labels.size()); ++i) {
+        const auto pos = labelPositions[i];
+        auto color = (i == currentTab) ? highlighColor : unselectedColor;
+        const char* text = labels[i].c_str();
+        int f = (i == currentTab) ? boldFont->handle : regFont->handle;
+        nvgFillColor(vg, color);
+        nvgFontFaceId(vg, f);
+        nvgFontSize(vg, 12);
+        nvgText(vg, pos.first, y, text, nullptr);
+      //  x += 36;
+    }
+}
+
+#if 0
 void GMRTabbedHeader::drawTabText(NVGcontext* vg) {
     const int n = 3;
     float x = 10;
@@ -58,9 +83,9 @@ void GMRTabbedHeader::drawTabText(NVGcontext* vg) {
     const char* labels[n] = {"Main", "Whole", "Half"};
 
     for (int i = 0; i < n; ++i) {
-        auto color = i == 0 ? highlighColor : unselectedColor;
+        auto color = i == currentTab ? highlighColor : unselectedColor;
         const char* text = labels[i];
-        int f = (i == 0) ? boldFont->handle : regFont->handle;
+        int f = (i == currentTab) ? boldFont->handle : regFont->handle;
         nvgFillColor(vg, color);
         nvgFontFaceId(vg, f);
         nvgFontSize(vg, 12);
@@ -68,6 +93,7 @@ void GMRTabbedHeader::drawTabText(NVGcontext* vg) {
         x += 36;
     }
 }
+#endif
 
 void GMRTabbedHeader::onButton(const event::Button& e) {
     if ((e.button != GLFW_MOUSE_BUTTON_LEFT) ||
@@ -79,6 +105,7 @@ void GMRTabbedHeader::onButton(const event::Button& e) {
     float y = e.pos.y;
     SQINFO("button in header, type=%d x=%fx, y=%f", button, x, y);
     const int newIndex = x2index(x);
+    SQINFO("x2index ret %d", newIndex);
     if (newIndex >= 0) {
         selectNewTab(newIndex);
     }
@@ -86,10 +113,10 @@ void GMRTabbedHeader::onButton(const event::Button& e) {
 
 int GMRTabbedHeader::x2index(float x) const {
     SQINFO("x2INdex called with x=%f", x);
-    for (int i=0; i< labels.size(); ++ i) {
+    for (int i=0; i< int(labels.size()); ++ i) {
         SQINFO("at %d %f, %f", i, labelPositions[i].first, labelPositions[i].second);
         if ((x >= labelPositions[i].first) && (x <= (labelPositions[i].first + labelPositions[i].second))) {
-            return x;
+            return i;
         }
     }
     //assert(false);
@@ -97,7 +124,7 @@ int GMRTabbedHeader::x2index(float x) const {
 }
 //  float index2x(int index) const;
 void GMRTabbedHeader::selectNewTab(int index) {
-    assert(false);
+    currentTab =index;
 }
 
 // Measures the specified text string. Parameter bounds should be a pointer to float[4],
@@ -112,10 +139,23 @@ void GMRTabbedHeader::updateLabelPositions(NVGcontext* vg) {
     labelPositions.clear();
     float x = leftMargin;
     for (auto label : labels) {
-        float nextX =  nvgTextBounds(vg, x, 0, label.c_str(), nullptr, nullptr);
-        float width = nextX - x;
+        SQINFO("about to cal next x with x=%f label=%s", x, label.c_str());
+
+   //     float dummyBounds = 0;
+      //  const char* string = label.c_str();
+      //  const char* end = string + label.size();
+     //   SQINFO("str=%p end=%p", string, end);
+     //   const float nextX =  nvgTextBounds(vg, x, 0, label.c_str(), end, &dummyBounds);
+        const float width = nvgTextBounds(vg, 1, 1, label.c_str(), NULL, NULL);
+     //   const float width = nextX;
         labelPositions.push_back( std::make_pair(x, width));
-        SQINFO("pos = %f, w=%f", x, width);
-        x += (width + spaceBetweenTabs);
+
+  
+
+        SQINFO("pos = %f, w=%f nextx=%f", x, width);
+        assert(width > 0);
+       //x += (width + spaceBetweenTabs);
+       x = x + width + spaceBetweenTabs;
+       SQINFO("at bootom of loop, x set to %f", x);
     }
 }
