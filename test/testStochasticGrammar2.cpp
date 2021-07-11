@@ -62,8 +62,8 @@ private:
 
 
 
-static StochasticGrammar getGrammar() {
-    StochasticGrammar gmr;
+static ConstStochasticGrammarPtr getGrammar() {
+    StochasticGrammarPtr gmr = std::make_shared<StochasticGrammar>();
 
     auto rootRule = std::make_shared<StochasticProductionRule>(StochasticNote::half());
     assert(rootRule->isRuleValid());
@@ -73,7 +73,9 @@ static StochasticGrammar getGrammar() {
     entry->probabilty = .5;
     rootRule->addEntry(entry);
     assert(rootRule->isRuleValid());
-    gmr.addRootRule(rootRule);
+
+    gmr->addRootRule(rootRule);
+    //gmr.addRootRule(rootRule);
    // auto rule = std::make_shared<StochasticProductionRule>(StochasticNote(StochasticNote::Durations::half));
 
 
@@ -81,7 +83,7 @@ static StochasticGrammar getGrammar() {
 }
 
 //static void testGrammarSub(INITFN f)
-static void testGrammarSub(const StochasticGrammar* grammar)
+static void testGrammarSub(ConstStochasticGrammarPtr grammar)
 {
     SQINFO("--- test Grammar sub ----");
    bool b = StochasticProductionRule::isGrammarValid(*grammar);
@@ -97,7 +99,7 @@ static void testGrammarSub(const StochasticGrammar* grammar)
 
 static void testGrammar1() {
     auto grammar = getGrammar();
-    testGrammarSub(&grammar);
+    testGrammarSub(grammar);
 
 }
 

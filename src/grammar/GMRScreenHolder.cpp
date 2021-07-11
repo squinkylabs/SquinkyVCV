@@ -39,7 +39,7 @@ void GMRScreenHolder::draw(const DrawArgs &args) {
         this->box.size.y);
 #endif
 
-    OpaqueWidget::draw(args);
+    TransparentWidget::draw(args);
 }
 
 #if 0  // old experiment, still has useful transition work

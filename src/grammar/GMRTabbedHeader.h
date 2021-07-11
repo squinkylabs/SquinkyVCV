@@ -8,7 +8,7 @@ struct NVGcontext;
 
 using FontPtr = std::shared_ptr<Font>;
 
-class GMRTabbedHeader  : public OpaqueWidget {
+class GMRTabbedHeader  : public TransparentWidget {
 public:
     GMRTabbedHeader();
     GMRTabbedHeader(const GMRTabbedHeader&) = delete;

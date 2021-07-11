@@ -12,6 +12,7 @@ class StochasticGrammar;
 
 using StochasticProductionRulePtr = std::shared_ptr<StochasticProductionRule>;
 using StochasticGrammarPtr = std::shared_ptr<StochasticGrammar>;
+using ConstStochasticGrammarPtr = std::shared_ptr<const StochasticGrammar>;
 
 /**
  * class that holds an entire grammar

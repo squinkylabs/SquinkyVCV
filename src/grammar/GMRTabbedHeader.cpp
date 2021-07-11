@@ -27,7 +27,7 @@ void GMRTabbedHeader::draw(const DrawArgs& args) {
     drawTabText(vg);
     drawLineUnderTabs(vg);
 
-    OpaqueWidget::draw(args);
+    TransparentWidget::draw(args);
 }
 
 static const float textBaseline = 15;

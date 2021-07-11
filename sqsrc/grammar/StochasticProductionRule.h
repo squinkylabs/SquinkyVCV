@@ -15,6 +15,8 @@ class StochasticGrammar;
 using StochasticProductionRuleEntryPtr = std::shared_ptr< StochasticProductionRuleEntry>;
 using StochasticProductionRulePtr = std::shared_ptr<StochasticProductionRule>;
 using StochasticGrammarPtr = std::shared_ptr<StochasticGrammar>;
+using ConstStochasticGrammarPtr = std::shared_ptr<const StochasticGrammar>;
+
 /**
  * 
  */
@@ -62,7 +64,7 @@ public:
         EvaluationState(AudioMath::RandomUniformFunc xr) : r(xr)
         {
         }
-        StochasticGrammarPtr grammar;
+        ConstStochasticGrammarPtr grammar;
         AudioMath::RandomUniformFunc r;		//random number generator to use 
         virtual void writeSymbol(const StochasticNote& sym)
         {

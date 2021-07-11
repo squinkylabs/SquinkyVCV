@@ -2,7 +2,7 @@
 
 #include "FakeScreen.h"
 
-class GMRScreenHolder : public OpaqueWidget {
+class GMRScreenHolder : public TransparentWidget {
 public:
     GMRScreenHolder(const Vec &pos, const Vec &size);
     void draw(const DrawArgs &args) override;
