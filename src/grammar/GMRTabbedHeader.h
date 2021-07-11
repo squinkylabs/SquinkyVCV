@@ -1,17 +1,18 @@
 #pragma once
 
 #include "../Squinky.hpp"
-
+#include "SqLog.h"
 #include <functional>
 
 struct NVGcontext;
 
 using FontPtr = std::shared_ptr<Font>;
 
-class GMRTabbedHeader  : public TransparentWidget {
+class GMRTabbedHeader  : public OpaqueWidget {
 public:
     GMRTabbedHeader();
     GMRTabbedHeader(const GMRTabbedHeader&) = delete;
+    ~GMRTabbedHeader() { SQINFO("dtor of GMRTabbedHeader"); }
 
     using Callback = std::function<void(int index)>;
     void registerCallback(Callback);
