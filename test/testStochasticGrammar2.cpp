@@ -103,11 +103,35 @@ static void testGrammar1() {
 
 }
 
+static void testGetLHS() {
+    auto gmr = getGrammar();
+    auto lhs = gmr->getAllLHS();
+
+    // test grammer only has a single production rule
+    assertEQ(lhs.size(), 1);
+}
+
+static void testNote2Text() {
+    {
+        StochasticNote n = StochasticNote::half();
+        assertEQ(n.toText(), "Half");
+    }
+    {
+        StochasticNote n = StochasticNote::quarter();
+        assertEQ(n.toText(), "Quarter");
+    }
+    {
+        StochasticNote n = StochasticNote::eighth();
+        assertEQ(n.toText(), "Eighth");
+    }
+}
 
 void testStochasticGrammar2() {
     test0();
     testNoteDurations();
     test1();
     testGrammar1();
+    testGetLHS();
+    testNote2Text();
     
 }

@@ -20,6 +20,19 @@ void StochasticGrammar::addRule(StochasticProductionRulePtr rule) {
     rules.insert(value);
 }
 
+std::vector<StochasticNote> StochasticGrammar::getAllLHS() const {
+    std::vector<StochasticNote> ret;
+
+    std::set<StochasticNote> test;
+    for (auto rule : rules) {
+        StochasticNote note = rule.first;
+        assert( test.find(note) == test.end());
+        test.insert(note);
+        ret.push_back(note);
+    }
+    
+    return ret;
+}
 
 StochasticGrammarPtr StochasticGrammar::getDemoGrammar() {
     // TODO: should this be a singleton?

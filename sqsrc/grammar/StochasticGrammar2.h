@@ -1,13 +1,16 @@
 #pragma once
 
+#include "StochasticNote.h"
+
 #include <assert.h>
 
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 class StochasticProductionRule;
-class StochasticNote;
+
 class StochasticGrammar;
 
 using StochasticProductionRulePtr = std::shared_ptr<StochasticProductionRule>;
@@ -31,8 +34,9 @@ public:
         addRule(rule);
     }
 
-    static StochasticGrammarPtr getDemoGrammar();
+    std::vector<StochasticNote> getAllLHS() const;
 
+    static StochasticGrammarPtr getDemoGrammar();
     size_t size() const { return rules.size(); }
 private:
 // DO WE REALLY NEED MULTIMAP? maybe in future?

@@ -2,26 +2,31 @@
 #pragma once
 
 #include <assert.h>
+#include <string>
 
 class StochasticDisplayNote;
+
 class StochasticNote {
 public:
     StochasticNote(int dur) : duration(dur) { assert(duration > 1); }
+
     static const int ppq;
     const int duration;
 
-    static StochasticNote half() { return StochasticNote(ppq*2);}
-    static StochasticNote quarter()  { return StochasticNote(ppq); }
-    static StochasticNote eighth() { return StochasticNote(ppq / 2);}
+    static StochasticNote half();
+    static StochasticNote quarter();
+    static StochasticNote eighth();
 
     bool operator < (const StochasticNote& other) const;
+
+    std::string toText() const;
 private:
 
 };
 
 /**
- * I did this first. Now I won't want to use it as my funcdamental note type.
- * But it might be useful later.
+ * I did this first. Now I won't want to use it as my fundamental note type.
+ * But it might be useful later. Or not...
  */
 class StochasticDisplayNote {
 public:

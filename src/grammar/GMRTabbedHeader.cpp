@@ -1,5 +1,6 @@
 
 #include "GMRTabbedHeader.h"
+#include "StochasticGrammar2.h"
 
 #include "../Squinky.hpp"
 #include "../ctrl/SqHelper.h"
@@ -11,7 +12,15 @@ GMRTabbedHeader::GMRTabbedHeader(StochasticGrammarPtr g) : grammar(g) {
     regFont = TextUtils::loadFont(TextUtils::WhichFont::regular);
     boldFont = TextUtils::loadFont(TextUtils::WhichFont::bold);
 
-    labels = {"Main", "Whole", "Half", "Quarter"};
+   // labels = {"Main", "Whole", "Half", "Quarter"};
+    labels = {"Main"};
+    auto lhs = grammar->getAllLHS();
+    for (auto note : lhs) {
+        std::string s = note.toText();
+        SQINFO("make header, lab %s", s.c_str());
+        labels.push_back(s);
+    }
+    
     requestLabelPositionUpdate = true;
     //updateLabelPositions();
 };
