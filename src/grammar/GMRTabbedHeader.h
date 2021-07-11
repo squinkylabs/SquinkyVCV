@@ -22,8 +22,14 @@ private:
     void onButton(const event::Button& e) override;
 
     std::vector<std::string> labels;
-    std::vector<float> labelPositions;
+
+    // position is x, width
+    std::vector<std::pair<float, float>> labelPositions;
+    int currentTab = 0;
+    bool requestLabelPositionUpdate = false;
 
     int x2index(float x) const;
     float index2x(int index) const;
+    void selectNewTab(int index);
+    void updateLabelPositions(NVGcontext *);
 };
