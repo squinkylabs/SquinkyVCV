@@ -1,6 +1,7 @@
 
 #include "GMRScreenHolder.h"
 #include "GMRTabbedHeader.h"
+#include "SqLog.h"
 
 GMRScreenHolder::GMRScreenHolder(const Vec &pos, const Vec &size) {
     this->box.pos = pos;
@@ -14,6 +15,9 @@ GMRScreenHolder::GMRScreenHolder(const Vec &pos, const Vec &size) {
 
     this->addChild(header);
     // Vec pos2(40, 10);
+    header->registerCallback( [](int index) {
+        SQINFO("header callback %d", index);
+    });
 #if 0
     child1 = new FakeScreen(pos, size, false);
     child2 = new FakeScreen(pos, size, true);
