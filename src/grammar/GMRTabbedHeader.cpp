@@ -7,7 +7,7 @@
 #include "SqLog.h"
 #include "TextUtils.h"
 
-GMRTabbedHeader::GMRTabbedHeader() {
+GMRTabbedHeader::GMRTabbedHeader(StochasticGrammarPtr g) : grammar(g) {
     regFont = TextUtils::loadFont(TextUtils::WhichFont::regular);
     boldFont = TextUtils::loadFont(TextUtils::WhichFont::bold);
 
@@ -81,9 +81,9 @@ void GMRTabbedHeader::onButton(const event::Button& e) {
         (e.action != GLFW_RELEASE)) {
         return;
     }
-    int button = e.button;
+  //  int button = e.button;
     float x = e.pos.x;
-    float y = e.pos.y;
+ //   float y = e.pos.y;
     // SQINFO("button in header, type=%d x=%fx, y=%f", button, x, y);
     const int newIndex = x2index(x);
     // SQINFO("x2index ret %d", newIndex);

@@ -5,12 +5,15 @@
 #include <functional>
 
 struct NVGcontext;
+class StochasticGrammar;
 
 using FontPtr = std::shared_ptr<Font>;
+using StochasticGrammarPtr = std::shared_ptr<StochasticGrammar>;
 
 class GMRTabbedHeader  : public OpaqueWidget {
 public:
-    GMRTabbedHeader();
+    GMRTabbedHeader(StochasticGrammarPtr);
+    GMRTabbedHeader() = delete;
     GMRTabbedHeader(const GMRTabbedHeader&) = delete;
     ~GMRTabbedHeader() { SQINFO("dtor of GMRTabbedHeader"); }
 
@@ -22,6 +25,7 @@ private:
     FontPtr regFont;
     FontPtr boldFont;
     Callback theCallback;
+    StochasticGrammarPtr grammar;
 
     void drawLineUnderTabs(NVGcontext *);
     void drawTabText(NVGcontext *);

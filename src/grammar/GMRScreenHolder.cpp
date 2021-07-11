@@ -3,6 +3,7 @@
 #include "GMRMainScreen.h"
 #include "GMRTabbedHeader.h"
 #include "ProductionRuleEditor.h"
+#include "StochasticGrammar2.h"
 #include "SqLog.h"
 
 const float headerHeight = 24;
@@ -11,8 +12,10 @@ GMRScreenHolder::GMRScreenHolder(const Vec &pos, const Vec &size) {
     this->box.pos = pos;
     this->box.size = size;
 
+    grammar = StochasticGrammar::getDemoGrammar();
+
     // First, make the header and set it up
-    auto header = new GMRTabbedHeader();
+    auto header = new GMRTabbedHeader(grammar);
     header->box.pos.x = 0;
     header->box.pos.y = 0;
     header->box.size.x = this->box.size.x;
@@ -28,7 +31,7 @@ GMRScreenHolder::GMRScreenHolder(const Vec &pos, const Vec &size) {
     });
 
     // Second: set up the main screen as the active child
-    Widget *child = new GMRMainScreen();
+    Widget *child = new GMRMainScreen(grammar);
     sizeChild(child);
     screens.push_back(child);
     addChild(child);
@@ -65,7 +68,7 @@ void GMRScreenHolder::onNewTab(int index) {
 
     // Make sure the entry for next screen exists
     if (screens[index] == nullptr) {
-        Widget *newScreen = new ProductionRuleEditor();
+        Widget *newScreen = new ProductionRuleEditor(grammar);
         sizeChild(newScreen);
         screens[index] = newScreen;
     }

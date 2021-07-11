@@ -1,10 +1,18 @@
 #pragma once
 
-#include "SqLog.h"
 #include "../Squinky.hpp"
+#include "SqLog.h"
 
-class GMRMainScreen   : public OpaqueWidget {
+class StochasticGrammar;
+using StochasticGrammarPtr = std::shared_ptr<StochasticGrammar>;
+
+class GMRMainScreen : public OpaqueWidget {
 public:
+    GMRMainScreen(StochasticGrammarPtr);
     ~GMRMainScreen() { SQINFO("dtor GMRMainScreen"); }
+
     void draw(const DrawArgs &args) override;
+
+private:
+    StochasticGrammarPtr grammar;
 };
