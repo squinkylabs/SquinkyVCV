@@ -9,10 +9,9 @@ public:
 
 private:
 
-#if 0
-// remove old experiment
-    FakeScreen *child1 = nullptr;
-    FakeScreen *child2 = nullptr;
-    float childPos = .25;
-#endif
+    /**
+     * these are the screens we are managing.
+     * at any one time one of them will be a child of us
+     */
+    std::vector<Widget*> screens;           
 };

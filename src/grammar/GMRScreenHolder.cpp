@@ -1,27 +1,35 @@
-
+#include "GMRMainScreen.h"
 #include "GMRScreenHolder.h"
 #include "GMRTabbedHeader.h"
 #include "SqLog.h"
+
+const float headerHeight = 24;
 
 GMRScreenHolder::GMRScreenHolder(const Vec &pos, const Vec &size) {
     this->box.pos = pos;
     this->box.size = size;
 
+    // First, make the header and set it up
     auto header = new GMRTabbedHeader();
     header->box.pos.x = 0;
     header->box.pos.y = 0;
     header->box.size.x = this->box.size.x;
-    header->box.size.y = 24;
-
+    header->box.size.y = headerHeight;
     this->addChild(header);
     // Vec pos2(40, 10);
     header->registerCallback( [](int index) {
         SQINFO("header callback %d", index);
     });
-#if 0
-    child1 = new FakeScreen(pos, size, false);
-    child2 = new FakeScreen(pos, size, true);
-#endif
+
+    // Second: set up the main screen as the active child
+    Widget* child = new GMRMainScreen();
+    child->box.pos.x = 0;
+    child->box.pos.y = headerHeight;
+    child->box.size.x = this->box.size.x;
+    child->box.size.y = this->box.size.y - headerHeight;
+
+    screens.push_back(child);
+    addChild(child);
 }
 
 void GMRScreenHolder::draw(const DrawArgs &args) {

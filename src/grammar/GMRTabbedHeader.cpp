@@ -27,6 +27,7 @@ void GMRTabbedHeader::draw(const DrawArgs& args) {
     drawTabText(vg);
     drawLineUnderTabs(vg);
 
+    // SQINFO("tabbed draw, y=%f, height=%f", this->box.pos.y, this->box.size.y);
     TransparentWidget::draw(args);
 }
 
@@ -131,16 +132,16 @@ void GMRTabbedHeader::updateLabelPositions(NVGcontext* vg) {
         int f = regFont->handle;
         nvgFontFaceId(vg, f);
         nvgFontSize(vg, 12);
-        SQINFO("about to cal next x with x=%f label=%s", x, labels[i].c_str());
+      //  SQINFO("about to cal next x with x=%f label=%s", x, labels[i].c_str());
 
         const float width = nvgTextBounds(vg, 1, 1, labels[i].c_str(), NULL, NULL);
         labelPositions.push_back( std::make_pair(x, width));
 
-        SQINFO("pos = %f, w=%f nextx=%f", x, width);
+       // SQINFO("pos = %f, w=%f nextx=%f", x, width);
         assert(width > 0);
        //x += (width + spaceBetweenTabs);
        x = x + width + spaceBetweenTabs;
-       SQINFO("at bootom of loop, x set to %f", x);
+      // SQINFO("at bootom of loop, x set to %f", x);
     }
 }
 
