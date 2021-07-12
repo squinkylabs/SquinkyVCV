@@ -11,8 +11,9 @@ const float headerHeight = 24;
 GMRScreenHolder::GMRScreenHolder(const Vec &pos, const Vec &size) {
     this->box.pos = pos;
     this->box.size = size;
+    SQINFO("screen holder pos = %f height=%f", pos.y, size.y);
 
-    grammar = StochasticGrammar::getDemoGrammar();
+    grammar = StochasticGrammar::getDemoGrammar(StochasticGrammar::DemoGrammar::demo);
 
     // First, make the header and set it up
     auto header = new GMRTabbedHeader(grammar);
@@ -35,6 +36,8 @@ GMRScreenHolder::GMRScreenHolder(const Vec &pos, const Vec &size) {
     sizeChild(child);
     screens.push_back(child);
     addChild(child);
+
+    SQINFO("main = %f height=%f", child->box.pos.y, child->box.size.y);
 }
 
 GMRScreenHolder::~GMRScreenHolder() {
@@ -52,6 +55,8 @@ void GMRScreenHolder::sizeChild(Widget *child) {
     child->box.pos.y = headerHeight;
     child->box.size.x = this->box.size.x;
     child->box.size.y = this->box.size.y - headerHeight;
+
+    SQINFO("size child, leave = %f height=%f", child->box.pos.y, child->box.size.y);
 }
 
 void GMRScreenHolder::onNewTab(int index) {
@@ -70,6 +75,7 @@ void GMRScreenHolder::onNewTab(int index) {
     if (screens[index] == nullptr) {
         Widget *newScreen = new ProductionRuleEditor(grammar);
         sizeChild(newScreen);
+         SQINFO("onnewtab makde new one = %f height=%f", newScreen->box.pos.y, newScreen->box.size.y);
         screens[index] = newScreen;
     }
 

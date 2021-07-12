@@ -32,7 +32,7 @@ public:
     void onSampleRateChange() override;
 
     std::shared_ptr<Comp> comp;
-    StochasticGrammarPtr grammar;
+ //   StochasticGrammarPtr grammar;
 private:
 };
 
@@ -48,7 +48,7 @@ GMRModule::GMRModule()
     comp = std::make_shared<Comp>(this);
     std::shared_ptr<IComposite> icomp = Comp::getDescription();
     SqHelper::setupParams(icomp, this); 
-    grammar = StochasticGrammar::getDemoGrammar();
+  //  grammar = StochasticGrammar::getDemoGrammar();
 
     onSampleRateChange();
     comp->init();
@@ -91,12 +91,13 @@ GMRWidget::GMRWidget(GMRModule * module)
 
  //   SQINFO("init width = %f", this->box.size.x);
     // make the active area almost full size, but don't cover up the jacks
+#if 1
     const Vec gmrPos = Vec(0, 0);
     const Vec gmrSize = Vec(this->box.size.x, 335);
- //   GrammarRulePanel* p = new GrammarRulePanel(gmrPos, gmrSize, module->grammar, module);
     Widget* p = new GMRScreenHolder(gmrPos, gmrSize);
     addChild(p);
-
+#endif
+    SQINFO("adding the jacks at the bottom my h=%f", this->box.size.y);;
     addInput(createInput<PJ301MPort>(
         Vec(40, 340), 
         module,

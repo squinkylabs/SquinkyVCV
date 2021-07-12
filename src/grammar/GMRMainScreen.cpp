@@ -6,7 +6,6 @@
 #include "../ctrl/SqHelper.h"
 
 GMRMainScreen::GMRMainScreen(StochasticGrammarPtr g) : grammar(g) {
-
 }
 
 

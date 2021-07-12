@@ -61,7 +61,7 @@ private:
 };
 
 
-
+#if 0
 static ConstStochasticGrammarPtr getGrammar() {
     StochasticGrammarPtr gmr = std::make_shared<StochasticGrammar>();
 
@@ -81,6 +81,7 @@ static ConstStochasticGrammarPtr getGrammar() {
 
     return gmr;
 }
+#endif
 
 //static void testGrammarSub(INITFN f)
 static void testGrammarSub(ConstStochasticGrammarPtr grammar)
@@ -98,13 +99,15 @@ static void testGrammarSub(ConstStochasticGrammarPtr grammar)
 }
 
 static void testGrammar1() {
-    auto grammar = getGrammar();
+  //  auto grammar = getGrammar();
+    auto grammar = StochasticGrammar::getDemoGrammar(StochasticGrammar::DemoGrammar::simple);
     testGrammarSub(grammar);
 
 }
 
 static void testGetLHS() {
-    auto gmr = getGrammar();
+   // auto gmr = getGrammar();
+    auto gmr = StochasticGrammar::getDemoGrammar(StochasticGrammar::DemoGrammar::simple);
     auto lhs = gmr->getAllLHS();
 
     // test grammer only has a single production rule

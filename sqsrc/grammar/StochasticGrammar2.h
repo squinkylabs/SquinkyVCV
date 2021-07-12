@@ -36,7 +36,13 @@ public:
 
     std::vector<StochasticNote> getAllLHS() const;
 
-    static StochasticGrammarPtr getDemoGrammar();
+    enum class DemoGrammar {
+        simple,
+        demo
+    };
+
+    static StochasticGrammarPtr getDemoGrammar(DemoGrammar);
+
     size_t size() const { return rules.size(); }
 private:
 // DO WE REALLY NEED MULTIMAP? maybe in future?
@@ -44,5 +50,8 @@ private:
     //  std::unordered_multimap<StochasticNote, StochasticProductionRulePtr> map;
     std::multimap<StochasticNote, StochasticProductionRulePtr> rules;
     StochasticProductionRulePtr rootRule;
+
+    static StochasticGrammarPtr getDemoGrammarSimple();
+    static StochasticGrammarPtr getDemoGrammarDemo();
 };
 
