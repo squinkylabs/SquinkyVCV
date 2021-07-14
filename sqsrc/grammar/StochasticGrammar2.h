@@ -23,11 +23,8 @@ using ConstStochasticGrammarPtr = std::shared_ptr<const StochasticGrammar>;
 class StochasticGrammar {
 public:
     StochasticProductionRulePtr getRule(const StochasticNote&) const;
-
     StochasticProductionRulePtr getRootRule() const;
-
     void addRule(StochasticProductionRulePtr rule);
-
     void addRootRule(StochasticProductionRulePtr rule) {
         assert(!rootRule);
         rootRule = rule;
@@ -35,17 +32,16 @@ public:
     }
 
     std::vector<StochasticNote> getAllLHS() const;
-
+    
     enum class DemoGrammar {
         simple,
         demo
     };
-
     static StochasticGrammarPtr getDemoGrammar(DemoGrammar);
-
     size_t size() const { return rules.size(); }
 private:
-// DO WE REALLY NEED MULTIMAP? maybe in future?
+
+    // DO WE REALLY NEED MULTIMAP? maybe in future?
     // TODO: make unordered work
     //  std::unordered_multimap<StochasticNote, StochasticProductionRulePtr> map;
     std::multimap<StochasticNote, StochasticProductionRulePtr> rules;

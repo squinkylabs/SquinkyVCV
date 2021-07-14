@@ -12,10 +12,12 @@ class StochasticProductionRuleEntry;
 class StochasticProductionRule;
 class StochasticGrammar;
 
-using StochasticProductionRuleEntryPtr = std::shared_ptr< StochasticProductionRuleEntry>;
+using StochasticProductionRuleEntryPtr = std::shared_ptr<StochasticProductionRuleEntry>;
 using StochasticProductionRulePtr = std::shared_ptr<StochasticProductionRule>;
 using StochasticGrammarPtr = std::shared_ptr<StochasticGrammar>;
 using ConstStochasticGrammarPtr = std::shared_ptr<const StochasticGrammar>;
+using ConstStochasticProductionRulePtr = std::shared_ptr<const StochasticProductionRule>;
+using ConstStochasticProductionRuleEntryPtr = std::shared_ptr<const StochasticProductionRuleEntry>;
 
 /**
  * 
@@ -23,13 +25,13 @@ using ConstStochasticGrammarPtr = std::shared_ptr<const StochasticGrammar>;
 class StochasticProductionRuleEntry {
 public:
     std::vector<StochasticNote> rhsProducedNotes;
-    double probabilty = 0;
+    double probability = 0;
 
     static StochasticProductionRuleEntryPtr make() {
         return std::make_shared<StochasticProductionRuleEntry>();
     }
 
-    bool isValid() const { return probabilty > 0 && probabilty <= 1 && !rhsProducedNotes.empty(); }
+    bool isValid() const { return probability > 0 && probability <= 1 && !rhsProducedNotes.empty(); }
     int duration() const;
     void _dump() const;
 };
@@ -50,7 +52,6 @@ StochasticProductionRuleEntry::_dump() const {
         SQINFO("  note %d", note.duration);
     }
 }
-
 
 /**
  *
@@ -88,10 +89,10 @@ public:
      * @param es has all the stuff in it, including all the rules
      * @param ruleToEval is the index of a prcduction rule in es to expand.
      **/
-   // static void evaluate(EvaluationState& es, const StochasticNote& note);
     static void evaluate(EvaluationState& es, const StochasticProductionRulePtr);
     const StochasticNote lhs;
 
+     std::vector<StochasticProductionRuleEntryPtr> getEntries() const { return entries; }
     static bool isGrammarValid(const StochasticGrammar& grammar);
     bool isRuleValid() const;
     void _dump() const;

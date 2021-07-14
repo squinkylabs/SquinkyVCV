@@ -12,7 +12,7 @@ std::vector<StochasticNote>* StochasticProductionRule::_evaluateRule(const Stoch
 
     for (auto it = rule.entries.begin(); it != rule.entries.end(); ++it) {
         StochasticProductionRuleEntryPtr entry = *it;
-        if (entry->probabilty >= random) {
+        if (entry->probability >= random) {
             return &entry->rhsProducedNotes;
         }
     }

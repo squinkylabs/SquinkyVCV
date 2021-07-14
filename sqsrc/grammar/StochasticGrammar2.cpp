@@ -60,7 +60,7 @@ StochasticGrammarPtr StochasticGrammar::getDemoGrammarDemo() {
         auto entry = StochasticProductionRuleEntry::make();
         entry->rhsProducedNotes.push_back(StochasticNote::quarter());
         entry->rhsProducedNotes.push_back(StochasticNote::quarter());
-        entry->probabilty = .5;
+        entry->probability = .6;
         rootRule->addEntry(entry);
 
         assert(rootRule->isRuleValid());
@@ -70,7 +70,7 @@ StochasticGrammarPtr StochasticGrammar::getDemoGrammarDemo() {
         entry->rhsProducedNotes.push_back(StochasticNote::quarter());
         entry->rhsProducedNotes.push_back(StochasticNote::eighth());
         entry->rhsProducedNotes.push_back(StochasticNote::eighth());
-        entry->probabilty = .3;
+        entry->probability = .3;
         rootRule->addEntry(entry);
 
     }
@@ -82,7 +82,7 @@ StochasticGrammarPtr StochasticGrammar::getDemoGrammarDemo() {
         auto entry = StochasticProductionRuleEntry::make();
         entry->rhsProducedNotes.push_back(StochasticNote::eighth());
         entry->rhsProducedNotes.push_back(StochasticNote::eighth());
-        entry->probabilty = .5;
+        entry->probability = .7;
         rule->addEntry(entry);
         grammar->addRule(rule);
     }
@@ -94,7 +94,7 @@ StochasticGrammarPtr StochasticGrammar::getDemoGrammarDemo() {
         auto entry = StochasticProductionRuleEntry::make();
         entry->rhsProducedNotes.push_back(StochasticNote::sixteenth());
         entry->rhsProducedNotes.push_back(StochasticNote::sixteenth());
-        entry->probabilty = .5;
+        entry->probability = .5;
         rule->addEntry(entry);
         grammar->addRule(rule);
     }
@@ -110,7 +110,7 @@ StochasticGrammarPtr StochasticGrammar::getDemoGrammarSimple() {
     auto entry = StochasticProductionRuleEntry::make();
     entry->rhsProducedNotes.push_back(StochasticNote::quarter());
     entry->rhsProducedNotes.push_back(StochasticNote::quarter());
-    entry->probabilty = .5;
+    entry->probability = .5;
     rootRule->addEntry(entry);
     assert(rootRule->isRuleValid());
     grammar->addRootRule(rootRule);
