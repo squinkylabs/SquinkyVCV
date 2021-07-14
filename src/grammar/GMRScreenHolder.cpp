@@ -73,7 +73,9 @@ void GMRScreenHolder::onNewTab(int index) {
 
     // Make sure the entry for next screen exists
     if (screens[index] == nullptr) {
-        Widget *newScreen = new ProductionRuleEditor(grammar);
+        auto allLHS = grammar->getAllLHS();
+        assert(index > 0);
+        Widget *newScreen = new ProductionRuleEditor(grammar, allLHS[index - 1]);
         sizeChild(newScreen);
          SQINFO("onnewtab makde new one = %f height=%f", newScreen->box.pos.y, newScreen->box.size.y);
         screens[index] = newScreen;

@@ -8,7 +8,7 @@
 #include "../ctrl/SqHelper.h"
 
 
-ProductionRuleEditor::ProductionRuleEditor(StochasticGrammarPtr g) : grammar(g) {
+ProductionRuleEditor::ProductionRuleEditor(StochasticGrammarPtr g, const StochasticNote& n) : grammar(g), lhs(n) {
      auto row1 = new RuleRowEditor();
      row1->box.pos.x = 10;
      row1->box.pos.y = 20;
