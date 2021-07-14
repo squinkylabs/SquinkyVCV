@@ -11,11 +11,8 @@ public:
     RuleRowEditor(StochasticProductionRuleEntryPtr entry);
     void draw(const DrawArgs &args) override;
 private:
-    // after construct, put module here.
-    // This object will own it.
-    // but module widget dtor will delete it anyway - make this a raw pointer..
-   // std::shared_ptr<Module> module;
+    // We don't own this module's lifetime - VCV will destroy it.
     Module* module = nullptr;
     StochasticProductionRuleEntryPtr entry;
-
+    std::string ruleText;
 };

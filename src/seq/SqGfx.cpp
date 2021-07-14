@@ -1,26 +1,24 @@
 
-#include "rack.hpp"
 #include "SqGfx.h"
-#include "UIPrefs.h"
 
-void SqGfx::strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
-{
+#include "UIPrefs.h"
+#include "rack.hpp"
+
+void SqGfx::strokedRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h) {
     nvgStrokeColor(vg, color);
     nvgBeginPath(vg);
     nvgRect(vg, x, y, w, h);
     nvgStroke(vg);
 }
 
-void SqGfx::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h)
-{
+void SqGfx::filledRect(NVGcontext *vg, NVGcolor color, float x, float y, float w, float h) {
     nvgFillColor(vg, color);
     nvgBeginPath(vg);
     nvgRect(vg, x, y, w, h);
     nvgFill(vg);
 }
 
-void SqGfx::hBorder(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h)
-{
+void SqGfx::hBorder(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h) {
     nvgFillColor(vg, color);
     nvgBeginPath(vg);
     {
@@ -28,14 +26,12 @@ void SqGfx::hBorder(NVGcontext *vg, float thickness, NVGcolor color, float x, fl
         nvgRect(vg, 0, h - thickness, w, thickness);
 
         // top edge
-        nvgRect(vg, 0, 0, w, thickness );
+        nvgRect(vg, 0, 0, w, thickness);
     }
     nvgFill(vg);
-
 }
 
-void SqGfx::vBorder(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h)
-{
+void SqGfx::vBorder(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h) {
     nvgFillColor(vg, color);
     nvgBeginPath(vg);
     {
@@ -46,11 +42,9 @@ void SqGfx::vBorder(NVGcontext *vg, float thickness, NVGcolor color, float x, fl
         nvgRect(vg, w - thickness, 0, thickness, h);
     }
     nvgFill(vg);
-
 }
 
-void SqGfx::border(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h)
-{
+void SqGfx::border(NVGcontext *vg, float thickness, NVGcolor color, float x, float y, float w, float h) {
     nvgFillColor(vg, color);
     nvgBeginPath(vg);
     {
@@ -64,14 +58,12 @@ void SqGfx::border(NVGcontext *vg, float thickness, NVGcolor color, float x, flo
         nvgRect(vg, w - thickness, 0, thickness, h);
 
         // top edge
-        nvgRect(vg, 0, 0, w, thickness );
+        nvgRect(vg, 0, 0, w, thickness);
     }
     nvgFill(vg);
 };
 
-
-void SqGfx::drawText(NVGcontext *vg, float x, float y, const char* text, int size)
-{
+void SqGfx::drawText(NVGcontext *vg, float x, float y, const char *text, int size) {
     int f = ::rack::appGet()->window->uiFont->handle;
 
     // It's a hack to hard code color. Change it later.
@@ -81,11 +73,20 @@ void SqGfx::drawText(NVGcontext *vg, float x, float y, const char* text, int siz
     nvgText(vg, x, y, text, nullptr);
 }
 
- void SqGfx::drawText2(NVGcontext *vg, float x, float y, const char* text, int size, NVGcolor color) {
+void SqGfx::drawText2(NVGcontext *vg, float x, float y, const char *text, int size, NVGcolor color) {
     int f = ::rack::appGet()->window->uiFont->handle;
 
     nvgFillColor(vg, color);
     nvgFontFaceId(vg, f);
     nvgFontSize(vg, size);
     nvgText(vg, x, y, text, nullptr);
- }
+}
+
+void SqGfx::drawTextBox(NVGcontext *vg, float x, float y, float breakWidth, const char *text, int size, NVGcolor color) {
+    int f = ::rack::appGet()->window->uiFont->handle;
+
+    nvgFillColor(vg, color);
+    nvgFontFaceId(vg, f);
+    nvgFontSize(vg, size);
+    nvgTextBox(vg, x, y, breakWidth, text, nullptr);
+}
