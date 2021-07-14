@@ -177,13 +177,12 @@ void CompiledInstrument::getGain(VoicePlayInfo& info, int midiVelocity, float re
     info.gain = velToGain(midiVelocity, regionVeltrack) * regionGainMult;
 }
 
-
-void  CompiledInstrument::getPlayPitchOsc(VoicePlayInfo& info, int midiPitch, int tuneCents, WaveLoader* loader, float sampleRate) {
+void CompiledInstrument::getPlayPitchOsc(VoicePlayInfo& info, int midiPitch, int tuneCents, WaveLoader* loader, float sampleRate) {
     //   float transpose = 261.626f * waveInfo->getTotalFrameCount() / sampleRate;
     auto waveInfo = loader->getInfo(info.sampleIndex);
-    const float baseFreq = sampleRate /  waveInfo->getTotalFrameCount();
+    const float baseFreq = sampleRate / waveInfo->getTotalFrameCount();
 
-    auto ratio = PitchUtils::semitoneToFreqRatio(float(midiPitch));  
+    auto ratio = PitchUtils::semitoneToFreqRatio(float(midiPitch));
     const float targetFreq = 261.626f * ratio / 32;
     const float transposeMult = (targetFreq / baseFreq);
 
@@ -259,7 +258,7 @@ bool CompiledInstrument::play(VoicePlayInfo& info, const VoicePlayParameter& par
         getGain(info, params.midiVelocity, region->amp_veltrack, region->volume);
         info.loopData = region->loopData;
     } else {
-       // SQINFO("not playing region at p=%d v=%d", params.midiPitch, params.midiVelocity);
+        // SQINFO("not playing region at p=%d v=%d", params.midiPitch, params.midiVelocity);
     }
     return didKS;
 }

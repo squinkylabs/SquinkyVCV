@@ -137,7 +137,7 @@ std::string SParse::matchHeadingGroups(SInstrumentPtr inst, SLexPtr lex) {
 
 SParse::Result SParse::matchHeadingGroup(SInstrumentPtr inst, SLexPtr lex) {
     SHeadingPtr theHeading;
-  //  SQINFO("about to call match extln=%d", lex->next()->lineNumber);
+    //  SQINFO("about to call match extln=%d", lex->next()->lineNumber);
     Result result = matchSingleHeading(lex, theHeading);
     if (result.res == Result::ok && theHeading) {
         inst->headings.push_back(theHeading);
@@ -228,12 +228,12 @@ SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
 
     keyToken = lex->next();
     if (!keyToken) {
-        result.errorMessage = "= unexpected end of tokens";
+        result.errorMessage = "unexpected end of tokens";
         result.res = Result::error;
         return result;
     }
     if (keyToken->itemType != SLexItem::Type::Equal) {
-        result.errorMessage = "= in kvp missing equal sign at file line# " + keyToken->lineNumberAsString();
+        result.errorMessage = "in key=value missing equal sign at file line# " + keyToken->lineNumberAsString();
         result.res = Result::error;
         return result;
     }
@@ -241,7 +241,7 @@ SParse::Result SParse::matchKeyValuePair(SKeyValueList& values, SLexPtr lex) {
 
     keyToken = lex->next();
     if (keyToken->itemType != SLexItem::Type::Identifier) {
-        result.errorMessage = "value in kvp is not id. key=" + thePair->key + " line# " + keyToken->lineNumberAsString();
+        result.errorMessage = "value in key=value is not id. key=" + thePair->key + " line# " + keyToken->lineNumberAsString();
         result.res = Result::error;
         return result;
     }

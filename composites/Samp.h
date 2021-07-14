@@ -209,7 +209,7 @@ public:
 
     void suppressErrors();
 
-   // static std::pair<float, float> pitchToOctaveAndSemi(float pitch);
+    // static std::pair<float, float> pitchToOctaveAndSemi(float pitch);
 
 private:
     Sampler4vx playback[4];  // 16 voices of polyphony
@@ -253,7 +253,6 @@ private:
     bool _isSampleLoaded = false;
     std::atomic<bool> _isNewInstrument = {false};
 
-
     int lastServicedKeyswitchValue = {-1};
 
     bool lastGate = false;  // just for test now
@@ -277,7 +276,7 @@ private:
 
     void updateKeySwitch(int midiPitch);
     void serviceSchema();
-    
+
     // server thread stuff
     // void servicePatchLoader();
 };
@@ -386,7 +385,6 @@ inline void Samp<TBase>::step_n() {
     serviceFMMod();
 }
 
-
 template <class TBase>
 inline void Samp<TBase>::serviceKeySwitch() {
     const int val = int(std::round(TBase::params[DUMMYKS_PARAM].value));
@@ -404,7 +402,7 @@ inline void Samp<TBase>::updateKeySwitch(int midiPitch) {
 
 template <class TBase>
 inline void Samp<TBase>::serviceSchema() {
-    const int schema =  int( std::round(TBase::params[SCHEMA_PARAM].value));
+    const int schema = int(std::round(TBase::params[SCHEMA_PARAM].value));
     if (schema == 0) {
         // SQINFO("loaded old schema, pitch = %f, octave = %f", TBase::params[PITCH_PARAM].value + TBase::params[OCTAVE_PARAM].value);
         TBase::params[SCHEMA_PARAM].value = 1;
@@ -414,8 +412,7 @@ inline void Samp<TBase>::serviceSchema() {
         float semi = patchOffset - octave;
 
         TBase::params[PITCH_PARAM].value = semi;
-        TBase::params[OCTAVE_PARAM].value = octave + 4;     // now octave 4 is what old 0 was
-
+        TBase::params[OCTAVE_PARAM].value = octave + 4;  // now octave 4 is what old 0 was
     }
 }
 
@@ -430,7 +427,6 @@ inline void Samp<TBase>::serviceFMMod() {
     depth = LookupTable<float>::lookup(*audioTaperLookupParams, depth);
     lfmGain_n = float_4(depth);  // store as a float_4, since that's what we want in process();
 
-    
     serviceSchema();
 
     //------------------ now Exp FM -----------
@@ -671,7 +667,7 @@ inline IComposite::Config SampDescription<TBase>::getParam(int i) {
         case Samp<TBase>::TRIGGERDELAY_PARAM:
             ret = {0, 1, 1, "TRIGGER DELAY"};
             break;
-         case Samp<TBase>::OCTAVE_PARAM:
+        case Samp<TBase>::OCTAVE_PARAM:
             ret = {0, 10, 4, "Octave"};
             break;
         default:
@@ -711,43 +707,44 @@ public:
 
         SInstrumentPtr inst = std::make_shared<SInstrument>();
 
-        // SQINFO("--- real sampler, calling goFile with %s", fullPath.toString().c_str());
         // now load it, and then return it.
         auto err = SParse::goFile(fullPath, inst);
 
-        //SQINFO("about to compile");
-        // TODO: need a way for compiler to return error;
         SamplerErrorContext errc;
         CompiledInstrumentPtr cinst = err.empty() ? CompiledInstrument::make(errc, inst) : CompiledInstrument::make(err);
-        // SQINFO("back from comp");
         errc.dump();
         if (!cinst) {
             SQWARN("comp was null (should never happen)");
             sendMessageToClient(msg);
             return;
         }
-        //  cinst->_dump(0);
+
+        WaveLoader::LoaderState loadedState = WaveLoader::LoaderState::Error;
         WaveLoaderPtr waves = std::make_shared<WaveLoader>();
-        assert(cinst->getInfo());
+        if (!cinst->isInError()) {
 
-        //  samplePath += cinst->getDefaultPath();
-        samplePath.concat(cinst->getDefaultPath());
-        //SQINFO("calling setWaves on %s", samplePath.toString().c_str());
-        cinst->setWaves(waves, samplePath);
+            assert(cinst->getInfo());
+            samplePath.concat(cinst->getDefaultPath());
+            cinst->setWaves(waves, samplePath);
 
-        WaveLoader::LoaderState loadedState;
-        for (bool done = false; !done;) {
-            loadedState = waves->loadNextFile();
-            switch (loadedState) {
-                case WaveLoader::LoaderState::Progress:
-                    smsg->sharedState->uiw_setLoadProgress(waves->getProgressPercent());
-                    break;
-                case WaveLoader::LoaderState::Done:
-                case WaveLoader::LoaderState::Error:
-                    done = true;
-                    break;
-                default:
-                    assert(false);
+            if (waves->empty()) {
+                loadedState = WaveLoader::LoaderState::Error;
+                // info->errorMessage = "No wave files to play";
+            } else {
+                for (bool done = false; !done;) {
+                    loadedState = waves->loadNextFile();
+                    switch (loadedState) {
+                        case WaveLoader::LoaderState::Progress:
+                            smsg->sharedState->uiw_setLoadProgress(waves->getProgressPercent());
+                            break;
+                        case WaveLoader::LoaderState::Done:
+                        case WaveLoader::LoaderState::Error:
+                            done = true;
+                            break;
+                        default:
+                            assert(false);
+                    }
+                }
             }
         }
 
@@ -759,6 +756,10 @@ public:
         // but we can modify it here and the UI will "see" it.
         auto info = cinst->getInfo();
         assert(info);
+
+        if (info->errorMessage.empty() && waves->empty()) {
+            info->errorMessage = "No wave files to play";
+        }
 
         if (info->errorMessage.empty() && loadedState != WaveLoader::LoaderState::Done) {
             info->errorMessage = waves->lastError;
