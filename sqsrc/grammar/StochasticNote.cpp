@@ -14,6 +14,7 @@ bool StochasticNote::operator<(const StochasticNote& other) const {
 static const int half_dur = _ppq * 2;
 static const int quarter_dur = _ppq;
 static const int eighth_dur = _ppq / 2;
+static const int sixteenth_dur = eighth_dur / 2;
 
 StochasticNote StochasticNote::half() {
     return StochasticNote(half_dur);
@@ -27,6 +28,10 @@ StochasticNote StochasticNote::eighth() {
     return StochasticNote(eighth_dur);
 }
 
+StochasticNote StochasticNote::sixteenth() {
+    return StochasticNote(sixteenth_dur);
+}
+
 std::string StochasticNote::toText() const {
     std::string ret;
     switch(duration) {
@@ -38,6 +43,9 @@ std::string StochasticNote::toText() const {
             break;
         case eighth_dur:
             ret = "Eighth";
+            break;
+        case sixteenth_dur:
+            ret = "Sixteenth";
             break;
         default:
             assert(false);

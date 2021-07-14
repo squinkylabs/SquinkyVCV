@@ -127,6 +127,23 @@ static void testNote2Text() {
         StochasticNote n = StochasticNote::eighth();
         assertEQ(n.toText(), "Eighth");
     }
+    {
+        StochasticNote n = StochasticNote::sixteenth();
+        assertEQ(n.toText(), "Sixteenth");
+    }
+}
+
+static void testLHS() {
+    auto gmr = StochasticGrammar::getDemoGrammar(StochasticGrammar::DemoGrammar::demo);
+    auto lhs = gmr->getAllLHS();
+    assertEQ(lhs.size(), 3);
+
+    int x = 100000000;
+    for (auto note : lhs) {
+        const int d = note.duration;
+        assertLT(d, x);
+        x = d;
+    }
 }
 
 void testStochasticGrammar2() {
@@ -136,5 +153,6 @@ void testStochasticGrammar2() {
     testGrammar1();
     testGetLHS();
     testNote2Text();
+    testLHS();
     
 }

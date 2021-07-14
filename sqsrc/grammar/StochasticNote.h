@@ -16,6 +16,7 @@ public:
     static StochasticNote half();
     static StochasticNote quarter();
     static StochasticNote eighth();
+    static StochasticNote sixteenth();
 
     bool operator < (const StochasticNote& other) const;
 

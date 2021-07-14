@@ -56,13 +56,23 @@ StochasticGrammarPtr StochasticGrammar::getDemoGrammarDemo() {
     {
         auto rootRule = std::make_shared<StochasticProductionRule>(StochasticNote::half());
 
+    // half rules
         auto entry = StochasticProductionRuleEntry::make();
         entry->rhsProducedNotes.push_back(StochasticNote::quarter());
         entry->rhsProducedNotes.push_back(StochasticNote::quarter());
         entry->probabilty = .5;
         rootRule->addEntry(entry);
+
         assert(rootRule->isRuleValid());
         grammar->addRootRule(rootRule);
+
+        entry = StochasticProductionRuleEntry::make();
+        entry->rhsProducedNotes.push_back(StochasticNote::quarter());
+        entry->rhsProducedNotes.push_back(StochasticNote::eighth());
+        entry->rhsProducedNotes.push_back(StochasticNote::eighth());
+        entry->probabilty = .3;
+        rootRule->addEntry(entry);
+
     }
 
     // quarter rules. splits to eighth
@@ -72,6 +82,18 @@ StochasticGrammarPtr StochasticGrammar::getDemoGrammarDemo() {
         auto entry = StochasticProductionRuleEntry::make();
         entry->rhsProducedNotes.push_back(StochasticNote::eighth());
         entry->rhsProducedNotes.push_back(StochasticNote::eighth());
+        entry->probabilty = .5;
+        rule->addEntry(entry);
+        grammar->addRule(rule);
+    }
+
+    // eighth rule
+    {
+        auto rule = std::make_shared<StochasticProductionRule>(StochasticNote::eighth());
+
+        auto entry = StochasticProductionRuleEntry::make();
+        entry->rhsProducedNotes.push_back(StochasticNote::sixteenth());
+        entry->rhsProducedNotes.push_back(StochasticNote::sixteenth());
         entry->probabilty = .5;
         rule->addEntry(entry);
         grammar->addRule(rule);
