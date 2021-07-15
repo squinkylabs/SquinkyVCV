@@ -73,7 +73,8 @@ public:
      */
 
     // TODO: process
-    void step() override;
+    //void step() override;
+     void process(const typename TBase::ProcessArgs& args) override;
 
 private:
     float reciprocalSampleRate = 0;
@@ -92,7 +93,7 @@ inline void GMR2<TBase>::init() {
 }
 
 template <class TBase>
-inline void GMR2<TBase>::step() {
+inline void GMR2<TBase>::process(const typename TBase::ProcessArgs& args)  {
     bool outClock = false;
     float inClock = TBase::inputs[CLOCK_INPUT].getVoltage(0);
     inputClockProcessing.go(inClock);

@@ -30,7 +30,9 @@ public:
 
         // then set current delay to duration of key
       //  _delay = ProductionRuleKeys::getDuration(key);
-      assert(false);    // what do I do (above)
+     //assert(false);    // what do I do (above)
+        _delay = note.duration;
+        SQINFO("will delay %d. is that correct?", _delay);
     }
 
     // call this to write final event
@@ -76,9 +78,11 @@ public:
     // returns true if trigger generated
     bool clock()
     {
+        SQINFO("clock");
         _seq->clock();
         bool ret = _seq->getTrigger();
         if (_seq->getEnd()) {
+              SQINFO("get end");
             // when we finish playing the seq, generate a new random one
             generate();
             ret |= _seq->getTrigger();
@@ -93,10 +97,13 @@ private:
     StochasticGrammarPtr _grammar;      // who owns this? bts
     void generate()
     {
+        SQINFO("gen 98");
         GTGEvaluator2 es(_r, _data);
         es.grammar = _grammar;
-        StochasticProductionRule::evaluate(es, 0);      // let's assume 0 is the initial key
-
+        SQINFO("gmr = %p", _grammar.get());
+        auto baseRule = es.grammar->getRootRule();
+        StochasticProductionRule::evaluate(es, baseRule);      // let's assume 0 is the initial key
+  SQINFO("gen 103");
         es.writeEnd();
         TriggerSequencer::isValid(_data);
         _seq->reset(_data);
@@ -109,5 +116,6 @@ private:
         }
         printf("delay to end = %d\n", p->delay);
 #endif
+  SQINFO("gen 116");
     }
 };

@@ -39,7 +39,7 @@ extern void testAnalyzer();
 extern void testFilter();
 extern void testStochasticGrammar();
 extern void testStochasticGrammar2();
-extern void testGMR();
+extern void testGMR2();
 extern void testLowpassFilter();
 extern void testPoly();
 extern void testVCO();
@@ -237,6 +237,7 @@ int main(int argc, char** argv) {
     testFilterComposites();
 
     testStochasticGrammar2();
+    testGMR2();
 
     testxLex();
     testx();

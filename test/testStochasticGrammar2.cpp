@@ -30,7 +30,7 @@ static void test1() {
     StochasticProductionRuleEntryPtr entry = StochasticProductionRuleEntry::make();
     entry->rhsProducedNotes.push_back(StochasticNote::eighth());
     entry->rhsProducedNotes.push_back(StochasticNote::eighth());
-    entry->probabilty = .1;
+    entry->probability = .1;
     assert(entry->isValid());
 
 
