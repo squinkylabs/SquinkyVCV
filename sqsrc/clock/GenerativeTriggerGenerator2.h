@@ -67,7 +67,6 @@ public:
         delete _seq;
     }
 
-
     void setGrammar(StochasticGrammarPtr grammar)
     {
         _grammar = grammar;
@@ -78,7 +77,7 @@ public:
     // returns true if trigger generated
     bool clock()
     {
-        SQINFO("clock");
+      //  SQINFO("clock");
         _seq->clock();
         bool ret = _seq->getTrigger();
         if (_seq->getEnd()) {
@@ -88,6 +87,7 @@ public:
             ret |= _seq->getTrigger();
             //printf("this should be getTrigger!!!\n");
         }
+        SQINFO("GTG2 clock ret %d", ret);
         return ret;
     }
 private:
@@ -102,6 +102,7 @@ private:
         es.grammar = _grammar;
         SQINFO("gmr = %p", _grammar.get());
         auto baseRule = es.grammar->getRootRule();
+        SQINFO("generate getting root rule");
         StochasticProductionRule::evaluate(es, baseRule);      // let's assume 0 is the initial key
   SQINFO("gen 103");
         es.writeEnd();

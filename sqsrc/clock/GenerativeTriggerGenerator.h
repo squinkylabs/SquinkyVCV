@@ -80,6 +80,7 @@ public:
             ret |= _seq->getTrigger();
             //printf("this should be getTrigger!!!\n");
         }
+        SQINFO("GTG cloud ret %d", ret);
         return ret;
     }
 private:

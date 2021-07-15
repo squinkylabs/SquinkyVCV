@@ -1,5 +1,6 @@
 
 #include "StochasticGrammar.h"
+#include "SqLog.h"
 #include <random>
 
 #if 0
@@ -250,7 +251,8 @@ int ProductionRule::_evaluateRule(const ProductionRule& rule, float random)
 
 void ProductionRule::evaluate(EvaluationState& es, int ruleToEval)
 {
-    assert(false);      // don't run this old grammar
+    //assert(false);      // don't run this old grammar
+    SQINFO("called old grammar");
     //printf("\n evaluate called on rule #%d\n", ruleToEval);
     const ProductionRule& rule = es.rules[ruleToEval];
 
