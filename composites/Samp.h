@@ -331,9 +331,13 @@ template <class TBase>
 inline void Samp<TBase>::setNewPatch(SampMessage* newMessage) {
     // SQINFO("Samp::setNewPatch (came back from thread server)");
     assert(newMessage);
-    if (!newMessage->instrument || !newMessage->waves) {
-        if (!newMessage->instrument) {
+    const bool instError =  !newMessage->instrument || newMessage->instrument->isInError();
+    if (instError || !newMessage->waves) {
+        if (instError) {
             SQWARN("Patch Loader could not load patch.");
+            if (newMessage->instrument && newMessage->instrument->getInfo()) {
+                SQWARN("Error: %s", newMessage->instrument->getInfo()->errorMessage.c_str());
+            }
         } else if (!newMessage->waves) {
             SQWARN("Patch Loader could not load waves.");
         }
