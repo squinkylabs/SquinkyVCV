@@ -58,8 +58,9 @@ public:
     WaveInfoPtr getInfo(int index) const;
     std::string lastError;
 
-
+    bool empty() const { return filesToLoad.empty(); }
     void _setTestMode(Tests);
+
 private:
    // Tests _testMode = Tests::None;
 

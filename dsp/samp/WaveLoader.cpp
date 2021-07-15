@@ -30,6 +30,7 @@ float WaveLoader::getProgressPercent() const {
 }
 
 WaveLoader::LoaderState WaveLoader::loadNextFile() {
+    assert(curLoadIndex >= 0);
     if (curLoadIndex >= int(filesToLoad.size())) {
         return LoaderState::Done;
     }
@@ -37,20 +38,21 @@ WaveLoader::LoaderState WaveLoader::loadNextFile() {
     FilePath& file = filesToLoad[curLoadIndex];
     WaveInfoPtr fileLoader = loaderFactory(file);
     std::string err;
+
     const bool b = fileLoader->load(err);
     if (!b) {
         // bail on first error
         assert(!err.empty());
         lastError = err;
-        SQINFO("wave loader leaving with error %s", lastError.c_str());
         return LoaderState::Error;
     }
-
+    
     finalInfo.push_back(fileLoader);
     curLoadIndex++;
     auto ret = curLoadIndex >= int(filesToLoad.size()) ? LoaderState::Done : LoaderState::Progress;
     if (ret == LoaderState::Done) {
         didLoad = true;
     }
+
     return ret;
 }
