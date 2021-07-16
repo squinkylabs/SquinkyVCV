@@ -42,6 +42,19 @@ static void testSampComposite0() {
     }
 }
 
+static void testSampCompositeError() {
+    Comp::ProcessArgs args;
+    Comp comp;
+    initComposite(comp);
+    comp.setNewSamples_UI("abcdef");
+    for (bool done=false; !done; ) {
+        if (comp.isNewInstrument_UI()) { done = true; }
+        comp.process(args);
+    }
+    auto inst = comp.getInstrumentInfo_UI();
+    assertEQ(inst->errorMessage, "can't open abcdef");
+}
+
 static void testSchemaUpdate(float oldPitch, float newOctave, float newPitch) {
     Comp comp;
     initComposite(comp);
@@ -84,5 +97,6 @@ static void testSchemaUpdate() {
 void testSampComposite() {
     testSchemaUpdate();
     testSampComposite0();
+    testSampCompositeError();
  
 }
